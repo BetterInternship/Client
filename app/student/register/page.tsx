@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -15,6 +15,11 @@ import { isNoUniversity } from "../../../lib/student-forms-access";
 import { motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
 import { SUPPORT_FACEBOOK } from "@/constants";
+import {
+  consumePostLoginRedirect,
+  getPostLoginRedirect,
+  isDiscordSetupRedirect,
+} from "@/lib/post-login-redirect";
 
 export interface FormInputs {
   first_name?: string;
@@ -24,14 +29,13 @@ export interface FormInputs {
   degree?: string;
 }
 
-const NEXT_URL = "/search";
-
 export function RegisterPageContent() {
   const refs = useDbRefs();
   const auth = useAuthContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const finishedRef = useRef(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
@@ -42,6 +46,18 @@ export function RegisterPageContent() {
   const blurTransition = useBlurTransition();
 
   const skipOtpStep = searchParams.get("edu-email") === "true";
+  const finishRegistration = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    router.replace(consumePostLoginRedirect());
+  };
+  const skipVerification = () => {
+    if (isDiscordSetupRedirect(getPostLoginRedirect())) {
+      router.replace("/register/verify");
+      return;
+    }
+    finishRegistration();
+  };
 
   // modify url params based on current step.
   useEffect(() => {
@@ -63,7 +79,7 @@ export function RegisterPageContent() {
   useEffect(() => {
     if (step === 1 && auth.isAuthenticated()) {
       if (skipOtpStep) {
-        router.replace(NEXT_URL);
+        finishRegistration();
       } else {
         setStep(2);
       }
@@ -135,7 +151,7 @@ export function RegisterPageContent() {
         setSubmitting(false);
 
         if (shouldSkipOtp) {
-          router.replace(NEXT_URL);
+          finishRegistration();
           return;
         }
 
@@ -183,7 +199,7 @@ export function RegisterPageContent() {
                     setStep(step + 1);
                   }}
                   onSkipAction={() => {
-                    router.replace(NEXT_URL);
+                    skipVerification();
                   }}
                 />
               )}
@@ -191,7 +207,7 @@ export function RegisterPageContent() {
                 <OTPEnterStep
                   eduEmail={verificationEmail}
                   onFinishAction={() => {
-                    router.replace(NEXT_URL);
+                    finishRegistration();
                   }}
                   onBackAction={() => setStep(step - 1)}
                 />

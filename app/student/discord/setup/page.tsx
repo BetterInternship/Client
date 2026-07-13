@@ -11,6 +11,7 @@ import { Loader } from "@/components/ui/loader";
 import { DiscordService } from "@/lib/api/discord.api";
 import { JobService, UserService } from "@/lib/api/services";
 import { useAuthContext } from "@/lib/ctx-auth";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 type SetupState = "idle" | "applying" | "success" | "error";
 
@@ -19,6 +20,7 @@ function DiscordSetupContent() {
   const jobId = params.get("job_id") || "";
   const { redirectIfNotLoggedIn } = useAuthContext();
   const queryClient = useQueryClient();
+  const modalRegistry = useModalRegistry();
   const attemptedRef = useRef(false);
   const applyingRef = useRef(false);
   const settingDefaultRef = useRef(false);
@@ -111,6 +113,18 @@ function DiscordSetupContent() {
     }
   };
 
+  const openResumeUpload = () => {
+    modalRegistry.addResume.open({
+      isAtResumeLimit: false,
+      onComplete: () => {
+        void (async () => {
+          await resumes.refetch();
+          await apply();
+        })();
+      },
+    });
+  };
+
   if (status.isPending || resumes.isPending) {
     return <Loader>Preparing Discord Apply...</Loader>;
   }
@@ -187,11 +201,14 @@ function DiscordSetupContent() {
               </div>
             )}
             {resumeList.length === 0 && (
-              <Button asChild variant="outline" className="w-full">
-                <a href="/profile">
-                  <Upload className="h-4 w-4" />
-                  Upload a resume
-                </a>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={openResumeUpload}
+              >
+                <Upload className="h-4 w-4" />
+                Upload a resume
               </Button>
             )}
             {canRetry && (

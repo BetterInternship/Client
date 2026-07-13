@@ -100,7 +100,7 @@ export function useResumeUploadForm() {
       sleep(2000),
     ])) as [UploadResumeResponse, void];
 
-    const ok = !!response && response.success !== false;
+    const ok = response?.success === true;
     setUploadProgress(ok ? 100 : 0);
     setUploadStatus(ok ? "uploaded" : "idle");
 

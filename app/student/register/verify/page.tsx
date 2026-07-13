@@ -16,6 +16,11 @@ import { toastPresets } from "@/components/ui/sonner-toast";
 import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { isEduPhEmail } from "@/lib/utils/string-utils";
+import {
+  clearPostLoginRedirect,
+  consumePostLoginRedirect,
+  getPostLoginRedirect,
+} from "@/lib/post-login-redirect";
 
 const DEFAULT_VERIFICATION_REDIRECT = "/search";
 
@@ -29,15 +34,20 @@ export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { redirectIfNotLoggedIn } = useAuthContext();
+  const explicitRedirect = searchParams.get("redirect");
   const nextUrl = useMemo(
-    () => resolveVerificationRedirect(searchParams.get("redirect")),
-    [searchParams],
+    () =>
+      explicitRedirect
+        ? resolveVerificationRedirect(explicitRedirect)
+        : (getPostLoginRedirect() ?? DEFAULT_VERIFICATION_REDIRECT),
+    [explicitRedirect],
   );
   const profile = useProfileData();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
 
   const handleBack = () => {
+    clearPostLoginRedirect();
     router.push("/search");
   };
 
@@ -47,26 +57,29 @@ export default function VerifyPage() {
 
   redirectIfNotLoggedIn();
 
+  const finishVerification = useCallback(() => {
+    router.replace(
+      explicitRedirect ? nextUrl : consumePostLoginRedirect(nextUrl),
+    );
+  }, [explicitRedirect, nextUrl, router]);
+
   // Redirect only after we know the profile state
   useEffect(() => {
     if (profile.isPending) return;
     if (profile.data?.is_verified) {
-      if (nextUrl) router.replace(nextUrl);
+      if (nextUrl) finishVerification();
       else return;
     }
     if (!profile.data)
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
   }, [
+    finishVerification,
     nextUrl,
     profile.isPending,
     profile.data?.is_verified,
     queryClient,
     router,
   ]);
-
-  const finishVerification = useCallback(() => {
-    if (nextUrl) router.replace(nextUrl);
-  }, [nextUrl, router]);
 
   // Prevent hydration mismatch when client restores persisted query cache.
   // Server render and first client render both return null.
@@ -76,7 +89,7 @@ export default function VerifyPage() {
   if (profile.isPending) return <Loader>Loading...</Loader>;
   if (profile.data?.is_verified) {
     if (nextUrl) {
-      router.replace(nextUrl);
+      finishVerification();
       return null;
     } else {
       return <Loader>Loading...</Loader>;

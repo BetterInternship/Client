@@ -30,7 +30,7 @@ export function AddResumeModal({
     try {
       setSaving(true);
       const response = await resumeUpload.uploadResume();
-      const ok = !!response && response.success !== false;
+      const ok = response?.success === true;
 
       if (ok) {
         toast.success("Resume uploaded successfully.", toastPresets.success);
