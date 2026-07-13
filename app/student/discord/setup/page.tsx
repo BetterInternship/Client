@@ -46,6 +46,12 @@ function DiscordSetupContent() {
     queryFn: () => JobService.getJobById(jobId),
     enabled: Boolean(jobId),
   });
+  const resumeList = resumes.data?.resumes ?? [];
+  const hasValidDefault = resumeList.some(
+    (resume) => resume.id === resumes.data?.default_resume,
+  );
+  const needsDefault = resumeList.length > 1 && !hasValidDefault;
+  const resumeReady = resumeList.length === 1 || hasValidDefault;
 
   const apply = async () => {
     if (applyingRef.current) return;
@@ -81,16 +87,16 @@ function DiscordSetupContent() {
   };
 
   useEffect(() => {
-    if (!status.data?.linked || attemptedRef.current) return;
+    if (!status.data?.linked || !resumeReady || attemptedRef.current) return;
     attemptedRef.current = true;
     void apply();
-  }, [status.data?.linked]);
+  }, [resumeReady, status.data?.linked]);
 
   const connect = () => {
     window.location.assign(DiscordService.authorizationUrl(jobId));
   };
 
-  const setDefaultAndRetry = async (resumeId: string) => {
+  const setDefaultResume = async (resumeId: string) => {
     if (settingDefaultRef.current || applyingRef.current) return;
 
     settingDefaultRef.current = true;
@@ -98,12 +104,14 @@ function DiscordSetupContent() {
     try {
       const result = await UserService.setDefaultResume(resumeId);
       if (!result.success) {
+        setSetupState("error");
         setMessage(result.message || "Could not select that resume.");
         return;
       }
+      attemptedRef.current = false;
       await resumes.refetch();
-      attemptedRef.current = true;
-      await apply();
+      setSetupState("idle");
+      setMessage("");
     } catch {
       setSetupState("error");
       setMessage("Could not update your default resume. Please try again.");
@@ -118,8 +126,10 @@ function DiscordSetupContent() {
       isAtResumeLimit: false,
       onComplete: () => {
         void (async () => {
+          attemptedRef.current = false;
           await resumes.refetch();
-          await apply();
+          setSetupState("idle");
+          setMessage("");
         })();
       },
     });
@@ -130,12 +140,6 @@ function DiscordSetupContent() {
   }
 
   const listing = job.data?.job;
-  const resumeList = resumes.data?.resumes ?? [];
-  const needsDefault =
-    status.data?.linked &&
-    resumeList.length > 1 &&
-    !resumes.data?.default_resume &&
-    setupState === "error";
 
   return (
     <main className="mx-auto flex min-h-[70vh] w-full max-w-2xl items-center px-4 py-12">
@@ -154,7 +158,47 @@ function DiscordSetupContent() {
           </p>
         </div>
 
-        {!status.data?.linked && (
+        {resumeList.length === 0 && setupState !== "success" && (
+          <div className="space-y-3 rounded-md border border-blue-100 bg-blue-50/50 p-4">
+            <p className="text-sm text-[#061858]">
+              Upload a resume before connecting Discord. It will be used for
+              this application.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full bg-white"
+              onClick={openResumeUpload}
+            >
+              <Upload className="h-4 w-4" />
+              Upload a resume
+            </Button>
+          </div>
+        )}
+
+        {needsDefault && setupState !== "success" && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-[#061858]">
+              Choose the resume to use for this application:
+            </p>
+            {resumeList.map((resume) => (
+              <Button
+                key={resume.id}
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => void setDefaultResume(resume.id)}
+                disabled={isSettingDefault || setupState === "applying"}
+              >
+                {isSettingDefault && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+                {resume.label || resume.filename}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {!status.data?.linked && resumeReady && (
           <Button className="w-full" onClick={connect}>
             Connect Discord and Apply
           </Button>
@@ -179,38 +223,6 @@ function DiscordSetupContent() {
             <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-900">
               {message}
             </p>
-            {needsDefault && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-[#061858]">
-                  Choose the resume to use by default:
-                </p>
-                {resumeList.map((resume) => (
-                  <Button
-                    key={resume.id}
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => void setDefaultAndRetry(resume.id)}
-                    disabled={isSettingDefault || setupState === "applying"}
-                  >
-                    {isSettingDefault && (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    )}
-                    {resume.label || resume.filename}
-                  </Button>
-                ))}
-              </div>
-            )}
-            {resumeList.length === 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={openResumeUpload}
-              >
-                <Upload className="h-4 w-4" />
-                Upload a resume
-              </Button>
-            )}
             {canRetry && (
               <Button
                 type="button"
