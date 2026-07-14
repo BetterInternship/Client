@@ -1,4 +1,4 @@
-import { useJobsData } from "@/lib/api/student.data.api";
+import { useJobStatus } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,7 @@ export const ApplyToJobButton = ({
 }) => {
   const auth = useAuthContext();
   const modalRegistry = useModalRegistry();
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const isSuperListing = Boolean(job.challenge);
 

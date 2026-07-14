@@ -1,5 +1,5 @@
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useJobsData } from "@/lib/api/student.data.api";
+import { useJobStatus } from "@/lib/api/student.data.api";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useJobActions } from "@/lib/api/student.actions.api";
 
 export const SaveJobButton = ({ job }: { job: Job }) => {
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const auth = useAuthContext();
   const jobActions = useJobActions();
 

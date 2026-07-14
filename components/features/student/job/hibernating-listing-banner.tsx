@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useJobsData, useWaitlistsData } from "@/lib/api/student.data.api";
+import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 
 /**
@@ -24,7 +24,7 @@ export const HibernatingListingBanner = ({
   className?: string;
 }) => {
   const auth = useAuthContext();
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const waitlists = useWaitlistsData();
   const waitlistActions = useWaitlistActions();
 

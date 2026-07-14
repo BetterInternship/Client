@@ -1,254 +1,111 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import {
   JobService,
   UserService,
   ApplicationService,
+  JobSearchParams,
 } from "@/lib/api/services";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { useQuery } from "@tanstack/react-query";
-import { useDbMoa } from "../db/use-bi-moa";
-import { hashStringToInt } from "../utils";
-import shuffle from "knuth-shuffle-seeded";
-import { PublicUser, JobWaitlist } from "@/lib/db/db.types";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  PublicUser,
+  JobWaitlist,
+  ListingInternshipPreferences,
+} from "@/lib/db/db.types";
 
 /**
- * Normalize internship_preferences field which may be stored as JSON string or object
+ * internship_preferences has historically been stored as a JSON-encoded
+ * string on some rows instead of a real object. No current call site needs
+ * this (listing filters run server-side now), but any code reading
+ * job.internship_preferences directly should run it through here first.
  */
-const normalizeInternshipPreferences = (prefs: any) => {
+export const normalizeInternshipPreferences = (
+  prefs: unknown,
+): ListingInternshipPreferences => {
   if (typeof prefs === "string") {
     try {
-      return JSON.parse(prefs);
+      return JSON.parse(prefs) as ListingInternshipPreferences;
     } catch {
       return {};
     }
   }
-  return prefs ?? {};
+  return (prefs as ListingInternshipPreferences) ?? {};
 };
 
 /**
- * Ensure a value is an array, handles string, array, and invalid inputs
- */
-const ensureArray = (value: any): any[] => {
-  if (Array.isArray(value)) return value;
-  if (typeof value === "string") return [value];
-  return [];
-};
-
-/**
- * From now on, all hooks that query data are meant to do just that.
- * Not allowed to have mutations + will be suffixed with "Data".
+ * Server-side paginated + filtered + searched marketplace listing page
+ * (GET /jobs/search). Always fetched fresh — staleTime 0, refetchOnMount
+ * "always", excluded from localStorage persistence (see tanstack-provider) —
+ * so new/paused listings show up without a stale up-to-24h cached page.
+ * `placeholderData: keepPreviousData` keeps the previous page's rows on
+ * screen (the caller can dim them via `isFetching`) instead of flashing
+ * blank between page/filter changes.
  *
+ * @hook
  * @param params
- * @returns
  */
-export function useJobsData(
-  params: {
-    search?: string;
-    jobMoaFilter?: string[];
-    jobModeFilter?: string[];
-    jobWorkloadFilter?: string[];
-    jobAllowanceFilter?: string[];
-    position?: string[];
-  } = {},
-) {
-  const dbMoas = useDbMoa();
-  const dbRefs = useDbRefs();
-  const profile = useProfileData();
-  const seed = useRef<number>(
-    hashStringToInt((profile.data?.email ?? "") + new Date().getDay()),
-  );
-  const applications = useApplicationsData();
+export function useJobListingsPage(params: JobSearchParams = {}) {
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 10;
 
-  const { isPending, data, error } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: () =>
-      JobService.getAllJobs().then((data) => {
-        // ! remove shuffle
-        // data.jobs = shuffle(data.jobs ?? [], seed.current);
-        data.jobs = data.jobs?.toSorted(
-          (a, b) => b.created_at?.localeCompare(a.created_at || "") || 0,
-        );
-        return data;
-      }),
-    staleTime: 60 * 60 * 1000,
+  const { data, isPending, isFetching, error } = useQuery({
+    queryKey: [
+      "job-listings",
+      {
+        search: params.search,
+        position: params.position,
+        mode: params.mode,
+        workload: params.workload,
+        allowance: params.allowance,
+        moa: params.moa,
+        university: params.university,
+        page,
+        limit,
+      },
+    ],
+    queryFn: () => JobService.searchJobs({ ...params, page, limit }),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  const appliedJobs = useMemo(() => {
-    const allJobs = data?.jobs ?? [];
-    if (!allJobs?.length) return [];
+  return {
+    isPending,
+    isFetching,
+    jobs: data?.jobs ?? [],
+    total: data?.total ?? 0,
+    error,
+  };
+}
 
-    return allJobs.filter(
-      (job) =>
-        !!applications.data.find(
-          (application) => application.job_id === job.id,
-        ),
-    );
-  }, [data, applications]);
+/**
+ * Saved/applied status for leaf components (save button, apply button, job
+ * alert button, hibernating banner) — split out of the old useJobsData now
+ * that the marketplace listing itself is server-paginated and no longer
+ * fetched as one big client-side array.
+ *
+ * @hook
+ */
+export function useJobStatus() {
+  const applications = useApplicationsData();
 
   const _savedJobs = useQuery({
     queryKey: ["my-saved-jobs"],
     queryFn: JobService.getSavedJobs,
   });
 
-  const savedJobs = useMemo(() => {
-    return _savedJobs.data?.jobs ?? [];
-  }, [_savedJobs]);
-
-  // Client-side filtering logic
-  const filteredJobs = useMemo(() => {
-    const allJobs = data?.jobs ?? [];
-    if (!allJobs?.length) return [];
-
-    // Initialize filter statistics
-    const stats = {
-      total: allJobs.length,
-      search: { rejected: 0, examples: [] as string[] },
-      moa: { rejected: 0, examples: [] as string[] },
-      mode: { rejected: 0, examples: [] as string[] },
-      workload: { rejected: 0, examples: [] as string[] },
-      allowance: { rejected: 0, examples: [] as string[] },
-      category: { rejected: 0, examples: [] as string[] },
-      passed: 0,
-    };
-
-    const filtered = allJobs.filter((job) => {
-      const prefs = normalizeInternshipPreferences(job.internship_preferences);
-
-      if (params.search?.trim()) {
-        const searchTerm = params.search.toLowerCase();
-        const searchableText = [
-          job.title,
-          job.description,
-          job.employer?.name,
-          job.employer?.industry,
-          job.location,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        if (!searchableText.includes(searchTerm)) {
-          stats.search.rejected++;
-          if (stats.search.examples.length < 2) {
-            stats.search.examples.push(
-              `${job.title} (search: "${params.search}")`,
-            );
-          }
-          return false;
-        }
-      }
-
-      // MOA filter
-      const hasMoa = dbMoas.check(
-        job?.employer_id ?? "",
-        profile.data?.university ?? "",
-      )
-        ? "Has MOA"
-        : "No MOA";
-
-      if (
-        params.jobMoaFilter?.length &&
-        !params.jobMoaFilter?.includes(hasMoa)
-      ) {
-        stats.moa.rejected++;
-        if (stats.moa.examples.length < 2) {
-          stats.moa.examples.push(`${job.title} (${hasMoa})`);
-        }
-        return false;
-      }
-
-      // Job Mode filter (job_setup_ids)
-      if (params.jobModeFilter?.length) {
-        const jobSetupIds = ensureArray(prefs.job_setup_ids);
-        const hasMatchingMode = jobSetupIds.some((id) =>
-          params.jobModeFilter?.includes(id.toString()),
-        );
-        if (!hasMatchingMode) {
-          stats.mode.rejected++;
-          if (stats.mode.examples.length < 2) {
-            stats.mode.examples.push(
-              `${job.title} (IDs: ${jobSetupIds.join(", ")})`,
-            );
-          }
-          return false;
-        }
-      }
-
-      // Job Workload filter (job_commitment_ids)
-      if (params.jobWorkloadFilter?.length) {
-        const jobCommitmentIds = ensureArray(prefs.job_commitment_ids);
-        const hasMatchingWorkload = jobCommitmentIds.some((id) =>
-          params.jobWorkloadFilter?.includes(id.toString()),
-        );
-        if (!hasMatchingWorkload) {
-          stats.workload.rejected++;
-          if (stats.workload.examples.length < 2) {
-            stats.workload.examples.push(
-              `${job.title} (IDs: ${jobCommitmentIds.join(", ")})`,
-            );
-          }
-          return false;
-        }
-      }
-
-      // Allowance filter
-      if (
-        params.jobAllowanceFilter?.length &&
-        !params.jobAllowanceFilter?.includes(job.allowance?.toString() ?? "#")
-      ) {
-        stats.allowance.rejected++;
-        if (stats.allowance.examples.length < 2) {
-          stats.allowance.examples.push(`${job.title} (₱${job.allowance})`);
-        }
-        return false;
-      }
-
-      // Position (job categories) filter
-      if (params.position?.length) {
-        const jobCategoryIds = ensureArray(prefs.job_category_ids);
-
-        // Check if any of the job's categories match any selected filter
-        const hasMatchingCategory = jobCategoryIds.some((jobCategoryId) =>
-          params.position?.includes(jobCategoryId as string),
-        );
-
-        if (!hasMatchingCategory) {
-          stats.category.rejected++;
-          if (stats.category.examples.length < 2) {
-            stats.category.examples.push(
-              `${job.title} (IDs: ${jobCategoryIds.join(", ")})`,
-            );
-          }
-          return false;
-        }
-      }
-
-      stats.passed++;
-      return true;
-    });
-
-    return filtered;
-  }, [data, params]);
-
-  const getJobsPage = useCallback(
-    ({ page = 1, limit = 10 }) => {
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      return filteredJobs.slice(startIndex, endIndex);
-    },
-    [filteredJobs],
+  const savedJobs = useMemo(
+    () => _savedJobs.data?.jobs ?? [],
+    [_savedJobs.data],
   );
 
   return {
-    isPending: isPending || _savedJobs.isPending,
-    jobs: data?.jobs,
-    error: error || _savedJobs.error,
+    isPending: _savedJobs.isPending,
+    error: _savedJobs.error,
     savedJobs,
     isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
-    isJobApplied: (jobId: string) => !!appliedJobs.find((j) => j.id === jobId),
-    appliedJobs,
-    filteredJobs,
-    getJobsPage,
+    isJobApplied: (jobId: string) =>
+      applications.data.some((application) => application.job_id === jobId),
   };
 }
 
@@ -257,8 +114,14 @@ export function useJobsData(
  *
  * @hook
  * @param jobId
+ * @param options.enabled Set false to defer the fetch (e.g. a ?jobId= deep
+ * link that resolves via the current listing page first, and only falls
+ * back to this fetch-by-id when the job isn't on that page).
  */
-export function useJobData(jobId: string) {
+export function useJobData(
+  jobId: string,
+  options: { enabled?: boolean } = {},
+) {
   const applications = useApplicationsData();
   const applied = !!useMemo(
     () => applications.data.find((application) => application.job_id === jobId),
@@ -267,6 +130,7 @@ export function useJobData(jobId: string) {
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs", jobId],
     queryFn: async () => await JobService.getJobById(jobId),
+    enabled: options.enabled,
   });
 
   return { isPending, data: data?.job ?? null, applied, error };
