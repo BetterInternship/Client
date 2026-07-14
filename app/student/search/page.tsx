@@ -383,15 +383,8 @@ export default function SearchPage() {
           <Loader>Loading...</Loader>
         ) : isMobile ? (
           // Mobile list
-          <div className="w-full flex flex-col h-full">
+          <div className="relative w-full flex flex-col h-full">
             <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
-              <div
-                className={cn(
-                  jobs.isFetching &&
-                    !jobs.isPending &&
-                    "opacity-50 pointer-events-none transition-opacity duration-200",
-                )}
-              >
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
@@ -433,7 +426,6 @@ export default function SearchPage() {
                   <p className="p-4">No jobs found.</p>
                 </div>
               )}
-              </div>
 
               <div className="my-4">
                 <Paginator
@@ -447,22 +439,21 @@ export default function SearchPage() {
                 />
               </div>
             </div>
+            {jobs.isFetching && !jobs.isPending && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
+                <Loader />
+              </div>
+            )}
           </div>
         ) : (
           // Desktop split view
           <>
             {/* Left: List */}
+            <div className="relative w-1/3 border-r">
             <div
               ref={listRef}
-              className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6"
+              className="h-full overflow-x-hidden overflow-y-auto p-6"
             >
-              <div
-                className={cn(
-                  jobs.isFetching &&
-                    !jobs.isPending &&
-                    "opacity-50 pointer-events-none transition-opacity duration-200",
-                )}
-              >
               {jobsPage.length ? (
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
@@ -519,7 +510,6 @@ export default function SearchPage() {
                   <p className="p-4">No jobs found.</p>
                 </div>
               )}
-              </div>
 
               <div className="mt-2 mb-8">
                 <Paginator
@@ -532,6 +522,12 @@ export default function SearchPage() {
                   }}
                 />
               </div>
+            </div>
+            {jobs.isFetching && !jobs.isPending && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
+                <Loader />
+              </div>
+            )}
             </div>
 
             {/* Right: Details */}
