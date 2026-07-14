@@ -5,6 +5,7 @@ import {
   UpdateJobChallengeListingPayload,
   Employer,
   Job,
+  JobWaitlist,
   PublicUser,
   SavedJob,
   UserApplication,
@@ -304,6 +305,7 @@ interface UploadResumeResponse {
     filename: string;
     uploaded_at: string;
   };
+  default_resume?: string;
   success?: boolean;
   message?: string;
 }
@@ -315,8 +317,13 @@ interface ResumeArrayResponse {
     filename: string;
     uploaded_at: string;
   }[];
+  default_resume: string | null;
   success?: boolean;
   message?: string;
+}
+
+interface DefaultResumeResponse extends FetchResponse {
+  default_resume: string;
 }
 
 export const UserService = {
@@ -369,10 +376,7 @@ export const UserService = {
         };
       }
     >(
-      APIRouteBuilder("users")
-        .r("me", "edit-recipient")
-        .p({ eventId })
-        .build(),
+      APIRouteBuilder("users").r("me", "edit-recipient").p({ eventId }).build(),
     );
   },
 
@@ -429,6 +433,13 @@ export const UserService = {
     );
   },
 
+  async setDefaultResume(resumeId: string) {
+    return APIClient.post<DefaultResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", "default").build(),
+      { resume_id: resumeId },
+    );
+  },
+
   async deleteMyResume(resumeId: string) {
     return APIClient.post<UploadResumeResponse>(
       APIRouteBuilder("users").r("me", "resume", "delete", resumeId).build(),
@@ -458,6 +469,25 @@ interface JobsResponse extends FetchResponse {
   jobs?: Job[];
 }
 
+interface JobSearchResponse extends FetchResponse {
+  jobs?: Job[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface JobSearchParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  mode?: string[];
+  workload?: string[];
+  position?: string[];
+  allowance?: string[];
+  moa?: string[];
+  university?: string;
+}
+
 interface SavedJobsResponse extends FetchResponse {
   jobs?: SavedJob[];
 }
@@ -466,9 +496,35 @@ interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
 }
 
+interface WaitlistedJobsResponse extends FetchResponse {
+  waitlisted?: JobWaitlist[];
+}
+
 export const JobService = {
   async getAllJobs() {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
+  },
+
+  async searchJobs(params: JobSearchParams = {}) {
+    const join = (values?: string[]) =>
+      values?.length ? values.join(",") : undefined;
+
+    return APIClient.get<JobSearchResponse>(
+      APIRouteBuilder("jobs")
+        .r("search")
+        .p({
+          page: params.page,
+          limit: params.limit,
+          search: params.search,
+          mode: join(params.mode),
+          workload: join(params.workload),
+          position: join(params.position),
+          allowance: join(params.allowance),
+          moa: join(params.moa),
+          university: params.university,
+        })
+        .build(),
+    );
   },
 
   // !! this only fetches an *active* job.
@@ -533,6 +589,24 @@ export const JobService = {
   async unpauseAllJobs() {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("unpause-all").build(),
+    );
+  },
+
+  async joinWaitlist(jobId: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
+    );
+  },
+
+  async leaveWaitlist(jobId: string) {
+    return APIClient.delete<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
+    );
+  },
+
+  async getWaitlistedJobs() {
+    return APIClient.get<WaitlistedJobsResponse>(
+      APIRouteBuilder("jobs").r("waitlisted").build(),
     );
   },
 };

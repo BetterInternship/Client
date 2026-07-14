@@ -66,6 +66,14 @@ const config: Config = {
             transform: "scale(1)",
           },
         },
+        jitter: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "5%": { transform: "translateX(-3px)" },
+          "10%": { transform: "translateX(3px)" },
+          "15%": { transform: "translateX(-3px)" },
+          "20%": { transform: "translateX(3px)" },
+          "25%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         "marquee-horizontal": "marquee-x var(--duration) infinite linear",
@@ -75,6 +83,7 @@ const config: Config = {
         "fade-in": "fade-in 0.5s ease-out",
         "slide-up": "slide-up 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
+        jitter: "jitter 1.5s ease-in-out infinite",
       },
       fontFamily: {
         sans: [

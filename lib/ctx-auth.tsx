@@ -6,6 +6,7 @@ import { AuthService, UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { savePostLoginRedirect } from "@/lib/post-login-redirect";
 
 interface IAuthContext {
   register: (
@@ -16,10 +17,10 @@ interface IAuthContext {
   verify: (
     userId: string,
     key: string,
-  ) => Promise<Partial<PublicUser> & FetchResponse>;
+  ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
-  refreshAuthentication: () => void;
+  refreshAuthentication: () => Promise<Partial<PublicUser> | null>;
   redirectIfNotLoggedIn: () => void;
   redirectIfLoggedIn: () => void;
 }
@@ -61,18 +62,7 @@ export const AuthContextProvider = ({
   };
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
-    if (typeof window === "undefined") return;
-
-    const redirectPath = sessionStorage.getItem("post_login_redirect");
-    if (!redirectPath) return;
-
-    sessionStorage.removeItem("post_login_redirect");
-    router.replace(redirectPath);
-  }, [isAuthenticated, isLoading, router]);
-
-  useEffect(() => {
-    refreshAuthentication();
+    void refreshAuthentication();
   }, []);
 
   const register = async (user: Partial<PublicUser>) => {
@@ -121,7 +111,7 @@ export const AuthContextProvider = ({
       if (!isLoading && !isAuthenticated) {
         if (typeof window !== "undefined") {
           const redirectPath = `${window.location.pathname}${window.location.search}`;
-          sessionStorage.setItem("post_login_redirect", redirectPath);
+          savePostLoginRedirect(redirectPath);
         }
         router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
       }
@@ -136,7 +126,6 @@ export const AuthContextProvider = ({
     <AuthContext.Provider
       value={{
         register,
-        // @ts-ignore
         verify,
         logout,
         refreshAuthentication,

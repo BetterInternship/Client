@@ -21,6 +21,7 @@ interface DefaultModalLayout {
   title?: React.ReactNode;
   showHeaderDivider?: boolean;
   showCloseButton?: boolean;
+  panelClassName?: string;
 }
 
 export const DefaultModalLayout = ({
@@ -29,6 +30,7 @@ export const DefaultModalLayout = ({
   children,
   showHeaderDivider,
   showCloseButton,
+  panelClassName,
   closeModal,
 }: DefaultModalLayout & ModalInjectedParams & ModalContext) => {
   return (
@@ -51,6 +53,7 @@ export const DefaultModalLayout = ({
         "max-h-[calc(var(--vh,1vh)*100)]",
         // Desktop+: classic centered card
         "sm:rounded-[0.33em] sm:w-auto sm:max-w-2xl sm:min-w-0 sm:max-h-[90vh]",
+        panelClassName,
       )}
       onClick={(e) => e.stopPropagation()}
     >

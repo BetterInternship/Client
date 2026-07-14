@@ -14,7 +14,12 @@ export function PausedListingsBanner({
   onUnpauseAll: () => Promise<unknown>;
 }) {
   const [reEnabling, setReEnabling] = useState(false);
-  const pausedCount = jobs.filter((job) => job.paused).length;
+  const pausedJobs = jobs.filter((job) => job.paused);
+  const pausedCount = pausedJobs.length;
+  const waitingTotal = pausedJobs.reduce(
+    (sum, job) => sum + (job.waiting_count ?? 0),
+    0,
+  );
 
   if (!pausedCount) return null;
 
@@ -36,7 +41,14 @@ export function PausedListingsBanner({
             <span className="font-medium">
               {pausedCount} of your listing{pausedCount !== 1 ? "s" : ""}
             </span>{" "}
-            {pausedCount !== 1 ? "were" : "was"} paused due to inactivity.
+            {pausedCount !== 1 ? "are" : "is"} marked inactive
+            {waitingTotal > 0 && (
+              <>
+                , and {waitingTotal} student{waitingTotal !== 1 ? "s" : ""}{" "}
+                {waitingTotal !== 1 ? "are" : "is"} waiting for them
+              </>
+            )}
+            .
           </span>
         </div>
         <Button
@@ -46,7 +58,7 @@ export function PausedListingsBanner({
           disabled={reEnabling}
           onClick={handleReEnableAll}
         >
-          {reEnabling ? "Re-enabling..." : "Re-enable all"}
+          {reEnabling ? "Re-activating..." : "Re-activate all"}
         </Button>
       </div>
     </Banner>

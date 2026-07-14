@@ -47,26 +47,27 @@ export default function VerifyPage() {
 
   redirectIfNotLoggedIn();
 
+  const finishVerification = useCallback(() => {
+    if (nextUrl) router.replace(nextUrl);
+  }, [nextUrl, router]);
+
   // Redirect only after we know the profile state
   useEffect(() => {
     if (profile.isPending) return;
     if (profile.data?.is_verified) {
-      if (nextUrl) router.replace(nextUrl);
+      if (nextUrl) finishVerification();
       else return;
     }
     if (!profile.data)
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
   }, [
+    finishVerification,
     nextUrl,
     profile.isPending,
     profile.data?.is_verified,
     queryClient,
     router,
   ]);
-
-  const finishVerification = useCallback(() => {
-    if (nextUrl) router.replace(nextUrl);
-  }, [nextUrl, router]);
 
   // Prevent hydration mismatch when client restores persisted query cache.
   // Server render and first client render both return null.
@@ -76,7 +77,7 @@ export default function VerifyPage() {
   if (profile.isPending) return <Loader>Loading...</Loader>;
   if (profile.data?.is_verified) {
     if (nextUrl) {
-      router.replace(nextUrl);
+      finishVerification();
       return null;
     } else {
       return <Loader>Loading...</Loader>;

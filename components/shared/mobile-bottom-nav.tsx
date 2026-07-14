@@ -9,8 +9,6 @@ import {
   User,
   Settings,
   LogOut,
-  CheckSquare,
-  Heart,
   LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -134,7 +132,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         />
       )}
 
-      {/* My Jobs Button with Popover Menu */}
+      {/* My Jobs Button */}
       <NavButton
         icon={<BookA className="w-6 h-6" />}
         label="My Jobs"
@@ -142,39 +140,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           pathname?.startsWith("/applications") ||
           pathname?.startsWith("/saved")
         }
-      >
-        <PopoverContent
-          className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
-          side="top"
-          sideOffset={8}
-          style={{ zIndex: 9999 }}
-        >
-          <div className="flex flex-col gap-0">
-            <button
-              onClick={() => {
-                router.push("/applications");
-              }}
-              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
-            >
-              <div className="flex items-center">
-                <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span>Applications</span>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                router.push("/saved");
-              }}
-              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
-            >
-              <div className="flex items-center">
-                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span>Saved Jobs</span>
-              </div>
-            </button>
-          </div>
-        </PopoverContent>
-      </NavButton>
+        onClick={() => router.push("/applications")}
+      />
 
       {/* Account Button with Popover Menu */}
       <NavButton

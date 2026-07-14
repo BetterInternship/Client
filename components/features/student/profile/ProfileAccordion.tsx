@@ -1,7 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { BriefcaseBusiness, FileText, UserRound } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  FileText,
+  MessageCircle,
+  UserRound,
+} from "lucide-react";
 
 import {
   Accordion,
@@ -14,6 +19,7 @@ import { InternshipDetailsSection } from "./InternshipDetailsSection";
 import { PersonalInformationSection } from "./PersonalInformationSection";
 import { ResumeSection } from "./ResumeSection";
 import type { ProfileResumeManager, ProfileSectionKey } from "./profile-types";
+import { ConnectedAccountsSection } from "./ConnectedAccountsSection";
 
 export function ProfileAccordion({
   profile,
@@ -57,6 +63,14 @@ export function ProfileAccordion({
         title="Personal Information"
       >
         <PersonalInformationSection profile={profile} />
+      </ProfileAccordionItem>
+
+      <ProfileAccordionItem
+        value="connected-accounts"
+        icon={<MessageCircle className="h-5 w-5" />}
+        title="Connected Accounts"
+      >
+        <ConnectedAccountsSection />
       </ProfileAccordionItem>
     </Accordion>
   );

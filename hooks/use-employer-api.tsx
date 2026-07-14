@@ -228,7 +228,13 @@ export function useOwnedJobs(
     if (response.success) {
       const newJobs = ownedJobs.map((job) =>
         job.id === job_id
-          ? { ...job, paused: false, pause_reason: null, paused_at: null }
+          ? {
+              ...job,
+              paused: false,
+              pause_reason: null,
+              paused_at: null,
+              waiting_count: 0,
+            }
           : job,
       );
       set_cache(newJobs);
@@ -245,6 +251,7 @@ export function useOwnedJobs(
         paused: false,
         pause_reason: null,
         paused_at: null,
+        waiting_count: 0,
       }));
       set_cache(newJobs);
       setOwnedJobs(get_cache() ?? []);

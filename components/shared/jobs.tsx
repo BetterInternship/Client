@@ -1,9 +1,8 @@
 ﻿import { Badge, BoolBadge } from "@/components/ui/badge";
-import { Job, JobPauseReason } from "@/lib/db/db.types";
+import { Job } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
-import { formatDateWithoutTime } from "@/lib/utils/date-utils";
 import {
   AlertTriangle,
   ArrowRight,
@@ -12,7 +11,6 @@ import {
   Clock,
   EyeOff,
   Monitor,
-  PauseCircle,
   PhilippinePeso,
   UserCheck,
   Zap,
@@ -22,56 +20,33 @@ import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
-import { Toggle } from "../ui/toggle";
-import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
-import { useProfileData } from "@/lib/api/student.data.api";
+import { useProfileData, useWaitlistsData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
-
-const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
-  dormant: "No logins in a long while",
-  unresponsive: "No recent logins, with an applicant waiting",
-  neglected: "An applicant has been waiting on this listing",
-};
-
-export const PausedBadge = ({
-  reason,
-  pausedAt,
-}: {
-  reason?: JobPauseReason | null;
-  pausedAt?: string | null;
-}) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Badge type="destructive" className="cursor-default">
-        <PauseCircle className="w-3 h-3 mr-1" />
-        Paused
-      </Badge>
-    </TooltipTrigger>
-    <TooltipContent side="bottom">
-      {reason ? PAUSE_REASON_LABELS[reason] : "Paused due to inactivity"}
-      {pausedAt && ` · ${formatDateWithoutTime(pausedAt)}`}
-    </TooltipContent>
-  </Tooltip>
-);
+import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
 
 export const JobHead = ({
   title,
   employer,
   size = "",
+  wrap = false,
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
   size?: string;
+  // Wraps onto up to 2 lines instead of truncating to a single line — for
+  // when a badge sits beside the title and could otherwise overlap it
+  // (see JobCard's hibernating badge).
+  wrap?: boolean;
 }) => {
   return (
     <div className="flex-1 min-w-0 text-wrap">
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap",
+          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 break-words",
+          wrap ? "whitespace-normal" : "truncate whitespace-pre-wrap",
         )}
       >
         {title}
@@ -433,6 +408,7 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
+  const waitlists = useWaitlistsData();
   const isSuperListing = Boolean(job.challenge);
   if (isSuperListing) {
     return (
@@ -443,6 +419,8 @@ export const JobCard = ({
       />
     );
   }
+
+  const onAlert = waitlists.isWaitlisted(job.id);
 
   return (
     <Card
@@ -456,83 +434,39 @@ export const JobCard = ({
       )}
     >
       <div className="relative z-10 space-y-3">
-        <div className="flex items-start justify-between">
-          <JobHead title={job.title} employer={job.employer?.name} />
+        <div className="flex items-start justify-between gap-2">
+          <JobHead
+            title={job.title}
+            employer={job.employer?.name}
+            wrap={!!job.hibernating}
+          />
+          {job.hibernating && (
+            <Badge
+              className={cn(
+                "relative z-30 shrink-0 gap-1",
+                onAlert
+                  ? "bg-blue-100 text-primary"
+                  : "bg-yellow-100 text-yellow-800",
+              )}
+            >
+              {onAlert ? (
+                <Clock className="w-3 h-3" />
+              ) : (
+                <AlertTriangle className="w-3 h-3" />
+              )}
+              {onAlert ? "Waiting..." : "Just missed"}
+            </Badge>
+          )}
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} />
       </div>
-    </Card>
-  );
-};
-
-/**
- * The scrollable job card component.
- * Used in both hire and student UI.
- *
- * @component
- */
-export const EmployerJobCard = ({
-  job,
-  selected,
-  on_click,
-  update_job,
-  set_is_editing,
-  unpause_job,
-}: {
-  job: Job;
-  selected?: boolean;
-  on_click?: (job: Job) => void;
-  update_job: (
-    job_id: string,
-    job: Partial<Job>,
-  ) => Promise<{ success: boolean }>;
-  set_is_editing: (is_editing: boolean) => void;
-  unpause_job?: (job_id: string) => Promise<unknown>;
-}) => {
-  return (
-    <Card
-      key={job.id}
-      onClick={() => on_click && on_click(job)}
-      className={cn(
-        selected ? "selected ring-1 ring-primary ring-offset-1" : "",
-        !job.is_active ? "opacity-50" : "cursor-pointer",
+      {job.hibernating && (
+        <div
+          aria-hidden
+          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+        />
       )}
-    >
-      <div className="space-y-3">
-        <div className="flex items-start justify-between">
-          <JobHead title={job.title} employer={job.employer?.name} />
-          <div className="flex items-center gap-2 relative z-20">
-            <Toggle
-              state={job.is_active}
-              onClick={() => {
-                if (!job.id) return;
-                void update_job(job.id, {
-                  is_active: !job.is_active,
-                });
-              }}
-            />
-          </div>
-        </div>
-        <JobLocation location={job.location} />
-        <JobBadges job={job} excludes={["moa"]} />
-        {job.paused && (
-          <div className="flex items-center justify-between gap-2 rounded-[0.33em] bg-destructive/10 border border-destructive/30 px-3 py-2">
-            <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
-            <Button
-              size="xs"
-              variant="outline"
-              scheme="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (job.id) void unpause_job?.(job.id);
-              }}
-            >
-              Re-enable
-            </Button>
-          </div>
-        )}
-      </div>
     </Card>
   );
 };
@@ -549,40 +483,71 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
+  const waitlists = useWaitlistsData();
   const isSuperListing = Boolean(job.challenge);
   if (isSuperListing) {
     return <SuperJobCard job={job} onClick={on_click} mobile />;
   }
 
+  const onAlert = waitlists.isWaitlisted(job.id);
+
   return (
     <div
-      className={cn(
-        "card hover-lift relative isolate overflow-hidden p-6 animate-fade-in",
-      )}
+      className="card hover-lift relative isolate overflow-hidden animate-fade-in p-6"
       onClick={on_click}
     >
-      <>
-        <div className="mb-4">
+      <div className="mb-4">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
+            <h3
+              className={cn(
+                "font-semibold text-gray-900 mb-2 leading-tight text-lg",
+                job.hibernating ? "line-clamp-2 break-words" : "truncate",
+              )}
+            >
               {job.title}
             </h3>
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <Building className="w-4 h-4 flex-shrink-0" />
-              <span className="font-medium truncate">{job.employer?.name}</span>
+              <span className="font-medium truncate">
+                {job.employer?.name}
+              </span>
             </div>
           </div>
+          {job.hibernating && (
+            <Badge
+              className={cn(
+                "relative z-30 shrink-0 gap-1",
+                onAlert
+                  ? "bg-blue-100 text-primary"
+                  : "bg-yellow-100 text-yellow-800",
+              )}
+            >
+              {onAlert ? (
+                <Clock className="w-3 h-3" />
+              ) : (
+                <AlertTriangle className="w-3 h-3" />
+              )}
+              {onAlert ? "Waiting..." : "Just missed"}
+            </Badge>
+          )}
         </div>
-        <JobBadges job={job} />
-        <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-          {job.description || "No description available."}
-        </p>
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-          <div className="flex-1 min-w-0">
-            <JobLocation location={job.location} />
-          </div>
+      </div>
+      <JobBadges job={job} />
+      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+        {job.description || "No description available."}
+      </p>
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+        <div className="flex-1 min-w-0">
+          <JobLocation location={job.location} />
         </div>
-      </>
+      </div>
+      {job.hibernating && (
+        <div
+          aria-hidden
+          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+        />
+      )}
     </div>
   );
 };
@@ -769,34 +734,6 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return <BoolBadge state={ok} onValue={label} offValue={label} />;
 }
 
-export function MissingNotice({
-  show,
-  needsGithub,
-  needsPortfolio,
-}: {
-  show: boolean;
-  needsGithub: boolean;
-  needsPortfolio: boolean;
-}) {
-  if (!show) return null;
-  return (
-    <div className="flex items-start md:items-center gap-2 bg-warning px-5 py-3">
-      <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
-      <p className="text-sm text-warning-foreground/90 leading-snug">
-        This job requires{" "}
-        {needsGithub && needsPortfolio ? (
-          <b>GitHub and Portfolio</b>
-        ) : needsGithub ? (
-          <b>GitHub</b>
-        ) : (
-          <b>Portfolio</b>
-        )}
-        . Update your profile to meet these requirements.
-      </p>
-    </div>
-  );
-}
-
 function Section({
   title,
   children,
@@ -886,7 +823,6 @@ export function JobDetails({
   user,
   actions = [],
   applyDisabledText = "Complete required items to apply.",
-  isAuthenticated,
 }: {
   job: Job;
   user?: {
@@ -895,7 +831,6 @@ export function JobDetails({
   };
   actions?: React.ReactNode[];
   applyDisabledText?: string;
-  isAuthenticated: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -911,13 +846,7 @@ export function JobDetails({
 
   return (
     <>
-      {isAuthenticated && (
-        <MissingNotice
-          show={missingRequired}
-          needsGithub={needsGithub && !hasGithub}
-          needsPortfolio={needsPortfolio && !hasPortfolio}
-        />
-      )}
+      {job.hibernating && <HibernatingListingBanner job={job} />}
       <div
         className={cn(
           "flex-1 overflow-y-auto space-y-5",
@@ -926,7 +855,7 @@ export function JobDetails({
       >
         <HeaderWithActions
           job={job}
-          actions={actions}
+          actions={job.hibernating ? [] : actions}
           disabled={missingRequired}
         />
 

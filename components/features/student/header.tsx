@@ -11,7 +11,6 @@ import {
   Square,
   ChevronDown,
   BookA,
-  Heart,
   Newspaper,
 } from "lucide-react";
 
@@ -235,40 +234,22 @@ export const HeaderButtons: React.FC = () => {
         </Button>
       )}
 
-      {/* My Jobs Dropdown */}
-      <ClickDropdown
-        trigger={
-          <Button
-            variant="ghost"
-            className={cn(
-              "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-              pathname?.startsWith("/applications") ||
-                pathname?.startsWith("/saved")
-                ? "text-primary"
-                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-            )}
-          >
-            <BookA className="!h-6 !w-6" strokeWidth={1.7} />
-            <div className="flex items-center gap-0.5">
-              <span className="text-xs">My Jobs</span>
-              <ChevronDown className="!h-3 !w-3 transition-transform group-data-[state=open]:rotate-180" />
-            </div>
-          </Button>
-        }
+      {/* My Jobs */}
+      <Button
+        asChild
+        variant="ghost"
+        className={cn(
+          "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+          pathname?.startsWith("/applications") || pathname?.startsWith("/saved")
+            ? "text-primary"
+            : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+        )}
       >
-        <DropdownMenuItem href="/applications">
-          <div className="flex items-center">
-            <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
-            <span className="text-primary">Applications</span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem href="/saved">
-          <div className="flex items-center">
-            <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-            <span className="text-primary">Saved Jobs</span>
-          </div>
-        </DropdownMenuItem>
-      </ClickDropdown>
+        <Link href="/applications">
+          <BookA className="!h-6 !w-6" strokeWidth={1.7} />
+          <span className="text-xs">My Jobs</span>
+        </Link>
+      </Button>
 
       <ClickDropdown
         trigger={

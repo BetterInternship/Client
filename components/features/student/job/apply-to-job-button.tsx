@@ -1,4 +1,4 @@
-import { useJobsData } from "@/lib/api/student.data.api";
+import { useJobStatus } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { isProfileEligibleForListing } from "@/lib/profile";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { ListingAlertButton } from "./listing-alert-button";
 
 export const ApplyToJobButton = ({
   profile,
@@ -23,9 +24,15 @@ export const ApplyToJobButton = ({
 }) => {
   const auth = useAuthContext();
   const modalRegistry = useModalRegistry();
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const isSuperListing = Boolean(job.challenge);
+
+  // A hibernating listing can't be applied to — the CTA becomes a job alert
+  // toggle instead, everywhere ApplyToJobButton is rendered.
+  if (job.hibernating) {
+    return <ListingAlertButton job={job} className={className} />;
+  }
 
   /**
    * Handles apply checks

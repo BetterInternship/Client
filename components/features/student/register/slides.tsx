@@ -2,7 +2,7 @@ const Hero = () => {
   return (
     <div className="flex flex-col gap-8 justify-between h-full w-full">
       <img
-        src="/registerPage/register-page-0.png"
+        src="/student/registerPage/register-page-0.png"
         className="w-full"
         alt="BetterInternship"
       />
@@ -20,7 +20,7 @@ const SuperListings = () => {
       <div className="flex flex-col space-y-8 py-6">
         <div className="flex flex-row justify-center w-full">
           <img
-            src="/registerPage/register-page-1.png"
+            src="/student/registerPage/register-page-1.png"
             className="w-3/4"
             alt="BetterInternship"
           />
@@ -52,7 +52,7 @@ const FormAutomation = () => {
   return (
     <div className="flex flex-col justify-between h-full w-full p-6">
       <img
-        src="/registerPage/register-page-2.png"
+        src="/student/registerPage/register-page-2.png"
         className="w-full"
         alt="BetterInternship"
       />
@@ -68,7 +68,7 @@ const Connect = () => {
   return (
     <div className="flex flex-col justify-between h-full w-full p-6">
       <img
-        src="/registerPage/register-page-3.png"
+        src="/student/registerPage/register-page-3.png"
         className="w-full"
         alt="BetterInternship"
       />

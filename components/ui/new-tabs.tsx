@@ -86,12 +86,12 @@ function TabsTrigger({
         "group dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 data-[state=active]:bg-white data-[state=active]:opacity-100 data-[state=active]:hover:opacity-90",
         "inline-flex h-9 flex-1 items-center justify-center rounded-none! border border-transparent bg-gray-100 px-2 py-1 text-sm font-medium whitespace-nowrap opacity-70 transition-[color,box-shadow]",
         "transition-all hover:cursor-pointer hover:bg-gray-200 hover:opacity-100 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "z-50 w-fit px-8",
+        "z-50 w-fit px-3 sm:px-8",
         className,
       )}
       {...props}
     >
-      <Badge className="group-data-[state=active]:text-primary dark:group-data-[state=active]:text-primary-foreground text-foreground dark:text-muted-foreground text-md rounded-[1em] border-none bg-none px-4 py-[0.1em] group-data-[state=active]:bg-blue-700/5 hover:cursor-pointer">
+      <Badge className="group-data-[state=active]:text-primary dark:group-data-[state=active]:text-primary-foreground text-foreground dark:text-muted-foreground text-md rounded-[1em] border-none bg-none px-2 sm:px-4 py-[0.1em] group-data-[state=active]:bg-blue-700/5 hover:cursor-pointer">
         {props.children}
       </Badge>
     </TabsPrimitive.Trigger>

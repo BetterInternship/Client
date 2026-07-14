@@ -6,11 +6,9 @@ import {
   ArrowLeft,
   EllipsisVertical,
   X,
-  Building,
   MapPin,
   CheckCircle2,
   AlertTriangle,
-  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -21,7 +19,7 @@ import { JobDetailsSummary, SuperChallengeDetails } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
-import { MissingNotice } from "../shared/jobs";
+import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
 import type { ApplyPayload } from "./components/ApplyModal";
 
 export const JobModal = ({
@@ -48,9 +46,6 @@ export const JobModal = ({
   const hasPortfolio = !!user?.portfolio_link?.trim();
   const needsGithub = !!job?.internship_preferences?.require_github;
   const needsPortfolio = !!job?.internship_preferences?.require_portfolio;
-  const missingRequired =
-    (!!job?.internship_preferences?.require_github && !hasGithub) ||
-    (!!job?.internship_preferences?.require_portfolio && !hasPortfolio);
 
   return (
     <ModalComponent ref={ref}>
@@ -83,24 +78,29 @@ export const JobModal = ({
         <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
           {job && (
             <>
-              <MissingNotice
-                show={missingRequired}
-                needsGithub={needsGithub && !hasGithub}
-                needsPortfolio={needsPortfolio && !hasPortfolio}
-              />
-              <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
+              {job.hibernating && <HibernatingListingBanner job={job} />}
+              <div
+                className={cn(
+                  "px-4 py-4 space-y-5",
+                  job.hibernating
+                    ? "pb-[calc(env(safe-area-inset-bottom)+24px)]"
+                    : "pb-[calc(env(safe-area-inset-bottom)+96px)]",
+                )}
+              >
                 {/* Header (compact; no actions on mobile) */}
                 <HeaderCompact job={job} />
 
                 {/* Requirement chips + notice (like desktop) */}
-                <div className="flex flex-wrap gap-1.5">
-                  {needsGithub && (
-                    <ReqPill ok={hasGithub} label="GitHub linked" />
-                  )}
-                  {needsPortfolio && (
-                    <ReqPill ok={hasPortfolio} label="Portfolio linked" />
-                  )}
-                </div>
+                {!job.hibernating && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {needsGithub && (
+                      <ReqPill ok={hasGithub} label="GitHub linked" />
+                    )}
+                    {needsPortfolio && (
+                      <ReqPill ok={hasPortfolio} label="Portfolio linked" />
+                    )}
+                  </div>
+                )}
 
                 {/* Job Details (grid) */}
                 <Section title="Job Details">
@@ -140,18 +140,21 @@ export const JobModal = ({
           )}
         </div>
 
-        {/* Bottom action bar — fixed within modal*/}
-        <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="flex gap-3">
-            <SaveJobButton job={job} />
-            <ApplyToJobButton
-              profile={profile.data}
-              job={job}
-              onApply={onApply}
-              className="w-full"
-            />
+        {/* Bottom action bar — fixed within modal. Hidden for hibernating
+            listings: the alert CTA in the banner is the only action. */}
+        {!job.hibernating && (
+          <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+            <div className="flex gap-3">
+              <SaveJobButton job={job} />
+              <ApplyToJobButton
+                profile={profile.data}
+                job={job}
+                onApply={onApply}
+                className="w-full"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {isActionsSheetOpen && (
           <div className="absolute inset-0 z-40">
