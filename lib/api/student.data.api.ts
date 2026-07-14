@@ -47,7 +47,7 @@ export function useJobListingsPage(params: JobSearchParams = {}) {
   const page = params.page ?? 1;
   const limit = params.limit ?? 10;
 
-  const { data, isPending, isFetching, error } = useQuery({
+  const { data, isPending, isFetching, error, refetch } = useQuery({
     queryKey: [
       "job-listings",
       {
@@ -75,6 +75,7 @@ export function useJobListingsPage(params: JobSearchParams = {}) {
     jobs: data?.jobs ?? [],
     total: data?.total ?? 0,
     error,
+    refetch,
   };
 }
 
