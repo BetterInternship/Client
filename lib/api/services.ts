@@ -469,6 +469,25 @@ interface JobsResponse extends FetchResponse {
   jobs?: Job[];
 }
 
+interface JobSearchResponse extends FetchResponse {
+  jobs?: Job[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface JobSearchParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  mode?: string[];
+  workload?: string[];
+  position?: string[];
+  allowance?: string[];
+  moa?: string[];
+  university?: string;
+}
+
 interface SavedJobsResponse extends FetchResponse {
   jobs?: SavedJob[];
 }
@@ -484,6 +503,28 @@ interface WaitlistedJobsResponse extends FetchResponse {
 export const JobService = {
   async getAllJobs() {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
+  },
+
+  async searchJobs(params: JobSearchParams = {}) {
+    const join = (values?: string[]) =>
+      values?.length ? values.join(",") : undefined;
+
+    return APIClient.get<JobSearchResponse>(
+      APIRouteBuilder("jobs")
+        .r("search")
+        .p({
+          page: params.page,
+          limit: params.limit,
+          search: params.search,
+          mode: join(params.mode),
+          workload: join(params.workload),
+          position: join(params.position),
+          allowance: join(params.allowance),
+          moa: join(params.moa),
+          university: params.university,
+        })
+        .build(),
+    );
   },
 
   // !! this only fetches an *active* job.

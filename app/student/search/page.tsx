@@ -10,7 +10,12 @@ import React, {
 import { useSearchParams } from "next/navigation";
 import { CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useJobsData, useProfileData } from "@/lib/api/student.data.api";
+import {
+  useJobListingsPage,
+  useJobStatus,
+  useJobData,
+  useProfileData,
+} from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -40,7 +45,10 @@ export default function SearchPage() {
 
   // selection + bulk apply
   const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Snapshot of the Job object at the moment it was ticked — selections
+  // survive page flips and filter changes since the server no longer keeps
+  // every listing in memory client-side (D8).
+  const [selectedJobs, setSelectedJobs] = useState<Map<string, Job>>(new Map());
 
   // job list & filters
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -63,23 +71,33 @@ export default function SearchPage() {
   const [_jobsPage, setJobsPage] = useState(1);
 
   // hooks
-  const jobs = useJobsData({
+  const profile = useProfileData();
+  const jobs = useJobListingsPage({
     search: searchTerm.trim() || undefined,
     position,
-    jobModeFilter,
-    jobWorkloadFilter,
-    jobAllowanceFilter,
-    jobMoaFilter,
+    mode: jobModeFilter,
+    workload: jobWorkloadFilter,
+    allowance: jobAllowanceFilter,
+    moa: jobMoaFilter,
+    university: profile.data?.university ?? undefined,
+    page: _jobsPage,
+    limit: jobsPageSize,
   });
+  const jobStatus = useJobStatus();
   const applicationActions = useApplicationActions();
-  const profile = useProfileData();
 
   // Modals
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
 
-  // computed pages
-  const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
+  // the server already returns just this page's rows
+  const jobsPage = jobs.jobs;
+
+  // The panel shows a generic "check your connection" message — log the
+  // actual error for debugging.
+  useEffect(() => {
+    if (jobs.error) console.error("Failed to load jobs:", jobs.error);
+  }, [jobs.error]);
 
   /* --------------------------------------------
     * URL → local filter state
@@ -116,65 +134,76 @@ export default function SearchPage() {
     jobMoaFilter,
   ]);
 
-  // Sync selected job
+  // Sync selected job. A shared ?jobId= link may point at a job that isn't
+  // on the current page (different sort position, or the link predates this
+  // filter/page state) — fall back to fetching it directly rather than
+  // silently falling through to "select the first row" (D9b).
+  const jobIdParam = searchParams.get("jobId");
+  const jobIdOnPage = jobIdParam
+    ? jobsPage.find((job) => job.id === jobIdParam)
+    : undefined;
+  const deepLinkJob = useJobData(jobIdParam ?? "", {
+    enabled: !!jobIdParam && !jobIdOnPage && !jobs.isPending,
+  });
+
   useEffect(() => {
-    const jobId = searchParams.get("jobId");
-    if (jobId && jobsPage.length > 0) {
-      const targetJob = jobsPage.find((job) => job.id === jobId);
-      if (targetJob && targetJob.id !== selectedJob?.id)
-        setSelectedJob(targetJob);
+    if (jobIdParam) {
+      const target = jobIdOnPage ?? deepLinkJob.data ?? undefined;
+      if (target && target.id !== selectedJob?.id) setSelectedJob(target);
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
-  }, [jobsPage.length, searchParams, selectedJob]);
+  }, [jobIdParam, jobIdOnPage, deepLinkJob.data, jobsPage, selectedJob]);
 
   // Auto-close toolbar when all selections are cleared
   useEffect(() => {
-    if (selectedIds.size === 0 && selectMode) {
+    if (selectedJobs.size === 0 && selectMode) {
       setSelectMode(false);
     }
-  }, [selectedIds.size, selectMode]);
+  }, [selectedJobs.size, selectMode]);
 
   const toggleSelect = (job: Job) => {
     if (!job.id || job.challenge || job.hibernating) return;
+    const jobId = job.id;
 
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(job.id)) {
-        next.delete(job.id);
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      if (next.has(jobId)) {
+        next.delete(jobId);
       } else {
-        next.add(job.id);
+        next.set(jobId, job);
       }
       return next;
     });
   };
 
-  const isSelected = (jobId?: string) => !!jobId && selectedIds.has(jobId);
+  const isSelected = (jobId?: string) => !!jobId && selectedJobs.has(jobId);
 
-  const clearSelection = () => setSelectedIds(new Set());
+  const clearSelection = () => setSelectedJobs(new Map());
 
   const selectAllOnPage = () => {
-    const next = new Set(selectedIds);
-    jobsPage.forEach((j) => {
-      if (j.id && !j.challenge && !j.hibernating) next.add(j.id);
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      jobsPage.forEach((j) => {
+        if (j.id && !j.challenge && !j.hibernating) next.set(j.id, j);
+      });
+      return next;
     });
-    setSelectedIds(next);
   };
 
   const unselectAllOnPage = () => {
-    const next = new Set(selectedIds);
-    jobsPage.forEach((j) => {
-      if (j.id && !j.challenge && !j.hibernating) next.delete(j.id);
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      jobsPage.forEach((j) => {
+        if (j.id) next.delete(j.id);
+      });
+      return next;
     });
-    setSelectedIds(next);
   };
 
   const selectedJobsList = useMemo(
-    () =>
-      jobs.filteredJobs.filter(
-        (j) => j.id && selectedIds.has(j.id) && !j.challenge && !j.hibernating,
-      ),
-    [jobs.filteredJobs, selectedIds],
+    () => Array.from(selectedJobs.values()),
+    [selectedJobs],
   );
 
   const handleJobCardClick = (job: Job) => {
@@ -193,7 +222,7 @@ export default function SearchPage() {
 
     const allApplied =
       selectedJobsList.length > 0 &&
-      selectedJobsList.every((j) => jobs.isJobApplied(j.id));
+      selectedJobsList.every((j) => jobStatus.isJobApplied(j.id ?? ""));
     if (!selectedJobsList.length || allApplied) {
       toast.error(
         "No eligible jobs selected. Select jobs you haven’t applied to yet.",
@@ -203,7 +232,7 @@ export default function SearchPage() {
 
     modalRegistry.completeProfileApply.open({
       profile: profile.data,
-      applyLabel: `Apply to ${selectedIds.size || 0}`,
+      applyLabel: `Apply to ${selectedJobs.size || 0}`,
       onApply: ({ resumeId }: ApplyPayload) => {
         void runMassApply(resumeId);
       },
@@ -229,7 +258,7 @@ export default function SearchPage() {
             skipped.push({ job, reason: "No longer accepting applicants" });
             continue;
           }
-          if (jobs.isJobApplied(job.id)) {
+          if (jobStatus.isJobApplied(job.id ?? "")) {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }
@@ -324,14 +353,6 @@ export default function SearchPage() {
     [applicationActions.create, selectedJob],
   );
 
-  if (jobs.error)
-    return (
-      <PageError
-        title="Failed to load jobs."
-        description={jobs.error.message}
-      />
-    );
-
   /* =======================================================================================
       UI
     ====================================================================================== */
@@ -358,137 +379,181 @@ export default function SearchPage() {
           <Loader>Loading...</Loader>
         ) : isMobile ? (
           // Mobile list
-          <div className="w-full flex flex-col h-full">
+          <div className="relative w-full flex flex-col h-full">
             <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
-              {jobsPage.length ? (
-                <div className="space-y-4">
-                  {jobsPage.map((job) => (
-                    <div
-                      key={job.id}
-                      className="relative group"
-                      onClick={() => handleJobCardClick(job)}
-                    >
-                      {!job.challenge && !job.hibernating && (
-                        <button
-                          type="button"
-                          className={cn(
-                            "absolute right-4 top-5 z-10 bg-white p-1",
-                            "hover:shadow transition",
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!selectMode) setSelectMode(true);
-                            toggleSelect(job);
-                          }}
-                        >
-                          {isSelected(job.id) ? (
-                            <CheckSquare className="w-6 h-6 text-primary" />
-                          ) : (
-                            <Square className="w-6 h-6 text-gray-400" />
-                          )}
-                        </button>
-                      )}
-
-                      <MobileJobCard
-                        job={job}
-                        on_click={() => handleJobCardClick(job)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  <p className="p-4">No jobs found.</p>
-                </div>
-              )}
-
-              <div className="my-4">
-                <Paginator
-                  totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobsPageSize}
-                  onPageChange={(page) => {
-                    setJobsPage(page);
-                    scrollToTop();
-                  }}
+              {jobs.error ? (
+                <PageError
+                  title="Failed to load jobs."
+                  description="Please check your internet connection."
+                  image
+                  flush
+                  onRetry={() => void jobs.refetch()}
                 />
-              </div>
+              ) : (
+                <>
+                  {jobsPage.length ? (
+                    <div className="space-y-4">
+                      {jobsPage.map((job) => (
+                        <div
+                          key={job.id}
+                          className="relative group"
+                          onClick={() => handleJobCardClick(job)}
+                        >
+                          {!job.challenge && !job.hibernating && (
+                            <button
+                              type="button"
+                              className={cn(
+                                "absolute right-4 top-5 z-10 bg-white p-1",
+                                "hover:shadow transition",
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!selectMode) setSelectMode(true);
+                                toggleSelect(job);
+                              }}
+                            >
+                              {isSelected(job.id) ? (
+                                <CheckSquare className="w-6 h-6 text-primary" />
+                              ) : (
+                                <Square className="w-6 h-6 text-gray-400" />
+                              )}
+                            </button>
+                          )}
+
+                          <MobileJobCard
+                            job={job}
+                            on_click={() => handleJobCardClick(job)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="p-4">No jobs found.</p>
+                    </div>
+                  )}
+
+                  <div className="my-4">
+                    <Paginator
+                      totalItems={jobs.total}
+                      itemsPerPage={jobsPageSize}
+                      currentPage={_jobsPage}
+                      onPageChange={(page) => {
+                        setJobsPage(page);
+                        scrollToTop();
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
+            {jobs.isFetching && !jobs.isPending && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
+                <Loader />
+              </div>
+            )}
           </div>
         ) : (
           // Desktop split view
           <>
             {/* Left: List */}
-            <div
-              ref={listRef}
-              className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6"
-            >
-              {jobsPage.length ? (
-                <div className="space-y-3">
-                  {jobsPage.map((job) => (
-                    <div key={job.id} className="relative group">
-                      {!job.challenge && !job.hibernating && (
-                        <button
-                          type="button"
-                          aria-label={
-                            isSelected(job.id) ? "Unselect job" : "Select job"
-                          }
-                          className={cn(
-                            "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
-                            "flex items-center justify-center transition-opacity",
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!selectMode) setSelectMode(true);
-                            toggleSelect(job);
-                          }}
-                        >
-                          {isSelected(job.id) ? (
-                            <CheckSquare
-                              className="w-5 h-5 text-warning transition-all duration-200 scale-100"
-                              strokeWidth={2}
-                            />
-                          ) : (
-                            <Square
-                              className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
-                              strokeWidth={2}
-                            />
-                          )}
-                        </button>
-                      )}
+            <div className="relative w-1/3 border-r">
+              <div
+                ref={listRef}
+                className={cn(
+                  "h-full overflow-x-hidden overflow-y-auto",
+                  jobs.error ? "p-2" : "p-6",
+                )}
+              >
+                {jobs.error ? (
+                  <PageError
+                    title="Failed to load jobs."
+                    description="Please check your internet connection."
+                    image
+                    flush
+                    topAlign
+                    onRetry={() => void jobs.refetch()}
+                  />
+                ) : (
+                  <>
+                    {jobsPage.length ? (
+                      <div className="space-y-3">
+                        {jobsPage.map((job) => (
+                          <div key={job.id} className="relative group">
+                            {!job.challenge && !job.hibernating && (
+                              <button
+                                type="button"
+                                aria-label={
+                                  isSelected(job.id)
+                                    ? "Unselect job"
+                                    : "Select job"
+                                }
+                                className={cn(
+                                  "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
+                                  "flex items-center justify-center transition-opacity",
+                                )}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!selectMode) setSelectMode(true);
+                                  toggleSelect(job);
+                                }}
+                              >
+                                {isSelected(job.id) ? (
+                                  <CheckSquare
+                                    className="w-5 h-5 text-warning transition-all duration-200 scale-100"
+                                    strokeWidth={2}
+                                  />
+                                ) : (
+                                  <Square
+                                    className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
+                                    strokeWidth={2}
+                                  />
+                                )}
+                              </button>
+                            )}
 
-                      <div
-                        className={cn(
-                          "transition-all duration-300",
-                          isSelected(job.id) &&
-                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em] shadow-sm",
-                        )}
-                        onClick={() => handleJobCardClick(job)}
-                      >
-                        <JobCard
-                          job={job}
-                          selected={selectedJob?.id === job.id}
-                          on_click={() => handleJobCardClick(job)}
-                        />
+                            <div
+                              className={cn(
+                                "transition-all duration-300",
+                                isSelected(job.id) &&
+                                  "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em] shadow-sm",
+                              )}
+                              onClick={() => handleJobCardClick(job)}
+                            >
+                              <JobCard
+                                job={job}
+                                selected={selectedJob?.id === job.id}
+                                on_click={() => handleJobCardClick(job)}
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      <div>
+                        <p className="p-4">No jobs found.</p>
+                      </div>
+                    )}
+
+                    <div className="mt-2 mb-8">
+                      <Paginator
+                        totalItems={jobs.total}
+                        itemsPerPage={jobsPageSize}
+                        currentPage={_jobsPage}
+                        onPageChange={(page) => {
+                          setJobsPage(page);
+                          scrollToTop();
+                        }}
+                      />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  <p className="p-4">No jobs found.</p>
+                  </>
+                )}
+              </div>
+              {jobs.isFetching && !jobs.isPending && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
+                  <Loader />
                 </div>
               )}
-
-              <div className="mt-2 mb-8">
-                <Paginator
-                  totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobsPageSize}
-                  onPageChange={(page) => {
-                    setJobsPage(page);
-                    scrollToTop();
-                  }}
-                />
-              </div>
             </div>
 
             {/* Right: Details */}

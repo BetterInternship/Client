@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { JobCard, JobDetails } from "@/components/shared/jobs";
-import { useJobsData } from "@/lib/api/student.data.api";
+import { useJobListingsPage } from "@/lib/api/student.data.api";
 import { useMassApply } from "@/lib/api/god.api";
 import { Job } from "@/lib/db/db.types";
 import { toast } from "sonner";
@@ -23,9 +23,12 @@ export function MassApplyJobsSelector({
   const jobsPageSize = 10;
   const massApply = useMassApply();
 
-  // Use the same hook as student search page to fetch jobs
-  const jobs = useJobsData({
+  // Same server-paginated hook as the student search page — no
+  // filters/university, since this god-mode tool just needs search + paging.
+  const jobs = useJobListingsPage({
     search: searchTerm.trim() || undefined,
+    page: jobsPage,
+    limit: jobsPageSize,
   });
 
   // Reset to page 1 when search term changes
@@ -33,14 +36,11 @@ export function MassApplyJobsSelector({
     setJobsPage(1);
   }, [searchTerm]);
 
-  // Filter jobs by search term
-  const jobsPageData = useMemo(() => {
-    return jobs.getJobsPage({ page: jobsPage, limit: jobsPageSize });
-  }, [jobs, jobsPage]);
+  const totalPages = Math.max(1, Math.ceil(jobs.total / jobsPageSize));
 
   const selectedJob = useMemo(
-    () => jobs.filteredJobs?.find((j: Job) => j.id === selectedJobId),
-    [jobs.filteredJobs, selectedJobId],
+    () => jobs.jobs.find((j: Job) => j.id === selectedJobId),
+    [jobs.jobs, selectedJobId],
   );
 
   const handleApply = async () => {
@@ -91,12 +91,12 @@ export function MassApplyJobsSelector({
               <div className="flex items-center justify-center h-full">
                 <p className="text-xs text-gray-500">Loading jobs...</p>
               </div>
-            ) : jobsPageData.length === 0 ? (
+            ) : jobs.jobs.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-xs text-gray-500">No jobs found</p>
               </div>
             ) : (
-              jobsPageData.map((job: Job) => (
+              jobs.jobs.map((job: Job) => (
                 <JobCard
                   key={job.id}
                   job={job}
@@ -108,46 +108,31 @@ export function MassApplyJobsSelector({
           </div>
 
           {/* Pagination Controls */}
-          {!jobs.isPending &&
-            jobs.filteredJobs &&
-            jobs.filteredJobs.length > jobsPageSize && (
-              <div className="px-2 py-1.5 border-t flex items-center justify-between bg-gray-50 flex-shrink-0 gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={jobsPage === 1}
-                  onClick={() => setJobsPage((p) => Math.max(p - 1, 1))}
-                  className="text-xs"
-                >
-                  Prev
-                </Button>
-                <span className="text-xs text-gray-600 whitespace-nowrap">
-                  {jobsPage}/
-                  {Math.ceil((jobs.filteredJobs.length || 0) / jobsPageSize)}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={
-                    jobsPage >=
-                    Math.ceil((jobs.filteredJobs.length || 0) / jobsPageSize)
-                  }
-                  onClick={() =>
-                    setJobsPage((p) =>
-                      Math.min(
-                        p + 1,
-                        Math.ceil(
-                          (jobs.filteredJobs.length || 0) / jobsPageSize,
-                        ),
-                      ),
-                    )
-                  }
-                  className="text-xs"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
+          {!jobs.isPending && jobs.total > jobsPageSize && (
+            <div className="px-2 py-1.5 border-t flex items-center justify-between bg-gray-50 flex-shrink-0 gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={jobsPage === 1}
+                onClick={() => setJobsPage((p) => Math.max(p - 1, 1))}
+                className="text-xs"
+              >
+                Prev
+              </Button>
+              <span className="text-xs text-gray-600 whitespace-nowrap">
+                {jobsPage}/{totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={jobsPage >= totalPages}
+                onClick={() => setJobsPage((p) => Math.min(p + 1, totalPages))}
+                className="text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Job Details - right side */}

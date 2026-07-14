@@ -5,20 +5,24 @@ import { Button } from "./button";
 interface PaginatorProps {
   totalItems: number;
   itemsPerPage: number;
+  currentPage?: number;
   onPageChange?: (page: number) => void;
 }
 
 export const Paginator: React.FC<PaginatorProps> = ({
   totalItems,
   itemsPerPage,
+  currentPage: controlledPage,
   onPageChange,
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(1);
+  const isControlled = controlledPage !== undefined;
+  const currentPage = isControlled ? controlledPage : internalPage;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const goToPage = (page: number) => {
     const clamped = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(clamped);
+    if (!isControlled) setInternalPage(clamped);
     if (onPageChange) onPageChange(clamped);
   };
 

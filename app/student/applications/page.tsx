@@ -28,7 +28,7 @@ import {
 // Hooks (preserving existing implementations)
 import {
   useApplicationsData,
-  useJobsData,
+  useJobStatus,
   useWaitlistsData,
 } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
@@ -87,7 +87,7 @@ function MyJobsPageInner() {
   const tab = resolveTab(searchParams.get("tab"));
 
   const rawApplications = useApplicationsData();
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const waitlists = useWaitlistsData();
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({

@@ -30,17 +30,23 @@ export const JobHead = ({
   title,
   employer,
   size = "",
+  wrap = false,
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
   size?: string;
+  // Wraps onto up to 2 lines instead of truncating to a single line — for
+  // when a badge sits beside the title and could otherwise overlap it
+  // (see JobCard's hibernating badge).
+  wrap?: boolean;
 }) => {
   return (
     <div className="flex-1 min-w-0 text-wrap">
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap",
+          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 break-words",
+          wrap ? "whitespace-normal" : "truncate whitespace-pre-wrap",
         )}
       >
         {title}
@@ -428,34 +434,38 @@ export const JobCard = ({
       )}
     >
       <div className="relative z-10 space-y-3">
-        <div className="flex items-start justify-between">
-          <JobHead title={job.title} employer={job.employer?.name} />
+        <div className="flex items-start justify-between gap-2">
+          <JobHead
+            title={job.title}
+            employer={job.employer?.name}
+            wrap={!!job.hibernating}
+          />
+          {job.hibernating && (
+            <Badge
+              className={cn(
+                "relative z-30 shrink-0 gap-1",
+                onAlert
+                  ? "bg-blue-100 text-primary"
+                  : "bg-yellow-100 text-yellow-800",
+              )}
+            >
+              {onAlert ? (
+                <Clock className="w-3 h-3" />
+              ) : (
+                <AlertTriangle className="w-3 h-3" />
+              )}
+              {onAlert ? "Waiting..." : "Just missed"}
+            </Badge>
+          )}
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} />
       </div>
       {job.hibernating && (
-        <>
-          <div
-            aria-hidden
-            className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
-          />
-          <Badge
-            className={cn(
-              "absolute top-4 right-4 z-30 gap-1 ",
-              onAlert
-                ? "bg-blue-100 text-primary"
-                : "bg-yellow-100 text-yellow-800",
-            )}
-          >
-            {onAlert ? (
-              <Clock className="w-3 h-3" />
-            ) : (
-              <AlertTriangle className="w-3 h-3" />
-            )}
-            {onAlert ? "Waiting..." : "Just missed"}
-          </Badge>
-        </>
+        <div
+          aria-hidden
+          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+        />
       )}
     </Card>
   );
@@ -487,20 +497,40 @@ export const MobileJobCard = ({
       onClick={on_click}
     >
       <div className="mb-4">
-        <div className="flex-1 min-w-0">
-          <h3
-            className={cn(
-              "text-lg font-semibold text-gray-900 mb-2 leading-tight truncate",
-              job.hibernating &&
-                "pr-32 [mask-image:linear-gradient(to_right,black_calc(100%_-_160px),transparent_calc(100%_-_120px))] [-webkit-mask-image:linear-gradient(to_right,black_calc(100%_-_160px),transparent_calc(100%_-_120px))]",
-            )}
-          >
-            {job.title}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-            <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium truncate">{job.employer?.name}</span>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h3
+              className={cn(
+                "font-semibold text-gray-900 mb-2 leading-tight text-lg",
+                job.hibernating ? "line-clamp-2 break-words" : "truncate",
+              )}
+            >
+              {job.title}
+            </h3>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+              <Building className="w-4 h-4 flex-shrink-0" />
+              <span className="font-medium truncate">
+                {job.employer?.name}
+              </span>
+            </div>
           </div>
+          {job.hibernating && (
+            <Badge
+              className={cn(
+                "relative z-30 shrink-0 gap-1",
+                onAlert
+                  ? "bg-blue-100 text-primary"
+                  : "bg-yellow-100 text-yellow-800",
+              )}
+            >
+              {onAlert ? (
+                <Clock className="w-3 h-3" />
+              ) : (
+                <AlertTriangle className="w-3 h-3" />
+              )}
+              {onAlert ? "Waiting..." : "Just missed"}
+            </Badge>
+          )}
         </div>
       </div>
       <JobBadges job={job} />
@@ -513,27 +543,10 @@ export const MobileJobCard = ({
         </div>
       </div>
       {job.hibernating && (
-        <>
-          <div
-            aria-hidden
-            className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
-          />
-          <Badge
-            className={cn(
-              "absolute top-4 right-4 z-30 gap-1 ",
-              onAlert
-                ? "bg-blue-100 text-primary"
-                : "bg-yellow-100 text-yellow-800",
-            )}
-          >
-            {onAlert ? (
-              <Clock className="w-3 h-3" />
-            ) : (
-              <AlertTriangle className="w-3 h-3" />
-            )}
-            {onAlert ? "Waiting..." : "Just missed"}
-          </Badge>
-        </>
+        <div
+          aria-hidden
+          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+        />
       )}
     </div>
   );

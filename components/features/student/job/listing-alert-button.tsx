@@ -4,7 +4,7 @@ import { Bell, BellRing, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useJobsData, useWaitlistsData } from "@/lib/api/student.data.api";
+import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 
 /**
@@ -27,7 +27,7 @@ export const ListingAlertButton = ({
   verbose?: boolean;
 }) => {
   const auth = useAuthContext();
-  const jobs = useJobsData();
+  const jobs = useJobStatus();
   const waitlists = useWaitlistsData();
   const waitlistActions = useWaitlistActions();
 
