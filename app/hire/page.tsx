@@ -1,15 +1,13 @@
 "use client";
 
-import {
-  LandingHeader,
-  HeaderLink,
-} from "@/components/landingHire/landing-header";
+import { LandingHeader } from "@/components/landingHire/landing-header";
 import { HeroSection } from "@/components/landingHire/sections/hero";
 import { FeaturesSection } from "@/components/landingHire/sections/features";
 import { FAQsSection } from "@/components/landingHire/sections/faqs";
 import { useEffect, useRef, useState } from "react";
 import { EndSection } from "@/components/landingHire/sections/end";
 import { SocialProofSection } from "@/components/landingHire/sections/social-proof";
+import { Footer } from "@/components/shared/footer";
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement | null>(null);
@@ -37,20 +35,9 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  const headerLinks: HeaderLink[] = [
-    {
-      label: "Why BetterInternship",
-      href: "#features",
-    },
-    {
-      label: "FAQ",
-      href: "#faqs",
-    },
-  ];
-
   return (
     <div className="flex flex-col gap-0 p-0">
-      <LandingHeader isPastHero={isPastHero} links={headerLinks} />
+      <LandingHeader isPastHero={isPastHero} />
       <div ref={heroRef}>
         <HeroSection />
       </div>
@@ -62,6 +49,7 @@ export default function HomePage() {
         <FAQsSection />
       </div>
       <EndSection />
+      <Footer />
     </div>
   );
 }

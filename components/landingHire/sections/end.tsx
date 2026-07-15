@@ -1,10 +1,15 @@
 "use client";
 
 import MagneticButton from "@/components/ui/magnetic-button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Facebook, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+import {
+  SUPPORT_EMAIL_LINK,
+  SUPPORT_EMAIL,
+  SUPPORT_FACEBOOK,
+} from "@/constants";
 
 export function EndSection() {
   return (
@@ -18,7 +23,7 @@ export function EndSection() {
           squaresClassName="border border-gray-200/10"
         />
       </div>
-      <div className="relative mx-auto max-w-7xl rounded-[0.33em] border bg-white/80 backdrop-blur-xl p-8 md:p-12 shadow-2xl">
+      <div className="relative mx-auto max-w-7xl rounded-[0.33em] border bg-white/80 backdrop-blur-xl p-8 md:p-12 shadow-2xl space-y-16">
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-medium text-primary mb-3">
@@ -50,6 +55,18 @@ export function EndSection() {
               No setup fees. Free for companies.
             </p>
           </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-muted-foreground">
+            Have a question or need help? Get in touch with us through our email
+            or Facebook.
+          </p>
+          <a className="flex gap-2" href={SUPPORT_EMAIL_LINK}>
+            <Mail /> <span>{SUPPORT_EMAIL}</span>
+          </a>
+          <a className="flex gap-2" href={SUPPORT_FACEBOOK}>
+            <Facebook /> <span>{SUPPORT_FACEBOOK}</span>
+          </a>
         </div>
       </div>
     </section>
