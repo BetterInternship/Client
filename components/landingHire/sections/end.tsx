@@ -65,7 +65,7 @@ export function EndSection() {
             <Mail /> <span>{SUPPORT_EMAIL}</span>
           </a>
           <a className="flex gap-2" href={SUPPORT_FACEBOOK}>
-            <Facebook /> <span>{SUPPORT_FACEBOOK}</span>
+            <Facebook /> <span>Facebook</span>
           </a>
         </div>
       </div>
