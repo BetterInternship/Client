@@ -101,7 +101,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* Sign In Button */}
         <NavButton
           icon={<LogIn className="w-6 h-6" />}
-          label="Sign In"
+          label="Log In"
           isActive={false}
           variant="accent"
           onClick={() =>

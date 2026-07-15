@@ -192,7 +192,7 @@ export const HeaderButtons: React.FC = () => {
           router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
         }
       >
-        Sign in
+        Log in
       </Button>
     );
   }
@@ -240,7 +240,8 @@ export const HeaderButtons: React.FC = () => {
         variant="ghost"
         className={cn(
           "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-          pathname?.startsWith("/applications") || pathname?.startsWith("/saved")
+          pathname?.startsWith("/applications") ||
+            pathname?.startsWith("/saved")
             ? "text-primary"
             : "opacity-80 hover:opacity-100 hover:bg-gray-100",
         )}
