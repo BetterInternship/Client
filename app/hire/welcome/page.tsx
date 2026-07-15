@@ -249,7 +249,7 @@ function WelcomeContent() {
                     : "Welcome!"}
                 </HeaderTitle>
                 <p className="text-sm text-gray-600">
-                  Your have applicants waiting!
+                  You may have applicants waiting!
                   <br /> Set a password for your account to view them.
                 </p>
                 {error && (
