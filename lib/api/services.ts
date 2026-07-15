@@ -92,6 +92,13 @@ export const EmployerService = {
       {},
     );
   },
+
+  async autoLinkIomAccount(token: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("employer").r("iom-link", "auto-link").build(),
+      { token },
+    );
+  },
 };
 
 interface EmployerUserResponse extends FetchResponse {

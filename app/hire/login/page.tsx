@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "../authctx";
 import { cn } from "@/lib/utils";
@@ -10,11 +11,12 @@ import { useAppContext } from "@/lib/ctx-app";
 import { FormInput } from "@/components/EditForm";
 
 import { Card } from "@/components/ui/card";
-import { MailCheck, TriangleAlert, User } from "lucide-react";
+import { Link2, MailCheck, TriangleAlert, User } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
+import { EmployerService } from "@/lib/api/services";
 
 export default function LoginPage() {
   return (
@@ -30,16 +32,25 @@ function LoginContent() {
     login,
     redirectIfLoggedIn: redirect_if_logged_in,
   } = useAuthContext();
+  const queryClient = useQueryClient();
 
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const status = searchParams.get("status");
+  // Set by the IOM "Post a listing" CTA when the company's IOM email already
+  // manages a different career employer — carries a signed, short-lived
+  // token redeemed right after login to link the two accounts automatically
+  // (Docs/plans/CAREER_IOM_LINK_IMPLEMENTATION_PLAN.md §4.2 follow-up). The
+  // manual "Link your IOM account" card on company-profile stays as a
+  // fallback for anyone who arrives some other way.
+  const autoLinkToken = searchParams.get("auto_link");
+  const prefillEmail = searchParams.get("email") ?? "";
+
+  const [email, setEmail] = useState(prefillEmail);
   const [emailNorm, setEmailNorm] = useState(""); // keep a normalized copy for API calls
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-
-  const searchParams = useSearchParams();
-  const status = searchParams.get("status");
 
   const { isMobile } = useAppContext();
 
@@ -77,6 +88,19 @@ function LoginContent() {
 
       // @ts-ignore
       if (r?.success) {
+        if (autoLinkToken) {
+          // Best-effort — a failure here never blocks login. The manual
+          // "Link your IOM account" card on company-profile is the fallback.
+          try {
+            await EmployerService.autoLinkIomAccount(autoLinkToken);
+            await queryClient.invalidateQueries({
+              queryKey: ["my-employer-profile"],
+            });
+          } catch {
+            // Swallowed intentionally — see comment above.
+          }
+        }
+
         // @ts-ignore
         if (r.god) {
           router.push("/god");
@@ -106,6 +130,23 @@ function LoginContent() {
           <Card className="w-full">
             {/* Welcome Message */}
             <HeaderTitle icon={User}>Log in</HeaderTitle>
+
+            {/* IOM auto-link banner */}
+            {autoLinkToken && (
+              <div
+                className={cn(
+                  "mb-4 flex gap-2 items-center p-3 bg-primary/10 text-primary border border-primary/30 rounded-[0.33em]",
+                  isMobile ? "flex-col items-start" : "",
+                )}
+              >
+                <Link2 size={isMobile ? 24 : 20} className="flex-shrink-0" />
+                <span className="text-sm justify-center">
+                  This email already has an employer account. Sign in to link
+                  your account.
+                </span>
+              </div>
+            )}
+
             {/* Error Message */}
             {error && (
               <div
