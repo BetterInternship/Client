@@ -4,8 +4,6 @@ import bg2 from "../../public/bg2.png";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { HeaderContextProvider } from "@/lib/ctx-header";
-import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
-import { getBiMoaData } from "@/lib/db/use-bi-moa-backend";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { getRefsData } from "@/lib/db/use-refs-backend";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
@@ -35,44 +33,39 @@ export default async function MaintenanceLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [refsData, biMoaData] = await Promise.all([
-    getRefsData(),
-    getBiMoaData(),
-  ]);
+  const refsData = await getRefsData();
 
   return (
     <html lang="en" className="h-full">
       <body className="h-full m-0 overflow-hidden p-0 antialiased">
         <RefsContextProvider data={refsData}>
-          <BIMoaContextProvider moa={biMoaData.moa}>
-            <PostHogProvider>
-              <TanstackProvider>
-                <AppContextProvider>
-                  <AuthContextProvider>
-                    <HeaderContextProvider>
-                      <ClientProcessesProvider>
-                        <ModalProvider>
-                          <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
-                            <div
-                              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
-                              style={{ backgroundImage: `url(${bg2.src})` }}
-                            />
-                            <Suspense>
-                              <Header showActions={false} transparent />
-                            </Suspense>
-                            <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-auto">
-                              {children}
-                            </div>
+          <PostHogProvider>
+            <TanstackProvider>
+              <AppContextProvider>
+                <AuthContextProvider>
+                  <HeaderContextProvider>
+                    <ClientProcessesProvider>
+                      <ModalProvider>
+                        <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
+                          <div
+                            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+                            style={{ backgroundImage: `url(${bg2.src})` }}
+                          />
+                          <Suspense>
+                            <Header showActions={false} transparent />
+                          </Suspense>
+                          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-auto">
+                            {children}
                           </div>
-                        </ModalProvider>
-                      </ClientProcessesProvider>
-                      <SonnerToaster />
-                    </HeaderContextProvider>
-                  </AuthContextProvider>
-                </AppContextProvider>
-              </TanstackProvider>
-            </PostHogProvider>
-          </BIMoaContextProvider>
+                        </div>
+                      </ModalProvider>
+                    </ClientProcessesProvider>
+                    <SonnerToaster />
+                  </HeaderContextProvider>
+                </AuthContextProvider>
+              </AppContextProvider>
+            </TanstackProvider>
+          </PostHogProvider>
         </RefsContextProvider>
       </body>
     </html>

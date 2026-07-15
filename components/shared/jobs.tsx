@@ -1,6 +1,5 @@
 ﻿import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Job } from "@/lib/db/db.types";
-import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
 import {
@@ -161,16 +160,14 @@ export const JobBadges = ({
     typeof profile.data?.university === "string"
       ? profile.data.university
       : undefined;
-  const employerId =
-    typeof job.employer_id === "string" ? job.employer_id : undefined;
 
   const workModes = job.internship_preferences?.job_setup_ids ?? [];
   const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      {!excludes.includes("moa") && universityId && employerId && (
-        <EmployerMOA employer_id={employerId} university_id={universityId} />
+      {!excludes.includes("moa") && universityId && (
+        <EmployerMOA university_id={universityId} hasMoa={job.has_moa} />
       )}
       {!excludes.includes("unlisted") && job.is_unlisted && (
         <Badge type="warning">
@@ -192,23 +189,20 @@ export const JobBadges = ({
 
 export const EmployerMOA = ({
   university_id,
-  employer_id,
+  hasMoa,
 }: {
   university_id: string | null | undefined;
-  employer_id: string | null | undefined;
+  hasMoa: boolean | null | undefined;
 }) => {
-  const { check } = useDbMoa();
   const { get_university } = useDbRefs();
 
-  if (!employer_id || !university_id) return <></>;
+  if (!hasMoa || !university_id) return <></>;
 
-  return check(employer_id, university_id) ? (
+  return (
     <Badge type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
       {toAbbreviation(get_university(university_id)?.name)} MOA
     </Badge>
-  ) : (
-    <></>
   );
 };
 

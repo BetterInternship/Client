@@ -20,6 +20,18 @@ interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
 }
 
+interface MoaUniversitiesResponse extends FetchResponse {
+  universityIds: string[];
+}
+
+interface IomLinkRequestResponse extends FetchResponse {
+  censoredEmail: string;
+}
+
+interface IomStartRegistrationResponse extends FetchResponse {
+  url: string;
+}
+
 export interface ProcessCallbackDto {
   processId: string;
   processName: string;
@@ -58,6 +70,26 @@ export const EmployerService = {
       APIRouteBuilder("employer").r("me", "pic").build(),
       file,
       "form-data",
+    );
+  },
+
+  async getMoaUniversities() {
+    return APIClient.get<MoaUniversitiesResponse>(
+      APIRouteBuilder("employer").r("moa-universities").build(),
+    );
+  },
+
+  async requestIomLink(tin: string) {
+    return APIClient.post<IomLinkRequestResponse>(
+      APIRouteBuilder("employer").r("iom-link", "request").build(),
+      { tin },
+    );
+  },
+
+  async startIomRegistration() {
+    return APIClient.post<IomStartRegistrationResponse>(
+      APIRouteBuilder("employer").r("iom-link", "start-registration").build(),
+      {},
     );
   },
 };

@@ -49,6 +49,23 @@ export function useProfile() {
   };
 }
 
+/**
+ * career.ref_universities ids where the logged-in employer currently has an
+ * active IOM MOA — replaces the old whole-table browser-side moa context
+ * (Docs/plans/CAREER_IOM_LINK_IMPLEMENTATION_PLAN.md §2.2).
+ */
+export function useMoaUniversities() {
+  const { isPending, data } = useQuery({
+    queryKey: ["my-employer-moa-universities"],
+    queryFn: () => EmployerService.getMoaUniversities(),
+  });
+
+  return {
+    loading: isPending,
+    universityIds: data?.universityIds ?? [],
+  };
+}
+
 export function useEmployerApplications() {
   const { get_cache, set_cache } = useCache<EmployerApplication[]>(
     "_apps_employer_list",

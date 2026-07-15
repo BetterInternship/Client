@@ -47,10 +47,16 @@ function WelcomeLogo() {
   );
 }
 
+// Mirrors the server-side whitelist in auth.controller.ts's handleSecureLink
+// — anything else falls back to the dashboard.
+const NEXT_WHITELIST = new Set(["dashboard", "listings/create"]);
+
 function WelcomeContent() {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid") ?? "";
   const hash = searchParams.get("hash") ?? "";
+  const rawNext = searchParams.get("next") ?? "";
+  const next = NEXT_WHITELIST.has(rawNext) ? rawNext : "dashboard";
   const router = useRouter();
   const { refreshAuthentication } = useAuthContext();
   const { isMobile } = useAppContext();
@@ -119,7 +125,7 @@ function WelcomeContent() {
       }
 
       await refreshAuthentication();
-      router.push("/dashboard");
+      router.push(`/${next}`);
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong. Please try again.");
       setIsSubmitting(false);
@@ -202,9 +208,11 @@ function WelcomeContent() {
                 <div className="flex justify-end items-center w-full">
                   <a
                     className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    href="/dashboard"
+                    href={`/${next}`}
                   >
-                    Go to your dashboard.
+                    {next === "listings/create"
+                      ? "Continue to create a listing."
+                      : "Go to your dashboard."}
                   </a>
                 </div>
               </Card>
