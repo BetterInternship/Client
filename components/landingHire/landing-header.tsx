@@ -52,25 +52,16 @@ export function LandingHeader({
           ))}
         <Button
           type="button"
-          variant="ghost"
           size="md"
-          className={cn(
-            "h-10 border-gray-300 bg-transparent",
-            isPastHero ? "text-gray-900" : "text-white",
-          )}
+          className="h-10 bg-white text-gray-900 hover:bg-gray-50"
           onClick={() => router.push("/login")}
         >
           Log in
         </Button>
         <Button
           type="button"
-          variant="outline"
           size="md"
-          className={cn(
-            "h-10 border-gray-300 bg-transparent",
-            isPastHero ? "text-gray-900" : "text-white",
-            "hover:bg-primary hover:border-primary/50 hover:text-white",
-          )}
+          className={cn()}
           onClick={() => router.push("/register")}
         >
           Register

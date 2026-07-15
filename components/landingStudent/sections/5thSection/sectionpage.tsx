@@ -5,26 +5,31 @@ import { LogoCarousel } from "@/components/landingStudent/sections/5thSection/co
 export const demoLogos = [
   {
     id: 1,
+    name: "Miro",
+    src: "/landingPage/logos/miro.png",
+  },
+  {
+    id: 2,
     name: "Asian Institute of Management",
     src: "/landingPage/logos/aim.png",
   },
   {
-    id: 2,
+    id: 3,
     name: "Alaska Milk Corporation",
     src: "/landingPage/logos/alaska.png",
   },
   {
-    id: 3,
+    id: 4,
     name: "APC by Schneider Electric",
     src: "/landingPage/logos/apc.jpeg",
   },
-  { id: 4, name: "Jollibee", src: "/landingPage/logos/jollibee.png" },
-  { id: 5, name: "Manulife", src: "/landingPage/logos/manulife.png" },
-  { id: 6, name: "Oracle", src: "/landingPage/logos/oracle.png" },
-  { id: 7, name: "SeriousMD", src: "/landingPage/logos/srsmd.jpeg" },
-  { id: 8, name: "Sun Life Financial", src: "/landingPage/logos/sunlife.png" },
-  { id: 9, name: "WWF Philippines", src: "/landingPage/logos/wwf.jpeg" },
-  { id: 10, name: "MegaWorld", src: "/landingPage/logos/megaworld.png" },
+  { id: 5, name: "Jollibee", src: "/landingPage/logos/jollibee.png" },
+  { id: 6, name: "Manulife", src: "/landingPage/logos/manulife.png" },
+  { id: 7, name: "Oracle", src: "/landingPage/logos/oracle.png" },
+  { id: 8, name: "SeriousMD", src: "/landingPage/logos/srsmd.jpeg" },
+  { id: 9, name: "Sun Life Financial", src: "/landingPage/logos/sunlife.png" },
+  { id: 10, name: "WWF Philippines", src: "/landingPage/logos/wwf.jpeg" },
+  { id: 11, name: "MegaWorld", src: "/landingPage/logos/megaworld.png" },
 ];
 
 function LogoCarouselBasic() {

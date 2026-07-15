@@ -56,7 +56,7 @@ export function HeroSection() {
           fetchPriority="high"
         />
       </motion.div>
-      <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row items-center relative z-10">
+      <div className="flex w-full flex-col gap-8 md:flex-row items-center relative z-10 md:px-8">
         <div className="flex flex-col gap-2 md:w-1/2">
           <motion.img
             src="/BetterInternshipLogo.png"
@@ -71,17 +71,19 @@ export function HeroSection() {
               initial="hidden"
               animate="show"
             >
-              <motion.span variants={line} className="block">
-                Hire interns
+              <motion.span
+                variants={line}
+                className="inline-flex items-center gap-4 whitespace-nowrap"
+              >
+                Hire interns in the{" "}
+                <img
+                  className="inline h-[1.25em]"
+                  src="/landingPage/ph.png"
+                  fetchPriority="high"
+                />
               </motion.span>
               <motion.span variants={line} className="block">
-                Faster
-              </motion.span>
-              <motion.span variants={line} className="block">
-                Easier
-              </motion.span>
-              <motion.span variants={line} className="block text-primary">
-                Better.
+                faster, easier, <span className="text-primary">better</span>.
               </motion.span>
             </motion.h1>
           </div>
