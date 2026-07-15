@@ -66,9 +66,6 @@ const EmployerEditor = ({
   } = useEmployerRegisterForm();
   interface AdditionalFields {
     contact_name: string;
-    has_moa_with_dlsu: boolean;
-    moa_start_date: number;
-    moa_expires_at: number;
     terms_accepted: boolean;
   }
   const { isMobile } = useAppContext();
