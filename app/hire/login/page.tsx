@@ -127,115 +127,137 @@ function LoginContent() {
         )}
       >
         <div className="flex items-center w-full max-w-2xl h-full">
-          <Card className="w-full">
-            {/* Welcome Message */}
-            <HeaderTitle icon={User}>Log in</HeaderTitle>
-
-            {/* IOM auto-link banner */}
+          <div className="w-full">
+            {/* IOM auto-link banner — merged flush with the card below it */}
             {autoLinkToken && (
               <div
                 className={cn(
-                  "mb-4 flex gap-2 items-center p-3 bg-primary/10 text-primary border border-primary/30 rounded-[0.33em]",
-                  isMobile ? "flex-col items-start" : "",
+                  "flex flex-col items-center gap-3 px-5 py-6 bg-primary/10 text-primary rounded-t-[0.33em]",
                 )}
               >
-                <Link2 size={isMobile ? 24 : 20} className="flex-shrink-0" />
-                <span className="text-sm justify-center">
-                  This email already has an employer account. Sign in to link
-                  your account.
-                </span>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div
-                className={cn(
-                  "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
-                  isMobile ? "flex-col items-start" : "",
-                )}
-              >
-                <TriangleAlert size={isMobile ? 24 : 20} />
-                <span className="text-sm justify-center">{error}</span>
-              </div>
-            )}
-
-            {/* check email message on successful register */}
-            {status === "success" && !error && (
-              <div
-                className={cn(
-                  "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
-                  isMobile
-                    ? "flex flex-col items-start gap-2"
-                    : "flex items-center gap-2",
-                )}
-              >
-                <MailCheck size={isMobile ? 24 : 20} />
-                <span className="text-sm">
-                  Registration successful. Please check your email for the
-                  password.
-                </span>
-              </div>
-            )}
-
-            {/* Login Form */}
-            <form onSubmit={handle_login_request}>
-              <div className="flex flex-col gap-4">
-                <FormInput
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-
-                <FormInput
-                  label="Password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <div className="flex justify-between items-center w-full text-sm text-gray-500">
-                  <a
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    href="/forgot-password"
+                <div
+                  className={cn(
+                    "flex gap-3 items-center",
+                    isMobile ? "flex-col text-center" : "",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "font-semibold justify-center",
+                      isMobile ? "text-lg" : "text-xl",
+                    )}
                   >
-                    Forgot password?
-                  </a>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Logging in..." : "Log in"}
-                  </Button>
+                    You already have a marketplace account. Login to link it.
+                  </span>
                 </div>
-                <span className="text-sm text-gray-500">
-                  Don't have an account?{" "}
-                  <a
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    href="/register"
-                  >
-                    Register here.
-                  </a>
-                </span>
-                <span className="text-muted-foreground text-sm">
-                  Need help? Contact us at{" "}
-                  <a
-                    href="tel://09276604999"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    0927 660 4999
-                  </a>{" "}
-                  or on{" "}
-                  <a
-                    href="viber://add?number=639276604999"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Viber
-                  </a>
-                  .
-                </span>
+                <img
+                  src="/hire/link-company-accounts.png"
+                  alt=""
+                  fetchPriority="high"
+                  className={cn("h-60", "object-cover")}
+                />
               </div>
-            </form>
-          </Card>
+            )}
+
+            <Card
+              className={cn(
+                "w-full",
+                autoLinkToken && "rounded-tl-none rounded-tr-none",
+              )}
+            >
+              {/* Welcome Message */}
+              <HeaderTitle icon={User}>Log in</HeaderTitle>
+
+              {/* Error Message */}
+              {error && (
+                <div
+                  className={cn(
+                    "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
+                    isMobile ? "flex-col items-start" : "",
+                  )}
+                >
+                  <TriangleAlert size={isMobile ? 24 : 20} />
+                  <span className="text-sm justify-center">{error}</span>
+                </div>
+              )}
+
+              {/* check email message on successful register */}
+              {status === "success" && !error && (
+                <div
+                  className={cn(
+                    "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
+                    isMobile
+                      ? "flex flex-col items-start gap-2"
+                      : "flex items-center gap-2",
+                  )}
+                >
+                  <MailCheck size={isMobile ? 24 : 20} />
+                  <span className="text-sm">
+                    Registration successful. Please check your email for the
+                    password.
+                  </span>
+                </div>
+              )}
+
+              {/* Login Form */}
+              <form onSubmit={handle_login_request}>
+                <div className="flex flex-col gap-4">
+                  <FormInput
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+
+                  <FormInput
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <div className="flex justify-between items-center w-full text-sm text-gray-500">
+                    <a
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                      href="/forgot-password"
+                    >
+                      Forgot password?
+                    </a>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Logging in..." : "Log in"}
+                    </Button>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    Don't have an account?{" "}
+                    <a
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                      href="/register"
+                    >
+                      Register here.
+                    </a>
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    Need help? Contact us at{" "}
+                    <a
+                      href="tel://09276604999"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      0927 660 4999
+                    </a>{" "}
+                    or on{" "}
+                    <a
+                      href="viber://add?number=639276604999"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      Viber
+                    </a>
+                    .
+                  </span>
+                </div>
+              </form>
+            </Card>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
