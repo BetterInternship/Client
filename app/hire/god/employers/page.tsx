@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -468,13 +468,15 @@ function ListingFormFields({
   );
 }
 
-export default function GodEmployersPage() {
+function GodEmployersPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { loginAs: login_as } = useAuthContext();
 
+  const initialSearch = searchParams.get("search") ?? "";
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [searchInput, setSearchInput] = useState(initialSearch);
   const [isVerified, setIsVerified] = useState<string | undefined>(undefined);
   const [authorizingId, setAuthorizingId] = useState<string | null>(null);
 
@@ -984,5 +986,13 @@ export default function GodEmployersPage() {
         </div>
       </ModalShell>
     </>
+  );
+}
+
+export default function GodEmployersPage() {
+  return (
+    <Suspense>
+      <GodEmployersPageContent />
+    </Suspense>
   );
 }
