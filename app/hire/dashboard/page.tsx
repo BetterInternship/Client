@@ -5,6 +5,7 @@
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { PausedListingsBanner } from "@/components/features/hire/paused-listings-banner";
+import { PendingVerificationBanner } from "@/components/features/hire/pending-verification-banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
@@ -84,6 +85,7 @@ function DashboardContent() {
         <HeaderTitle icon={Briefcase} onClick={handleSecretSuperListingAccess}>
           Job listings
         </HeaderTitle>
+        <PendingVerificationBanner isVerified={profile.data?.is_verified} />
         <PausedListingsBanner
           jobs={ownedJobs}
           onUnpauseAll={unpause_all_jobs}
