@@ -74,6 +74,7 @@ function EditJobPageRouteContent() {
 
   return (
     <EditJobPage
+      key={jobData.id}
       job={jobData}
       is_editing={isEditing}
       set_is_editing={setIsEditing}
