@@ -303,6 +303,7 @@ export default function SearchPage() {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
               resume_id: resumeId,
+              source: "mass",
             });
             if (applicationActions.create.error) {
               failed.push({

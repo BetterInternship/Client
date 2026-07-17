@@ -4,9 +4,7 @@ import { AuthContextProvider } from "./authctx";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { getRefsData } from "@/lib/db/use-refs-backend";
-import { getBiMoaData } from "@/lib/db/use-bi-moa-backend";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
@@ -59,18 +57,13 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [refsData, biMoaData] = await Promise.all([
-    getRefsData(),
-    getBiMoaData(),
-  ]);
+  const refsData = await getRefsData();
 
   return (
     <RefsContextProvider data={refsData}>
-      <BIMoaContextProvider moa={biMoaData.moa}>
-        <PostHogProvider>
-          <HTMLContent>{children}</HTMLContent>
-        </PostHogProvider>
-      </BIMoaContextProvider>
+      <PostHogProvider>
+        <HTMLContent>{children}</HTMLContent>
+      </PostHogProvider>
     </RefsContextProvider>
   );
 }

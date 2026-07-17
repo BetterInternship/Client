@@ -11,7 +11,6 @@ import {
   CareerRefAppStatuses,
   CareerRefIndustries,
   CareerRefDepartments,
-  CareerMoa as _Moa,
   CareerUsers,
   CareerEmployers,
   CareerConversations,
@@ -35,7 +34,6 @@ export type JobChallenge = Selectable<CareerJobsChallenge>;
 export type AppStatus = Selectable<CareerRefAppStatuses>;
 export type Industry = Selectable<CareerRefIndustries>;
 export type Department = Selectable<CareerRefDepartments>;
-export type Moa = Selectable<_Moa>;
 export type Resume = Selectable<CareerResumes>;
 export type PrivateUser = Selectable<CareerUsers>;
 export type PublicUser = Omit<
@@ -45,7 +43,13 @@ export type PublicUser = Omit<
   internship_preferences?: InternshipPreferences;
   signatureImage?: string | null;
 };
-export type Employer = Partial<Selectable<CareerEmployers>>;
+// tin is hand-added: the installed @betterinternship/schema package here is
+// pinned well behind the one API-Server/IOM-Server use and lacks the column
+// (Docs/plans/CAREER_IOM_LINK_IMPLEMENTATION_PLAN.md §5-6) — the API already
+// returns it on GET /employer/me, this just types what's already on the wire.
+export type Employer = Partial<Selectable<CareerEmployers>> & {
+  tin?: string | null;
+};
 export type User = Partial<Selectable<CareerUsers>>;
 export interface Conversation extends Selectable<CareerConversations> {
   employers?: Partial<Employer>;
@@ -77,6 +81,10 @@ export interface Job extends Omit<
   // Public annotation on every jobs endpoint — never carries the reason/date
   // (see paused_at/pause_reason above, which stay owner-only).
   hibernating?: boolean | null;
+  // Computed server-side from the IOM chain, scoped to the viewer's own
+  // university (career.moa is retired — plan §2.2). false/omitted when
+  // anonymous or the viewer has no resolvable university.
+  has_moa?: boolean | null;
 }
 
 // A student's waitlist ("job alert") episode row, as returned by

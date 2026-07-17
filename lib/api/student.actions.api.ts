@@ -29,6 +29,7 @@ export const useApplicationActions = () => {
         job_id: string;
         resume_id: string;
         challenge_submission?: string;
+        source?: "mass";
       }) => ApplicationService.createApplication(data),
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-applications"] }),

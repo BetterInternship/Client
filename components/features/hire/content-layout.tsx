@@ -71,11 +71,15 @@ function SideNav({ items }: { items: NavItem[] }) {
 interface ContentLayoutProps {
   children?: React.ReactNode;
   className?: string;
+  /** Renders full-bleed above the padded content, flush to the sidebar and
+   * the top of the content pane (e.g. a page-level banner). */
+  topSlot?: React.ReactNode;
 }
 
 const ContentLayout: React.FC<ContentLayoutProps> = ({
   children,
   className,
+  topSlot,
 }) => {
   const { isMobile } = useMobile();
   const { isAuthenticated } = useAuthContext();
@@ -91,14 +95,17 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({
       ) : (
         <></>
       )}
-      <main
-        className={cn(
-          "flex-1 flex overflow-auto justify-center pt-4",
-          isMobile ? "px-2" : "px-8",
-          className,
-        )}
-      >
-        {children}
+      <main className="flex-1 flex flex-col overflow-auto">
+        {topSlot}
+        <div
+          className={cn(
+            "flex-1 flex justify-center pt-4",
+            isMobile ? "px-2" : "px-8",
+            className,
+          )}
+        >
+          {children}
+        </div>
       </main>
     </div>
   );

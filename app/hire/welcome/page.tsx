@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { EmployerAuthService } from "@/lib/api/hire.api";
+import { EmployerService } from "@/lib/api/services";
 import { useAuthContext } from "../authctx";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
@@ -47,10 +48,22 @@ function WelcomeLogo() {
   );
 }
 
+// Mirrors the server-side whitelist in auth.controller.ts's handleSecureLink
+// — anything else falls back to the dashboard.
+const NEXT_WHITELIST = new Set(["dashboard", "listings/create"]);
+
 function WelcomeContent() {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid") ?? "";
   const hash = searchParams.get("hash") ?? "";
+  const rawNext = searchParams.get("next") ?? "";
+  const next = NEXT_WHITELIST.has(rawNext) ? rawNext : "dashboard";
+  // Set by the IOM "Post a listing" CTA when this account was provisioned
+  // for an IOM company (Docs/plans/CAREER_IOM_LINK_IMPLEMENTATION_PLAN.md
+  // §4.2 follow-up) — the tin is only bound once onboarding actually
+  // finishes, never at account-creation time (see API-Server's
+  // internal.service.ts's ensureEmployer for why).
+  const autoLinkToken = searchParams.get("auto_link");
   const router = useRouter();
   const { refreshAuthentication } = useAuthContext();
   const { isMobile } = useAppContext();
@@ -118,8 +131,19 @@ function WelcomeContent() {
         return;
       }
 
+      if (autoLinkToken) {
+        // Best-effort — a failure here never blocks onboarding. Nothing
+        // else redeems this token if it fails here, but the CTA card just
+        // falls back to "Not Linked" and the user can click through again.
+        try {
+          await EmployerService.autoLinkIomAccount(autoLinkToken);
+        } catch {
+          // Swallowed intentionally — see comment above.
+        }
+      }
+
       await refreshAuthentication();
-      router.push("/dashboard");
+      router.push(`/${next}`);
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong. Please try again.");
       setIsSubmitting(false);
@@ -202,9 +226,11 @@ function WelcomeContent() {
                 <div className="flex justify-end items-center w-full">
                   <a
                     className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    href="/dashboard"
+                    href={`/${next}`}
                   >
-                    Go to your dashboard.
+                    {next === "listings/create"
+                      ? "Continue to create a listing."
+                      : "Go to your dashboard."}
                   </a>
                 </div>
               </Card>
@@ -223,7 +249,7 @@ function WelcomeContent() {
                     : "Welcome!"}
                 </HeaderTitle>
                 <p className="text-sm text-gray-600">
-                  Your have applicants waiting!
+                  You may have applicants waiting!
                   <br /> Set a password for your account to view them.
                 </p>
                 {error && (

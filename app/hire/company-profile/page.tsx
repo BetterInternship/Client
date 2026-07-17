@@ -9,9 +9,8 @@ import {
 } from "react";
 import { Camera, Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { useProfile } from "@/hooks/use-employer-api";
+import { useMoaUniversities, useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
-import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -30,6 +29,7 @@ import {
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { EmployerService } from "@/lib/api/services";
+import { IomLinkCard } from "@/components/features/hire/iom-link-card";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
@@ -38,7 +38,7 @@ export default function CompanyProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { check } = useDbMoa();
+  const { universityIds: moaUniversityIds } = useMoaUniversities();
   const { get_university_by_name } = useDbRefs();
   const { to_industry_name } = useDbRefs();
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
@@ -134,8 +134,7 @@ export default function CompanyProfile() {
               <div className="text-muted-foreground text-sm">
                 <div className="flex flex-row gap-1">
                   <BoolBadge
-                    state={check(
-                      profile?.id ?? "",
+                    state={moaUniversityIds.includes(
                       get_university_by_name("DLSU - Manila")?.id ?? "",
                     )}
                     onValue="Active DLSU MOA"
@@ -192,6 +191,7 @@ export default function CompanyProfile() {
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
             {!isEditing && <ProfileDetails profile={profile} />}
+            {!isEditing && <IomLinkCard profile={profile} />}
             {isEditing && (
               <ProfileEditForm data={profile}>
                 <ProfileEditor
