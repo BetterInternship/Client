@@ -75,7 +75,11 @@ function DashboardContent() {
   }
 
   return (
-    <ContentLayout>
+    <ContentLayout
+      topSlot={
+        <PendingVerificationBanner isVerified={profile.data?.is_verified} />
+      }
+    >
       <div
         className={cn(
           "flex-1 flex flex-col w-full py-4",
@@ -85,7 +89,6 @@ function DashboardContent() {
         <HeaderTitle icon={Briefcase} onClick={handleSecretSuperListingAccess}>
           Job listings
         </HeaderTitle>
-        <PendingVerificationBanner isVerified={profile.data?.is_verified} />
         <PausedListingsBanner
           jobs={ownedJobs}
           onUnpauseAll={unpause_all_jobs}
