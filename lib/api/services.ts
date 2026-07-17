@@ -721,6 +721,7 @@ export const ApplicationService = {
     job_id: string;
     resume_id: string;
     challenge_submission?: string;
+    source?: "mass";
   }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
