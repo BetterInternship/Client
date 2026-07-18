@@ -1,9 +1,9 @@
 "use client";
 
-import { IFormBlock } from "@betterinternship/core/forms";
+import { ClientBlock, isFieldRequired } from "@betterinternship/core/forms";
 
-type Props = {
-  blocks: IFormBlock[];
+type Props<T extends any[]> = {
+  blocks: ClientBlock<T>[];
   values: Record<string, string>;
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
@@ -12,7 +12,7 @@ type Props = {
   fieldRefs: Record<string, HTMLDivElement | null>;
 };
 
-export function RadioGroupFiller({
+export function RadioGroupFiller<T extends any[]>({
   blocks,
   values,
   onChange,
@@ -20,16 +20,20 @@ export function RadioGroupFiller({
   setSelected,
   selectedFieldId,
   fieldRefs,
-}: Props) {
-  const sortedBlocks = [...blocks].sort((a, b) => (a.field_schema?.x ?? 0) - (b.field_schema?.x ?? 0));
+}: Props<T>) {
+  const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
 
-  const groupLabel = sortedBlocks[0]?.field_schema?.label || sortedBlocks[0]?.field_schema?.field || "";
+  const groupLabel =
+    sortedBlocks[0]?.field_schema?.label ||
+    sortedBlocks[0]?.field_schema?.field ||
+    "";
+  const required = sortedBlocks[0]?.field_schema
+    ? isFieldRequired(sortedBlocks[0].field_schema)
+    : false;
 
   const options = sortedBlocks.map((block) => ({
     fieldKey: block.field_schema!.field,
-    label:
-      block.field_schema?.radio_option_label ||
-      block.field_schema!.field,
+    label: block.field_schema?.radio_option_label || block.field_schema!.field,
   }));
 
   const selectedKey =
@@ -55,7 +59,7 @@ export function RadioGroupFiller({
       <div className="space-y-1.5">
         {groupLabel && (
           <label className="text-sm font-medium text-gray-700">
-            {groupLabel}
+            {groupLabel} {required && <span className="text-red-500">*</span>}
           </label>
         )}
         <select

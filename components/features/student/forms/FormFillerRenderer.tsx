@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { ClientBlock } from "@betterinternship/core/forms";
+import {
+  ClientBlock,
+  ClientField,
+  ClientPhantomField,
+  isFieldRequired,
+} from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { RadioGroupFiller } from "./RadioGroupFiller";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
@@ -20,7 +25,7 @@ const getSignatureRecipientKey = (field: { signing_party_id?: string }) =>
   field.signing_party_id || "initiator";
 
 const getCanonicalSignatureFields = (
-  signatureFields: { field: string; signing_party_id?: string }[],
+  signatureFields: (ClientField<any[]> | ClientPhantomField<any[]>)[],
 ) => {
   const seenRecipientIds = new Set<string>();
   return signatureFields.filter((signatureField) => {
@@ -95,9 +100,9 @@ export function FormFillerRenderer({
   );
   const signatureFieldKeys = useMemo(
     () =>
-      getCanonicalSignatureFields(signatureFields).map(
-        (signatureField) => signatureField.field,
-      ),
+      getCanonicalSignatureFields(signatureFields)
+        .filter(isFieldRequired)
+        .map((signatureField) => signatureField.field),
     [signatureFields],
   );
   const signatureFieldKey = signatureFieldKeys.join("\n");

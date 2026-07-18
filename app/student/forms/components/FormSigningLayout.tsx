@@ -14,7 +14,11 @@ import { useFormFiller } from "@/components/features/student/forms/form-filler.c
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
-import { FormValues, IFormSigningParty } from "@betterinternship/core/forms";
+import {
+  FormValues,
+  IFormSigningParty,
+  isFieldRequired,
+} from "@betterinternship/core/forms";
 import { TextLoader } from "@/components/ui/loader";
 import { FormService } from "@/lib/api/services";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -288,12 +292,13 @@ export function FormSigningLayout({
       .filter((field) => {
         if (field.source !== "manual" || field.type === "signature")
           return false;
+        if (!isFieldRequired(field)) return false;
 
         if (noEsign) return true;
         return field.signing_party_id === "initiator";
       })
       .forEach((field) => {
-        const groupId = (field as any).radio_group_id as string | undefined;
+        const groupId = field.radio_group_id;
         if (groupId) {
           if (!radioGroupMap.has(groupId)) radioGroupMap.set(groupId, []);
           radioGroupMap.get(groupId)!.push(field.field);

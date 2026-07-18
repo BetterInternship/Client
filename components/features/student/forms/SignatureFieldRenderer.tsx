@@ -33,6 +33,7 @@ type SignatureFieldRendererProps<T extends any[]> = {
   onBlur?: (nextValue?: unknown) => void;
   allValues?: Record<string, string>;
   TooltipContent: () => React.ReactNode;
+  required: boolean;
 };
 
 export const SignatureFieldRenderer = <T extends any[]>({
@@ -43,6 +44,7 @@ export const SignatureFieldRenderer = <T extends any[]>({
   onBlur,
   allValues = {},
   TooltipContent,
+  required,
 }: SignatureFieldRendererProps<T>) => {
   const { setHasAgreedForSignature } = useSignContext();
   const [checked, setChecked] = useState(false);
@@ -330,7 +332,7 @@ export const SignatureFieldRenderer = <T extends any[]>({
     <div className="space-y-1.5">
       <LabelWithTooltip
         label={`${field.label} (Signatory Full Name)`}
-        required={true}
+        required={required}
         tooltip={field.tooltip_label}
       />
       <div className="space-y-4 rounded-[0.33em] border border-gray-300 p-4 px-5">

@@ -21,7 +21,7 @@ import {
   AutocompleteTreeMulti,
   TreeOption,
 } from "@/components/ui/autocomplete";
-import { ClientField } from "@betterinternship/core/forms";
+import { ClientField, isFieldRequired } from "@betterinternship/core/forms";
 import { Eye } from "lucide-react";
 import { useState } from "react";
 import { SignatureFieldRenderer } from "./SignatureFieldRenderer";
@@ -150,6 +150,7 @@ export const FieldRenderer = <T extends any[]>({
         onAuxValueChange={onAuxValueChange}
         onBlur={onBlur}
         allValues={allValues}
+        required={isFieldRequired(field)}
       />
     );
   }
@@ -226,7 +227,7 @@ const FieldRendererDropdown = <T extends any[]>({
   return (
     <div className="relative space-y-1.5 overflow-visible">
       <FormDropdown
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         value={value}
         options={options}
@@ -270,7 +271,7 @@ const FieldRendererDate = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormDatePicker
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         date={numericalValue}
         setter={(v) => {
@@ -323,7 +324,7 @@ const FieldRendererTime = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <TimeInputNative
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         value={value}
         tooltip={field.tooltip_label}
@@ -361,7 +362,7 @@ const FieldRendererCheckbox = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormCheckbox
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         checked={!!value}
         tooltip={field.tooltip_label}
@@ -401,7 +402,7 @@ const FieldRendererInput = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormInput
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         value={value ?? ""}
         setter={(v) => {
@@ -445,7 +446,7 @@ const FieldRendererTextarea = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormTextarea
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         value={value ?? ""}
         setter={onChange}
@@ -486,7 +487,7 @@ const FieldRendererMultiselect = <T extends any[]>({
   return (
     <div className="space-y-1.5" onBlur={() => onBlur?.()}>
       <AutocompleteTreeMulti
-        required={true}
+        required={isFieldRequired(field)}
         label={field.label}
         value={values ?? []}
         setter={onChange}
