@@ -17,7 +17,6 @@ import { useMyAutofill } from "@/hooks/use-my-autofill";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { getFullName } from "@/lib/profile";
 import { useSignContext } from "@/components/providers/sign.ctx";
-import { formatTimestampDateWithoutTime } from "@/lib/utils";
 import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
 import { getSignatureImageFieldKey } from "@betterinternship/core/forms";
 
@@ -188,33 +187,16 @@ export function FormFillerRenderer({
     }
   }, [form.formName, form.fields.length, profile.data]);
 
-  const formatValues = (values: Record<string, any>) => {
-    const formatted: Record<string, string> = {};
-
-    Object.entries(values).forEach(([key, value]) => {
-      // Find the field definition to check its type
-      const field = form.fields.find((f) => f.field === key);
-
-      // Only convert to date if it's actually a date field
-      const numValue = Number(value);
-      if (
-        field?.type === "date" &&
-        !isNaN(numValue) &&
-        numValue > 1000000000 &&
-        numValue < 999999999999999
-      ) {
-        formatted[key] = formatTimestampDateWithoutTime(numValue);
-      } else {
-        formatted[key] = String(value || "");
-      }
-    });
-
-    return formatted;
-  };
-
   // Notify parent of values change
   useEffect(() => {
-    onValuesChange?.(formatValues(finalValues));
+    onValuesChange?.(
+      Object.fromEntries(
+        Object.entries(finalValues).map(([key, value]) => [
+          key,
+          String(value ?? ""),
+        ]),
+      ),
+    );
   }, [finalValues, onValuesChange]);
 
   // Scroll to selected field

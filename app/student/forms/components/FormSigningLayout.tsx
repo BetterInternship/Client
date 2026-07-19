@@ -28,6 +28,7 @@ import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { withDerivedFormValues } from "@/lib/derived-form-values";
+import { expandRepeatedPreviewBlocks } from "@/lib/repeated-pdf-fields";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
@@ -350,11 +351,18 @@ export function FormSigningLayout({
             !hiddenSet.has(normalizeFieldName(block.field_schema?.field ?? "")),
         )
       : allBlocks;
-    return raw.map((block) => ({
-      ...block,
-      id: block._id,
-    }));
-  }, [form.formMetadata, noEsign, wetSignatureHiddenFieldNames]);
+    return expandRepeatedPreviewBlocks(raw, previewValuesResolved).map(
+      (block) => ({
+        ...block,
+        id: block._id,
+      }),
+    );
+  }, [
+    form.formMetadata,
+    noEsign,
+    previewValuesResolved,
+    wetSignatureHiddenFieldNames,
+  ]);
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>
