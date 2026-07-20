@@ -14,7 +14,11 @@ import { useFormFiller } from "@/components/features/student/forms/form-filler.c
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
-import { FormValues, IFormSigningParty } from "@betterinternship/core/forms";
+import {
+  FormValues,
+  IFormSigningParty,
+  isFieldRequired,
+} from "@betterinternship/core/forms";
 import { TextLoader } from "@/components/ui/loader";
 import { FormService } from "@/lib/api/services";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -24,6 +28,7 @@ import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { withDerivedFormValues } from "@/lib/derived-form-values";
+import { expandRepeatedPreviewBlocks } from "@/lib/repeated-pdf-fields";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
@@ -288,12 +293,13 @@ export function FormSigningLayout({
       .filter((field) => {
         if (field.source !== "manual" || field.type === "signature")
           return false;
+        if (!isFieldRequired(field)) return false;
 
         if (noEsign) return true;
         return field.signing_party_id === "initiator";
       })
       .forEach((field) => {
-        const groupId = (field as any).radio_group_id as string | undefined;
+        const groupId = field.radio_group_id;
         if (groupId) {
           if (!radioGroupMap.has(groupId)) radioGroupMap.set(groupId, []);
           radioGroupMap.get(groupId)!.push(field.field);
@@ -345,11 +351,18 @@ export function FormSigningLayout({
             !hiddenSet.has(normalizeFieldName(block.field_schema?.field ?? "")),
         )
       : allBlocks;
-    return raw.map((block) => ({
-      ...block,
-      id: block._id,
-    }));
-  }, [form.formMetadata, noEsign, wetSignatureHiddenFieldNames]);
+    return expandRepeatedPreviewBlocks(raw, previewValuesResolved).map(
+      (block) => ({
+        ...block,
+        id: block._id,
+      }),
+    );
+  }, [
+    form.formMetadata,
+    noEsign,
+    previewValuesResolved,
+    wetSignatureHiddenFieldNames,
+  ]);
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>

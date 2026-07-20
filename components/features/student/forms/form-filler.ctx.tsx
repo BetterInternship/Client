@@ -55,6 +55,7 @@ export const FormFillerContextProvider = ({
   const [, _setValues] = useState<Record<string, string>>({});
   const [errors, _setErrors] = useState<FormErrors>({});
   const valuesRef = useRef<Record<string, string>>({});
+  const clearedFieldsRef = useRef(new Set<string>());
 
   const getFinalValues = (additionalValues?: FormValues) => {
     return { ...additionalValues, ...valuesRef.current };
@@ -66,6 +67,8 @@ export const FormFillerContextProvider = ({
       value === null || value === undefined ? "" : String(value);
     const next = { ...valuesRef.current, [field]: stringValue };
     valuesRef.current = next;
+    if (stringValue.trim()) clearedFieldsRef.current.delete(field);
+    else clearedFieldsRef.current.add(field);
     _setValues(next);
     _setErrors((prev) => {
       if (!prev[field]) return prev;
@@ -86,6 +89,10 @@ export const FormFillerContextProvider = ({
     );
     const next = { ...valuesRef.current, ...stringifiedValues };
     valuesRef.current = next;
+    for (const [key, value] of Object.entries(stringifiedValues)) {
+      if (value.trim()) clearedFieldsRef.current.delete(key);
+      else clearedFieldsRef.current.add(key);
+    }
     _setValues(next);
   };
 
@@ -96,11 +103,11 @@ export const FormFillerContextProvider = ({
     const stringifiedValues = Object.entries(defaultValues).reduce(
       (acc, [key, val]) => {
         const currentValue = prev[key];
-        // Don't overwrite if user already has a value
         const hasExistingValue =
-          currentValue !== null &&
-          currentValue !== undefined &&
-          String(currentValue).trim().length > 0;
+          (currentValue !== null &&
+            currentValue !== undefined &&
+            String(currentValue).trim().length > 0) ||
+          clearedFieldsRef.current.has(key);
 
         if (!hasExistingValue) {
           acc[key] = val === null || val === undefined ? "" : String(val);
