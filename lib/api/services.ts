@@ -143,6 +143,13 @@ export const AuthService = {
     );
   },
 
+  // whether the browser holds a valid registration cookie (set by the OAuth callback)
+  async registerStatus() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRouteBuilder("auth").r("register", "status").build(),
+    );
+  },
+
   async login(email: string, password: string = "") {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("login").build(),

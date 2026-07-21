@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "@/lib/ctx-auth";
+import { AuthService } from "@/lib/api/services";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { DropdownGroup } from "@/components/ui/dropdown";
@@ -73,6 +74,55 @@ export function RegisterPageContent() {
       }
     }
   }, [step, auth, router, skipOtpStep]);
+
+  // Direct visits to /register (no OAuth pass, so no reg cookie) can never
+  // register — treat them as if they clicked the sign-in button instead.
+  const [checkingRegAccess, setCheckingRegAccess] = useState(step === 1);
+  useEffect(() => {
+    if (step !== 1 || auth.isAuthenticated()) {
+      setCheckingRegAccess(false);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const regStatus = await AuthService.registerStatus();
+        if (cancelled) return;
+        if (regStatus?.success) {
+          sessionStorage.removeItem("register_oauth_bounce");
+          setCheckingRegAccess(false);
+          return;
+        }
+
+        // No reg cookie — but they might be a signed-in user landing here
+        // (e.g. for edu verification); the step-2 effect handles those.
+        const profile = await auth.refreshAuthentication();
+        if (cancelled) return;
+        if (profile) {
+          setCheckingRegAccess(false);
+          return;
+        }
+
+        // Neither cookie: bounce through Google like the sign-in button.
+        // One shot per tab so broken cookies can't cause a redirect loop.
+        if (sessionStorage.getItem("register_oauth_bounce")) {
+          setCheckingRegAccess(false);
+          return;
+        }
+        sessionStorage.setItem("register_oauth_bounce", "1");
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      } catch {
+        // API unreachable — show the form rather than trap the user
+        if (!cancelled) setCheckingRegAccess(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const regForm = useForm<FormInputs>({
     defaultValues: {
@@ -170,7 +220,7 @@ export function RegisterPageContent() {
             <div></div>
 
             <div className="space-y-6">
-              {step === 1 && !auth.isAuthenticated() && (
+              {step === 1 && !auth.isAuthenticated() && !checkingRegAccess && (
                 <DropdownGroup>
                   <RegisterStep
                     regForm={regForm}
