@@ -71,7 +71,7 @@ export function OTPEmailStep({
           <FormInput
             label="Education email"
             value={eduEmail}
-            maxLength={40}
+            maxLength={80}
             setter={(value) => {
               setEduEmail(value);
             }}
