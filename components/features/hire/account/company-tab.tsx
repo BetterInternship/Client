@@ -96,104 +96,106 @@ export function CompanyTab() {
   if (!profile) return null;
 
   return (
-    <div
-      className={cn(
-        "bg-background py-4 rounded-lg border-gray-300 border",
-        isMobile ? "px-2" : "px-8",
-      )}
-    >
-      <header className="flex flex-col items-start gap-2 flex-1 w-full m-auto ">
-        <div className="relative flex-shrink-0">
-          <MyEmployerPfp size={isMobile ? "20" : "28"} />
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
-            onClick={() => profilePictureInputRef.current?.click()}
-            disabled={uploading}
-          >
-            <Camera className="h-3 w-3" />
-          </Button>
-          <input
-            type="file"
-            ref={profilePictureInputRef}
-            onChange={handleProfilePictureUpload}
-            accept="image/*"
-            style={{ display: "none" }}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div>
-            <h1 className="text-2xl font-bold font-heading">{profile.name}</h1>
-            <h2 className="text-sm font-normal text-gray-400">
-              Legal Name: {profile.legal_entity_name}
-            </h2>
+    <div className="space-y-4">
+      <div
+        className={cn(
+          "bg-background py-4 rounded-lg border-gray-300 border",
+          isMobile ? "px-2" : "px-8",
+        )}
+      >
+        <header className="flex flex-col items-start gap-2 flex-1 w-full m-auto ">
+          <div className="relative flex-shrink-0">
+            <MyEmployerPfp size={isMobile ? "20" : "28"} />
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+              onClick={() => profilePictureInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Camera className="h-3 w-3" />
+            </Button>
+            <input
+              type="file"
+              ref={profilePictureInputRef}
+              onChange={handleProfilePictureUpload}
+              accept="image/*"
+              style={{ display: "none" }}
+            />
           </div>
-          <div className="text-muted-foreground text-sm">
-            <div className="flex flex-row gap-1">
-              <BoolBadge
-                state={profile.is_verified}
-                onValue="Verified"
-                offValue="Not Verified"
-              />
-              {to_industry_name(profile.industry, null) && (
-                <Badge>{to_industry_name(profile.industry)}</Badge>
+          <div className="flex flex-col gap-2">
+            <div>
+              <h1 className="text-2xl font-bold font-heading">{profile.name}</h1>
+              <h2 className="text-sm font-normal text-gray-400">
+                Legal Name: {profile.legal_entity_name}
+              </h2>
+            </div>
+            <div className="text-muted-foreground text-sm">
+              <div className="flex flex-row gap-1">
+                <BoolBadge
+                  state={profile.is_verified}
+                  onValue="Verified"
+                  offValue="Not Verified"
+                />
+                {to_industry_name(profile.industry, null) && (
+                  <Badge>{to_industry_name(profile.industry)}</Badge>
+                )}
+              </div>
+            </div>
+            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
+              {isEditing ? (
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      setSaving(true);
+                      setSaveError(null);
+                      const success = await profileEditorRef.current?.save();
+                      setSaving(false);
+                      if (success) {
+                        setIsEditing(false);
+                      } else {
+                        setSaveError(
+                          "Please fix the errors in the form before saving.",
+                        );
+                      }
+                    }}
+                    disabled={saving}
+                  >
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={() => setIsEditing(true)}>
+                  <Edit2 className="h-4 w-4" />
+                  Edit
+                </Button>
               )}
             </div>
           </div>
-          <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
-            {isEditing ? (
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={async () => {
-                    setSaving(true);
-                    setSaveError(null);
-                    const success = await profileEditorRef.current?.save();
-                    setSaving(false);
-                    if (success) {
-                      setIsEditing(false);
-                    } else {
-                      setSaveError(
-                        "Please fix the errors in the form before saving.",
-                      );
-                    }
-                  }}
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : "Save"}
-                </Button>
-              </div>
-            ) : (
-              <Button onClick={() => setIsEditing(true)}>
-                <Edit2 className="h-4 w-4" />
-                Edit
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="w-full m-auto space-y-2 mt-8 ">
-        {!isEditing && <ProfileDetails profile={profile} />}
-        {!isEditing && <IomLinkCard profile={profile} />}
-        {isEditing && (
-          <ProfileEditForm data={profile}>
-            <ProfileEditor updateProfile={updateProfile} ref={profileEditorRef} />
-            {saveError && (
-              <p className="text-red-600 text-sm mt-4 mb-2 text-center">
-                {saveError}
-              </p>
-            )}
-          </ProfileEditForm>
-        )}
+        <div className="w-full m-auto space-y-2 mt-8 ">
+          {!isEditing && <ProfileDetails profile={profile} />}
+          {isEditing && (
+            <ProfileEditForm data={profile}>
+              <ProfileEditor updateProfile={updateProfile} ref={profileEditorRef} />
+              {saveError && (
+                <p className="text-red-600 text-sm mt-4 mb-2 text-center">
+                  {saveError}
+                </p>
+              )}
+            </ProfileEditForm>
+          )}
+        </div>
       </div>
+      {!isEditing && <IomLinkCard profile={profile} />}
     </div>
   );
 }
@@ -232,7 +234,6 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
           <ProfileLinkBadge title="Company Number" link={profile.phone_number} />
         </div>
       </Card>
-      <br />
     </>
   );
 };

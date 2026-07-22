@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -31,6 +32,39 @@ import {
   useReactivateMember,
 } from "@/hooks/use-employer-api";
 import { getFullName } from "@/lib/profile";
+
+/** Plain <select> — `@tailwindcss/forms` (tailwind.config.ts) already paints
+ * every bare select with its own chevron background-image, so adding a second,
+ * manually-positioned icon here just stacked a duplicate arrow on top of it. */
+function RoleSelect({
+  value,
+  onChange,
+  disabled,
+  title,
+  className,
+}: {
+  value: EmployerUserRole;
+  onChange: (role: EmployerUserRole) => void;
+  disabled?: boolean;
+  title?: string;
+  className?: string;
+}) {
+  return (
+    <select
+      value={value}
+      disabled={disabled}
+      title={title}
+      onChange={(e) => onChange(e.target.value as EmployerUserRole)}
+      className={cn(
+        "h-8 w-full rounded-[0.33em] border border-gray-300 pl-2 text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
+    >
+      <option value="MEMBER">Member</option>
+      <option value="ADMIN">Admin</option>
+    </select>
+  );
+}
 
 /** Oldest live admin other than `excludeId` — mirrors the server's fallback
  * (resolveEmployerAccount) so the confirmation dialog can name the new owner
@@ -175,14 +209,7 @@ export function TeamTab() {
             </div>
             <div>
               <Label>Role</Label>
-              <select
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value as EmployerUserRole)}
-                className="mt-1 w-full h-8 rounded-[0.33em] border border-gray-300 px-[0.75em] text-sm cursor-pointer"
-              >
-                <option value="MEMBER">Member</option>
-                <option value="ADMIN">Admin</option>
-              </select>
+              <RoleSelect value={inviteRole} onChange={setInviteRole} className="mt-1" />
             </div>
             {inviteError && <p className="text-sm text-destructive">{inviteError}</p>}
           </div>
@@ -281,16 +308,12 @@ function TeamMemberRow({
         <div className="text-xs text-muted-foreground">{member.email}</div>
       </TableCell>
       <TableCell>
-        <select
+        <RoleSelect
           value={member.role}
+          onChange={onChangeRole}
           disabled={member.is_owner || blockedAsLastAdmin}
           title={roleLockedTitle}
-          onChange={(e) => onChangeRole(e.target.value as EmployerUserRole)}
-          className="h-8 rounded-[0.33em] border border-gray-300 px-2 text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <option value="MEMBER">Member</option>
-          <option value="ADMIN">Admin</option>
-        </select>
+        />
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {member.last_active

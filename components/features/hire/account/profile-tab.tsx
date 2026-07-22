@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useMe, useUpdateSelf, useChangeMyPassword } from "@/hooks/use-employer-api";
 
 export function ProfileTab() {
@@ -81,14 +80,9 @@ export function ProfileTab() {
   return (
     <div className="space-y-4">
       <Card className="p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Signed in as</div>
-            <div className="font-medium">{me.email}</div>
-          </div>
-          <Badge type={me.role === "ADMIN" ? "primary" : "default"}>
-            {me.role === "ADMIN" ? "Admin" : "Member"}
-          </Badge>
+        <div>
+          <div className="text-sm text-muted-foreground">Signed in as</div>
+          <div className="font-medium">{me.email}</div>
         </div>
 
         {!editingName ? (
