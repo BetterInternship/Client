@@ -4,6 +4,9 @@ import {
   CreateJobChallengeListingPayload,
   UpdateJobChallengeListingPayload,
   Employer,
+  EmployerSelf,
+  EmployerTeamMember,
+  EmployerUserRole,
   Job,
   JobWaitlist,
   PublicUser,
@@ -106,6 +109,18 @@ interface EmployerUserResponse extends FetchResponse {
   message: string;
 }
 
+interface EmployerSelfResponse extends FetchResponse {
+  user: EmployerSelf;
+}
+
+interface EmployerTeamResponse extends FetchResponse {
+  users: EmployerTeamMember[];
+}
+
+interface EmployerTeamMemberResponse extends FetchResponse {
+  user: EmployerTeamMember;
+}
+
 export const EmployerUserService = {
   async requestPasswordReset(email: string) {
     return APIClient.post<EmployerUserResponse>(
@@ -120,6 +135,90 @@ export const EmployerUserService = {
       { newPassword },
     );
   },
+
+  // ── Self-service ────────────────────────────────────────────────────
+
+  async getMe() {
+    return APIClient.get<EmployerSelfResponse>(
+      APIRouteBuilder("employer-users").r("me").build(),
+    );
+  },
+
+  async updateMe(data: {
+    first_name?: string | null;
+    middle_name?: string | null;
+    last_name?: string | null;
+  }) {
+    return APIClient.put<EmployerSelfResponse>(
+      APIRouteBuilder("employer-users").r("me").build(),
+      data,
+    );
+  },
+
+  async changeMyPassword(current_password: string, new_password: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("employer-users").r("me", "password").build(),
+      { current_password, new_password },
+    );
+  },
+
+  async updateMyNotifications(receives_applicant_digest: boolean) {
+    return APIClient.patch<EmployerSelfResponse>(
+      APIRouteBuilder("employer-users").r("me", "notifications").build(),
+      { receives_applicant_digest },
+    );
+  },
+
+  // ── Team management (ADMIN) ────────────────────────────────────────
+
+  async getTeam() {
+    return APIClient.get<EmployerTeamResponse>(
+      APIRouteBuilder("employer-users").build(),
+    );
+  },
+
+  async invite(email: string, role: EmployerUserRole) {
+    return APIClient.post<EmployerTeamMemberResponse>(
+      APIRouteBuilder("employer-users").r("invite").build(),
+      { email, role },
+    );
+  },
+
+  async resendInvite(userId: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("employer-users").r(userId, "resend-invite").build(),
+    );
+  },
+
+  async changeRole(userId: string, role: EmployerUserRole) {
+    return APIClient.patch<EmployerTeamMemberResponse>(
+      APIRouteBuilder("employer-users").r(userId).build(),
+      { role },
+    );
+  },
+
+  async deactivateMember(userId: string) {
+    return APIClient.patch<EmployerTeamMemberResponse>(
+      APIRouteBuilder("employer-users").r(userId, "deactivate").build(),
+    );
+  },
+
+  async reactivateMember(userId: string) {
+    return APIClient.patch<EmployerTeamMemberResponse>(
+      APIRouteBuilder("employer-users").r(userId, "reactivate").build(),
+    );
+  },
+
+  async updateMemberNotifications(
+    userId: string,
+    receives_applicant_digest: boolean,
+  ) {
+    return APIClient.patch<EmployerTeamMemberResponse>(
+      APIRouteBuilder("employer-users").r(userId, "notifications").build(),
+      { receives_applicant_digest },
+    );
+  },
+
 };
 
 // Auth Services

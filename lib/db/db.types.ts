@@ -49,6 +49,9 @@ export type PublicUser = Omit<
 // returns it on GET /employer/me, this just types what's already on the wire.
 export type Employer = Partial<Selectable<CareerEmployers>> & {
   tin?: string | null;
+  // God-only: comma-separated employer_users.email list, joined server-side
+  // (GET /god/employers only — not a real employers column).
+  team_emails?: string | null;
 };
 export type User = Partial<Selectable<CareerUsers>>;
 export interface Conversation extends Selectable<CareerConversations> {
@@ -59,6 +62,34 @@ export interface Conversation extends Selectable<CareerConversations> {
 }
 export type PrivateEmployerUser = Selectable<CareerEmployerUsers>;
 export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
+
+// Employer team accounts (Docs/plans/EMPLOYER_TEAM_ACCOUNTS_IMPLEMENTATION_PLAN.md).
+// receives_applicant_digest/role(-casing)/status/is_owner are hand-added: the
+// installed @betterinternship/schema package here is pinned at 0.0.0, well
+// behind the one API-Server uses, and predates all of these — same reason
+// `tin` is hand-added on Employer above. The API already returns them; this
+// just types what's already on the wire. role is uppercase on every
+// employer-users response (never the raw lowercase DB value).
+export type EmployerUserRole = "ADMIN" | "MEMBER";
+export type EmployerUserTeamStatus = "Pending" | "Disabled" | "Active";
+
+export interface EmployerSelf
+  extends Omit<PublicEmployerUser, "role"> {
+  role: EmployerUserRole;
+  is_owner: boolean;
+  receives_applicant_digest: boolean;
+}
+
+export interface EmployerTeamMember
+  extends Omit<PrivateEmployerUser, "role"> {
+  role: EmployerUserRole;
+  is_owner: boolean;
+  receives_applicant_digest: boolean;
+  status: EmployerUserTeamStatus;
+  // MAX(sessions.timestamp) WHERE subaccount_id = this user (plan D19). Null
+  // pre-deploy or if they've never signed in since.
+  last_active: string | null;
+}
 
 export type JobPauseReason = "dormant" | "unresponsive" | "neglected";
 export type JobWaitlistRemovalReason = "notified" | "left" | "listing_deleted";
