@@ -731,6 +731,7 @@ function GodEmployersPageContent() {
               Employer ID: <code className="text-slate-500">{e.id}</code>
             </div>
             <div>Email: {e.email || "—"}</div>
+            <div>Team emails: {e.team_emails || "—"}</div>
             <div>
               Created:{" "}
               {e.created_at ? new Date(e.created_at).toLocaleString() : "—"}

@@ -49,6 +49,9 @@ export type PublicUser = Omit<
 // returns it on GET /employer/me, this just types what's already on the wire.
 export type Employer = Partial<Selectable<CareerEmployers>> & {
   tin?: string | null;
+  // God-only: comma-separated employer_users.email list, joined server-side
+  // (GET /god/employers only — not a real employers column).
+  team_emails?: string | null;
 };
 export type User = Partial<Selectable<CareerUsers>>;
 export interface Conversation extends Selectable<CareerConversations> {
