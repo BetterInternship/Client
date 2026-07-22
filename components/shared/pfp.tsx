@@ -23,11 +23,19 @@ const Pfp = ({
   pfp_fetcher: () => Promise<any>;
   size?: string;
 }) => {
+  // next.config.mjs's domain rewrite deliberately excludes image extensions,
+  // so "/images/default-pfp.jpg" never resolves to either audience's actual
+  // asset (public/hire/images/... or public/student/images/...) — it 404s
+  // and renders as a blank/broken image. Route by source instead.
+  const defaultURL =
+    source === "employer"
+      ? "/hire/images/default-pfp.jpg"
+      : "/student/images/default-pfp.jpg";
 
   const { url, sync, loading } = useFile({
     route: `/${source}/` + id + "/pic",
     fetcher: pfp_fetcher,
-    defaultURL: "/images/default-pfp.jpg",
+    defaultURL,
   });
 
   useEffect(() => {
@@ -50,7 +58,7 @@ const Pfp = ({
       className={`relative w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
     >
       {loading ? (
-        <div className="rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"><img src={"/images/default-pfp.jpg"}></img></div>
+        <div className="rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"><img src={defaultURL}></img></div>
       ) : (
         <img src={url}></img>
       )}

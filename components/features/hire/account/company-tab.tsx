@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { Camera, Edit2 } from "lucide-react";
-import { useMoaUniversities, useProfile } from "@/hooks/use-employer-api";
+import { useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
@@ -42,8 +42,6 @@ export function CompanyTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { universityIds: moaUniversityIds } = useMoaUniversities();
-  const { get_university_by_name } = useDbRefs();
   const { to_industry_name } = useDbRefs();
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
@@ -133,13 +131,6 @@ export function CompanyTab() {
           </div>
           <div className="text-muted-foreground text-sm">
             <div className="flex flex-row gap-1">
-              <BoolBadge
-                state={moaUniversityIds.includes(
-                  get_university_by_name("DLSU - Manila")?.id ?? "",
-                )}
-                onValue="Active DLSU MOA"
-                offValue="No DLSU MOA"
-              />
               <BoolBadge
                 state={profile.is_verified}
                 onValue="Verified"
@@ -231,14 +222,12 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
               : "grid grid-cols-2 gap-y-5",
           )}
         >
-          <LabeledProperty label="Email" value={profile.email} />
           <LabeledProperty label="Phone Number" value={profile.phone_number} />
           <LabeledProperty label="Location" value={profile.location} />
           <LabeledProperty label="Website" value={profile.website} />
         </div>
         <Divider />
         <div className={cn("flex flex-row gap-2 flex-wrap")}>
-          <ProfileLinkBadge title="Company Email" link={profile.email} />
           <ProfileLinkBadge title="Company Website" link={profile.website} />
           <ProfileLinkBadge title="Company Number" link={profile.phone_number} />
         </div>
