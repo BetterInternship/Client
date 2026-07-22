@@ -183,6 +183,27 @@ class FetchClient {
     );
   }
 
+  async patch<T>(
+    url: string,
+    data?: unknown,
+    type: string = "json",
+    options: RequestInit = {},
+  ): Promise<T> {
+    return this.request<T>(
+      url,
+      {
+        ...options,
+        method: "PATCH",
+        body: data
+          ? type === "json"
+            ? JSON.stringify(data)
+            : (data as BodyInit)
+          : undefined,
+      },
+      type,
+    );
+  }
+
   async delete<T>(url: string, options: RequestInit = {}): Promise<T> {
     return this.request<T>(url, { ...options, method: "DELETE" });
   }

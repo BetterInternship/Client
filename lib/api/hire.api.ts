@@ -8,7 +8,7 @@
  */
 
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { Employer, PublicEmployerUser } from "../db/db.types";
+import { Employer, EmployerSelf } from "../db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 
 interface EmployersResponse extends FetchResponse {
@@ -21,9 +21,12 @@ interface EmployerResponse extends FetchResponse {
   employer: Employer;
 }
 
+// god is merged onto the user object itself (auth.service.ts's toFullSelf),
+// not a sibling field — /hire/login and /hire/loggedin are the only two
+// routes that carry it; /employer-users/me does not.
 interface AuthResponse extends FetchResponse {
   success: boolean;
-  user: Partial<PublicEmployerUser>;
+  user: Partial<EmployerSelf> & { god?: boolean };
 }
 
 interface EmailStatusResponse extends FetchResponse {
@@ -69,6 +72,15 @@ export const EmployerAuthService = {
   async logout() {
     await APIClient.post<FetchResponse>(
       APIRouteBuilder("auth").r("hire", "logout").build(),
+    );
+  },
+
+  // Backs authctx's refreshAuthentication() — the one call that must survive
+  // a full page load and still know both *who* is signed in and whether
+  // they're a god (plan §6.2).
+  async loggedIn() {
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("auth").r("hire", "loggedin").build(),
     );
   },
 

@@ -1,35 +1,31 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
+import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
-import { EmployerService } from "@/lib/api/services";
 import { useRef } from "react";
 
+type AuthUser = Partial<EmployerSelf> & { god?: boolean };
+
 interface IAuthContext {
-  user: Partial<PublicEmployerUser> | null;
+  user: AuthUser | null;
   god: boolean;
   proxy: string;
   loading: boolean;
-  register: (
-    employer: Partial<Employer>,
-  ) => Promise<Partial<PublicEmployerUser> | null>;
+  register: (employer: Partial<Employer>) => Promise<AuthUser | null>;
   verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
-  login: (
-    email: string,
-    password: string,
-  ) => Promise<Partial<PublicEmployerUser> | null>;
-  loginAs: (employer_id: string) => Promise<Partial<PublicEmployerUser> | null>;
+  login: (email: string, password: string) => Promise<AuthUser | null>;
+  loginAs: (employer_id: string) => Promise<AuthUser | null>;
   emailStatus: (
     email: string,
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
-  refreshAuthentication: () => Promise<Partial<PublicEmployerUser> | null>;
+  refreshAuthentication: () => Promise<AuthUser | null>;
   redirectIfNotLoggedIn: () => void;
   redirectIfLoggedIn: () => void;
 }
@@ -54,10 +50,10 @@ export const AuthContextProvider = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
   const [god, setGod] = useState(false);
-  const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
+  const [user, setUser] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
-    return user ? (JSON.parse(user) as PublicEmployerUser) : null;
+    return user ? (JSON.parse(user) as AuthUser) : null;
   });
 
   // Whenever user is updated, cache in localStorage
@@ -70,33 +66,38 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("isAuthenticated");
   }, [user, isAuthenticated]);
 
-  const refreshAuthentication =
-    async (): Promise<Partial<PublicEmployerUser> | null> => {
-      const response = await EmployerService.getMyProfile();
+  const refreshAuthentication = async (): Promise<AuthUser | null> => {
+    // /hire/loggedin, not /employer-users/me — this is the one call that
+    // must survive a full page load and still know both who is signed in
+    // and whether they're a god (merged onto the user object itself, plan
+    // §6.2). The persisted React Query cache spans 24h across full page
+    // loads, so every query key below must be invalidated here — skipping
+    // one is exactly how stale identity/team data survives a login.
+    const response = await EmployerAuthService.loggedIn();
 
-      if (!response.success) {
-        setIsAuthenticated(false);
-        setUser(null);
-        sessionStorage.removeItem("isAuthenticated");
-        sessionStorage.removeItem("user");
-        setLoading(false);
-        return null;
-      }
-
-      await queryClient.invalidateQueries({
-        queryKey: ["my-employer-profile"],
-      });
-
-      setUser(response.user as PublicEmployerUser);
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      if (response.god) setGod(true);
-
-      setIsAuthenticated(true);
+    if (!response.success || !response.user) {
+      setIsAuthenticated(false);
+      setUser(null);
+      setGod(false);
+      sessionStorage.removeItem("isAuthenticated");
+      sessionStorage.removeItem("user");
       setLoading(false);
-      return response.user as PublicEmployerUser;
-    };
+      return null;
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
+    ]);
+
+    setUser(response.user);
+    if (response.user.god) setGod(true);
+
+    setIsAuthenticated(true);
+    setLoading(false);
+    return response.user;
+  };
 
   const register = async (employer: Partial<Employer>) => {
     const response = await EmployerAuthService.register(employer);
@@ -107,17 +108,17 @@ export const AuthContextProvider = ({
     const response = await EmployerAuthService.login(email, password);
     if (!response.success) return null;
 
-    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
-    await queryClient.invalidateQueries({
-      queryKey: ["my-employer-conversations"],
-    });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-employer-conversations"] }),
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
+    ]);
 
     setUser(response.user);
     setIsAuthenticated(true);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    if (response.god) setGod(true);
+    if (response.user.god) setGod(true);
 
     return response;
   };
@@ -129,7 +130,11 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
+    ]);
     setProxy(getFullName(response.user));
     setUser(response.user);
     return response.user;

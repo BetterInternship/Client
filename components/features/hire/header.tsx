@@ -11,6 +11,7 @@ import {
   Menu,
   Plus,
   HelpCircle,
+  UserCircle,
 } from "lucide-react";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -132,7 +133,23 @@ export const ProfileButton = () => {
             {displayName}
           </>
         }
+        content={
+          user?.email && (
+            <div className="px-4 py-2 border-b border-gray-100 mb-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {user.email}
+              </div>
+              <div className="text-xs text-gray-500">
+                {user.role === "ADMIN" ? "Admin" : "Member"}
+              </div>
+            </div>
+          )
+        }
       >
+        <DropdownOption href="/account">
+          <UserCircle className="w-4 h-4 inline-block m-1 mr-2" />
+          <span>Account</span>
+        </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>
@@ -162,8 +179,7 @@ function MobileDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const profile = useProfile();
-  const { isAuthenticated, logout } = useAuthContext();
+  const { isAuthenticated, logout, user } = useAuthContext();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -220,9 +236,9 @@ function MobileDrawer({
                   <MyUserPfp size="9" />
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="font-medium">{profile.data?.name}</span>
+                  <span className="font-medium">{user?.email}</span>
                   <span className="text-xs text-gray-500">
-                    {profile.data?.email}
+                    {user?.role === "ADMIN" ? "Admin" : "Member"}
                   </span>
                 </div>
               </div>
@@ -247,6 +263,17 @@ function MobileDrawer({
                         <div>
                           <LayoutDashboard className="w-4 h-4 inline-block mr-2" />
                           <span>Dashboard</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/account" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <UserCircle className="w-4 h-4 inline-block mr-2" />
+                          <span>Account</span>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>

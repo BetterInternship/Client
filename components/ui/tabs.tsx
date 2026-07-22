@@ -16,7 +16,14 @@ export const Tab = ({ name, children, indicator, onTabChange }: TabProps) => {
 };
 
 interface TabGroupProps {
-  children: React.ReactElement<TabProps>[];
+  // Permissive on purpose: Children.toArray/map below already drop
+  // non-element children (false/null/undefined) at runtime, so conditionally
+  // rendered tabs (`{isAdmin && <Tab .../>}`) are safe to pass. Kept as a
+  // union (rather than React.ReactNode) so TS still infers TabProps through
+  // isValidElement's narrowing further down.
+  children:
+    | React.ReactElement<TabProps>
+    | (React.ReactElement<TabProps> | false | null | undefined)[];
   /** Controlled value (tab name). If provided, component becomes controlled. */
   value?: string;
   /** Change handler for controlled mode. */

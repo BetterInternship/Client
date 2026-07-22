@@ -2,13 +2,21 @@ import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import {
   ApplicationService,
   EmployerService,
+  EmployerUserService,
   JobService,
   handleApiError,
 } from "@/lib/api/services";
-import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Employer, EmployerApplication, EmployerUserRole, Job } from "@/lib/db/db.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCache } from "./use-cache";
+
+/** Invalidated by every self-service or team-management mutation (plan §6.4) — "me" for the caller's own identity/prefs, "my-employer-team" for the roster. */
+const invalidateAccountQueries = (queryClient: ReturnType<typeof useQueryClient>) =>
+  Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["me"] }),
+    queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
+  ]);
 
 export const useEmployerName = (id: string) => {
   const [employerName, setEmployerName] = useState("");
@@ -296,4 +304,133 @@ export function useOwnedJobs(
     error,
     refetch: fetchOwnedJobs,
   };
+}
+
+/**
+ * The signed-in employer_user's own identity + prefs — distinct from
+ * useProfile() (the company). Backs authctx's refreshAuthentication() and the
+ * /account hub (Docs/plans/EMPLOYER_TEAM_ACCOUNTS_IMPLEMENTATION_PLAN.md §6).
+ */
+export function useMe() {
+  const { isPending, data, error } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => EmployerUserService.getMe(),
+  });
+
+  return {
+    loading: isPending,
+    error,
+    data: data?.user,
+  };
+}
+
+export function useUpdateSelf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      first_name?: string | null;
+      middle_name?: string | null;
+      last_name?: string | null;
+    }) => EmployerUserService.updateMe(data),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useChangeMyPassword() {
+  return useMutation({
+    mutationFn: ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => EmployerUserService.changeMyPassword(currentPassword, newPassword),
+  });
+}
+
+export function useUpdateMyNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (receivesDigest: boolean) =>
+      EmployerUserService.updateMyNotifications(receivesDigest),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+/** The Team tab (ADMIN only) — the full member roster for the caller's employer. */
+export function useTeam() {
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-employer-team"],
+    queryFn: () => EmployerUserService.getTeam(),
+  });
+
+  return {
+    loading: isPending,
+    error,
+    data: data?.users ?? [],
+  };
+}
+
+export function useInviteMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ email, role }: { email: string; role: EmployerUserRole }) =>
+      EmployerUserService.invite(email, role),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useResendInvite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => EmployerUserService.resendInvite(userId),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useChangeMemberRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: EmployerUserRole }) =>
+      EmployerUserService.changeRole(userId, role),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useDeactivateMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => EmployerUserService.deactivateMember(userId),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useReactivateMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => EmployerUserService.reactivateMember(userId),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useUpdateMemberNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      receivesDigest,
+    }: {
+      userId: string;
+      receivesDigest: boolean;
+    }) => EmployerUserService.updateMemberNotifications(userId, receivesDigest),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+export function useRemoveMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => EmployerUserService.removeMember(userId),
+    onSuccess: () => invalidateAccountQueries(queryClient),
+  });
 }
