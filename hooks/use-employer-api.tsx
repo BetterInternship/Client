@@ -427,10 +427,3 @@ export function useUpdateMemberNotifications() {
   });
 }
 
-export function useRemoveMember() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (userId: string) => EmployerUserService.removeMember(userId),
-    onSuccess: () => invalidateAccountQueries(queryClient),
-  });
-}

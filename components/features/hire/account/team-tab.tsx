@@ -29,18 +29,25 @@ import {
   useChangeMemberRole,
   useDeactivateMember,
   useReactivateMember,
-  useRemoveMember,
 } from "@/hooks/use-employer-api";
 import { getFullName } from "@/lib/profile";
 
-const STATUS_BADGE_TYPE: Record<
-  EmployerTeamMember["status"],
-  "primary" | "warning" | "destructive"
-> = {
-  Active: "primary",
-  Pending: "warning",
-  Disabled: "destructive",
-};
+/** Oldest live admin other than `excludeId` — mirrors the server's fallback
+ * (resolveEmployerAccount) so the confirmation dialog can name the new owner
+ * before the request is even sent. */
+function findFallbackAdmin(
+  members: EmployerTeamMember[],
+  excludeId: string,
+): EmployerTeamMember | null {
+  const candidates = members
+    .filter(
+      (m) => m.role === "ADMIN" && m.status !== "Disabled" && m.id !== excludeId,
+    )
+    .sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+  return candidates[0] ?? null;
+}
 
 export function TeamTab() {
   const { loading, data: members } = useTeam();
@@ -49,12 +56,17 @@ export function TeamTab() {
   const changeRole = useChangeMemberRole();
   const deactivateMember = useDeactivateMember();
   const reactivateMember = useReactivateMember();
-  const removeMember = useRemoveMember();
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<EmployerUserRole>("MEMBER");
   const [inviteError, setInviteError] = useState<string | null>(null);
+
+  // Deactivating the owner actually transfers ownership server-side (real
+  // transfer, not just a resolver fallback — deactivation has no undo here,
+  // there's no delete path) — confirm who it's transferring to first.
+  const [ownerTransferTarget, setOwnerTransferTarget] =
+    useState<EmployerTeamMember | null>(null);
 
   // Last-admin protection (plan D9/§6.6) — computed client-side purely to
   // disable+explain the destructive actions before the request 409s; the API
@@ -90,6 +102,24 @@ export function TeamTab() {
     }
   };
 
+  const handleDeactivateClick = (member: EmployerTeamMember) => {
+    if (member.is_owner) {
+      setOwnerTransferTarget(member);
+      return;
+    }
+    deactivateMember.mutate(member.id);
+  };
+
+  const confirmOwnerDeactivate = () => {
+    if (!ownerTransferTarget) return;
+    deactivateMember.mutate(ownerTransferTarget.id);
+    setOwnerTransferTarget(null);
+  };
+
+  const fallbackAdmin = ownerTransferTarget
+    ? findFallbackAdmin(members, ownerTransferTarget.id)
+    : null;
+
   if (loading) {
     return <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>;
   }
@@ -106,7 +136,6 @@ export function TeamTab() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Last active</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -121,9 +150,8 @@ export function TeamTab() {
                 onChangeRole={(role) =>
                   changeRole.mutate({ userId: member.id, role })
                 }
-                onDeactivate={() => deactivateMember.mutate(member.id)}
+                onDeactivate={() => handleDeactivateClick(member)}
                 onReactivate={() => reactivateMember.mutate(member.id)}
-                onRemove={() => removeMember.mutate(member.id)}
               />
             ))}
           </TableBody>
@@ -168,6 +196,48 @@ export function TeamTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={!!ownerTransferTarget}
+        onOpenChange={(open) => !open && setOwnerTransferTarget(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Transfer ownership?</DialogTitle>
+          </DialogHeader>
+          {ownerTransferTarget && (
+            <p className="text-sm text-muted-foreground">
+              {fallbackAdmin ? (
+                <>
+                  Deactivating <strong>{getFullName(ownerTransferTarget) || ownerTransferTarget.email}</strong> will
+                  transfer company ownership to{" "}
+                  <strong>{getFullName(fallbackAdmin) || fallbackAdmin.email}</strong>.
+                  This can&apos;t be undone by reactivating {ownerTransferTarget.email}{" "}
+                  later.
+                </>
+              ) : (
+                <>
+                  No other active admin is available to take over ownership.
+                  Deactivating <strong>{ownerTransferTarget.email}</strong> will leave
+                  ownership as-is until you promote another admin.
+                </>
+              )}
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOwnerTransferTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmOwnerDeactivate}
+              disabled={deactivateMember.isPending}
+            >
+              {deactivateMember.isPending ? "Deactivating..." : "Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -179,7 +249,6 @@ function TeamMemberRow({
   onChangeRole,
   onDeactivate,
   onReactivate,
-  onRemove,
 }: {
   member: EmployerTeamMember;
   blockedAsLastAdmin: boolean;
@@ -187,37 +256,41 @@ function TeamMemberRow({
   onChangeRole: (role: EmployerUserRole) => void;
   onDeactivate: () => void;
   onReactivate: () => void;
-  onRemove: () => void;
 }) {
-  const [confirmRemove, setConfirmRemove] = useState(false);
   const name = getFullName(member) || member.email;
   const lastAdminTitle = blockedAsLastAdmin
     ? "Your team needs at least one active admin."
     : undefined;
+  // The owner is always an admin — never editable, regardless of last-admin
+  // state (which only governs everyone else).
+  const roleLockedTitle = member.is_owner
+    ? "The owner is always an admin and can't be changed."
+    : lastAdminTitle;
 
   return (
     <TableRow>
       <TableCell>
-        <div className="font-medium">{name}</div>
+        <div className="font-medium flex items-center gap-2 flex-wrap">
+          {name}
+          {member.is_owner && <Badge type="accent">Owner</Badge>}
+          {member.status === "Pending" && <Badge type="warning">Pending</Badge>}
+          {member.status === "Disabled" && (
+            <Badge type="destructive">Deactivated</Badge>
+          )}
+        </div>
         <div className="text-xs text-muted-foreground">{member.email}</div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
-          <select
-            value={member.role}
-            disabled={blockedAsLastAdmin}
-            title={lastAdminTitle}
-            onChange={(e) => onChangeRole(e.target.value as EmployerUserRole)}
-            className="h-8 rounded-[0.33em] border border-gray-300 px-2 text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="MEMBER">Member</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-          {member.is_owner && <Badge type="accent">Owner</Badge>}
-        </div>
-      </TableCell>
-      <TableCell>
-        <Badge type={STATUS_BADGE_TYPE[member.status]}>{member.status}</Badge>
+        <select
+          value={member.role}
+          disabled={member.is_owner || blockedAsLastAdmin}
+          title={roleLockedTitle}
+          onChange={(e) => onChangeRole(e.target.value as EmployerUserRole)}
+          className="h-8 rounded-[0.33em] border border-gray-300 px-2 text-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="MEMBER">Member</option>
+          <option value="ADMIN">Admin</option>
+        </select>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {member.last_active
@@ -245,32 +318,6 @@ function TeamMemberRow({
             >
               Deactivate
             </Button>
-          )}
-          {!confirmRemove ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={blockedAsLastAdmin}
-              title={lastAdminTitle}
-              className="text-destructive hover:bg-destructive/10"
-              onClick={() => setConfirmRemove(true)}
-            >
-              Remove
-            </Button>
-          ) : (
-            <div className="flex gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:bg-destructive/10"
-                onClick={onRemove}
-              >
-                Confirm
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setConfirmRemove(false)}>
-                Cancel
-              </Button>
-            </div>
           )}
         </div>
       </TableCell>

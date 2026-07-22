@@ -219,11 +219,6 @@ export const EmployerUserService = {
     );
   },
 
-  async removeMember(userId: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("employer-users").r(userId).build(),
-    );
-  },
 };
 
 // Auth Services
