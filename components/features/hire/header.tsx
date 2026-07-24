@@ -32,10 +32,19 @@ import { Separator } from "@/components/ui/separator";
  */
 export const Header: React.FC = () => {
   const { isMobile } = useMobile();
-  const { god } = useAuthContext();
+  const { god, proxy, exitProxy } = useAuthContext();
   const { routeExcluded, routeIncluded } = useRoute();
+  const router = useRouter();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Proxying leaves the acting god's own identity shadowed by the employer
+  // being viewed (setProxyCookie never gets undone on its own) — hopping back
+  // to /god must restore it first, or every page after this stays "as" them.
+  const handleGodClick = async () => {
+    if (proxy) await exitProxy();
+    router.push("/god");
+  };
 
   const noProfileRoutes = ["/login", "/register"];
   const mobileNoHeaderRoutes: string[] = ["/dashboard/manage"];
@@ -63,11 +72,13 @@ export const Header: React.FC = () => {
         </div>
         {god && (
           <div className="w-full px-4 flex flex-row justify-end z-[100]">
-            <Link href={"/god"}>
-              <Button scheme="destructive" className="hover:bg-destructive/85">
-                GOD
-              </Button>
-            </Link>
+            <Button
+              scheme="destructive"
+              className="hover:bg-destructive/85"
+              onClick={handleGodClick}
+            >
+              GOD
+            </Button>
           </div>
         )}
         {/* Right: Desktop profile / Mobile burger & floating action button*/}

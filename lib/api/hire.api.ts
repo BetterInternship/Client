@@ -69,6 +69,13 @@ export const EmployerAuthService = {
     );
   },
 
+  // Undoes loginAsEmployer — restores the acting god's own account.
+  async exitProxy() {
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("god").r("exit-proxy").build(),
+    );
+  },
+
   async logout() {
     await APIClient.post<FetchResponse>(
       APIRouteBuilder("auth").r("hire", "logout").build(),
