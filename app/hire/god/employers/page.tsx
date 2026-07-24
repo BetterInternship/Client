@@ -17,7 +17,7 @@ import {
   RegisterEmployerButton,
   RegisterEmployerModal,
 } from "@/components/features/hire/god/RegisterEmployerModal";
-import { BoolBadge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import {
   useGodEmployers,
   useVerifyEmployer,
@@ -111,6 +111,35 @@ function ModalShell({
         <div className="p-6">{children}</div>
       </div>
     </div>
+  );
+}
+
+/** Comma-separated team emails shown below the employer name — accounts
+ * that DON'T get the applicant digest are called out in destructive red so
+ * they're spottable at a glance, digest recipients stay small/muted. */
+function TeamEmailsList({
+  emails,
+}: {
+  emails?: { email: string; receives_applicant_digest: boolean }[] | null;
+}) {
+  if (!Array.isArray(emails) || emails.length === 0) return null;
+  return (
+    <span className="text-xs">
+      {emails.map((m, i) => (
+        <span key={m.email}>
+          {i > 0 && <span className="text-slate-400">, </span>}
+          <span
+            className={
+              m.receives_applicant_digest
+                ? "text-slate-500 opacity-60"
+                : "text-destructive"
+            }
+          >
+            {m.email}
+          </span>
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -687,13 +716,14 @@ function GodEmployersPageContent() {
       <RowCard
         key={e.id}
         title={e.name}
+        subtitle={<TeamEmailsList emails={e.team_emails} />}
         metas={
           <>
-            <BoolBadge
-              state={e.is_verified}
-              onValue="verified"
-              offValue="unverified"
-            />
+            {!e.is_verified && (
+              <Badge type="accent" className="rounded-[0.33em]">
+                unverified
+              </Badge>
+            )}
             <Meta>{e.application_count ?? 0} applications</Meta>
             <Meta>{e.job_count ?? 0} jobs</Meta>
             <LastLogin ts={lastTs} />
@@ -730,8 +760,6 @@ function GodEmployersPageContent() {
             <div>
               Employer ID: <code className="text-slate-500">{e.id}</code>
             </div>
-            <div>Email: {e.email || "—"}</div>
-            <div>Team emails: {e.team_emails || "—"}</div>
             <div>
               Created:{" "}
               {e.created_at ? new Date(e.created_at).toLocaleString() : "—"}

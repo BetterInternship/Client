@@ -44,7 +44,11 @@ export function useGodEmployers(params: {
   sort_dir?: 'asc' | 'desc';
 }) {
   return useQuery({
-    queryKey: ["god-employers", params],
+    // -v2: team_emails' shape changed (comma-joined string -> {email,
+    // receives_applicant_digest}[]) — this query is persisted for 24h
+    // (tanstack-provider.tsx), so the key must change too or old sessions
+    // keep serving the stale string shape and crash TeamEmailsList's .map.
+    queryKey: ["god-employers-v2", params],
     queryFn: () =>
       APIClient.get<PaginatedEmployersResponse>(
         APIRouteBuilder("god")
@@ -67,7 +71,7 @@ export function useVerifyEmployer() {
   return useMutation({
     mutationFn: EmployerAuthService.verifyEmployer,
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
@@ -77,7 +81,7 @@ export function useUnverifyEmployer() {
   return useMutation({
     mutationFn: EmployerAuthService.unverifyEmployer,
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
@@ -111,7 +115,7 @@ export function useCreateListing() {
         data,
       ),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
@@ -125,7 +129,7 @@ export function useRegisterEmployer() {
         data,
       ),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
@@ -144,7 +148,7 @@ export function useRegisterAndList() {
         data,
       ),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
@@ -158,7 +162,7 @@ export function useImportCsv() {
         { rows },
       ),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+      queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
   });
 }
