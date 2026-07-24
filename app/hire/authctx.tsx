@@ -20,6 +20,7 @@ interface IAuthContext {
   verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
   login: (email: string, password: string) => Promise<AuthUser | null>;
   loginAs: (employer_id: string) => Promise<AuthUser | null>;
+  exitProxy: () => Promise<AuthUser | null>;
   emailStatus: (
     email: string,
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
@@ -140,6 +141,23 @@ export const AuthContextProvider = ({
     return response.user;
   };
 
+  const exitProxy = async () => {
+    const response = await EmployerAuthService.exitProxy();
+    if (!response.success) {
+      alert("Error returning to your own account.");
+      return null;
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
+    ]);
+    setProxy("");
+    setUser(response.user);
+    return response.user;
+  };
+
   const emailStatus = async (email: string) => {
     const response = await EmployerAuthService.emailStatus(email);
     return response;
@@ -190,6 +208,7 @@ export const AuthContextProvider = ({
         // @ts-expect-error
         login,
         loginAs,
+        exitProxy,
         loading,
         emailStatus,
         logout,

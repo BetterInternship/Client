@@ -91,12 +91,12 @@ export function RowCard(props: {
         <div className="">{leftActions}</div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="truncate font-medium text-slate-800">{title}</div>
-            {subtitle ? (
-              <div className="truncate text-sm text-slate-500">{subtitle}</div>
-            ) : null}
-          </div>
+          <div className="truncate font-medium text-slate-800">{title}</div>
+          {subtitle ? (
+            <div className="truncate text-sm text-slate-500 mt-0.5">
+              {subtitle}
+            </div>
+          ) : null}
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
             {metas}
           </div>
