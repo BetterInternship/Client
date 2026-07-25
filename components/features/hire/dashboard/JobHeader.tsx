@@ -10,6 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { useNotificationsRequiredModal } from "@/hooks/use-notifications-required-modal";
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +31,8 @@ export default function JobHeader({
   const { ownedJobs, update_job, delete_job, unpause_job } = useOwnedJobs();
   const { saving } = useListingsBusinessLogic(ownedJobs);
   const [reEnabling, setReEnabling] = useState(false);
+  const [togglingActive, setTogglingActive] = useState(false);
+  const openNotificationsRequiredModal = useNotificationsRequiredModal();
 
   const handleBack = () => {
     if (backHref) return router.replace(backHref);
@@ -38,12 +41,20 @@ export default function JobHeader({
 
   const handleToggleActive = async () => {
     if (!job.id || job.paused) return;
+    setTogglingActive(true);
+    try {
+      const updates = { is_active: !job.is_active };
+      const result = await update_job(job.id, updates);
 
-    const updates = { is_active: !job.is_active };
-    const result = await update_job(job.id, updates);
-
-    if (result.success && onJobUpdate) {
-      onJobUpdate(updates);
+      if (result.success && onJobUpdate) {
+        onJobUpdate(updates);
+      } else if (result.code === "notifications_required") {
+        openNotificationsRequiredModal(handleToggleActive);
+      } else if (!result.success) {
+        toast.error(result.message || "Could not update this listing.");
+      }
+    } finally {
+      setTogglingActive(false);
     }
   };
 
@@ -59,6 +70,10 @@ export default function JobHeader({
           paused_at: null,
           waiting_count: 0,
         });
+      } else if (result.code === "notifications_required") {
+        openNotificationsRequiredModal(handleReEnable);
+      } else if (!result.success) {
+        toast.error(result.message || "Could not reactivate this listing.");
       }
     } finally {
       setReEnabling(false);
@@ -208,6 +223,7 @@ export default function JobHeader({
                       <Toggle
                         state={job.is_active}
                         onClick={() => void handleToggleActive()}
+                        loading={togglingActive}
                       />
                     </div>
                     <span
@@ -398,6 +414,7 @@ export default function JobHeader({
                       <Toggle
                         state={job.is_active}
                         onClick={() => void handleToggleActive()}
+                        loading={togglingActive}
                       />
                     </div>
                     <span
