@@ -60,6 +60,7 @@ function AutocompleteBase<ID extends number | string>({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const sheetInputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
+  const [sheetBottom, setSheetBottom] = useState(0);
 
   const inputId = useId();
 
@@ -180,6 +181,26 @@ function AutocompleteBase<ID extends number | string>({
     }, 80);
 
     return () => window.clearTimeout(focusTimer);
+  }, [isOpen, useMobileSheet]);
+
+  // track visual viewport for autocomplete mobile popup
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) return;
+
+    const updateBottom = () => {
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      setSheetBottom(Math.max(0, window.innerHeight - vh));
+    };
+
+    updateBottom();
+
+    window.visualViewport?.addEventListener("resize", updateBottom);
+    window.visualViewport?.addEventListener("scroll", updateBottom);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateBottom);
+      window.visualViewport?.removeEventListener("scroll", updateBottom);
+    };
   }, [isOpen, useMobileSheet]);
 
   const suppressMobileKeyboard =
@@ -374,14 +395,10 @@ function AutocompleteBase<ID extends number | string>({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
-            style={
-              useInlineMobileDropdown && dropdownMaxHeight !== undefined
-                ? { maxHeight: dropdownMaxHeight }
-                : undefined
-            }
+            style={{ bottom: sheetBottom }}
           >
             {useMobileSheet && (
               <li className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-3">
