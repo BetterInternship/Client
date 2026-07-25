@@ -120,9 +120,13 @@ class FetchClient {
       if (!response.ok && response.status !== 304) {
         const errorData = (await response.json().catch(() => ({}))) as {
           message?: string;
+          [key: string]: unknown;
         };
         console.warn(`${url}: ${errorData.message || response.status}`);
-        return { error: errorData.message } as T;
+        // Spread first so `.error` (the field every existing caller reads)
+        // always wins, while extra structured fields an endpoint attaches to
+        // its error body (e.g. eligible_listings on a 409) still survive.
+        return { ...errorData, error: errorData.message } as T;
         // throw new Error(errorData.message || "Something went wrong.");
       }
 
