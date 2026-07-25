@@ -3,19 +3,25 @@ import { cn } from "@/lib/utils";
 export const Toggle = ({
   state,
   onClick,
+  loading,
 }: {
   state: boolean | null | undefined;
   onClick: () => void;
+  loading?: boolean;
 }) => {
   return (
     <button
-      onClick={async (e) => {
+      type="button"
+      disabled={loading}
+      onClick={(e) => {
         e.stopPropagation();
+        if (loading) return;
         onClick();
       }}
       className={cn(
         "relative flex h-4 w-7 items-center rounded-full transition-colors focus:ring-transparent z-30",
-        state ? "bg-primary" : "bg-gray-300"
+        state ? "bg-primary" : "bg-gray-300",
+        loading ? "cursor-wait opacity-60" : "cursor-pointer"
       )}
     >
       <span

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -82,12 +83,17 @@ export function NotificationsTab() {
             Get an email whenever your listings receive new applicants.
           </p>
         </div>
-        <Switch
-          id="applicant-digest"
-          checked={me.receives_applicant_digest}
-          disabled={updateNotifications.isPending}
-          onCheckedChange={handleCheckedChange}
-        />
+        <div className="flex items-center gap-2">
+          {updateNotifications.isPending && (
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          )}
+          <Switch
+            id="applicant-digest"
+            checked={me.receives_applicant_digest}
+            disabled={updateNotifications.isPending}
+            onCheckedChange={handleCheckedChange}
+          />
+        </div>
       </div>
     </Card>
   );
