@@ -113,6 +113,22 @@ interface EmployerSelfResponse extends FetchResponse {
   user: EmployerSelf;
 }
 
+// A listing named in the 409 body (or, on success, actually closed) by the
+// last-subscriber cascade (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md §6.3).
+export interface EligibleListing {
+  id: string;
+  title: string;
+}
+
+interface UpdateNotificationsResponse extends EmployerSelfResponse {
+  // Present on a 409: this write would leave zero subscribed recipients with
+  // active listings still open. Absent on success.
+  eligible_listings?: EligibleListing[];
+  // Present on success when close_active_listings actually triggered a
+  // cascade; otherwise [].
+  closed_listing_ids?: string[];
+}
+
 interface EmployerTeamResponse extends FetchResponse {
   users: EmployerTeamMember[];
 }
@@ -162,10 +178,13 @@ export const EmployerUserService = {
     );
   },
 
-  async updateMyNotifications(receives_applicant_digest: boolean) {
-    return APIClient.patch<EmployerSelfResponse>(
+  async updateMyNotifications(
+    receives_applicant_digest: boolean,
+    close_active_listings?: boolean,
+  ) {
+    return APIClient.patch<UpdateNotificationsResponse>(
       APIRouteBuilder("employer-users").r("me", "notifications").build(),
-      { receives_applicant_digest },
+      { receives_applicant_digest, close_active_listings },
     );
   },
 
@@ -645,6 +664,10 @@ interface WaitlistedJobsResponse extends FetchResponse {
   waitlisted?: JobWaitlist[];
 }
 
+interface DeactivateBulkResponse extends FetchResponse {
+  job_ids: string[];
+}
+
 export const JobService = {
   async getAllJobs() {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
@@ -734,6 +757,13 @@ export const JobService = {
   async unpauseAllJobs() {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("unpause-all").build(),
+    );
+  },
+
+  async deactivateBulk(jobIds: string[]) {
+    return APIClient.post<DeactivateBulkResponse>(
+      APIRouteBuilder("jobs").r("deactivate-bulk").build(),
+      { job_ids: jobIds },
     );
   },
 

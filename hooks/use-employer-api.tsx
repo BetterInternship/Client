@@ -351,9 +351,28 @@ export function useChangeMyPassword() {
 export function useUpdateMyNotifications() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (receivesDigest: boolean) =>
-      EmployerUserService.updateMyNotifications(receivesDigest),
+    mutationFn: ({
+      receivesDigest,
+      closeActiveListings,
+    }: {
+      receivesDigest: boolean;
+      closeActiveListings?: boolean;
+    }) =>
+      EmployerUserService.updateMyNotifications(
+        receivesDigest,
+        closeActiveListings,
+      ),
     onSuccess: () => invalidateAccountQueries(queryClient),
+  });
+}
+
+/** POST /jobs/deactivate-bulk — the digest opt-out dialog's "Close only these
+ * listings" action (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md §6.4). Not
+ * tied to useOwnedJobs' local cache — callers refetch that hook explicitly
+ * once this resolves. */
+export function useDeactivateBulkJobs() {
+  return useMutation({
+    mutationFn: (jobIds: string[]) => JobService.deactivateBulk(jobIds),
   });
 }
 

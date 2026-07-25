@@ -78,6 +78,11 @@ export interface EmployerSelf
   role: EmployerUserRole;
   is_owner: boolean;
   receives_applicant_digest: boolean;
+  // Live teammates, excluding self, with the digest flag on
+  // (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md §6.2) — lets the
+  // Notifications tab know whether turning its own flag off would be the
+  // last one, without the ADMIN-only listTeam endpoint.
+  other_subscribed_recipients: number;
 }
 
 export interface EmployerTeamMember
