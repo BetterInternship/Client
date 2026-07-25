@@ -29,6 +29,8 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
 import { AddResumeModal } from "../features/student/profile/AddResumeModal";
 import { HeaderIcon } from "../ui/text";
+import { DigestOptoutModalContent } from "../features/hire/account/digest-optout-dialog";
+import type { EligibleListing } from "@/lib/api/services";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -533,6 +535,39 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("super-listing-closed"),
+      },
+
+      // Warns before turning off the applicant digest would leave every
+      // active listing unattended (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md).
+      digestOptout: {
+        open: ({
+          companyName,
+          listings,
+          onDone,
+        }: {
+          companyName: string;
+          listings: EligibleListing[];
+          onDone: () => void;
+        }) =>
+          open(
+            "digest-optout",
+            DefaultModalLayout,
+            <DigestOptoutModalContent
+              companyName={companyName}
+              listings={listings}
+              onDone={() => {
+                onDone();
+                close("digest-optout");
+              }}
+            />,
+            {
+              title: "Turn off applicant emails?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("digest-optout"),
       },
 
       closeAll: () => close(),
