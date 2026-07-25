@@ -11,6 +11,8 @@ import { FetchResponse } from "@/lib/api/use-fetch";
 import { ArrowRight, Check, Lock, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { toast } from "sonner";
+import { useNotificationsRequiredModal } from "@/hooks/use-notifications-required-modal";
 
 interface JobListingProps {
   job: Job;
@@ -27,6 +29,7 @@ export function JobListingsBox({
 }: JobListingProps) {
   const isSuperListing = Boolean(job.challenge);
   const [reEnabling, setReEnabling] = useState(false);
+  const openNotificationsRequiredModal = useNotificationsRequiredModal();
   const applicants = applications.filter(
     (application) =>
       application.job_id === job.id &&
@@ -39,7 +42,12 @@ export function JobListingsBox({
     if (!job.id || !onReactivate) return;
     setReEnabling(true);
     try {
-      await onReactivate(job.id);
+      const result = await onReactivate(job.id);
+      if (result.code === "notifications_required") {
+        openNotificationsRequiredModal(handleReEnable);
+      } else if (!result.success) {
+        toast.error(result.message || "Could not reactivate this listing.");
+      }
     } finally {
       setReEnabling(false);
     }

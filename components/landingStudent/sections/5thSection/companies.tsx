@@ -18,7 +18,8 @@ interface LogoColumnProps {
 function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
   const CYCLE_DURATION = 5000;
   const columnDelay = columnIndex * 200;
-  const adjustedTime = (currentTime + columnDelay) % (CYCLE_DURATION * logos.length);
+  const adjustedTime =
+    (currentTime + columnDelay) % (CYCLE_DURATION * logos.length);
   const currentIndex = Math.floor(adjustedTime / CYCLE_DURATION);
   const currentLogo = logos[currentIndex];
 
@@ -80,7 +81,7 @@ function LogoTile({
   const CYCLE_DURATION = 4500;
   const base = Math.floor(
     (currentTime % (CYCLE_DURATION * Math.max(1, logos.length))) /
-      CYCLE_DURATION
+      CYCLE_DURATION,
   );
   const stride = Math.max(1, Math.ceil(logos.length / 4)); // spread choices across list
   const idx = logos.length ? (base + slot * stride) % logos.length : 0;
@@ -150,7 +151,7 @@ export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
       });
       return result;
     },
-    [columns]
+    [columns],
   );
 
   useEffect(() => {

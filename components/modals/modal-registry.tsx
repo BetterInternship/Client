@@ -1,5 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { FileUp, LucideIcon, Trash2 } from "lucide-react";
+import { BellOff, FileUp, LucideIcon, Trash2 } from "lucide-react";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -29,6 +29,8 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
 import { AddResumeModal } from "../features/student/profile/AddResumeModal";
 import { HeaderIcon } from "../ui/text";
+import { DigestOptoutModalContent } from "../features/hire/account/digest-optout-dialog";
+import type { EligibleListing } from "@/lib/api/services";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -533,6 +535,70 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("super-listing-closed"),
+      },
+
+      // Warns before turning off the applicant digest would leave every
+      // active listing unattended (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md).
+      digestOptout: {
+        open: ({
+          companyName,
+          listings,
+          onDone,
+        }: {
+          companyName: string;
+          listings: EligibleListing[];
+          onDone: () => void;
+        }) =>
+          open(
+            "digest-optout",
+            DefaultModalLayout,
+            <DigestOptoutModalContent
+              companyName={companyName}
+              listings={listings}
+              onDone={() => {
+                onDone();
+                close("digest-optout");
+              }}
+            />,
+            {
+              title: "Turn off applicant emails?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("digest-optout"),
+      },
+
+      // Blocks turning a listing back on (activating or reactivating) while
+      // zero teammates have applicant emails on — the inverse of
+      // digestOptout above (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md).
+      // Dismissible (X/backdrop/escape), unlike the generic `warning` entry.
+      notificationsRequired: {
+        open: ({ onTurnOn }: { onTurnOn: () => void }) =>
+          open(
+            "notifications-required",
+            DefaultModalLayout,
+            <WarningModal
+              icon={BellOff}
+              iconColor="text-amber-500"
+              title="Notifications are off"
+              message="No one on your team currently receives applicant emails. Turn on notifications before you can have active listings."
+              primaryAction={{
+                label: "Turn on notifications",
+                onClick: onTurnOn,
+              }}
+              close={() => close("notifications-required")}
+            />,
+            {
+              title: " ",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showCloseButton: true,
+              panelClassName: "sm:max-w-md",
+            },
+          ),
+        close: () => close("notifications-required"),
       },
 
       closeAll: () => close(),

@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
+import { FetchResponse } from "@/lib/api/use-fetch";
+import { useNotificationsRequiredModal } from "@/hooks/use-notifications-required-modal";
 
 export function PausedListingsBanner({
   jobs,
   onUnpauseAll,
 }: {
   jobs: Job[];
-  onUnpauseAll: () => Promise<unknown>;
+  onUnpauseAll: () => Promise<FetchResponse>;
 }) {
   const [reEnabling, setReEnabling] = useState(false);
+  const openNotificationsRequiredModal = useNotificationsRequiredModal();
   const pausedJobs = jobs.filter((job) => job.paused);
   const pausedCount = pausedJobs.length;
   const waitingTotal = pausedJobs.reduce(
@@ -26,7 +30,12 @@ export function PausedListingsBanner({
   const handleReEnableAll = async () => {
     setReEnabling(true);
     try {
-      await onUnpauseAll();
+      const result = await onUnpauseAll();
+      if (result.code === "notifications_required") {
+        openNotificationsRequiredModal(handleReEnableAll);
+      } else if (!result.success) {
+        toast.error(result.message || "Could not reactivate your listings.");
+      }
     } finally {
       setReEnabling(false);
     }

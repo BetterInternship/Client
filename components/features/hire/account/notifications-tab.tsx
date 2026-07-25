@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import {
   useProfile,
   useUpdateMyNotifications,
 } from "@/hooks/use-employer-api";
-import { DigestOptoutDialog } from "./digest-optout-dialog";
+import { useModalRegistry } from "@/components/modals/modal-registry";
 import type { EligibleListing } from "@/lib/api/services";
 
 export function NotificationsTab() {
@@ -18,9 +19,7 @@ export function NotificationsTab() {
   const { data: employer } = useProfile();
   const { ownedJobs, refetch: refetchOwnedJobs } = useOwnedJobs();
   const updateNotifications = useUpdateMyNotifications();
-  const [dialogListings, setDialogListings] = useState<EligibleListing[] | null>(
-    null,
-  );
+  const modalRegistry = useModalRegistry();
 
   // Client-side estimate for display only — the server always re-derives the
   // authoritative eligible set at confirm time (plan §6.3/§7.2).
@@ -39,6 +38,14 @@ export function NotificationsTab() {
     return <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>;
   }
 
+  const openOptoutDialog = (listings: EligibleListing[]) => {
+    modalRegistry.digestOptout.open({
+      companyName: employer?.name || "your company",
+      listings,
+      onDone: () => refetchOwnedJobs(),
+    });
+  };
+
   const handleCheckedChange = async (checked: boolean) => {
     if (checked) {
       // Turning the digest on never warns (D7/D8 only gate turning it off).
@@ -55,33 +62,31 @@ export function NotificationsTab() {
         receivesDigest: false,
       });
       if (result.eligible_listings?.length) {
-        setDialogListings(result.eligible_listings);
+        openOptoutDialog(result.eligible_listings);
       }
       return;
     }
 
     // Last subscriber with active listings — nothing is written until the
     // dialog resolves (D5).
-    setDialogListings(eligibleListings);
-  };
-
-  const handleDialogDone = () => {
-    setDialogListings(null);
-    refetchOwnedJobs();
+    openOptoutDialog(eligibleListings);
   };
 
   return (
-    <>
-      <Card className="p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <Label htmlFor="applicant-digest" className="text-sm font-medium text-gray-900">
-              Daily applicant digest
-            </Label>
-            <p className="text-sm text-muted-foreground mt-1">
-              Get an email whenever your listings receive new applicants.
-            </p>
-          </div>
+    <Card className="p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <Label htmlFor="applicant-digest" className="text-sm font-medium text-gray-900">
+            Daily applicant digest
+          </Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Get an email whenever your listings receive new applicants.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {updateNotifications.isPending && (
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          )}
           <Switch
             id="applicant-digest"
             checked={me.receives_applicant_digest}
@@ -89,15 +94,7 @@ export function NotificationsTab() {
             onCheckedChange={handleCheckedChange}
           />
         </div>
-      </Card>
-
-      <DigestOptoutDialog
-        open={dialogListings !== null}
-        onOpenChange={(open) => !open && setDialogListings(null)}
-        companyName={employer?.name || "your company"}
-        listings={dialogListings ?? []}
-        onDone={handleDialogDone}
-      />
-    </>
+      </div>
+    </Card>
   );
 }
