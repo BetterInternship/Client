@@ -395,7 +395,7 @@ function AutocompleteBase<ID extends number | string>({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70dvh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={{ bottom: sheetBottom }}
@@ -839,7 +839,7 @@ export function AutocompleteTreeMulti({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70dvh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={{ bottom: sheetBottom }}
