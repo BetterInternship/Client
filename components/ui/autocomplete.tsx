@@ -614,6 +614,7 @@ export function AutocompleteTreeMulti({
   });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLButtonElement | null>(null);
+  const [sheetBottom, setSheetBottom] = useState(0);
 
   // Build ID -> label map (child shows "Parent · Child")
   const labelMap = useMemo(() => {
@@ -755,6 +756,26 @@ export function AutocompleteTreeMulti({
     };
   }, [isOpen, useInlineMobileDropdown]);
 
+  // track visual viewport for autocomplete mobile popup
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) return;
+
+    const updateBottom = () => {
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      setSheetBottom(Math.max(0, window.innerHeight - vh));
+    };
+
+    updateBottom();
+
+    window.visualViewport?.addEventListener("resize", updateBottom);
+    window.visualViewport?.addEventListener("scroll", updateBottom);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateBottom);
+      window.visualViewport?.removeEventListener("scroll", updateBottom);
+    };
+  }, [isOpen, useMobileSheet]);
+
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
@@ -818,14 +839,10 @@ export function AutocompleteTreeMulti({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
-            style={
-              useInlineMobileDropdown && dropdownMaxHeight !== undefined
-                ? { maxHeight: dropdownMaxHeight }
-                : undefined
-            }
+            style={{ bottom: sheetBottom }}
           >
             {filteredTree.length ? (
               filteredTree.map((p) => {
