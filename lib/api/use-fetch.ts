@@ -11,4 +11,8 @@
 export interface FetchResponse {
   success?: boolean;
   message?: string;
+  // Present on some failure responses so the client can distinguish a specific,
+  // known failure reason from a generic one without string-matching `message`
+  // (e.g. "notifications_required" — see jobs.controller.ts).
+  code?: string;
 }

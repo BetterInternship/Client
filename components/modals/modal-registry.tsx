@@ -1,5 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { FileUp, LucideIcon, Trash2 } from "lucide-react";
+import { BellOff, FileUp, LucideIcon, Trash2 } from "lucide-react";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -568,6 +568,37 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("digest-optout"),
+      },
+
+      // Blocks turning a listing back on (activating or reactivating) while
+      // zero teammates have applicant emails on — the inverse of
+      // digestOptout above (Docs/plans/DIGEST_UNSUBSCRIBE_MODAL_PLAN.md).
+      // Dismissible (X/backdrop/escape), unlike the generic `warning` entry.
+      notificationsRequired: {
+        open: ({ onTurnOn }: { onTurnOn: () => void }) =>
+          open(
+            "notifications-required",
+            DefaultModalLayout,
+            <WarningModal
+              icon={BellOff}
+              iconColor="text-amber-500"
+              title="Notifications are off"
+              message="No one on your team currently receives applicant emails. Turn on notifications before you can have active listings."
+              primaryAction={{
+                label: "Turn on notifications",
+                onClick: onTurnOn,
+              }}
+              close={() => close("notifications-required")}
+            />,
+            {
+              title: " ",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showCloseButton: true,
+              panelClassName: "sm:max-w-md",
+            },
+          ),
+        close: () => close("notifications-required"),
       },
 
       closeAll: () => close(),
