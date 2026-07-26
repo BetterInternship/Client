@@ -43,12 +43,12 @@ const imageOrigins = [
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdnjs.cloudflare.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdnjs.cloudflare.com https://*.posthog.com;
   frame-src 'self' http://localhost:* ${connectOrigins};
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: http://localhost:* ${imageOrigins};
   font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' http://localhost:* https://storage.googleapis.com ${connectOrigins};
+  connect-src 'self' http://localhost:* https://storage.googleapis.com https://*.posthog.com ${connectOrigins};
   object-src 'none';
   base-uri 'self';
   form-action 'self';
