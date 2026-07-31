@@ -60,6 +60,10 @@ function AutocompleteBase<ID extends number | string>({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const sheetInputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
+  const [sheetViewport, setSheetViewport] = useState<{
+    top: number;
+    height: number;
+  } | null>(null);
 
   const inputId = useId();
 
@@ -180,6 +184,30 @@ function AutocompleteBase<ID extends number | string>({
     }, 80);
 
     return () => window.clearTimeout(focusTimer);
+  }, [isOpen, useMobileSheet]);
+
+  // track visual viewport for autocomplete mobile popup
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) {
+      setSheetViewport(null);
+      return;
+    }
+
+    const updateViewport = () => {
+      const top = window.visualViewport?.offsetTop ?? 0;
+      const height = window.visualViewport?.height ?? window.innerHeight;
+      setSheetViewport({ top, height });
+    };
+
+    updateViewport();
+
+    window.visualViewport?.addEventListener("resize", updateViewport);
+    window.visualViewport?.addEventListener("scroll", updateViewport);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateViewport);
+      window.visualViewport?.removeEventListener("scroll", updateViewport);
+    };
   }, [isOpen, useMobileSheet]);
 
   const suppressMobileKeyboard =
@@ -374,12 +402,15 @@ function AutocompleteBase<ID extends number | string>({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={
-              useInlineMobileDropdown && dropdownMaxHeight !== undefined
-                ? { maxHeight: dropdownMaxHeight }
+              useMobileSheet && sheetViewport
+                ? {
+                    top: sheetViewport.top,
+                    maxHeight: sheetViewport.height,
+                  }
                 : undefined
             }
           >
@@ -597,6 +628,10 @@ export function AutocompleteTreeMulti({
   });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLButtonElement | null>(null);
+  const [sheetViewport, setSheetViewport] = useState<{
+    top: number;
+    height: number;
+  } | null>(null);
 
   // Build ID -> label map (child shows "Parent · Child")
   const labelMap = useMemo(() => {
@@ -738,6 +773,30 @@ export function AutocompleteTreeMulti({
     };
   }, [isOpen, useInlineMobileDropdown]);
 
+  // track visual viewport for autocomplete mobile popup
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) {
+      setSheetViewport(null);
+      return;
+    }
+
+    const updateViewport = () => {
+      const top = window.visualViewport?.offsetTop ?? 0;
+      const height = window.visualViewport?.height ?? window.innerHeight;
+      setSheetViewport({ top, height });
+    };
+
+    updateViewport();
+
+    window.visualViewport?.addEventListener("resize", updateViewport);
+    window.visualViewport?.addEventListener("scroll", updateViewport);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateViewport);
+      window.visualViewport?.removeEventListener("scroll", updateViewport);
+    };
+  }, [isOpen, useMobileSheet]);
+
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
@@ -801,12 +860,15 @@ export function AutocompleteTreeMulti({
             className={cn(
               "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
               useMobileSheet
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={
-              useInlineMobileDropdown && dropdownMaxHeight !== undefined
-                ? { maxHeight: dropdownMaxHeight }
+              useMobileSheet && sheetViewport
+                ? {
+                    top: sheetViewport.top,
+                    maxHeight: sheetViewport.height,
+                  }
                 : undefined
             }
           >

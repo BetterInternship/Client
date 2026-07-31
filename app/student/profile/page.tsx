@@ -364,7 +364,6 @@ export default function ProfilePage() {
                   ref={profileEditorRef}
                   initialTab="Student Profile"
                   initialOpenSections={openProfileSections}
-                  actionSlot={editActions}
                   resumeManager={resumeManager}
                 />
               </ProfileEditForm>
