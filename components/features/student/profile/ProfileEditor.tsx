@@ -39,7 +39,7 @@ import {
   isValidOptionalURL,
   toURL,
 } from "@/lib/utils/url-utils";
-import { sortUniversityOptions } from "@/lib/student-forms-access";
+import { sortUniversityOptions, universityAcronyms } from "@/lib/student-forms-access";
 import { DEGREES } from "@/app/student/register/steps/tempDegrees";
 import { ResumeSection } from "./ResumeSection";
 import type { ProfileResumeManager, ProfileSectionKey } from "./profile-types";
@@ -485,7 +485,13 @@ export const ProfileEditor = forwardRef<
                 <div className="mt-3 flex flex-col space-y-3">
                   <EditFieldRow label="University">
                     <Autocomplete
-                      options={sortUniversityOptions(universityOptions)}
+                      options={sortUniversityOptions(universityOptions).map(
+                        (u) => ({
+                          id: u.id,
+                          name: u.name,
+                          keywords: universityAcronyms(u.name),
+                        }),
+                      )}
                       value={formData.university}
                       setter={fieldSetter("university")}
                       placeholder="Select University"
