@@ -5,7 +5,7 @@ import { UseFormReturn } from "react-hook-form";
 import { FormInputs } from "../page";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { DEGREES } from "./tempDegrees";
-import { sortUniversityOptions } from "../../../../lib/student-forms-access";
+import { sortUniversityOptions, universityAcronyms } from "../../../../lib/student-forms-access";
 import {
   Accordion,
   AccordionContent,
@@ -38,7 +38,13 @@ export function RegisterStep({
   const hasValidUniversity = refs.universities.some(
     (option) => option.id === university,
   );
-  const universityOptions = sortUniversityOptions(refs.universities);
+  const universityOptions = sortUniversityOptions(refs.universities).map(
+    (u) => ({
+      id: u.id,
+      name: u.name,
+      keywords: universityAcronyms(u.name),
+    }),
+  );
   const canCreateAccount =
     firstName.trim() && lastName.trim() && hasValidUniversity && degree.trim();
 
@@ -78,7 +84,7 @@ export function RegisterStep({
         setter={(val) => {
           regForm.setValue("university", val === null ? "" : String(val));
         }}
-        options={universityOptions as { id: string; name: string }[]}
+        options={universityOptions}
         value={university}
         required={true}
         preserveOptionOrder={true}

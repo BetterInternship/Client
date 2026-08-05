@@ -12,6 +12,7 @@ import { useAppContext } from "@/lib/ctx-app";
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
   name: string;
+  keywords?: string[];
 }
 
 type MobileDropdownMode = "sheet" | "inline";
@@ -70,15 +71,21 @@ function AutocompleteBase<ID extends number | string>({
   const findExactOption = (value: string) => {
     const normalizedValue = value.trim().toLowerCase();
     return options.find(
-      (o) => o.name?.trim().toLowerCase() === normalizedValue,
+      (o) =>
+        o.name?.trim().toLowerCase() === normalizedValue ||
+        o.keywords?.some((k) => k === normalizedValue),
     );
   };
 
-  const resolveQuerySelection = (nextQuery: string) => {
+  const resolveQuerySelection = (nextQuery: string, matchKeywords = true) => {
     const text = nextQuery.trim();
     if (!text) return false;
 
-    const exact = findExactOption(text);
+    const exact = matchKeywords
+      ? findExactOption(text)
+      : options.find(
+          (o) => o.name?.trim().toLowerCase() === text.toLowerCase(),
+        );
     if (exact) {
       setter([exact.id]);
       setQuery("");
@@ -99,7 +106,11 @@ function AutocompleteBase<ID extends number | string>({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const base = q
-      ? options.filter((o) => o.name?.toLowerCase().includes(q))
+      ? options.filter(
+          (o) =>
+            o.name?.toLowerCase().includes(q) ||
+            o.keywords?.some((k) => k.includes(q)),
+        )
       : options;
     return preserveOptionOrder
       ? base
@@ -354,7 +365,12 @@ function AutocompleteBase<ID extends number | string>({
             }
 
             const exact = findExactOption(nextQuery);
-            if (exact) {
+            // Only auto-fill on an exact NAME match; keyword/acronym matches
+            // (e.g. "dlsu") require an explicit Enter, blur, or click.
+            if (
+              exact &&
+              exact.name.trim().toLowerCase() === nextQuery.trim().toLowerCase()
+            ) {
               setter([exact.id]);
               setQuery("");
             } else {
@@ -371,7 +387,7 @@ function AutocompleteBase<ID extends number | string>({
             }
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && resolveQuerySelection(query)) {
+            if (e.key === "Enter" && resolveQuerySelection(query, true)) {
               setIsOpen(false);
               e.preventDefault();
             }
@@ -382,7 +398,7 @@ function AutocompleteBase<ID extends number | string>({
               if (Date.now() - lastSelectionRef.current < 250) {
                 return;
               }
-              resolveQuerySelection(query);
+              resolveQuerySelection(query, false);
             }, 150);
           }}
         />

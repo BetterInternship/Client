@@ -25,3 +25,49 @@ export const sortUniversityOptions = (universities: University[]) => {
       return 0;
     });
 };
+
+const ACRONYM_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "at",
+  "for",
+  "in",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "with",
+  "&",
+]);
+
+/**
+ * Generates candidate search acronyms for a university name so that queries
+ * like "dlsu" can match "De La Salle University".
+ *
+ * Returns two variants:
+ * - strict: initials of capitalized words only ("Ateneo de Manila University" -> "amu")
+ * - loose: also includes meaningful lowercase connectors like "de" ("admu")
+ *
+ * @param name The university name.
+ * @returns Unique, lowercased acronym candidates (may be empty).
+ */
+export const universityAcronyms = (name: string): string[] => {
+  const parts = name.split(/[\s-]+/).filter((p) => p.length > 0);
+  const strict = parts
+    .filter((p) => p[0] === p[0].toUpperCase())
+    .map((p) => p[0].toUpperCase())
+    .join("");
+  const loose = parts
+    .filter((p) => {
+      const first = p[0];
+      if (first === first.toUpperCase()) return true;
+      return !ACRONYM_STOPWORDS.has(p.toLowerCase());
+    })
+    .map((p) => p[0].toUpperCase())
+    .join("");
+  return Array.from(
+    new Set([strict, loose].filter(Boolean).map((a) => a.toLowerCase())),
+  );
+};
