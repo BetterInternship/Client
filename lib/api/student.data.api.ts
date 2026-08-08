@@ -119,10 +119,7 @@ export function useJobStatus() {
  * link that resolves via the current listing page first, and only falls
  * back to this fetch-by-id when the job isn't on that page).
  */
-export function useJobData(
-  jobId: string,
-  options: { enabled?: boolean } = {},
-) {
+export function useJobData(jobId: string, options: { enabled?: boolean } = {}) {
   const applications = useApplicationsData();
   const applied = !!useMemo(
     () => applications.data.find((application) => application.job_id === jobId),
@@ -135,6 +132,47 @@ export function useJobData(
   });
 
   return { isPending, data: data?.job ?? null, applied, error };
+}
+
+/**
+ * Shared queryKey/queryFn for a job's share link, so ShareJobButton can
+ * pre-mint via queryClient.fetchQuery *before* opening the modal — the
+ * button owns the wait (loader on the button itself, not a flash of empty
+ * state inside the modal) — and useShareLink() below then reads the same,
+ * already-populated cache entry instantly once the modal mounts.
+ */
+export function shareLinkQueryOptions(jobId: string) {
+  return {
+    queryKey: ["share-link", jobId],
+    queryFn: () => JobService.mintShareLink(jobId),
+    staleTime: Infinity,
+  };
+}
+
+/**
+ * Mints (or reuses) a job's short share link. Cached per job id at
+ * staleTime: Infinity so reopening the share dialog for the same job never
+ * re-POSTs (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md defaults).
+ *
+ * A `success: false` mint (no thrown error, just no `url`) is folded into
+ * `isError` here rather than left to React Query's own retry-on-throw path,
+ * so a real failure surfaces immediately instead of after a few silent retries.
+ *
+ * @hook
+ * @param jobId
+ */
+export function useShareLink(jobId: string | undefined) {
+  const { data, isPending, isFetching, isError, refetch } = useQuery({
+    ...shareLinkQueryOptions(jobId as string),
+    enabled: !!jobId,
+  });
+
+  return {
+    url: data?.url,
+    isPending: isPending || isFetching,
+    isError: isError || (!!data && !data.url),
+    refetch,
+  };
 }
 
 /**

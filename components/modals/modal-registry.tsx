@@ -1,5 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { BellOff, FileUp, LucideIcon, Trash2 } from "lucide-react";
+import { BellOff, FileUp, LucideIcon, Share2, Trash2 } from "lucide-react";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -31,6 +31,7 @@ import { AddResumeModal } from "../features/student/profile/AddResumeModal";
 import { HeaderIcon } from "../ui/text";
 import { DigestOptoutModalContent } from "../features/hire/account/digest-optout-dialog";
 import type { EligibleListing } from "@/lib/api/services";
+import { ShareJobModal } from "./components/ShareJobModal";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -134,6 +135,31 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("delete-listing"),
+      },
+      // modal for sharing a job listing's short link
+      // (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D12).
+      shareJob: {
+        open: ({ job }: { job: Job }) =>
+          open("share-job", DefaultModalLayout, <ShareJobModal job={job} />, {
+            title: (
+              <div className="flex min-w-0 items-center gap-3">
+                <HeaderIcon icon={Share2} />
+                <h2 className="truncate text-base font-semibold">
+                  Share listing
+                  {job.title && (
+                    <span className="font-normal text-gray-500">
+                      {" "}
+                      — {job.title}
+                    </span>
+                  )}
+                </h2>
+              </div>
+            ),
+            closeOnBackdropClick: true,
+            closeOnEscapeKey: true,
+            showHeaderDivider: true,
+          }),
+        close: () => close("share-job"),
       },
       // modal for any action performed on a job application.
       applicationAction: {

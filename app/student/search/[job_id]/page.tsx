@@ -133,7 +133,7 @@ export default function JobPage() {
                     </Button>
                     {job.data && !job.data.hibernating && (
                       <div className="flex flex-wrap items-center gap-3">
-                        <ShareJobButton id={job.data.id ?? ""} />
+                        <ShareJobButton job={job.data} />
                         <SaveJobButton job={job.data} />
                         <ApplyToJobButton
                           profile={profile.data}
@@ -215,9 +215,9 @@ export default function JobPage() {
                   </div>
                   {job.data?.id && (
                     <ShareJobButton
-                      id={job.data.id}
+                      job={job.data}
                       className="w-full justify-start"
-                      onCopied={() => setIsActionsSheetOpen(false)}
+                      onOpen={() => setIsActionsSheetOpen(false)}
                     />
                   )}
                 </div>

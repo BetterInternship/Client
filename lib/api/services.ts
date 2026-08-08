@@ -237,7 +237,6 @@ export const EmployerUserService = {
       { receives_applicant_digest },
     );
   },
-
 };
 
 // Auth Services
@@ -668,6 +667,10 @@ interface DeactivateBulkResponse extends FetchResponse {
   job_ids: string[];
 }
 
+export interface ShareLinkResponse extends FetchResponse {
+  url?: string;
+}
+
 export const JobService = {
   async getAllJobs() {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
@@ -782,6 +785,12 @@ export const JobService = {
   async getWaitlistedJobs() {
     return APIClient.get<WaitlistedJobsResponse>(
       APIRouteBuilder("jobs").r("waitlisted").build(),
+    );
+  },
+
+  async mintShareLink(jobId: string) {
+    return APIClient.post<ShareLinkResponse>(
+      APIRouteBuilder("jobs").r(jobId, "share-link").build(),
     );
   },
 };

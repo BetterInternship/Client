@@ -183,9 +183,9 @@ export const JobModal = ({
               </div>
               {job.id && (
                 <ShareJobButton
-                  id={job.id}
+                  job={job}
                   className="w-full justify-start"
-                  onCopied={() => setIsActionsSheetOpen(false)}
+                  onOpen={() => setIsActionsSheetOpen(false)}
                 />
               )}
             </div>

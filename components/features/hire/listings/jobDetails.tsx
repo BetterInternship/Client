@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { JobDetails } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
@@ -9,40 +9,45 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 
 interface JobDetailsPageProps {
   job: Job;
-};
+}
 
-const JobDetailsPage = ({
-  job,
-}: JobDetailsPageProps) => {
+const JobDetailsPage = ({ job }: JobDetailsPageProps) => {
   const router = useRouter();
   const { isMobile } = useAppContext();
   const [exitingBack, setExitingBack] = useState(false);
 
   const handleBack = () => {
     setExitingBack(true);
-    router.push(`/dashboard/manage?jobId=${job.id}`)
+    router.push(`/dashboard/manage?jobId=${job.id}`);
   };
 
   return (
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
+        animate={
+          exitingBack
+            ? { scale: 0.98, filter: "blur(4px)", opacity: 0 }
+            : { scale: 1, filter: "blur(0px)", opacity: 1 }
+        }
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className={cn(
-          "py-2",
-          isMobile ? "px-1" : ""
-        )}
+        className={cn("py-2", isMobile ? "px-1" : "")}
       >
         <Card>
-          <JobDetails job={job} />
+          {/* Employers share to candidates too — same dialog, same endpoint,
+              still a student-domain link (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D14). */}
+          <JobDetails
+            job={job}
+            actions={[<ShareJobButton key="share" job={job} />]}
+          />
         </Card>
       </motion.div>
     </AnimatePresence>
-  )
-}
+  );
+};
 
 export default JobDetailsPage;

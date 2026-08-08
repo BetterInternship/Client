@@ -1,48 +1,60 @@
 "use client";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Copy, CopyCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Loader2, Share2 } from "lucide-react";
+import { Job } from "@/lib/db/db.types";
+import { shareLinkQueryOptions } from "@/lib/api/student.data.api";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 export const ShareJobButton = ({
-  id,
+  job,
   className,
-  onCopied,
+  onOpen,
 }: {
-  id: string;
+  job: Job;
   className?: string;
-  onCopied?: () => void;
+  // Called right before the dialog opens — e.g. to dismiss a mobile actions
+  // sheet the button sits in, the way onCopied used to. Fires *after* the
+  // mint settles (not on click) so the sheet — and this button's loader —
+  // stays visible for the whole wait instead of closing immediately.
+  onOpen?: () => void;
 }) => {
-  const [clicked, setClicked] = useState(false);
+  const modals = useModalRegistry();
+  const queryClient = useQueryClient();
+  const [minting, setMinting] = useState(false);
 
-  const copyJobLink = () => {
-    void navigator.clipboard.writeText(
-      `${process.env.NEXT_PUBLIC_CLIENT_URL}/search/${id}`,
-    );
-    setClicked(true);
-    onCopied?.();
-    setTimeout(() => setClicked(false), 1500);
+  const handleClick = async () => {
+    if (minting || !job.id) return;
+    setMinting(true);
+    try {
+      // Pre-mint so the modal opens with the link already in hand — no
+      // in-modal loading flash. A `success: false` result (no thrown error)
+      // still gets cached; the modal's own useShareLink() reads it and shows
+      // the error + retry state (D13), so failures aren't handled here.
+      await queryClient.fetchQuery(shareLinkQueryOptions(job.id));
+    } catch {
+      // Network-level failure — same deal, let the modal surface it.
+    } finally {
+      setMinting(false);
+    }
+    onOpen?.();
+    modals.shareJob.open({ job });
   };
-
-  useEffect(() => {
-    setClicked(false);
-  }, [id]);
 
   return (
     <Button
       variant="outline"
-      onClick={copyJobLink}
-      name="Copy link"
+      onClick={() => void handleClick()}
+      disabled={minting}
+      name="Share"
       scheme="default"
       size="md"
-      className={cn(
-        "!p-4",
-        clicked ? "text-supportive border-supportive" : "",
-        className,
-      )}
+      className={cn("!p-4", className)}
     >
-      {clicked ? <CopyCheck /> : <Copy />}
-      {clicked ? "Copied link" : "Copy link"}
+      {minting ? <Loader2 className="animate-spin" /> : <Share2 />}
+      Share
     </Button>
   );
 };

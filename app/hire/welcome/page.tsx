@@ -60,9 +60,10 @@ function WelcomeContent() {
   const next = NEXT_WHITELIST.has(rawNext) ? rawNext : "dashboard";
   // Set by the IOM "Post a listing" CTA when this account was provisioned
   // for an IOM company (Docs/plans/CAREER_IOM_LINK_IMPLEMENTATION_PLAN.md
-  // §4.2 follow-up) — the tin is only bound once onboarding actually
-  // finishes, never at account-creation time (see API-Server's
-  // internal.service.ts's ensureEmployer for why).
+  // §4.2 follow-up) — for a passwordless account the tin is only bound once
+  // onboarding actually finishes, never at account-creation time (see
+  // API-Server's internal.service.ts's ensureEmployer for why; accounts
+  // provisioned *with* a password are bound there and never land here).
   const autoLinkToken = searchParams.get("auto_link");
   const router = useRouter();
   const { refreshAuthentication } = useAuthContext();

@@ -567,7 +567,7 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
-                    <ShareJobButton id={selectedJob?.id} />,
+                    <ShareJobButton job={selectedJob} />,
                     <SaveJobButton job={selectedJob} />,
                     <ApplyToJobButton
                       profile={profile.data}
