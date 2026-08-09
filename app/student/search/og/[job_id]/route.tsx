@@ -25,6 +25,38 @@ const spaceGroteskBoldUrl =
   "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf";
 
 /**
+ * Picks a font size from `steps` (ascending `maxLength`, first match wins),
+ * falling back below the smallest size once `text` outgrows every step.
+ * Satori can't measure rendered text width for us, so this approximates
+ * "does it fit" from character count instead — a short title/employer name
+ * gets a much bigger, denser treatment; a long one shrinks toward the size
+ * the fixed layout used before, where the 2-line clamp (title) or ellipsis
+ * (employer) still guarantees it never overflows the card.
+ */
+function fontSizeForLength(
+  length: number,
+  steps: { maxLength: number; size: number }[],
+  fallback: number,
+): number {
+  return steps.find((step) => length <= step.maxLength)?.size ?? fallback;
+}
+
+const TITLE_FONT_STEPS = [
+  { maxLength: 16, size: 88 },
+  { maxLength: 28, size: 74 },
+  { maxLength: 42, size: 62 },
+  { maxLength: 60, size: 52 },
+];
+const TITLE_FONT_FALLBACK = 44;
+
+const EMPLOYER_FONT_STEPS = [
+  { maxLength: 14, size: 42 },
+  { maxLength: 24, size: 36 },
+  { maxLength: 36, size: 32 },
+];
+const EMPLOYER_FONT_FALLBACK = 28;
+
+/**
  * Compensation tag text (D2): the exact figure when the job is salaried,
  * the allowance-category label otherwise. Mirrors the allowance === 0
  * sentinel + pay-freq branching already established in JobDetailsSummary
@@ -100,6 +132,16 @@ export async function GET(
       ...(compensationTag ? [compensationTag] : []),
     ];
     const employerName = job.employer?.name ?? "BetterInternship";
+    const titleFontSize = fontSizeForLength(
+      job.title?.length ?? 0,
+      TITLE_FONT_STEPS,
+      TITLE_FONT_FALLBACK,
+    );
+    const employerFontSize = fontSizeForLength(
+      employerName.length,
+      EMPLOYER_FONT_STEPS,
+      EMPLOYER_FONT_FALLBACK,
+    );
 
     return new ImageResponse(
       <div
@@ -136,7 +178,7 @@ export async function GET(
             flexDirection: "column",
             alignItems: "center",
             color: "#061633",
-            gap: 20,
+            gap: 24,
             zIndex: 1,
           }}
         >
@@ -169,9 +211,10 @@ export async function GET(
               WebkitBoxOrient: "vertical",
               WebkitLineClamp: 2,
               overflow: "hidden",
+              textOverflow: "ellipsis",
               maxWidth: 980,
               color: "#061633",
-              fontSize: 58,
+              fontSize: titleFontSize,
               fontWeight: 700,
               lineHeight: 1.2,
               letterSpacing: 0,
@@ -183,8 +226,12 @@ export async function GET(
 
           <div
             style={{
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              maxWidth: 980,
               color: "#345064",
-              fontSize: 30,
+              fontSize: employerFontSize,
               fontWeight: 500,
               textAlign: "center",
             }}
