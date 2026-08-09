@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
-
-interface JobPreview {
-  title?: string | null;
-  description?: string | null;
-  employer?: { name?: string | null } | null;
-}
+import { fetchJobPreview } from "@/lib/api/job-preview.server";
 
 /**
  * job.description is Markdown (rendered via react-markdown — see
@@ -29,11 +24,12 @@ const stripMarkdown = (text: string): string =>
  * follow the short link's 307 and read these tags at the destination, so
  * short and long links preview identically.
  *
- * Uses the same public, active-only GET /jobs/:id the client already calls
- * (lib/api/services.ts JobService.getJobById) — the only anonymously
- * fetchable single-job endpoint. A deactivated or unverified-employer job
- * falls back to the parent layout's generic metadata rather than a broken
- * or misleading preview; the short link itself still resolves regardless.
+ * A deactivated or unverified-employer job falls back to the parent
+ * layout's generic metadata rather than a broken or misleading preview; the
+ * short link itself still resolves regardless. The image is a per-job card
+ * (Docs/plans/JOB_OG_IMAGE_IMPLEMENTATION_PLAN.md) rendered by the sibling
+ * og/[job_id] route, which independently re-fetches the same preview and
+ * falls back to the static /og.png on its own failures.
  */
 export async function generateMetadata({
   params,
@@ -42,36 +38,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { job_id } = await params;
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/jobs/${job_id}`,
-      {
-        next: { revalidate: 300 },
-      },
-    );
-    const data = (await res.json()) as { job?: JobPreview | null };
-    const job = data?.job;
-    if (!job) return {};
+  const job = await fetchJobPreview(job_id);
+  if (!job) return {};
 
-    const title = `${job.title} at ${job.employer?.name ?? "BetterInternship"}`;
-    const description = job.description
-      ? stripMarkdown(job.description).slice(0, 160)
-      : undefined;
+  const title = `${job.title} at ${job.employer?.name ?? "BetterInternship"}`;
+  const description = job.description
+    ? stripMarkdown(job.description).slice(0, 160)
+    : undefined;
+  const image = `/search/og/${job_id}`;
 
-    return {
+  return {
+    title,
+    description,
+    openGraph: { title, description, images: [image], type: "website" },
+    twitter: {
+      card: "summary_large_image",
       title,
       description,
-      openGraph: { title, description, images: ["/og.png"], type: "website" },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: ["/og.png"],
-      },
-    };
-  } catch {
-    return {};
-  }
+      images: [image],
+    },
+  };
 }
 
 export default function JobLayout({ children }: { children: React.ReactNode }) {

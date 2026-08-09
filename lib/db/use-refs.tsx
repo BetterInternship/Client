@@ -25,6 +25,7 @@ import {
   RefsData,
   IRefsContext,
 } from "./db.types";
+import { createRefHelpers } from "./ref-lookup";
 // The context template
 const RefsContext = createContext<IRefsContext>({} as IRefsContext);
 
@@ -53,40 +54,6 @@ export const RefsContextProvider = ({
  */
 export const useDbRefs = (): IRefsContext => {
   return useContext(RefsContext);
-};
-
-const createRefHelpers = <
-  ID extends string | number,
-  T extends { id: ID; name: string },
->(
-  data: T[],
-) => {
-  const get = (id: ID | null | undefined): T | null => {
-    if (!id && id !== 0) return null;
-    const found = data.find((d) => d.id === id);
-    return found ?? null;
-  };
-
-  const toName = (
-    id: ID | null | undefined,
-    def: string | null | undefined = "Not specified",
-  ): string => {
-    if (!id && id !== 0) return def ?? "";
-    const found = data.find((d) => d.id === id);
-    return found?.name ?? def ?? "";
-  };
-
-  const getByName = (name: string | null | undefined): T | null => {
-    if (!name) return null;
-    const found = data.find((d) => d.name === name);
-    return found ?? null;
-  };
-
-  return {
-    get,
-    toName,
-    getByName,
-  };
 };
 
 const createRefsContext = (data: RefsData): IRefsContext => {
