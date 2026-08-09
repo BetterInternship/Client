@@ -3,7 +3,7 @@
 import { motion, Variants, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";

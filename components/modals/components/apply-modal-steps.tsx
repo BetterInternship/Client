@@ -4,7 +4,7 @@ import {
   ResumeUploadFormFields,
   useResumeUploadForm,
 } from "@/components/features/student/resume-parser/ResumeUploadForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Resume } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
 import { MONTH_NAMES } from "@/lib/utils/date-utils";

@@ -5,7 +5,7 @@ import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Megaphone, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import {
   Accordion,
   AccordionContent,

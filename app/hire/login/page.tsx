@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useAuthContext } from "../authctx";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";

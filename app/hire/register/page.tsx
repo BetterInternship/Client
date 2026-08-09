@@ -9,7 +9,7 @@ import { Employer } from "@/lib/db/db.types";
 import { createEditForm, FormCheckbox, FormInput } from "@/components/EditForm";
 import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { Loader } from "@/components/ui/loader";

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { motionVariants } from "@/lib/landingStudentLib/animations";
 import CardSwap, {
   Card,

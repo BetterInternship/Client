@@ -6,7 +6,7 @@ import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { PublicUser, Resume } from "@/lib/db/db.types";
 import { UserService } from "@/lib/api/services";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";

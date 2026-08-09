@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { JobCard, JobDetails } from "@/components/shared/jobs";
 import { useJobListingsPage } from "@/lib/api/student.data.api";
 import { useMassApply } from "@/lib/api/god.api";

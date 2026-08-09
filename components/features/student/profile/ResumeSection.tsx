@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import type { Resume } from "@/lib/db/db.types";
 import {
   compareResumesByUploadedAtDesc,

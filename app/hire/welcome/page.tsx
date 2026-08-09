@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { EmployerAuthService } from "@/lib/api/hire.api";
 import { EmployerService } from "@/lib/api/services";
 import { useAuthContext } from "../authctx";

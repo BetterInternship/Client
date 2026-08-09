@@ -5,7 +5,7 @@ import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import miroIconRaw from "./miro-icon.svg";
 
 const miroIcon = miroIconRaw as { src: string };
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/shared/header";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";

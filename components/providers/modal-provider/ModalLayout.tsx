@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ModalContext, ModalInjectedParams } from "./ModalProvider";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 interface DefaultModalLayout {
   title?: React.ReactNode;

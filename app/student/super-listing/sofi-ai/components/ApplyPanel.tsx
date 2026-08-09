@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";

@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/lib/ctx-auth";

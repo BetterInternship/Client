@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
 import Link from "next/link";

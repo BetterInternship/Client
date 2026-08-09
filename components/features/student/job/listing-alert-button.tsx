@@ -1,7 +1,7 @@
 import { useMemo, type MouseEvent } from "react";
 import { toast } from "sonner";
 import { Bell, BellRing, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { Job } from "@/lib/db/db.types";
 import { motion, AnimatePresence } from "framer-motion";

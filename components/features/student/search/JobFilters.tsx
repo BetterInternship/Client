@@ -8,7 +8,7 @@ import React, {
   useEffect,
 } from "react";
 import { Filter as FilterIcon, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { cn } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { toast } from "sonner";

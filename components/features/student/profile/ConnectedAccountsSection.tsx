@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { DiscordService } from "@/lib/api/discord.api";
 

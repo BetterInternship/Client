@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { Zap, ArrowUpRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import anterioreLogo from "../logo.png";
 
 type HeroPanelProps = {

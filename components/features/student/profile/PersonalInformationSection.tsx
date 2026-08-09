@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Globe2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatMonth } from "@/lib/utils";

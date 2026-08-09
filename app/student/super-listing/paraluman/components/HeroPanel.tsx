@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import paralumanLogo from "../logo.png";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 type HeroPanelProps = {
   onHowToApply: () => void;

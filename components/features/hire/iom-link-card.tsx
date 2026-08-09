@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
 import { EmployerService } from "@/lib/api/services";
 import { Employer } from "@/lib/db/db.types";
@@ -58,7 +58,9 @@ function IomLinkCardContent({ profile }: { profile: Employer }) {
       setPendingEmail(result.censoredEmail);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not send confirmation email.",
+        err instanceof Error
+          ? err.message
+          : "Could not send confirmation email.",
       );
     } finally {
       setSubmitting(false);
@@ -77,7 +79,9 @@ function IomLinkCardContent({ profile }: { profile: Employer }) {
       window.location.href = result.url;
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not start IOM registration.",
+        err instanceof Error
+          ? err.message
+          : "Could not start IOM registration.",
       );
       setStartingRegistration(false);
     }
@@ -102,7 +106,9 @@ function IomLinkCardContent({ profile }: { profile: Employer }) {
   return (
     <Card className="space-y-3 px-5 py-4">
       <div>
-        <p className="text-sm font-medium text-gray-900">Link your IOM account</p>
+        <p className="text-sm font-medium text-gray-900">
+          Link your IOM account
+        </p>
         <p className="text-muted-foreground text-sm">
           Already registered on the IOM platform? Link your account to show your
           MOA status on BetterInternship.

@@ -1,7 +1,7 @@
 import { useProfileData } from "@/lib/api/student.data.api";
 import { FormInput } from "@/components/EditForm";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";

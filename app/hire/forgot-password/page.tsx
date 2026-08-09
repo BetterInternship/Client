@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { EmployerUserService } from "@/lib/api/services";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { LucideIcon } from "lucide-react";
 
 export interface SuccessModalProps {
