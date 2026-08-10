@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 
 /**
