@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 
 interface StatusBadgeProps {
   statusId: number;
