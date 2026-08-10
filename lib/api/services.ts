@@ -915,6 +915,12 @@ export const ApplicationService = {
       review_options,
     );
   },
+
+  async markApplicationViewed(id: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("applications").r(id, "view").build(),
+    );
+  },
 };
 
 // Error handling utility

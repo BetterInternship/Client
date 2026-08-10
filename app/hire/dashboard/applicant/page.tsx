@@ -8,7 +8,7 @@ import {
   useEmployerApplications,
   useOwnedJobs,
 } from "@/hooks/use-employer-api";
-import { UserService } from "@/lib/api/services";
+import { ApplicationService, UserService } from "@/lib/api/services";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -50,6 +50,14 @@ function ApplicantPageContent() {
     };
     void fetchUserData();
   }, [userId]);
+
+  useEffect(() => {
+    if (!userApplication?.id) return;
+
+    void ApplicationService.markApplicationViewed(userApplication.id).catch(
+      console.error,
+    );
+  }, [userApplication?.id]);
 
   if (!app_statuses) return null;
 
