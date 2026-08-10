@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/landingStudent/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {

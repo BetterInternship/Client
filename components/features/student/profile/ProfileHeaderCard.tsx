@@ -6,7 +6,7 @@ import { Camera, CheckCircle2, Edit2, Mail } from "lucide-react";
 import type { IFileUploadRef } from "@/hooks/use-file";
 import { FileUploadInput } from "@/hooks/use-file";
 import { PublicUser } from "@/lib/db/db.types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { getFullName } from "@/lib/profile";
 

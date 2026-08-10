@@ -7,7 +7,7 @@
  * Stateful dropdown group component.
  */
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";

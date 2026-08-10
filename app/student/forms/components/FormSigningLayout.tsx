@@ -4,7 +4,7 @@ import { ArrowLeft, LucideClipboardCheck, MailWarningIcon } from "lucide-react";
 import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
 import { useSignedUrl } from "@/lib/signed-url";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";

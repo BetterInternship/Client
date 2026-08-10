@@ -1,6 +1,6 @@
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { Clipboard, CheckCircle } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { RefObject } from "react";

@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckSquare, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   useJobListingsPage,
   useJobStatus,

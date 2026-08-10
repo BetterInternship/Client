@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 
 interface PaginatorProps {
   totalItems: number;
@@ -78,7 +78,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
           <span key={idx} className="px-2 text-gray-500">
             &hellip;
           </span>
-        )
+        ),
       )}
 
       <Button

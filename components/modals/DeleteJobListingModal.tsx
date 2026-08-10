@@ -1,7 +1,7 @@
 import { Job } from "@/lib/db/db.types";
 import { Trash2 } from "lucide-react";
 import { HeaderIcon } from "../ui/text";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 
 interface DeleteJobListingProps {
   job: Job;

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import * as React from "react";
 import { Children, useEffect, useState } from "react";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 
 interface TabProps {
   name: string;
@@ -41,7 +41,7 @@ export const TabGroup = ({
   unmountInactive = true,
 }: TabGroupProps) => {
   const names = Children.toArray(children).map(
-    (c) => (c as React.ReactElement<TabProps>).props?.name ?? ""
+    (c) => (c as React.ReactElement<TabProps>).props?.name ?? "",
   );
   const initial = defaultValue ?? (names[0] || "");
   const [internal, setInternal] = useState(initial);
@@ -62,7 +62,7 @@ export const TabGroup = ({
 
   const handleTabChange = (name: string, onTabChange?: () => void) => {
     setActive(name);
-    if (onTabChange){
+    if (onTabChange) {
       onTabChange();
     }
   };
@@ -89,7 +89,7 @@ export const TabGroup = ({
                 <span
                   className={cn(
                     "rounded-full w-2 h-2 bg-amber-500",
-                    indicator ? "inline-block" : "hidden"
+                    indicator ? "inline-block" : "hidden",
                   )}
                 />
                 {name}
@@ -102,10 +102,10 @@ export const TabGroup = ({
       <div className="relative w-full">
         {unmountInactive
           ? // render only active tab
-            Children.toArray(children).find((child) => {
+            (Children.toArray(children).find((child) => {
               const c = child as React.ReactElement<TabProps>;
               return React.isValidElement(c) && c.props?.name === activeTab;
-            }) ?? null
+            }) ?? null)
           : // keep all mounted; hide inactive
             Children.map(children, (child) => {
               if (!React.isValidElement(child)) return null;

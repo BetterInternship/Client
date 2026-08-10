@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -75,10 +75,12 @@ function findFallbackAdmin(
 ): EmployerTeamMember | null {
   const candidates = members
     .filter(
-      (m) => m.role === "ADMIN" && m.status !== "Disabled" && m.id !== excludeId,
+      (m) =>
+        m.role === "ADMIN" && m.status !== "Disabled" && m.id !== excludeId,
     )
     .sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
   return candidates[0] ?? null;
 }
@@ -106,12 +108,16 @@ export function TeamTab() {
   // disable+explain the destructive actions before the request 409s; the API
   // is the actual source of truth for this rule.
   const liveAdminCount = useMemo(
-    () => members.filter((m) => m.role === "ADMIN" && m.status !== "Disabled").length,
+    () =>
+      members.filter((m) => m.role === "ADMIN" && m.status !== "Disabled")
+        .length,
     [members],
   );
 
   const isLastLiveAdmin = (member: EmployerTeamMember) =>
-    member.role === "ADMIN" && member.status !== "Disabled" && liveAdminCount <= 1;
+    member.role === "ADMIN" &&
+    member.status !== "Disabled" &&
+    liveAdminCount <= 1;
 
   const submitInvite = async () => {
     setInviteError(null);
@@ -155,7 +161,9 @@ export function TeamTab() {
     : null;
 
   if (loading) {
-    return <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>;
+    return (
+      <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>
+    );
   }
 
   return (
@@ -209,9 +217,15 @@ export function TeamTab() {
             </div>
             <div>
               <Label>Role</Label>
-              <RoleSelect value={inviteRole} onChange={setInviteRole} className="mt-1" />
+              <RoleSelect
+                value={inviteRole}
+                onChange={setInviteRole}
+                className="mt-1"
+              />
             </div>
-            {inviteError && <p className="text-sm text-destructive">{inviteError}</p>}
+            {inviteError && (
+              <p className="text-sm text-destructive">{inviteError}</p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteOpen(false)}>
@@ -236,23 +250,32 @@ export function TeamTab() {
             <p className="text-sm text-muted-foreground">
               {fallbackAdmin ? (
                 <>
-                  Deactivating <strong>{getFullName(ownerTransferTarget) || ownerTransferTarget.email}</strong> will
-                  transfer company ownership to{" "}
-                  <strong>{getFullName(fallbackAdmin) || fallbackAdmin.email}</strong>.
-                  This can&apos;t be undone by reactivating {ownerTransferTarget.email}{" "}
-                  later.
+                  Deactivating{" "}
+                  <strong>
+                    {getFullName(ownerTransferTarget) ||
+                      ownerTransferTarget.email}
+                  </strong>{" "}
+                  will transfer company ownership to{" "}
+                  <strong>
+                    {getFullName(fallbackAdmin) || fallbackAdmin.email}
+                  </strong>
+                  . This can&apos;t be undone by reactivating{" "}
+                  {ownerTransferTarget.email} later.
                 </>
               ) : (
                 <>
                   No other active admin is available to take over ownership.
-                  Deactivating <strong>{ownerTransferTarget.email}</strong> will leave
-                  ownership as-is until you promote another admin.
+                  Deactivating <strong>{ownerTransferTarget.email}</strong> will
+                  leave ownership as-is until you promote another admin.
                 </>
               )}
             </p>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOwnerTransferTarget(null)}>
+            <Button
+              variant="outline"
+              onClick={() => setOwnerTransferTarget(null)}
+            >
               Cancel
             </Button>
             <Button

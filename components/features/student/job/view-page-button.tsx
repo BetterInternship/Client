@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { ArrowUpRightFromSquare } from "lucide-react";
 
-export const ViewPageButton = ({id} : {id: string}) => {
+export const ViewPageButton = ({ id }: { id: string }) => {
   return (
     <a href={`/search/${id}`}>
-      <Button 
+      <Button
         variant="link"
         name="View full page"
         scheme="default"

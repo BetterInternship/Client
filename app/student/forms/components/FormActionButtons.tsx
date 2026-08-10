@@ -1,7 +1,7 @@
 import { Eye, PenLineIcon, Printer } from "lucide-react";
 
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { resolveSignedUrl } from "@/lib/signed-url";

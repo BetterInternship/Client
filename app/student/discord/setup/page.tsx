@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, MessageCircle, Upload } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { DiscordService } from "@/lib/api/discord.api";

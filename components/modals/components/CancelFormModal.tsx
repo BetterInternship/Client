@@ -1,5 +1,5 @@
 import useModalRegistry from "../modal-registry";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { FormService } from "@/lib/api/services";
 import { useState } from "react";
 import { TextLoader } from "@/components/ui/loader";

@@ -9,7 +9,7 @@ import {
 } from "react";
 import { Camera, Edit2 } from "lucide-react";
 import { useProfile } from "@/hooks/use-employer-api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -19,11 +19,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
 import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import {
-  createEditForm,
-  FormDropdown,
-  FormInput,
-} from "@/components/EditForm";
+import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { EmployerService } from "@/lib/api/services";
@@ -125,7 +121,9 @@ export function CompanyTab() {
           </div>
           <div className="flex flex-col gap-2">
             <div>
-              <h1 className="text-2xl font-bold font-heading">{profile.name}</h1>
+              <h1 className="text-2xl font-bold font-heading">
+                {profile.name}
+              </h1>
               <h2 className="text-sm font-normal text-gray-400">
                 Legal Name: {profile.legal_entity_name}
               </h2>
@@ -185,7 +183,10 @@ export function CompanyTab() {
           {!isEditing && <ProfileDetails profile={profile} />}
           {isEditing && (
             <ProfileEditForm data={profile}>
-              <ProfileEditor updateProfile={updateProfile} ref={profileEditorRef} />
+              <ProfileEditor
+                updateProfile={updateProfile}
+                ref={profileEditorRef}
+              />
               {saveError && (
                 <p className="text-red-600 text-sm mt-4 mb-2 text-center">
                   {saveError}
@@ -231,7 +232,10 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
         <Divider />
         <div className={cn("flex flex-row gap-2 flex-wrap")}>
           <ProfileLinkBadge title="Company Website" link={profile.website} />
-          <ProfileLinkBadge title="Company Number" link={profile.phone_number} />
+          <ProfileLinkBadge
+            title="Company Number"
+            link={profile.phone_number}
+          />
         </div>
       </Card>
     </>

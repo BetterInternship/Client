@@ -39,7 +39,7 @@ import {
   setFreshHistoryCutoffMsInStorage,
 } from "../fresh-history";
 import { STUDENT_FORM_GUIDE, SUPPORT_FACEBOOK } from "@/constants";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 type GeneratedFormItem = {
   form_process_id?: string;

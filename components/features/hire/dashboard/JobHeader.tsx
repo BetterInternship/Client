@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Toggle } from "@/components/ui/toggle";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";

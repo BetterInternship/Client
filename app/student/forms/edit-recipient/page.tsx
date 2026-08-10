@@ -6,7 +6,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { UserService } from "@/lib/api/services";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Checkbox } from "@/components/ui/checkbox";
 import { HeaderTitle } from "@/components/ui/text";
 import {

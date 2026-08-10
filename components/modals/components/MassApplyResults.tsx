@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Trash2 } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
 

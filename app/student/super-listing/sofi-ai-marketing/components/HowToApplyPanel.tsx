@@ -2,7 +2,7 @@ import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Loader2, LockKeyhole, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";

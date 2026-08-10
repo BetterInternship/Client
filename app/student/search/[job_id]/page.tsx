@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, EllipsisVertical, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useModalRef } from "@/hooks/use-modal";
 import { useMobile } from "@/hooks/use-mobile";

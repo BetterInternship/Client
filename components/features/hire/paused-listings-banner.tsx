@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useNotificationsRequiredModal } from "@/hooks/use-notifications-required-modal";

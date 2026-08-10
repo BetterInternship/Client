@@ -1,5 +1,5 @@
 import { Resume } from "@/lib/db/db.types";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 
 interface DeleteResumeProps {
   resume: Resume;

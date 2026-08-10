@@ -1,5 +1,5 @@
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 import { RefObject } from "react";
 
 export const MassApplyModal = ({

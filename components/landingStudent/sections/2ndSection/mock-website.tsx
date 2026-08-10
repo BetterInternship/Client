@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 
 import { JOBS, type Job } from "./job-data";

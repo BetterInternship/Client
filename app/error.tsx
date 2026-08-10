@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { HeaderTitle } from "@/components/ui/text";
 import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";

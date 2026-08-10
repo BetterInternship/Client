@@ -13,7 +13,7 @@
 import { useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 import { Award, FileText } from "lucide-react";
 import { getFullName } from "@/lib/profile";
 import { MyUserPfp, UserPfp } from "./pfp";

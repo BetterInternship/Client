@@ -49,7 +49,7 @@ import { ActionButton } from "@/components/ui/action-button";
 import StatusBadge from "@/components/ui/status-badge";
 import JobHeader from "./JobHeader";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/text";

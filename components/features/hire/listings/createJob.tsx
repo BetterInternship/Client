@@ -8,7 +8,7 @@ import {
   FormRadio,
 } from "@/components/EditForm";
 import { MDXEditor } from "@/components/MDXEditor";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
@@ -881,7 +881,7 @@ const CreateJobPage = ({
                               Require resume
                             </p>
                           </div>
-                        
+
                       </div> */}
                           <div
                             onClick={() =>

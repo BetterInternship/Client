@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import useModalRegistry from "../modal-registry";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Badge } from "@/components/ui/badge";

@@ -14,7 +14,7 @@ import {
   Newspaper,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 

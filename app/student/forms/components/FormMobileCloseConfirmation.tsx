@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 interface FormMobileCloseConfirmationProps {
   open: boolean;

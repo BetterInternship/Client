@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { EmployerApplication } from "@/lib/db/db.types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { getFullName } from "@/lib/profile";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ interface ReviewModalContentProps {
   application: EmployerApplication;
   reviewApp: (
     id: string,
-    reviewOptions: { review?: string; notes?: string; status?: number }
+    reviewOptions: { review?: string; notes?: string; status?: number },
   ) => void;
   onClose: () => void;
 }

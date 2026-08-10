@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { ArrowUpRight, Globe } from "lucide-react";
 
 type HowToApplyPanelProps = {
@@ -35,8 +35,8 @@ export function HowToApplyPanel({
           </h2>
           <p className="max-w-3xl [font-family:var(--font-paraluman-body)] pt-4 text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
             PCC already has many member companies, but discovery and
-            introductions are still too manual and too slow. The challenge is
-            to structure company data, improve profile quality, and help members
+            introductions are still too manual and too slow. The challenge is to
+            structure company data, improve profile quality, and help members
             find relevant partners through a system that drives consistent
             participation.
           </p>
@@ -81,7 +81,9 @@ export function HowToApplyPanel({
       <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
         <SectionTitle title="Goal" />
         <ul className="space-y-3 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-80 sm:text-base">
-          <li>Turn fragmented member data into profile-rich, usable records.</li>
+          <li>
+            Turn fragmented member data into profile-rich, usable records.
+          </li>
           <li>Enable direct sign-up that reduces onboarding delays.</li>
           <li>Support faster member-to-member discovery and introductions.</li>
           <li>
@@ -100,7 +102,8 @@ export function HowToApplyPanel({
           </p>
           <p>
             <span className="font-semibold text-[#173f69]">Depth.</span> Did you
-            define profile data and grouping logic that improve matching quality?
+            define profile data and grouping logic that improve matching
+            quality?
           </p>
           <p>
             <span className="font-semibold text-[#173f69]">Execution.</span> Did
