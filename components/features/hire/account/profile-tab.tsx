@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button, Input } from "@betterinternship/components";
-import { Label } from "@/components/ui/label";
+import { Button, Input, Label } from "@betterinternship/components";
 import {
   useMe,
   useUpdateSelf,

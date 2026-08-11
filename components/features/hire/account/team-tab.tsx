@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Button,
   Input,
+  Label,
   cn,
   Dialog,
   DialogContent,

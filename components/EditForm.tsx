@@ -9,12 +9,12 @@ import {
   cn,
   Button,
   Checkbox,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@betterinternship/components";
 import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
 import {
   IFormData,
   IFormErrors,
