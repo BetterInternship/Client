@@ -6,7 +6,9 @@ import {
   SelectValue,
 } from "@/components/landingStudent/ui/select";
 import {
+  cn,
   Button,
+  Checkbox,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -19,8 +21,6 @@ import {
   useFormData,
   useFormErrors,
 } from "@/lib/form-data";
-import { cn } from "@betterinternship/components";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import {
   CalendarDays,
