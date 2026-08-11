@@ -10,6 +10,7 @@ import { ModalProvider } from "@/components/providers/modal-provider/ModalProvid
 import Header from "@/components/features/student/header";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { ClientProcessesProvider } from "@betterinternship/components";
+import { OrchestratorConfig } from "../orchestrator-config";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import { Suspense } from "react";
@@ -44,6 +45,7 @@ export default async function MaintenanceLayout({
               <AppContextProvider>
                 <AuthContextProvider>
                   <HeaderContextProvider>
+                    <OrchestratorConfig />
                     <ClientProcessesProvider>
                       <ModalProvider>
                         <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
