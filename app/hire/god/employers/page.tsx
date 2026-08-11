@@ -32,7 +32,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useAuthContext } from "@/app/hire/authctx";
 import { FormInput } from "@/components/EditForm";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { Input } from "@betterinternship/components";
 
 const PAGE_SIZE = 20;
 

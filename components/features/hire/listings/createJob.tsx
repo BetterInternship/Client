@@ -12,7 +12,7 @@ import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { Input } from "@/components/ui/input";
+import { Input } from "@betterinternship/components";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";

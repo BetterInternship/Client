@@ -35,7 +35,7 @@ import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
-import { Input } from "./ui/input";
+import { Input } from "@betterinternship/components";
 import { Tooltip } from "react-tooltip";
 import { Textarea } from "./ui/textarea";
 import { Matcher } from "react-day-picker";

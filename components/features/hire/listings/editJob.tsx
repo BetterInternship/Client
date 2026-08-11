@@ -12,7 +12,7 @@ import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { Input } from "@/components/ui/input";
+import { Input } from "@betterinternship/components";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
@@ -26,7 +26,6 @@ import { useMobile } from "@/hooks/use-mobile";
 import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { editorRootElementRef$ } from "@mdxeditor/editor";
 
 interface EditJobPageProps {
   job: Job;
