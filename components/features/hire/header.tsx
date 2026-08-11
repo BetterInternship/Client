@@ -23,7 +23,7 @@ import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { MyUserPfp } from "@/components/shared/pfp";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@betterinternship/components";
 
 /**
  * The header present on every page
