@@ -14,15 +14,15 @@ import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Button } from "@betterinternship/components";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@betterinternship/components";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
 import heroImage from "./components/4.jpg";

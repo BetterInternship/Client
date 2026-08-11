@@ -1,6 +1,12 @@
-import { IRefsContext, University } from "@/lib/db/db.types";
+import { IRefsContext } from "@/lib/db/db.types";
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@betterinternship/components";
+import {
+  Button,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@betterinternship/components";
 import { UseFormReturn } from "react-hook-form";
 import { FormInputs } from "../page";
 import { Autocomplete } from "@/components/ui/autocomplete";
@@ -9,12 +15,6 @@ import {
   sortUniversityOptions,
   universityAcronyms,
 } from "../../../../lib/student-forms-access";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { SUPPORT_FACEBOOK } from "@/constants";
 
 /**

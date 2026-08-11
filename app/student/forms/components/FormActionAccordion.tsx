@@ -3,7 +3,7 @@ import {
   AccordionItem,
   AccordionContent,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { FormActionButtons } from "./FormActionButtons";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";

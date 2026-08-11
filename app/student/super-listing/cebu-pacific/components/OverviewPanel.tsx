@@ -1,14 +1,14 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { Button } from "@betterinternship/components";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { cn } from "@betterinternship/components";
+} from "@betterinternship/components";
 
 type OverviewPanelProps = {
   onGoToApply: () => void;
