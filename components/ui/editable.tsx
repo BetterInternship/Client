@@ -7,7 +7,7 @@
  * Editable utils for forms and stuff
  */
 
-import { cn } from "@betterinternship/components";
+import { cn, Label } from "@betterinternship/components";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { Check } from "lucide-react";
@@ -16,7 +16,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./dropdown";
 import { Input } from "@betterinternship/components";
-import { Label } from "./label";
 
 type Value = string | null | undefined;
 
