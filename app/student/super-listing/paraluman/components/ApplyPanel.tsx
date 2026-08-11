@@ -16,7 +16,7 @@ import { Button, Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import type { ParalumanSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@betterinternship/components";

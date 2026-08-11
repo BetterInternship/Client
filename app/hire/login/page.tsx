@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@betterinternship/components";
 import { useAuthContext } from "../authctx";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 
 import { FormInput } from "@/components/EditForm";

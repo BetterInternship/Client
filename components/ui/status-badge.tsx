@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import { Button } from "@betterinternship/components";

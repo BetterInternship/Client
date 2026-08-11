@@ -6,7 +6,7 @@ import {
 } from "@/components/features/student/resume-parser/ResumeUploadForm";
 import { Button } from "@betterinternship/components";
 import { Resume } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { MONTH_NAMES } from "@/lib/utils/date-utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, FileText } from "lucide-react";

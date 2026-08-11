@@ -8,7 +8,7 @@ import { Button } from "@betterinternship/components";
 import { EmployerAuthService } from "@/lib/api/hire.api";
 import { EmployerService } from "@/lib/api/services";
 import { useAuthContext } from "../authctx";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { CheckCircle2, PartyPopper, TriangleAlert } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";

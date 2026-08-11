@@ -14,7 +14,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Button } from "@betterinternship/components";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";

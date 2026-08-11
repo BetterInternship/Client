@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 export const HeaderText = ({ children }: { children: ReactNode }) => {
   return <h1 className="text-4xl font-bold tracking-tight">{children}</h1>;

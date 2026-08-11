@@ -27,7 +27,7 @@ import { Button } from "@betterinternship/components";
 import { X } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app"; // should expose { isMobile }
 import { useMobile } from "./use-mobile"; // touch helpers
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { AnimatePresence, motion } from "framer-motion";
 
 /**

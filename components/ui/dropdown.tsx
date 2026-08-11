@@ -9,7 +9,7 @@
 
 import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, {

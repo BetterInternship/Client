@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "@betterinternship/components";
 import { useDetectClickOutside } from "react-detect-click-outside";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { PlusCircleIcon, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
 import { Button } from "@betterinternship/components";

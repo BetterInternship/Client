@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { FileSearch, FileText, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { FormTemplate } from "@/lib/db/forms-db.types";
 import { Loader } from "@/components/ui/loader";
 import {

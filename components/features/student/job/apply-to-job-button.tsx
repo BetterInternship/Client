@@ -1,7 +1,7 @@
 import { useJobStatus } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@betterinternship/components";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useMemo } from "react";

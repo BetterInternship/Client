@@ -7,7 +7,7 @@
  * Editable utils for forms and stuff
  */
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { Check } from "lucide-react";

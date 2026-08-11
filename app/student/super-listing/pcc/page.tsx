@@ -4,7 +4,7 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Button } from "@betterinternship/components";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";

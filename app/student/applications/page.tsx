@@ -34,7 +34,8 @@ import {
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { formatTimeAgo, cn } from "@/lib/utils";
+import { formatTimeAgo } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";

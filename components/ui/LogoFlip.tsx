@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactCardFlip from "react-card-flip";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 /**
  * Represents a company with display information
@@ -63,7 +63,7 @@ const RenderCardSide = ({
       key={key}
       className={cn(
         isMobile ? "h-16 w-28" : "h-20 w-36",
-        "overflow-hidden rounded-[0.33em] border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3"
+        "overflow-hidden rounded-[0.33em] border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3",
       )}
       onClick={() => handleSearchClick(company.name)}
     >
@@ -103,9 +103,12 @@ function CompanyCard({
     const initialDelay = Math.random() * 3000;
 
     // Set up interval for automatic flipping with random timing (5-9 seconds)
-    const flipInterval = setInterval(() => {
-      setIsFlipped((prev) => !prev);
-    }, 5000 + Math.random() * 4000); // Flip every 3-5 seconds randomly
+    const flipInterval = setInterval(
+      () => {
+        setIsFlipped((prev) => !prev);
+      },
+      5000 + Math.random() * 4000,
+    ); // Flip every 3-5 seconds randomly
 
     const timeoutId = setTimeout(() => {
       // Start the interval after initial delay

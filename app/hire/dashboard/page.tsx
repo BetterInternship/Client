@@ -13,7 +13,7 @@ import {
   useProfile,
 } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Briefcase, Plus } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";

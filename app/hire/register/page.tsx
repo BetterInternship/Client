@@ -13,9 +13,9 @@ import { Button } from "@betterinternship/components";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { Loader } from "@/components/ui/loader";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
-import Link from "next/link";
+
 import { TriangleAlert, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderTitle } from "@/components/ui/text";

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   challengePhChallenges,
   getChallengeById,

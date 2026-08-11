@@ -21,7 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { pccPrimaryListing, pccProfile } from "./data";
 
 const headingFont = Space_Grotesk({

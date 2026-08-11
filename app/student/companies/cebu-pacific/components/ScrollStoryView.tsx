@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import type { ScrollStoryModel } from "../model";
 import { HeroLandingView } from "./HeroLandingView";
 import { ScrollStorySectionView } from "./ScrollStorySectionView";

@@ -19,7 +19,7 @@ import {
   useFormData,
   useFormErrors,
 } from "@/lib/form-data";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import {

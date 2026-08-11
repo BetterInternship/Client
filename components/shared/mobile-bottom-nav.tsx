@@ -11,7 +11,7 @@ import {
   LogOut,
   LogIn,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { useProfileData } from "@/lib/api/student.data.api";
 import type { PublicUser } from "@/lib/db/db.types";

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { BooleanCheckIcon } from "./icons";
 
 const badge_variants = cva(
@@ -40,11 +40,12 @@ const badge_variants = cva(
       type: "default",
       strength: "default",
     },
-  }
+  },
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badge_variants> {}
 
 export function Badge({ className, type, strength, ...props }: BadgeProps) {

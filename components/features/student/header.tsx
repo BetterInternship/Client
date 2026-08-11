@@ -31,7 +31,7 @@ import { useHeaderContext } from "@/lib/ctx-header";
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   JobFilterProvider,
   JobFilters,

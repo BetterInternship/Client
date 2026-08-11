@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 interface EditJobPageProps {
   job: Job;

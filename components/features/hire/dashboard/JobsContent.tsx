@@ -9,7 +9,7 @@ import { JobListingsBox } from "./JobListingsBox";
 import { Button } from "@betterinternship/components";
 import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { useState, useEffect } from "react";
 import { useBlurTransition } from "@/components/animata/blur";

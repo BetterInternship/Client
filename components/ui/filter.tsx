@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { LucideIcon } from "lucide-react";
 
 /**

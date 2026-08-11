@@ -8,7 +8,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Button, Input } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import type { SofiAiSubmissionForm } from "./types";
 
 type ApplyPanelProps = {

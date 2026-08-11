@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@betterinternship/components";
 import { EmployerUserService } from "@/lib/api/services";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderTitle } from "@/components/ui/text";

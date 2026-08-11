@@ -9,7 +9,7 @@
 
 import "./react-pdf-highlighter.css";
 import { Loader } from "@/components/ui/loader";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { createPortal } from "react-dom";
 import { useSignedUrl } from "@/lib/signed-url";
 import {
