@@ -2,10 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button, Input } from "@betterinternship/components";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@betterinternship/components";
+import {
+  Button,
+  Input,
+  cn,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@betterinternship/components";
 import {
   Table,
   TableBody,
@@ -14,13 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { EmployerTeamMember, EmployerUserRole } from "@/lib/db/db.types";
 import {
   useTeam,
