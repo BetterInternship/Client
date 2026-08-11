@@ -23,7 +23,10 @@ import {
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
-import { DropdownMenu, type DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  type DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import StatusBadge from "@/components/ui/status-badge";
 import { useBlurTransition } from "@/components/animata/blur";
 
