@@ -112,12 +112,29 @@ export default function FormsPage() {
   const pendingForms = useFormFilloutProcessPending();
   const handledForms = useFormFilloutProcessHandled();
 
-  // Refetch forms when no more pending left
-  // Yeppers kinda janky I know
+  // Once nothing is pending, keep re-invalidating "my-forms" until every
+  // locally-completed fillout has a matching real row. A single invalidation
+  // attempt can fail to converge (e.g. a dropped refetch), which is what
+  // left a stale duplicate FormLog on screen until a full page reload.
+  const pendingCount = formFilloutProcess.getAllPending().length;
+  const unmatchedHandledCount = handledForms.length;
   useEffect(() => {
-    if (!formFilloutProcess.getAllPending().length)
+    if (pendingCount || !unmatchedHandledCount) return;
+
+    void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts += 1;
+      if (attempts >= 30) {
+        clearInterval(interval);
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-  }, [formFilloutProcess.getAllPending()]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [pendingCount, unmatchedHandledCount]);
 
   const handleFormsAccessGranted = async (accessCode: string) => {
     const response = await UserService.joinFormGroup(accessCode);
