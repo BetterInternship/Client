@@ -20,7 +20,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import {
@@ -39,7 +39,10 @@ import {
   isValidOptionalURL,
   toURL,
 } from "@/lib/utils/url-utils";
-import { sortUniversityOptions, universityAcronyms } from "@/lib/student-forms-access";
+import {
+  sortUniversityOptions,
+  universityAcronyms,
+} from "@/lib/student-forms-access";
 import { DEGREES } from "@/app/student/register/steps/tempDegrees";
 import { ResumeSection } from "./ResumeSection";
 import type { ProfileResumeManager, ProfileSectionKey } from "./profile-types";

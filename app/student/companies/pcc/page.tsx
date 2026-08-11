@@ -2,26 +2,20 @@
 
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Button } from "@betterinternship/components";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@betterinternship/components";
 import { pccPrimaryListing, pccProfile } from "./data";
 
 const headingFont = Space_Grotesk({

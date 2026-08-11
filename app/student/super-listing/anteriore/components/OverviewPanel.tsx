@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@betterinternship/components";
 import {
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import type { OverviewContent } from "./types";
 
 type OverviewPanelProps = {

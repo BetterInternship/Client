@@ -13,7 +13,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import { PublicUser } from "@/lib/db/db.types";
 import { InternshipDetailsSection } from "./InternshipDetailsSection";
 import { PersonalInformationSection } from "./PersonalInformationSection";
