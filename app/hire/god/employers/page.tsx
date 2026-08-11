@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { Button } from "@betterinternship/components";
+import { Button, Badge, Input } from "@betterinternship/components";
 import {
   ListShell,
   RowCard,
@@ -17,7 +17,6 @@ import {
   RegisterEmployerButton,
   RegisterEmployerModal,
 } from "@/components/features/hire/god/RegisterEmployerModal";
-import { Badge } from "@/components/ui/badge";
 import {
   useGodEmployers,
   useVerifyEmployer,
@@ -32,7 +31,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useAuthContext } from "@/app/hire/authctx";
 import { FormInput } from "@/components/EditForm";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@betterinternship/components";
+import { Employer } from "@/lib/db/db.types";
 
 const PAGE_SIZE = 20;
 
@@ -766,10 +765,30 @@ function GodEmployersPageContent() {
     }
   };
 
-  const rows = employers.map((e: any) => {
+  const rows = employers.map((e: Employer) => {
     const lastTs = e?.last_session?.timestamp
       ? new Date(e.last_session.timestamp).getTime()
       : undefined;
+
+    const handleVerify = async () => {
+      try {
+        let result: any;
+        if (e.is_verified) {
+          result = await unverifyEmployer.mutateAsync(e.id);
+        } else {
+          result = await verifyEmployer.mutateAsync(e.id);
+        }
+        if (result?.error) {
+          toast.error(`Failed: ${result.error}`);
+          return;
+        }
+        toast.success(
+          `"${e.name}" ${e.is_verified ? "unverified" : "verified"}.`,
+        );
+      } catch (err: any) {
+        toast.error(err?.message ?? "Failed to update employer.");
+      }
+    };
 
     return (
       <RowCard
@@ -778,11 +797,7 @@ function GodEmployersPageContent() {
         subtitle={<TeamEmailsList emails={e.team_emails} />}
         metas={
           <>
-            {!e.is_verified && (
-              <Badge type="accent" className="rounded-[0.33em]">
-                unverified
-              </Badge>
-            )}
+            {!e.is_verified && <Badge type="warning">unverified</Badge>}
             <Meta>{e.application_count ?? 0} applications</Meta>
             <Meta>{e.job_count ?? 0} jobs</Meta>
             <LastLogin ts={lastTs} />
@@ -827,25 +842,7 @@ function GodEmployersPageContent() {
               <Button
                 size="xs"
                 scheme={e.is_verified ? "warning" : "supportive"}
-                onClick={async () => {
-                  try {
-                    let result: any;
-                    if (e.is_verified) {
-                      result = await unverifyEmployer.mutateAsync(e.id);
-                    } else {
-                      result = await verifyEmployer.mutateAsync(e.id);
-                    }
-                    if (result?.error) {
-                      toast.error(`Failed: ${result.error}`);
-                      return;
-                    }
-                    toast.success(
-                      `"${e.name}" ${e.is_verified ? "unverified" : "verified"}.`,
-                    );
-                  } catch (err: any) {
-                    toast.error(err?.message ?? "Failed to update employer.");
-                  }
-                }}
+                onClick={() => void handleVerify()}
                 disabled={
                   verifyEmployer.isPending || unverifyEmployer.isPending
                 }

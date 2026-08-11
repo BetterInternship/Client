@@ -1,12 +1,10 @@
 // ui for the job box or card
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@betterinternship/components";
+import { cn, Badge, Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
-import { cn } from "@betterinternship/components";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { ArrowRight, Check, Lock, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -154,12 +152,10 @@ export function JobListingsBox({
                   </Button>
                 ) : (
                   <Badge
-                    strength="default"
-                    type="accent"
                     className={cn(
                       "flex items-center gap-1",
                       job.is_active
-                        ? "bg-supportive text-white"
+                        ? "text-supportive border-supportive"
                         : "text-muted-foreground flex items-center font-normal",
                     )}
                   >

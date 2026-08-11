@@ -1,9 +1,8 @@
 import { FormInput } from "@/components/EditForm";
-import { Badge } from "@/components/ui/badge";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { AlertTriangle } from "lucide-react";
 import { StateRecord, StateRecordActions } from "@/hooks/base/useStateRecord";
-import { cn } from "@betterinternship/components";
+import { cn, Badge } from "@betterinternship/components";
 
 export type RecipientTimelineParty = {
   id: string;

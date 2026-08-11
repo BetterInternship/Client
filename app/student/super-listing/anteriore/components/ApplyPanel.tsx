@@ -15,8 +15,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Button, Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@betterinternship/components";
+import { cn, Badge } from "@betterinternship/components";
 import type { AnterioreSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {

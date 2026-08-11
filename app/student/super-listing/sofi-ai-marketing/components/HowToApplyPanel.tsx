@@ -1,10 +1,8 @@
 import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Loader2, LockKeyhole, Mail } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button, Input } from "@betterinternship/components";
+import { cn, Badge, Button, Input } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
-import { cn } from "@betterinternship/components";
 import type { SuperListingUnlockForm } from "./types";
 
 type HowToApplyPanelProps = {

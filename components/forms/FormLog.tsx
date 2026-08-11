@@ -10,8 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { IFormSigningParty } from "@betterinternship/core/forms";
-import { Badge } from "../ui/badge";
-import { Button } from "@betterinternship/components";
+import { Button, Badge } from "@betterinternship/components";
 import { SigningStatusTimeline } from "./SigningStatusTimeline";
 import useModalRegistry from "../modals/modal-registry";
 import { resolveSignedUrl } from "@/lib/signed-url";

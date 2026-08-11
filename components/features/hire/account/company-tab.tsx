@@ -9,13 +9,11 @@ import {
 } from "react";
 import { Camera, Edit2 } from "lucide-react";
 import { useProfile } from "@/hooks/use-employer-api";
-import { Button } from "@betterinternship/components";
+import { cn, Button, Badge, BoolBadge } from "@betterinternship/components";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Employer } from "@/lib/db/db.types";
 import { isValidEmail, isValidUUID } from "@/lib/utils";
-import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
 import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";

@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { Button, Input } from "@betterinternship/components";
-import { Badge } from "@/components/ui/badge";
+import { Button, Badge, Input } from "@betterinternship/components";
 import { AlertTriangle, ArrowLeft, Repeat } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
