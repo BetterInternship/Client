@@ -1,7 +1,6 @@
 import React from "react";
 import { CheckIcon, MailWarningIcon } from "lucide-react";
-import { type } from "../../.next/types/routes";
-import { Badge } from "./badge";
+import { Badge } from "@betterinternship/components";
 
 export const Timeline = ({ children }: { children: React.ReactNode }) => {
   return <div className="space-y-1">{children}</div>;

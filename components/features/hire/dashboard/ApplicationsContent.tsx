@@ -4,7 +4,7 @@
 
 import { forwardRef, useImperativeHandle } from "react";
 import { useApplicationSelection } from "@/hooks/use-application-selection";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@betterinternship/components";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";

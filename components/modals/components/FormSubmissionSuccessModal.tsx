@@ -1,7 +1,6 @@
-import { Button } from "@betterinternship/components";
+import { Button, Badge } from "@betterinternship/components";
 import useModalRegistry from "../modal-registry";
 import { IFormSigningParty } from "@betterinternship/core/forms";
-import { Badge } from "@/components/ui/badge";
 import { SUPPORT_FACEBOOK } from "@/constants";
 
 function AnimatedCheck() {

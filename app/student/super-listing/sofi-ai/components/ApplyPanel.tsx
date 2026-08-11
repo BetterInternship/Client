@@ -5,10 +5,8 @@ import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion } from "framer-motion";
-import { Button, Input } from "@betterinternship/components";
+import { cn, Badge, Button, Input } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@betterinternship/components";
 import type { SofiAiSubmissionForm } from "./types";
 
 type ApplyPanelProps = {

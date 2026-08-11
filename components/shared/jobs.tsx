@@ -1,8 +1,7 @@
-﻿import { Badge, BoolBadge } from "@/components/ui/badge";
-import { Job } from "@/lib/db/db.types";
+﻿import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatCurrency } from "@/lib/utils";
-import { cn } from "@betterinternship/components";
+import { cn, Badge, BoolBadge } from "@betterinternship/components";
 import {
   AlertTriangle,
   ArrowRight,

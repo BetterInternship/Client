@@ -8,7 +8,6 @@ import CardSwap, {
 } from "@/components/landingStudent/sections/2ndSection/CardSwap/CardSwap";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
 
 function useResponsiveCardSwap() {

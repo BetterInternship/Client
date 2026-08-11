@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 
 // UI components
-import { Button } from "@betterinternship/components";
-import { Badge } from "@/components/ui/badge";
+import { cn, Badge, Button } from "@betterinternship/components";
 import {
   Tabs,
   TabsList,
@@ -35,7 +34,6 @@ import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
-import { cn } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
@@ -383,7 +381,7 @@ const ItsBackCard = ({ row }: { row: JobWaitlist }) => {
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Badge type="supportive">
+          <Badge variant="solid" type="supportive">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             It&apos;s back!
           </Badge>
@@ -468,8 +466,10 @@ const ApplicationCard = ({
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Badge type={statusBadgeType}>{statusLabel}</Badge>
-            <Badge type="accent">Applied {formatTimeAgo(appliedAtIso)}</Badge>
+            <Badge variant="solid" type={statusBadgeType}>
+              {statusLabel}
+            </Badge>
+            <Badge>Applied {formatTimeAgo(appliedAtIso)}</Badge>
             {isSuperListing && <SuperListingBadge compact className="w-fit" />}
           </div>
           {canOpenListing ? (
