@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@betterinternship/components";
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 //very simple singular collapsible accordion
 export const HorizontalCollapsible = ({

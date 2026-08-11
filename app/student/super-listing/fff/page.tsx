@@ -15,7 +15,7 @@ import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Button, Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Badge } from "@/components/ui/badge";

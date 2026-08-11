@@ -26,7 +26,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { FormService } from "@/lib/api/services";
 import { PublicUser } from "@/lib/db/db.types";
 import { useQuery } from "@tanstack/react-query";

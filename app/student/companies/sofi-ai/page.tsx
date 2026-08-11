@@ -12,7 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import heroBg from "./hero-bg.png";
 import heroBgMobile from "./hero-bg-mobile.png";
 import doodlePack from "./doodle-pack.png";

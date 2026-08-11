@@ -17,7 +17,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 /**
  * A modal instance represents a modal in the registry of the global modal context.

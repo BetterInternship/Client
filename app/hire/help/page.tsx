@@ -2,7 +2,7 @@
 import ContentLayout from "@/components/features/hire/content-layout";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   BadgeInfo,
   Bug,

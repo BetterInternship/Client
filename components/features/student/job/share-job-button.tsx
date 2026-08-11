@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@betterinternship/components";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Loader2, Share2 } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
 import { shareLinkQueryOptions } from "@/lib/api/student.data.api";

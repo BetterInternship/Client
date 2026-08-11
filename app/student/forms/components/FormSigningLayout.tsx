@@ -7,7 +7,7 @@ import { FormFillerRenderer } from "@/components/features/student/forms/FormFill
 import { Button } from "@betterinternship/components";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";

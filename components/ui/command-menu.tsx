@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 /**
  * A CommandMenu is a bar containing controls and other elements.
@@ -32,7 +32,7 @@ export const CommandMenu = ({
             </span>
           ) : (
             <React.Fragment key={idx}>{item}</React.Fragment>
-          )
+          ),
         )}
       </React.Fragment>
     );

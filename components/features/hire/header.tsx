@@ -14,7 +14,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Button } from "@betterinternship/components";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
@@ -23,7 +23,7 @@ import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { MyUserPfp } from "@/components/shared/pfp";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@betterinternship/components";
 
 /**
  * The header present on every page

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 export type OutsideTab = {
   key: string;
@@ -43,7 +43,7 @@ export function OutsideTabs({
                 "px-3 py-1.5 text-xs font-medium border rounded-t-xl shadow-sm transition-colors",
                 active
                   ? "bg-background border-primary text-foreground"
-                  : "bg-card border-border text-muted-foreground hover:bg-accent"
+                  : "bg-card border-border text-muted-foreground hover:bg-accent",
               )}
             >
               <span className="relative">

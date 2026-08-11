@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   Check,
   CheckCheckIcon,
@@ -51,7 +51,7 @@ export function MultiChipSelect({
             "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             "data-[state=on]:bg-primary/10 data-[state=on]:border-primary",
-            "data-[state=on]:ring-2 data-[state=on]:ring-primary/30"
+            "data-[state=on]:ring-2 data-[state=on]:ring-primary/30",
           )}
         >
           {/* Checkbox visual (square) */}
@@ -60,7 +60,7 @@ export function MultiChipSelect({
             className={cn(
               "inline-flex h-3 w-3 items-center justify-center border",
               "border-gray-400 bg-white rounded-[2px]",
-              "group-data-[state=on]:bg-primary group-data-[state=on]:border-primary"
+              "group-data-[state=on]:bg-primary group-data-[state=on]:border-primary",
             )}
           >
             <Check className="!h-2 !w-2 opacity-0 text-primary-foreground group-data-[state=on]:opacity-100 transition-opacity" />
@@ -110,7 +110,7 @@ export function SingleChipSelect({
             "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             "data-[state=on]:bg-primary/10 data-[state=on]:border-primary",
-            "data-[state=on]:ring-2 data-[state=on]:ring-primary/30"
+            "data-[state=on]:ring-2 data-[state=on]:ring-primary/30",
           )}
         >
           {/* Radio visual (circle with dot) */}
@@ -119,13 +119,13 @@ export function SingleChipSelect({
             className={cn(
               "inline-flex h-3 w-3 items-center justify-center rounded-full border-2",
               "border-gray-400 bg-white",
-              "group-data-[state=on]:border-primary"
+              "group-data-[state=on]:border-primary",
             )}
           >
             <span
               className={cn(
                 "h-[0.5em] w-[0.5em] rounded-full bg-primary scale-0 transition-transform",
-                "group-data-[state=on]:scale-100"
+                "group-data-[state=on]:scale-100",
               )}
             />
           </span>

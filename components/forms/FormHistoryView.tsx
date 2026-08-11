@@ -1,9 +1,5 @@
 "use client";
 
-import { Newspaper, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
 import { FormLog } from "./FormLog";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { formatDate } from "@/lib/utils";

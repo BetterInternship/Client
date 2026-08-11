@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { Job, SavedJob } from "@/lib/db/db.types";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 export type SavedJobItem = SavedJob & Partial<Job>;
 

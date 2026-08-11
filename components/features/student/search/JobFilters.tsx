@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { Filter as FilterIcon, Check } from "lucide-react";
 import { Button } from "@betterinternship/components";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";

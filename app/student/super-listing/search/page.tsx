@@ -14,7 +14,7 @@ import {
 
 import { SuperListingMapBackground } from "@/components/features/student/super-listing/philippines-infographic-map";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { challengePhChallenges } from "@/app/student/challenges/data";
 
 const headingFont = Space_Grotesk({

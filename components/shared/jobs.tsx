@@ -1,7 +1,8 @@
 ﻿import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { cn, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   AlertTriangle,
   ArrowRight,
@@ -503,9 +504,7 @@ export const MobileJobCard = ({
             </h3>
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <Building className="w-4 h-4 flex-shrink-0" />
-              <span className="font-medium truncate">
-                {job.employer?.name}
-              </span>
+              <span className="font-medium truncate">{job.employer?.name}</span>
             </div>
           </div>
           {job.hibernating && (

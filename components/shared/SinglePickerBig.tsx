@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { AnimatePresence, motion } from "framer-motion";
 
 // ------------ Types ------------
@@ -38,7 +38,7 @@ export function SinglePickerBig<T extends string = string>({
   startCollapsed = true,
 }: SinglePickerBigProps<T>) {
   const [collapsed, setCollapsed] = React.useState(
-    startCollapsed && value !== null
+    startCollapsed && value !== null,
   );
 
   React.useEffect(() => {
@@ -54,7 +54,11 @@ export function SinglePickerBig<T extends string = string>({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {label && <div className="text-xs text-gray-600">{label} {required && <span className="text-red-500">*</span>}</div>}
+      {label && (
+        <div className="text-xs text-gray-600">
+          {label} {required && <span className="text-red-500">*</span>}
+        </div>
+      )}
 
       <AnimatePresence initial={false} mode="wait">
         {collapsed && selected ? (
@@ -115,7 +119,7 @@ export function SinglePickerBig<T extends string = string>({
                       "hover:shadow-sm hover:bg-border/10 hover:border-primary/50",
                       active
                         ? "border-primary/60 bg-primary/5"
-                        : "border-border bg-card"
+                        : "border-border bg-card",
                     )}
                   >
                     <div className="flex items-center gap-3">

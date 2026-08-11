@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import anterioreLogo from "./logo.png";
 import { HeroPanel } from "./components/HeroPanel";
 import { OverviewPanel } from "./components/OverviewPanel";

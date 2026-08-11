@@ -6,7 +6,7 @@ import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { ArrowRight, Check, Lock, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";

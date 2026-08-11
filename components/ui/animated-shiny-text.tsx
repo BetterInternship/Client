@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { cn } from "@/lib/utils"; // if you have it; otherwise remove cn
+import { cn } from "@betterinternship/components"; // if you have it; otherwise remove cn
 
 export function AnimatedShinyText({
   children,

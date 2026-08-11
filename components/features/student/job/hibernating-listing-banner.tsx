@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";

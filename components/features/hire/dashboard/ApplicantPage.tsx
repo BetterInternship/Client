@@ -11,7 +11,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication, Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   formatMonth,
   formatOptionalTimestampDate,

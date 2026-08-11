@@ -13,7 +13,7 @@ import {
   ChallengePhInteractiveMap,
   SuperListingMapBackground,
 } from "@/components/features/student/super-listing/philippines-infographic-map";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],

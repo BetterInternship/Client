@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useState } from "react";
 
 export type ToastAction =
@@ -45,7 +45,7 @@ export function Toast({
         "fixed z-[60] max-w-sm",
         posClass[position],
         "transition-all duration-300",
-        closing ? "translate-y-4 opacity-0" : "translate-y-0 opacity-100"
+        closing ? "translate-y-4 opacity-0" : "translate-y-0 opacity-100",
       )}
       role="status"
       aria-live="polite"
@@ -54,7 +54,7 @@ export function Toast({
         className={cn(
           "rounded-[0.33em] border border-primary/20 bg-white shadow-lg ring-1 ring-black/[0.03]",
           "p-4 pr-3 flex items-start gap-3 w-full",
-          className
+          className,
         )}
       >
         <div className="flex-1 min-w-0">
@@ -72,7 +72,9 @@ export function Toast({
           </div>
 
           {description ? (
-            <p className="mt-1 text-sm text-gray-600 text-justify">{description}</p>
+            <p className="mt-1 text-sm text-gray-600 text-justify">
+              {description}
+            </p>
           ) : null}
 
           {actions.length > 0 ? (
@@ -94,7 +96,7 @@ export function Toast({
                       "text-xs px-3 py-1.5 rounded-[0.33em] border transition",
                       i === actions.length - 1
                         ? "ml-auto bg-primary text-white hover:opacity-90 border-transparent"
-                        : "border-gray-200 hover:bg-gray-50"
+                        : "border-gray-200 hover:bg-gray-50",
                     )}
                     onClick={async () => {
                       setClosing(true);
@@ -103,7 +105,7 @@ export function Toast({
                   >
                     {a.label}
                   </button>
-                )
+                ),
               )}
             </div>
           ) : null}

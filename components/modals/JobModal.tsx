@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useProfileData } from "@/lib/api/student.data.api";

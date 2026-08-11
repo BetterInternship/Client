@@ -13,7 +13,7 @@
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Badge } from "./badge";
 
 function Tabs({

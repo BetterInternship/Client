@@ -22,7 +22,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
 import heroImage from "./components/4.jpg";

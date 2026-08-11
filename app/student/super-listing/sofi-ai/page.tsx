@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useSuperListingUnlock } from "@/hooks/use-super-listing-unlock";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { toastPresets } from "@/components/ui/sonner-toast";
