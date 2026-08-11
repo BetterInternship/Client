@@ -11,15 +11,15 @@ import {
   LogOut,
   LogIn,
 } from "lucide-react";
-import { cn } from "@betterinternship/components";
-import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
-import { useProfileData } from "@/lib/api/student.data.api";
-import type { PublicUser } from "@/lib/db/db.types";
 import {
+  cn,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@betterinternship/components";
+import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
+import { useProfileData } from "@/lib/api/student.data.api";
+import type { PublicUser } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MobileBottomNavProps {

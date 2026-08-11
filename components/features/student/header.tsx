@@ -14,18 +14,17 @@ import {
   Newspaper,
 } from "lucide-react";
 
-import { Button } from "@betterinternship/components";
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@betterinternship/components";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useHeaderContext } from "@/lib/ctx-header";
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";

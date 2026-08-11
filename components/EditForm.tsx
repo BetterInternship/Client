@@ -5,14 +5,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/landingStudent/ui/select";
-import { Button } from "@betterinternship/components";
-import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
 import {
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@betterinternship/components";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
 import {
   IFormData,
   IFormErrors,

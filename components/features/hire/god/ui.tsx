@@ -1,12 +1,12 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { Button } from "@betterinternship/components";
 import {
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@betterinternship/components";
 import { MoreHorizontal } from "lucide-react";
 
 /** Page section with a top toolbar and a bordered list container */
