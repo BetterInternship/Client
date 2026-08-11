@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@betterinternship/components";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "@betterinternship/components";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

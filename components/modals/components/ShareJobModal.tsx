@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Check, Copy, Loader2, Send } from "lucide-react";
-import { Button } from "@betterinternship/components";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "@betterinternship/components";
 import { useShareLink } from "@/lib/api/student.data.api";
 import { Job } from "@/lib/db/db.types";
 
