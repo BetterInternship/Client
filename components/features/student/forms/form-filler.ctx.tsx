@@ -271,8 +271,31 @@ const validateFieldHelper = <T extends any[]>(
   if (field.signing_party_id !== "initiator" || field.source !== "manual")
     return;
 
-  const value = getFieldValue(allValues, field.field);
-  const coerced = field.coerce(value);
+  // Untouched optional inputs are absent from form state. Validators receive
+  // an empty string so optional string/time fields behave like cleared inputs.
+  const value = getFieldValue(allValues, field.field) ?? "";
+  if (
+    field.type === "multiselect" &&
+    !value?.trim() &&
+    field.validator?.safeParse([]).success
+  ) {
+    return null;
+  }
+
+  const isDateMultiSelect =
+    field.type === "multiselect" &&
+    (
+      field.validator as {
+        _def?: { element?: { _def?: { type?: string } } };
+      } | null
+    )?._def?.element?._def?.type === "date";
+  const dateMultiSelectValue = isDateMultiSelect
+    ? value
+        .split("\n")
+        .filter(Boolean)
+        .map((item) => new Date(Number(item)))
+    : undefined;
+  const coerced = dateMultiSelectValue ?? field.coerce(value);
 
   const result = field.validator?.safeParse(coerced);
 

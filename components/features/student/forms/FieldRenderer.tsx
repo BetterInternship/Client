@@ -12,6 +12,7 @@
 import {
   FormCheckbox,
   FormDatePicker,
+  FormDateMultiPicker,
   FormDropdown,
   FormInput,
   FormTextarea,
@@ -107,6 +108,18 @@ export const FieldRenderer = <T extends any[]>({
   }
 
   if (field.type === "multiselect") {
+    if (isDateMultiSelectField(field)) {
+      return (
+        <FieldRendererDateMultiSelect
+          field={field}
+          value={value}
+          TooltipContent={TooltipLabel}
+          onChange={onChange}
+          onBlur={onBlur}
+          isPhantom={isPhantom}
+        />
+      );
+    }
     return (
       <FieldRendererMultiselect
         field={field}
@@ -165,6 +178,13 @@ export const FieldRenderer = <T extends any[]>({
       isPhantom={isPhantom}
     />
   );
+};
+
+const isDateMultiSelectField = (field: ClientField<any>) => {
+  const validator = field.validator as {
+    _def?: { element?: { _def?: { type?: string } } };
+  } | null;
+  return validator?._def?.element?._def?.type === "date";
 };
 
 /**
@@ -292,6 +312,49 @@ const FieldRendererDate = <T extends any[]>({
             day: "2-digit",
           })
         }
+        labelAddon={badge}
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+const FieldRendererDateMultiSelect = <T extends any[]>({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+  onBlur,
+  isPhantom = false,
+}: {
+  field: ClientField<T>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string) => void;
+  onBlur?: (nextValue?: unknown) => void;
+  isPhantom?: boolean;
+}) => {
+  const dates = value
+    .split("\n")
+    .filter((item) => item.trim())
+    .map((item) => Number(item.trim()))
+    .filter((item) => Number.isFinite(item));
+  const badge = isPhantom && <PhantomFieldBadge />;
+
+  return (
+    <div className="space-y-1.5">
+      <FormDateMultiPicker
+        required={!field.validator?.safeParse([]).success}
+        label={field.label}
+        dates={dates}
+        setter={(next) => {
+          const serialized = next.join("\n");
+          onChange(serialized);
+          onBlur?.(serialized);
+        }}
+        className="w-full"
+        contentClassName="z-[1100]"
+        tooltip={field.tooltip_label}
         labelAddon={badge}
       />
       <TooltipContent />
