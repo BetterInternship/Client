@@ -10,13 +10,10 @@ import { useAppContext } from "@/lib/ctx-app";
 
 import { FormInput } from "@/components/EditForm";
 
-import { Card } from "@/components/ui/card";
-import { MailCheck, TriangleAlert, User } from "lucide-react";
+import { MailCheck, TriangleAlert } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
-import { AnimatePresence, motion } from "framer-motion";
-import { HeaderTitle } from "@/components/ui/text";
-import { useBlurTransition } from "@/components/animata/blur";
 import { EmployerService } from "@/lib/api/services";
+import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 
 export default function LoginPage() {
   return (
@@ -48,8 +45,6 @@ function LoginContent() {
   const router = useRouter();
 
   const { isMobile } = useAppContext();
-
-  const blurTransition = useBlurTransition();
 
   redirect_if_logged_in();
 
@@ -106,147 +101,121 @@ function LoginContent() {
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        {...blurTransition}
-        className={cn(
-          "flex justify-center py-12 pt-12 h-fit overflow-y-auto",
-          isMobile ? "px-2" : "px-6",
-        )}
-      >
-        <div className="flex items-center w-full max-w-2xl h-full">
-          <div className="w-full">
-            {/* IOM auto-link banner — merged flush with the card below it */}
-            {autoLinkToken && (
-              <div
-                className={cn(
-                  "flex flex-col items-center gap-3 px-5 py-6 bg-primary/10 text-primary rounded-t-[0.33em]",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex gap-3 items-center",
-                    isMobile ? "flex-col text-center" : "",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "font-semibold justify-center",
-                      isMobile ? "text-lg" : "text-xl",
-                    )}
-                  >
-                    You already have a marketplace account. Login to link it.
-                  </span>
-                </div>
-                <img
-                  src="/hire/link-company-accounts.png"
-                  alt=""
-                  fetchPriority="high"
-                  className={cn("h-60", "object-cover")}
-                />
-              </div>
+    <HireAuthShell
+      title="Log in"
+      description="Enter your employer account details to access the portal."
+      footer={
+        <>
+          Don&apos;t have an account?{" "}
+          <a className="font-medium text-primary" href="/register">
+            Register here
+          </a>
+          .
+        </>
+      }
+    >
+      <div className="w-full">
+        {/* IOM auto-link banner — merged flush with the card below it */}
+        {autoLinkToken && (
+          <div
+            className={cn(
+              "flex flex-col items-center gap-3 px-5 py-6 bg-primary/10 text-primary rounded-t-[0.33em]",
             )}
-
-            <Card
+          >
+            <div
               className={cn(
-                "w-full",
-                autoLinkToken && "rounded-tl-none rounded-tr-none",
+                "flex gap-3 items-center",
+                isMobile ? "flex-col text-center" : "",
               )}
             >
-              {/* Welcome Message */}
-              <HeaderTitle icon={User}>Log in</HeaderTitle>
-
-              {/* Error Message */}
-              {error && (
-                <div
-                  className={cn(
-                    "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
-                    isMobile ? "flex-col items-start" : "",
-                  )}
-                >
-                  <TriangleAlert size={isMobile ? 24 : 20} />
-                  <span className="text-sm justify-center">{error}</span>
-                </div>
-              )}
-
-              {status === "success" && !error && (
-                <div
-                  className={cn(
-                    "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
-                    isMobile
-                      ? "flex flex-col items-start gap-2"
-                      : "flex items-center gap-2",
-                  )}
-                >
-                  <MailCheck size={isMobile ? 24 : 20} />
-                  <span className="text-sm">
-                    Registration successful. Verify your email to activate your
-                    account.
-                  </span>
-                </div>
-              )}
-
-              {/* Login Form */}
-              <form onSubmit={(event) => void handle_login_request(event)}>
-                <div className="flex flex-col gap-4">
-                  <FormInput
-                    label="Email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-
-                  <FormInput
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <div className="flex justify-between items-center w-full text-sm text-gray-500">
-                    <a
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
-                      href="/forgot-password"
-                    >
-                      Forgot password?
-                    </a>
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? "Logging in..." : "Log in"}
-                    </Button>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    Don't have an account?{" "}
-                    <a
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
-                      href="/register"
-                    >
-                      Register here.
-                    </a>
-                  </span>
-                  <span className="text-muted-foreground text-sm">
-                    Need help? Contact us at{" "}
-                    <a
-                      href="tel://09276604999"
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    >
-                      0927 660 4999
-                    </a>{" "}
-                    or on{" "}
-                    <a
-                      href="viber://add?number=639276604999"
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    >
-                      Viber
-                    </a>
-                    .
-                  </span>
-                </div>
-              </form>
-            </Card>
+              <span
+                className={cn(
+                  "font-semibold justify-center",
+                  isMobile ? "text-lg" : "text-xl",
+                )}
+              >
+                You already have a marketplace account. Login to link it.
+              </span>
+            </div>
+            <img
+              src="/hire/link-company-accounts.png"
+              alt=""
+              fetchPriority="high"
+              className={cn("h-60", "object-cover")}
+            />
           </div>
+        )}
+
+        <div className="space-y-4">
+          {/* Error Message */}
+          {error && (
+            <div
+              className={cn(
+                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
+                isMobile ? "flex-col items-start" : "",
+              )}
+            >
+              <TriangleAlert size={isMobile ? 24 : 20} />
+              <span className="text-sm justify-center">{error}</span>
+            </div>
+          )}
+
+          {status === "success" && !error && (
+            <div
+              className={cn(
+                "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
+                isMobile
+                  ? "flex flex-col items-start gap-2"
+                  : "flex items-center gap-2",
+              )}
+            >
+              <MailCheck size={isMobile ? 24 : 20} />
+              <span className="text-sm">
+                Registration successful. Verify your email to activate your
+                account.
+              </span>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form
+            onSubmit={(event) => void handle_login_request(event)}
+            className="space-y-4"
+          >
+            <FormInput
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required={false}
+            />
+
+            <FormInput
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required={false}
+              labelAddon={
+                <a
+                  className="text-xs text-muted-foreground hover:text-primary"
+                  href="/forgot-password"
+                >
+                  Forgot password?
+                </a>
+              }
+            />
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Log in"}
+            </Button>
+          </form>
         </div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </HireAuthShell>
   );
 }

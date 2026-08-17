@@ -7,57 +7,53 @@ import { useRouter } from "next/navigation";
 import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
 import { Employer } from "@/lib/db/db.types";
 import { createEditForm, FormCheckbox, FormInput } from "@/components/EditForm";
-import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
 import { Button } from "@/components/ui/button";
-import { isValidEmail, isValidPHNumber } from "@/lib/utils";
-import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { isValidPHNumber } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { TriangleAlert, User } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
-import { AuthResponse } from "@/lib/api/hire.api";
+import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
 
 export default function RegisterPage() {
-  const { register, isAuthenticated, redirectIfLoggedIn, loading } =
-    useAuthContext();
+  const { isAuthenticated, redirectIfLoggedIn, loading } = useAuthContext();
 
   redirectIfLoggedIn();
 
   if (loading || isAuthenticated())
     return <Loader>Loading registration...</Loader>;
 
-  const { isMobile } = useAppContext();
-
   return (
-    <div
-      className={cn(
-        "flex-1 flex justify-center py-12 pt-12 overflow-y-auto",
-        isMobile ? "px-2" : "px-6",
-      )}
+    <HireAuthShell
+      className="max-w-xl"
+      title="Register your company"
+      description="Tell us about your company and primary contact. You'll add your login details next."
+      footer={
+        <>
+          Already have an account?{" "}
+          <a className="font-medium text-primary" href="/login">
+            Log in
+          </a>
+          .
+        </>
+      }
     >
-      <div className="w-full max-w-2xl h-full">
+      <div className="w-full">
         <EmployerRegisterForm data={{}}>
-          <EmployerEditor registerProfile={register} />
+          <EmployerEditor />
         </EmployerRegisterForm>
       </div>
-    </div>
+    </HireAuthShell>
   );
 }
 
-const EmployerEditor = ({
-  registerProfile,
-}: {
-  registerProfile: (
-    newProfile: Partial<Employer> | FormData,
-  ) => Promise<AuthResponse>;
-}) => {
+const EmployerEditor = () => {
   const {
     formData,
     formErrors,
@@ -68,13 +64,12 @@ const EmployerEditor = ({
   } = useEmployerRegisterForm();
   interface AdditionalFields {
     contact_name: string;
-    password: string;
     terms_accepted: boolean;
   }
   const { isMobile } = useAppContext();
   const router = useRouter();
   const { universities } = useDbRefs();
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields,
   );
@@ -82,7 +77,7 @@ const EmployerEditor = ({
 
   const blurTransition = useBlurTransition();
 
-  const register = async () => {
+  const continueRegistration = () => {
     // Validate required fields before submitting
     const newMissing: string[] = [];
 
@@ -101,17 +96,11 @@ const EmployerEditor = ({
     if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
       newMissing.push("Phone number");
     }
-    if (!formData.email || !isValidEmail(formData.email)) {
-      newMissing.push("Contact email");
-    }
     if (!formData.website) {
       newMissing.push("Company website");
     }
     if (!formData.location) {
       newMissing.push("Main office city");
-    }
-    if (!additionalFields.password || additionalFields.password.length < 8) {
-      newMissing.push("Password (at least 8 characters)");
     }
     if (!additionalFields.terms_accepted) {
       newMissing.push("Terms");
@@ -123,7 +112,6 @@ const EmployerEditor = ({
       return;
     }
 
-    const multipartForm = MultipartFormBuilder.new();
     const newProfile = {
       ...cleanFormData(),
       website: toURL(formData.website)?.toString() ?? null,
@@ -133,27 +121,14 @@ const EmployerEditor = ({
         .map((u) => `"${u.id}"`)
         .join(",")}]`,
       contact_name: additionalFields.contact_name,
-      password: additionalFields.password,
     };
-    multipartForm.from(newProfile);
-    setIsRegistering(true);
-    const result = await registerProfile(multipartForm.build());
-    if (!result?.success) {
-      if (result?.account_exists) {
-        router.push(`/login?email=${encodeURIComponent(formData.email ?? "")}`);
-        setIsRegistering(false);
-        return;
-      }
-      const errorMsg =
-        result.message || "Please check your information and try again.";
-      alert(`Registration Error: ${errorMsg}`);
-      setIsRegistering(false);
-      return;
-    }
-
-    sessionStorage.setItem("hire-registration-email", formData.email ?? "");
+    setIsContinuing(true);
+    sessionStorage.removeItem("hire-registration-email");
+    sessionStorage.setItem(
+      "hire-registration-profile",
+      JSON.stringify(newProfile),
+    );
     router.push("/register/verify");
-    setIsRegistering(false);
   };
 
   // Update dropdown options
@@ -179,10 +154,6 @@ const EmployerEditor = ({
         number && !isValidPHNumber(number) && "Invalid PH number.",
     );
     addValidator(
-      "email",
-      (email: string) => email && !isValidEmail(email) && "Invalid email.",
-    );
-    addValidator(
       "location",
       (location: string) => !location && `Provide your main office's location.`,
     );
@@ -192,8 +163,7 @@ const EmployerEditor = ({
     <>
       <AnimatePresence>
         <motion.div {...blurTransition} className="w-full">
-          <Card>
-            <HeaderTitle icon={User}>Register</HeaderTitle>
+          <div className="space-y-4">
             {missingFields.length > 0 && (
               <div
                 className={cn(
@@ -244,40 +214,6 @@ const EmployerEditor = ({
                   )}
                 />
                 <ErrorLabel value={formErrors.phone_number} />
-              </div>
-              <div>
-                <FormInput
-                  label="Email"
-                  value={formData.email ?? ""}
-                  setter={fieldSetter("email")}
-                  className={cn(
-                    missingFields.find((field) => field === "Contact email")
-                      ? "border-destructive"
-                      : "",
-                  )}
-                />
-                <ErrorLabel value={formErrors.email} />
-              </div>
-              <div>
-                <FormInput
-                  label="Password"
-                  type="password"
-                  value={additionalFields.password ?? ""}
-                  setter={(value) =>
-                    setAdditionalFields({
-                      ...additionalFields,
-                      password: value,
-                    })
-                  }
-                  className={cn(
-                    missingFields.find((field) => field.startsWith("Password"))
-                      ? "border-destructive"
-                      : "",
-                  )}
-                />
-                <span className="mt-1 block text-xs text-muted-foreground">
-                  Use at least 8 characters.
-                </span>
               </div>
               <div>
                 <FormInput
@@ -376,41 +312,17 @@ const EmployerEditor = ({
                 .
               </label>
             </div>
-            <div className="flex justify-between items-center w-full pb-2">
-              <span className="text-sm text-gray-500">
-                Already have an account?{" "}
-                <a
-                  className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  href="/login"
-                >
-                  Log in here.
-                </a>
-              </span>
+            <div className="flex justify-end w-full pb-2">
               <Button
-                onClick={() => void register()}
-                disabled={!additionalFields.terms_accepted || isRegistering}
+                onClick={continueRegistration}
+                size="lg"
+                className="w-full"
+                disabled={!additionalFields.terms_accepted || isContinuing}
               >
-                {isRegistering ? "Registering..." : "Register"}
+                {isContinuing ? "Continuing..." : "Continue"}
               </Button>
             </div>
-            <span className="text-muted-foreground text-sm">
-              Need help? Contact us at{" "}
-              <a
-                href="tel://09276604999"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                0927 660 4999
-              </a>{" "}
-              or on{" "}
-              <a
-                href="viber://add?number=639276604999"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                Viber
-              </a>
-              .
-            </span>
-          </Card>
+          </div>
         </motion.div>
       </AnimatePresence>
     </>

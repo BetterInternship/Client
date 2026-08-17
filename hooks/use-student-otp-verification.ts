@@ -207,6 +207,7 @@ export function useStudentOtpVerification({
   ]);
 
   return {
+    activateOtp,
     activating,
     countdown,
     error,
