@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { AuthService } from "@/lib/api/services";
+import { type QueryKey, useQueryClient } from "@tanstack/react-query";
 
 type OtpResponse = {
   success?: boolean;
@@ -25,9 +24,9 @@ type RequestOtpOptions = OtpOptions & {
   startCooldown?: boolean;
 };
 
-type UseStudentOtpVerificationOptions = {
+type UseOtpVerificationOptions = {
   email?: string;
-  requestOtpAction?: (email: string) => Promise<OtpResponse>;
+  requestOtpAction: (email: string) => Promise<OtpResponse>;
   activateOtpAction?: (email: string, otp: string) => Promise<OtpResponse>;
   autoActivate?: {
     enabled?: boolean;
@@ -37,9 +36,10 @@ type UseStudentOtpVerificationOptions = {
   };
   cooldownSeconds?: number;
   initialCoolingDown?: boolean;
+  invalidateQueryKeys?: QueryKey[];
 };
 
-export const STUDENT_OTP_LENGTH = 6;
+export const OTP_LENGTH = 6;
 const DEFAULT_COOLDOWN_SECONDS = 60;
 
 const getResponseError = (
@@ -47,14 +47,15 @@ const getResponseError = (
   fallback: string,
 ) => response?.message?.trim() || response?.error?.trim() || fallback;
 
-export function useStudentOtpVerification({
+export function useOtpVerification({
   email,
   requestOtpAction,
   activateOtpAction,
   autoActivate,
   cooldownSeconds = DEFAULT_COOLDOWN_SECONDS,
   initialCoolingDown = false,
-}: UseStudentOtpVerificationOptions = {}) {
+  invalidateQueryKeys = [],
+}: UseOtpVerificationOptions) {
   const queryClient = useQueryClient();
   const sendingRef = useRef(false);
   const activatingRef = useRef(false);
@@ -115,9 +116,7 @@ export function useStudentOtpVerification({
       setError("");
 
       try {
-        const response = requestOtpAction
-          ? await requestOtpAction(email)
-          : await AuthService.requestActivation(email);
+        const response = await requestOtpAction(email);
 
         if (response?.success !== true) {
           const message = getResponseError(response, failureMessage);
@@ -146,17 +145,19 @@ export function useStudentOtpVerification({
         networkErrorMessage = "Couldn't verify your code. Try again.",
       }: OtpOptions = {},
     ): Promise<OtpResult | null> => {
-      if (!email || activatingRef.current) return null;
+      if (!email || !activateOtpAction || activatingRef.current) return null;
 
       activatingRef.current = true;
       setActivating(true);
       setError("");
 
       try {
-        const response = activateOtpAction
-          ? await activateOtpAction(email, otp)
-          : await AuthService.activate(email, otp);
-        await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+        const response = await activateOtpAction(email, otp);
+        await Promise.all(
+          invalidateQueryKeys.map((queryKey) =>
+            queryClient.invalidateQueries({ queryKey }),
+          ),
+        );
 
         if (response?.success === true) {
           return { success: true, response };
@@ -173,7 +174,7 @@ export function useStudentOtpVerification({
         setActivating(false);
       }
     },
-    [activateOtpAction, email, queryClient],
+    [activateOtpAction, email, invalidateQueryKeys, queryClient],
   );
 
   const autoActivateEnabled = autoActivate?.enabled ?? true;
@@ -183,7 +184,7 @@ export function useStudentOtpVerification({
 
   useEffect(() => {
     if (!autoActivateEnabled || !email || !autoActivateOnSuccess) return;
-    if (otp.length !== STUDENT_OTP_LENGTH) return;
+    if (otp.length !== OTP_LENGTH) return;
 
     const attemptKey = `${email}:${otp}`;
     if (autoActivationAttemptRef.current === attemptKey) return;

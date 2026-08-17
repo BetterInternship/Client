@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
-import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { isEduPhEmail } from "@/lib/utils/string-utils";
+import { AuthService } from "@/lib/api/services";
 
 /**
  * The second step to registering where the user verifies their education email
@@ -26,8 +27,9 @@ export function OTPEmailStep({
     profile.data?.edu_verification_email ?? "",
   );
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const { error, requestOtp, sending } = useStudentOtpVerification({
+  const { error, requestOtp, sending } = useOtpVerification({
     email: eduEmail,
+    requestOtpAction: (email) => AuthService.requestActivation(email),
   });
 
   // set the education email if it doesn't exist on the user account.

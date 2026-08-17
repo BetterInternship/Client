@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/EditForm";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { Loader } from "@/components/ui/loader";
-import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { EmployerAuthService } from "@/lib/api/hire.api";
 import { isValidEmail } from "@/lib/utils";
 import { useAuthContext } from "../../authctx";
@@ -62,7 +62,7 @@ export default function VerifyHireRegistrationPage() {
     otpInputProps,
     requestOtp,
     sending,
-  } = useStudentOtpVerification({
+  } = useOtpVerification({
     email: email.trim().toLowerCase(),
     requestOtpAction: (address) =>
       EmployerAuthService.requestActivation(address),
