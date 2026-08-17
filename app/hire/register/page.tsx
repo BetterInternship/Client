@@ -8,7 +8,7 @@ import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
 import { Employer } from "@/lib/db/db.types";
 import { createEditForm, FormCheckbox, FormInput } from "@/components/EditForm";
 import { ErrorLabel } from "@/components/ui/labels";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { isValidPHNumber } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@betterinternship/components";

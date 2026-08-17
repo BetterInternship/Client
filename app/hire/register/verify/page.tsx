@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { Loader } from "@/components/ui/loader";
