@@ -69,7 +69,7 @@ export default function VerifyHireRegistrationPage() {
     activateOtpAction: (address, otp) =>
       EmployerAuthService.activate(address, otp),
     autoActivate: {
-      enabled: false,
+      enabled: true,
       failureMessage: "Verification code not valid.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
       onSuccess: () => void completeActivation(),
