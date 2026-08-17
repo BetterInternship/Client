@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { FormInput } from "@/components/EditForm";
 
 import { Card } from "@/components/ui/card";
-import { Link2, MailCheck, TriangleAlert, User } from "lucide-react";
+import { MailCheck, TriangleAlert, User } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderTitle } from "@/components/ui/text";
@@ -27,11 +27,7 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const {
-    emailStatus: email_status,
-    login,
-    redirectIfLoggedIn: redirect_if_logged_in,
-  } = useAuthContext();
+  const { login, redirectIfLoggedIn: redirect_if_logged_in } = useAuthContext();
   const queryClient = useQueryClient();
 
   const searchParams = useSearchParams();
@@ -46,7 +42,6 @@ function LoginContent() {
   const prefillEmail = searchParams.get("email") ?? "";
 
   const [email, setEmail] = useState(prefillEmail);
-  const [emailNorm, setEmailNorm] = useState(""); // keep a normalized copy for API calls
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -72,22 +67,10 @@ function LoginContent() {
       return;
     }
 
-    setEmailNorm(normalized);
-
     try {
-      const email_r = await email_status(normalized);
       const r = await login(normalized, password);
 
-      // @ts-ignore
-      if (!email_r?.success) {
-        setIsLoading(false);
-        // @ts-ignore
-        alert(r?.message ?? "Unknown error");
-        return;
-      }
-
-      // @ts-ignore
-      if (r?.success) {
+      if (r.success) {
         if (autoLinkToken) {
           // Best-effort — a failure here never blocks login. The manual
           // "Link your IOM account" card on company-profile is the fallback.
@@ -101,18 +84,23 @@ function LoginContent() {
           }
         }
 
-        // @ts-ignore
-        if (r.god) {
+        if (r.user?.god) {
           router.push("/god");
+          return;
         }
 
         router.push("/dashboard");
       } else {
-        setError("Invalid password.");
+        if (r.pending_verification) {
+          sessionStorage.setItem("hire-registration-email", normalized);
+          router.push("/register/verify");
+          return;
+        }
+        setError(r.message || "Invalid password.");
         setIsLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setIsLoading(false);
     }
   };
@@ -181,7 +169,6 @@ function LoginContent() {
                 </div>
               )}
 
-              {/* check email message on successful register */}
               {status === "success" && !error && (
                 <div
                   className={cn(
@@ -193,14 +180,14 @@ function LoginContent() {
                 >
                   <MailCheck size={isMobile ? 24 : 20} />
                   <span className="text-sm">
-                    Registration successful. Please check your email for the
-                    password.
+                    Registration successful. Verify your email to activate your
+                    account.
                   </span>
                 </div>
               )}
 
               {/* Login Form */}
-              <form onSubmit={handle_login_request}>
+              <form onSubmit={(event) => void handle_login_request(event)}>
                 <div className="flex flex-col gap-4">
                   <FormInput
                     label="Email"

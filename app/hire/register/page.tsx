@@ -15,11 +15,11 @@ import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import Link from "next/link";
 import { TriangleAlert, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
+import { AuthResponse } from "@/lib/api/hire.api";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
@@ -54,7 +54,9 @@ export default function RegisterPage() {
 const EmployerEditor = ({
   registerProfile,
 }: {
-  registerProfile: (newProfile: Partial<Employer>) => Promise<any>;
+  registerProfile: (
+    newProfile: Partial<Employer> | FormData,
+  ) => Promise<AuthResponse>;
 }) => {
   const {
     formData,
@@ -66,11 +68,12 @@ const EmployerEditor = ({
   } = useEmployerRegisterForm();
   interface AdditionalFields {
     contact_name: string;
+    password: string;
     terms_accepted: boolean;
   }
   const { isMobile } = useAppContext();
   const router = useRouter();
-  const { industries, universities, get_university_by_name } = useDbRefs();
+  const { universities } = useDbRefs();
   const [isRegistering, setIsRegistering] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields,
@@ -107,6 +110,9 @@ const EmployerEditor = ({
     if (!formData.location) {
       newMissing.push("Main office city");
     }
+    if (!additionalFields.password || additionalFields.password.length < 8) {
+      newMissing.push("Password (at least 8 characters)");
+    }
     if (!additionalFields.terms_accepted) {
       newMissing.push("Terms");
     }
@@ -127,23 +133,26 @@ const EmployerEditor = ({
         .map((u) => `"${u.id}"`)
         .join(",")}]`,
       contact_name: additionalFields.contact_name,
+      password: additionalFields.password,
     };
     multipartForm.from(newProfile);
     setIsRegistering(true);
-    // @ts-ignore
     const result = await registerProfile(multipartForm.build());
-    // @ts-ignore
     if (!result?.success) {
+      if (result?.account_exists) {
+        router.push(`/login?email=${encodeURIComponent(formData.email ?? "")}`);
+        setIsRegistering(false);
+        return;
+      }
       const errorMsg =
-        result?.error ||
-        result?.message ||
-        "Please check your information and try again.";
+        result.message || "Please check your information and try again.";
       alert(`Registration Error: ${errorMsg}`);
       setIsRegistering(false);
       return;
     }
 
-    router.push("/login?status=success");
+    sessionStorage.setItem("hire-registration-email", formData.email ?? "");
+    router.push("/register/verify");
     setIsRegistering(false);
   };
 
@@ -248,6 +257,27 @@ const EmployerEditor = ({
                   )}
                 />
                 <ErrorLabel value={formErrors.email} />
+              </div>
+              <div>
+                <FormInput
+                  label="Password"
+                  type="password"
+                  value={additionalFields.password ?? ""}
+                  setter={(value) =>
+                    setAdditionalFields({
+                      ...additionalFields,
+                      password: value,
+                    })
+                  }
+                  className={cn(
+                    missingFields.find((field) => field.startsWith("Password"))
+                      ? "border-destructive"
+                      : "",
+                  )}
+                />
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Use at least 8 characters.
+                </span>
               </div>
               <div>
                 <FormInput
@@ -357,7 +387,7 @@ const EmployerEditor = ({
                 </a>
               </span>
               <Button
-                onClick={register}
+                onClick={() => void register()}
                 disabled={!additionalFields.terms_accepted || isRegistering}
               >
                 {isRegistering ? "Registering..." : "Register"}

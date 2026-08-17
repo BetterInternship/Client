@@ -27,6 +27,8 @@ type RequestOtpOptions = OtpOptions & {
 
 type UseStudentOtpVerificationOptions = {
   email?: string;
+  requestOtpAction?: (email: string) => Promise<OtpResponse>;
+  activateOtpAction?: (email: string, otp: string) => Promise<OtpResponse>;
   autoActivate?: {
     enabled?: boolean;
     failureMessage?: string;
@@ -47,6 +49,8 @@ const getResponseError = (
 
 export function useStudentOtpVerification({
   email,
+  requestOtpAction,
+  activateOtpAction,
   autoActivate,
   cooldownSeconds = DEFAULT_COOLDOWN_SECONDS,
   initialCoolingDown = false,
@@ -111,7 +115,9 @@ export function useStudentOtpVerification({
       setError("");
 
       try {
-        const response = await AuthService.requestActivation(email);
+        const response = requestOtpAction
+          ? await requestOtpAction(email)
+          : await AuthService.requestActivation(email);
 
         if (response?.success !== true) {
           const message = getResponseError(response, failureMessage);
@@ -129,7 +135,7 @@ export function useStudentOtpVerification({
         setSending(false);
       }
     },
-    [email, isCoolingDown, startCooldown],
+    [email, isCoolingDown, requestOtpAction, startCooldown],
   );
 
   const activateOtp = useCallback(
@@ -147,7 +153,9 @@ export function useStudentOtpVerification({
       setError("");
 
       try {
-        const response = await AuthService.activate(email, otp);
+        const response = activateOtpAction
+          ? await activateOtpAction(email, otp)
+          : await AuthService.activate(email, otp);
         await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
 
         if (response?.success === true) {
@@ -165,7 +173,7 @@ export function useStudentOtpVerification({
         setActivating(false);
       }
     },
-    [email, queryClient],
+    [activateOtpAction, email, queryClient],
   );
 
   const autoActivateEnabled = autoActivate?.enabled ?? true;
