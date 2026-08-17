@@ -11,9 +11,10 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
-import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { isEduPhEmail } from "@/lib/utils/string-utils";
+import { AuthService } from "@/lib/api/services";
 
 const DEFAULT_VERIFICATION_REDIRECT = "/search";
 
@@ -145,8 +146,11 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     otpInputProps,
     requestOtp,
     sending,
-  } = useStudentOtpVerification({
+  } = useOtpVerification({
     email: eduEmail,
+    requestOtpAction: (email) => AuthService.requestActivation(email),
+    activateOtpAction: (email, otp) => AuthService.activate(email, otp),
+    invalidateQueryKeys: [["my-profile"]],
     autoActivate: {
       failureMessage: "OTP not valid.",
       onSuccess: onFinish,

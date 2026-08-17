@@ -11,11 +11,6 @@ import { FetchResponse } from "@/lib/api/use-fetch";
 import { Employer, EmployerSelf } from "../db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 
-interface EmployersResponse extends FetchResponse {
-  success: boolean;
-  employers: Employer[];
-}
-
 interface EmployerResponse extends FetchResponse {
   success: boolean;
   employer: Employer;
@@ -24,9 +19,12 @@ interface EmployerResponse extends FetchResponse {
 // god is merged onto the user object itself (auth.service.ts's toFullSelf),
 // not a sibling field — /hire/login and /hire/loggedin are the only two
 // routes that carry it; /employer-users/me does not.
-interface AuthResponse extends FetchResponse {
+export interface AuthResponse extends FetchResponse {
   success: boolean;
-  user: Partial<EmployerSelf> & { god?: boolean };
+  user?: Partial<EmployerSelf> & { god?: boolean };
+  pending_verification?: boolean;
+  account_exists?: boolean;
+  login_url?: string;
 }
 
 interface EmailStatusResponse extends FetchResponse {
@@ -48,7 +46,7 @@ export const EmployerAuthService = {
     );
   },
 
-  async register(employer: Partial<Employer>) {
+  async register(employer: Partial<Employer> | FormData) {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "register").build(),
       employer,
@@ -60,6 +58,20 @@ export const EmployerAuthService = {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "login").build(),
       { email, password },
+    );
+  },
+
+  async requestActivation(email: string) {
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("auth").r("hire", "activate").build(),
+      { email },
+    );
+  },
+
+  async activate(email: string, otp: string) {
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("auth").r("hire", "activate", "otp").build(),
+      { email, otp },
     );
   },
 
