@@ -56,7 +56,11 @@ export const TimelineItem = ({
             ) : (
               <div className="text-sm text-gray-700">{title}</div>
             )}
-            {isMe && <Badge type="primary">You</Badge>}
+            {isMe && (
+              <Badge variant="solid" type="primary">
+                You
+              </Badge>
+            )}
           </div>
           {subtitle && (
             <div className="text-xs text-gray-500 mb-1.5">{subtitle}</div>
