@@ -151,19 +151,8 @@ export function JobListingsBox({
                     {reEnabling ? "Re-activating..." : "Re-activate"}
                   </Button>
                 ) : (
-                  <Badge
-                    className={cn(
-                      "flex items-center gap-1",
-                      job.is_active
-                        ? "text-supportive border-supportive"
-                        : "text-muted-foreground flex items-center font-normal",
-                    )}
-                  >
-                    {job.is_active ? (
-                      <Check size={16} />
-                    ) : (
-                      <Pause fill="hsl(var(--muted-foreground))" size={16} />
-                    )}
+                  <Badge type={job.is_active ? "supportive" : "default"}>
+                    {job.is_active ? <Check size={16} /> : <Pause size={16} />}
                     <span>{job.is_active ? "Active" : "Paused"}</span>
                   </Badge>
                 )}
@@ -210,7 +199,7 @@ export function JobListingsBox({
               </Badge>
               <Badge
                 type={newApplicants > 0 ? "primary" : "default"}
-                strength={"default"}
+                variant={newApplicants > 0 ? "solid" : "outline"}
               >
                 {newApplicants} new applicant{newApplicants !== 1 ? "s" : ""}
               </Badge>
