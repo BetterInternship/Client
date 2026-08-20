@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import ContentLayout from "@/components/features/hire/content-layout";
+import { PageContainer } from "@betterinternship/components/page-header";
 import { Tab, TabGroup } from "@/components/ui/tabs";
 import { useAuthContext } from "@/app/hire/authctx";
 import { ProfileTab } from "@/components/features/hire/account/profile-tab";
@@ -52,7 +52,7 @@ function AccountPageContent() {
   };
 
   return (
-    <ContentLayout>
+    <PageContainer>
       <div className="w-full max-w-[760px] py-4 space-y-4">
         <h1 className="text-2xl font-bold font-heading">Account</h1>
         <TabGroup value={activeTab} onValueChange={setActiveTab}>
@@ -74,7 +74,7 @@ function AccountPageContent() {
           )}
         </TabGroup>
       </div>
-    </ContentLayout>
+    </PageContainer>
   );
 }
 

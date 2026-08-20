@@ -1,8 +1,7 @@
 "use client";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { Card } from "@/components/ui/card";
-import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@betterinternship/components";
+import { PageContainer } from "@betterinternship/components/page-header";
 import {
   BadgeInfo,
   Bug,
@@ -30,17 +29,13 @@ import {
 import { Target } from "lucide-react";
 
 export default function HelpPage() {
-  const { isMobile } = useAppContext();
   const blurTransition = useBlurTransition();
 
   return (
-    <ContentLayout>
+    <PageContainer>
       <AnimatePresence>
         <motion.div
-          className={cn(
-            "flex flex-col gap-4 w-full py-4",
-            isMobile ? "px-1" : "px-4",
-          )}
+          className={cn("flex flex-col gap-4")}
           {...blurTransition}
         >
           <HeaderTitle icon={HelpCircle}>Help</HeaderTitle>
@@ -93,6 +88,6 @@ export default function HelpPage() {
           </div>
         </motion.div>
       </AnimatePresence>
-    </ContentLayout>
+    </PageContainer>
   );
 }

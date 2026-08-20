@@ -1,6 +1,5 @@
 "use client";
 
-import ContentLayout from "@/components/features/hire/content-layout";
 import EditJobPage from "@/components/features/hire/listings/editJob";
 import { Loader } from "@/components/ui/loader";
 import { JobService } from "@/lib/api/services";

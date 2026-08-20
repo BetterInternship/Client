@@ -1,6 +1,6 @@
 "use client";
 
-import ContentLayout from "@/components/features/hire/content-layout";
+import { PageContainer } from "@betterinternship/components/page-header";
 import JobTabs from "@/components/features/hire/dashboard/JobTabs";
 import { Job } from "@/lib/db/db.types";
 import { JobService } from "@/lib/api/services";
@@ -48,14 +48,14 @@ function ManageContent() {
 
   if (loading || !jobData) {
     return (
-      <ContentLayout>
+      <PageContainer>
         <Loader>Loading job...</Loader>
-      </ContentLayout>
+      </PageContainer>
     );
   }
 
   return (
-    <ContentLayout className="!p-0">
+    <div className="flex-1 flex justify-center">
       <div className="w-full h-full flex flex-col">
         <JobHeader
           job={jobData}
@@ -78,7 +78,7 @@ function ManageContent() {
           )}
         </div>
       </div>
-    </ContentLayout>
+    </div>
   );
 }
 

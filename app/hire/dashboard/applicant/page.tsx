@@ -1,7 +1,6 @@
 "use client";
 
 import { DB_STATUS_MAP } from "@/lib/consts/application";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
 import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
@@ -88,7 +87,7 @@ function ApplicantPageContent() {
   };
 
   return (
-    <ContentLayout className="!p-0">
+    <div className="flex-1 flex justify-center">
       <div className="w-full h-full">
         <ApplicantPage
           jobId={jobId!}
@@ -109,7 +108,7 @@ function ApplicantPageContent() {
           }}
         />
       </div>
-    </ContentLayout>
+    </div>
   );
 }
 

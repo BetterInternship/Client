@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "@/components/features/hire/header";
+import HireAppHeader from "@/components/features/hire/app-header";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
 
@@ -20,7 +20,7 @@ export default function AllowLanding({
 
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
-      <Suspense>{!hideHeader && <Header />}</Suspense>
+      <Suspense>{!hideHeader && <HireAppHeader />}</Suspense>
       <div className="flex-grow overflow-auto flex flex-col ">{children}</div>
       {!isStudentLanding && <Footer />}
     </div>

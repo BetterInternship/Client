@@ -4,8 +4,19 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { usePathname, useRouter } from "next/navigation";
-import { AppHeader, Button, type NavItem } from "@betterinternship/components";
-import { Briefcase, HelpCircle, Plus, UserCircle } from "lucide-react";
+import {
+  AppHeader,
+  type NavItem,
+} from "@betterinternship/components/app-header";
+import { Button, cn } from "@betterinternship/components";
+import {
+  Briefcase,
+  ChevronRight,
+  HelpCircle,
+  Plus,
+  ShieldCheck,
+  UserCircle,
+} from "lucide-react";
 
 const MOBILE_HIDE_ROUTES = ["/dashboard/manage"];
 
@@ -37,6 +48,45 @@ export function HireAppHeader() {
     { href: "/help", label: "Help", icon: HelpCircle },
   ];
 
+  const isGodActive = pathname.startsWith("/god");
+
+  const adminButton = god ? (
+    isMobile ? (
+      <button
+        type="button"
+        onClick={() => {
+          void handleGodClick();
+        }}
+        className={cn(
+          "flex w-full items-center justify-between rounded-md border border-transparent px-3 py-2 text-sm transition-colors hover:border-gray-200 hover:bg-gray-50",
+          isGodActive ? "text-primary" : "text-gray-700",
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-gray-500" />
+          <span>Admin</span>
+        </div>
+        <ChevronRight className="h-4 w-4 text-gray-300" />
+      </button>
+    ) : (
+      <Button
+        variant="ghost"
+        className={cn(
+          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1",
+          isGodActive
+            ? "text-primary"
+            : "opacity-80 hover:bg-gray-100 hover:opacity-100",
+        )}
+        onClick={() => {
+          void handleGodClick();
+        }}
+      >
+        <ShieldCheck className="!h-6 !w-6" strokeWidth={1.7} />
+        <span className="text-xs">Admin</span>
+      </Button>
+    )
+  ) : undefined;
+
   return (
     <AppHeader
       portal="Recruiters"
@@ -49,19 +99,7 @@ export function HireAppHeader() {
       logout={logout}
       postLogoutPath="/"
       accountNav={[{ href: "/account", label: "Account", icon: UserCircle }]}
-      actions={
-        god ? (
-          <Button
-            scheme="destructive"
-            className="hover:bg-destructive/85"
-            onClick={() => {
-              void handleGodClick();
-            }}
-          >
-            GOD
-          </Button>
-        ) : undefined
-      }
+      actions={adminButton}
     />
   );
 }
