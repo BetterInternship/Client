@@ -55,30 +55,28 @@ function ManageContent() {
   }
 
   return (
-    <div className="flex-1 flex justify-center">
-      <div className="w-full h-full flex flex-col">
-        <JobHeader
-          job={jobData}
-          onJobUpdate={handleJobUpdate}
-          backHref="/dashboard"
-        />
-        <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
-          {profile.data?.is_verified === false ? (
-            <div className="flex flex-col items-center justify-center text-center gap-2 py-24 text-gray-500">
-              <Clock className="w-8 h-8 mb-2" />
-              <p className="font-medium text-gray-700">
-                Applications will appear here once we verify your account.
-              </p>
-              <p className="text-sm">
-                Your listings aren't visible to students yet.
-              </p>
-            </div>
-          ) : (
-            <JobTabs selectedJob={jobData} onJobUpdate={handleJobUpdate} />
-          )}
-        </div>
-      </div>
-    </div>
+    <>
+      <JobHeader
+        job={jobData}
+        onJobUpdate={handleJobUpdate}
+        backHref="/dashboard"
+      />
+      <PageContainer>
+        {profile.data?.is_verified === false ? (
+          <div className="flex flex-col items-center justify-center text-center gap-2 py-24 text-gray-500">
+            <Clock className="w-8 h-8 mb-2" />
+            <p className="font-medium text-gray-700">
+              Applications will appear here once we verify your account.
+            </p>
+            <p className="text-sm">
+              Your listings aren't visible to students yet.
+            </p>
+          </div>
+        ) : (
+          <JobTabs selectedJob={jobData} onJobUpdate={handleJobUpdate} />
+        )}
+      </PageContainer>
+    </>
   );
 }
 
