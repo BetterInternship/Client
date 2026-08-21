@@ -11,11 +11,11 @@
  * This keeps the ModalProvider cleaner and prevents it from becoming a god class.
  */
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ModalContext, ModalInjectedParams } from "./ModalProvider";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 interface DefaultModalLayout {
   title?: React.ReactNode;

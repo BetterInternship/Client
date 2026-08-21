@@ -20,7 +20,7 @@ const formFilloutKey = "form-fillout";
 interface FilloutFormProcessResult {
   formId: string;
   formProcessId: string;
-  downloadUrl: string;
+  documentUrl: string;
 }
 
 export const useFormFilloutProcessRunner = () => {
@@ -93,7 +93,7 @@ export const useFormFilloutProcessHandled = () => {
           label: handledForm.metadata?.metadata?.label ?? "",
           timestamp: handledForm.metadata?.metadata?.timestamp ?? "",
           downloadUrl: (handledForm.result as FilloutFormProcessResult)
-            .downloadUrl,
+            .documentUrl,
           pending: false,
           status: "done",
         })),

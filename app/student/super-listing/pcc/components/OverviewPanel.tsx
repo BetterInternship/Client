@@ -1,14 +1,14 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
+} from "@betterinternship/components";
 
 type OverviewPanelProps = {
   onGoToApply: () => void;
@@ -102,9 +102,9 @@ export function OverviewPanel({
                 intern, but we&apos;re doing it anyway.
               </p>
               <p>
-                Most internships give you grunt work. Here, you&apos;ll be
-                given a lot of resources, freedom, and mentorship to bring this
-                dream to reality. You&apos;ll be given tasks that you are not
+                Most internships give you grunt work. Here, you&apos;ll be given
+                a lot of resources, freedom, and mentorship to bring this dream
+                to reality. You&apos;ll be given tasks that you are not
                 qualified to do, but that means{" "}
                 <strong>you&apos;ll grow faster</strong>.
               </p>
@@ -115,8 +115,8 @@ export function OverviewPanel({
                 within close proximity to the businesses involved.
               </p>
               <p>
-                By the end of it, you&apos;ll have a project you can show, and
-                a story that will make any employer want to hire you.
+                By the end of it, you&apos;ll have a project you can show, and a
+                story that will make any employer want to hire you.
               </p>
               <p>
                 And BTW,{" "}
@@ -154,11 +154,11 @@ export function OverviewPanel({
                     <strong>
                       the platform should incentivize businesses to connect.
                     </strong>{" "}
-                    Sometimes, businesses within PCCI aren&apos;t even held
-                    back by the lack of a platform: some businesses just prefer
-                    not to respond to requests because they&apos;re used to
-                    their usual sets of connections and don&apos;t bother
-                    looking for more.
+                    Sometimes, businesses within PCCI aren&apos;t even held back
+                    by the lack of a platform: some businesses just prefer not
+                    to respond to requests because they&apos;re used to their
+                    usual sets of connections and don&apos;t bother looking for
+                    more.
                   </p>
                 </div>
               </div>

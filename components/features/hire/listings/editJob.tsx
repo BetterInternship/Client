@@ -8,12 +8,10 @@ import {
   FormRadio,
 } from "@/components/EditForm";
 import { MDXEditor } from "@/components/MDXEditor";
-import { Button } from "@/components/ui/button";
+import { Button, Input, Label } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
@@ -25,8 +23,7 @@ import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { editorRootElementRef$ } from "@mdxeditor/editor";
+import { cn } from "@betterinternship/components";
 
 interface EditJobPageProps {
   job: Job;

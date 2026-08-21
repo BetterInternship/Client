@@ -1,7 +1,6 @@
 import React from "react";
 import { CheckIcon, MailWarningIcon } from "lucide-react";
-import { type } from "../../.next/types/routes";
-import { Badge } from "./badge";
+import { Badge } from "@betterinternship/components";
 
 export const Timeline = ({ children }: { children: React.ReactNode }) => {
   return <div className="space-y-1">{children}</div>;
@@ -57,7 +56,11 @@ export const TimelineItem = ({
             ) : (
               <div className="text-sm text-gray-700">{title}</div>
             )}
-            {isMe && <Badge type="primary">You</Badge>}
+            {isMe && (
+              <Badge variant="solid" type="primary">
+                You
+              </Badge>
+            )}
           </div>
           {subtitle && (
             <div className="text-xs text-gray-500 mb-1.5">{subtitle}</div>

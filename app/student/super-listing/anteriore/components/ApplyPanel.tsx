@@ -12,12 +12,10 @@ import {
 import { Turnstile } from "@marsidev/react-turnstile";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, Badge } from "@betterinternship/components";
 import type { AnterioreSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {

@@ -2,7 +2,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils/string-utils";
 import { HeaderTitle } from "../shared/header";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 
 export type HeaderLink = {
   label: string;

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@betterinternship/components";
 import {
   useMe,
   useOwnedJobs,
@@ -35,7 +35,9 @@ export function NotificationsTab() {
   );
 
   if (loading || !me) {
-    return <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>;
+    return (
+      <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>
+    );
   }
 
   const openOptoutDialog = (listings: EligibleListing[]) => {
@@ -76,7 +78,10 @@ export function NotificationsTab() {
     <Card className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <Label htmlFor="applicant-digest" className="text-sm font-medium text-gray-900">
+          <Label
+            htmlFor="applicant-digest"
+            className="text-sm font-medium text-gray-900"
+          >
             Daily applicant digest
           </Label>
           <p className="text-sm text-muted-foreground mt-1">

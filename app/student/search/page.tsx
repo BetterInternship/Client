@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckSquare, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   useJobListingsPage,
   useJobStatus,
@@ -24,7 +23,7 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";

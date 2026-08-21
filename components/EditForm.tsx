@@ -5,22 +5,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/landingStudent/ui/select";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
 import {
+  cn,
+  Button,
+  Checkbox,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@betterinternship/components";
+import { Calendar } from "@/components/ui/calendar";
 import {
   IFormData,
   IFormErrors,
   useFormData,
   useFormErrors,
 } from "@/lib/form-data";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import {
   CalendarDays,
@@ -36,7 +36,7 @@ import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
-import { Input } from "./ui/input";
+import { Input } from "@betterinternship/components";
 import { Tooltip } from "react-tooltip";
 import { Textarea } from "./ui/textarea";
 import { Matcher } from "react-day-picker";

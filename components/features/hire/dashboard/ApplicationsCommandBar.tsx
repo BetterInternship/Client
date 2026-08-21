@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { CommandMenu } from "@/components/ui/command-menu";
 import {
   DropdownMenu,

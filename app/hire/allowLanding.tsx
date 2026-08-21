@@ -12,7 +12,11 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
-  const hideHeader = isStudentLanding || pathname === "/welcome";
+  const isAuthRoute =
+    pathname === "/login" ||
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/register");
+  const hideHeader = isStudentLanding || pathname === "/welcome" || isAuthRoute;
 
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">

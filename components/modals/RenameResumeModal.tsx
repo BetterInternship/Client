@@ -1,7 +1,7 @@
 import { Resume } from "@/lib/db/db.types";
 import { Pencil } from "lucide-react";
 import { HeaderIcon } from "../ui/text";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 import { FormInput } from "../EditForm";
 import { useState } from "react";
 

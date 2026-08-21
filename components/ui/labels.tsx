@@ -8,7 +8,7 @@
  * All of them must have the value prop
  */
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { AlertCircle, CheckCircle, CircleX } from "lucide-react";
 import React from "react";
 

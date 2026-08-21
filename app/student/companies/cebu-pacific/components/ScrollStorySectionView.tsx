@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import type { ScrollStorySection } from "../model";
 
 type ScrollStorySectionViewProps = {

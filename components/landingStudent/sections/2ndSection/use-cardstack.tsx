@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { motionVariants } from "@/lib/landingStudentLib/animations";
 import CardSwap, {
   Card,
 } from "@/components/landingStudent/sections/2ndSection/CardSwap/CardSwap";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
 
 function useResponsiveCardSwap() {

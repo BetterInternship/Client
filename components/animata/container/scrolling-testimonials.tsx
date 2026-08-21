@@ -1,7 +1,7 @@
 import Marquee from "@/components/animata/container/marquee";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 interface Testimonial {
   name: string;
@@ -28,7 +28,7 @@ function TestimonialCard({
     <div
       className={cn(
         isMobile ? "h-16 w-28" : "h-16 w-24",
-        "overflow-hidden cursor-pointer hover:scale-105 transition-all duration-200 flex items-center justify-center p-3"
+        "overflow-hidden cursor-pointer hover:scale-105 transition-all duration-200 flex items-center justify-center p-3",
       )}
       onClick={() => handleSearchClick(name)}
     >

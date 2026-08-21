@@ -10,7 +10,7 @@ import type { GeometryCollection, Topology } from "topojson-specification";
 import { ArrowRight } from "lucide-react";
 
 import { challengePhChallenges } from "@/app/student/challenges/data";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 type ProvinceProperties = {
   adm1_psgc?: number;

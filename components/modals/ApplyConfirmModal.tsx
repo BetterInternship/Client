@@ -1,6 +1,6 @@
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { Clipboard, CheckCircle, Loader } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import React, {
   RefObject,
@@ -25,9 +25,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   ref?: RefObject<ModalHandle | null>;
   onClose: () => void;
   onAddNow: () => void;
-  onSubmit: (payload: {
-    challengeSubmission: string;
-  }) => Promise<void>;
+  onSubmit: (payload: { challengeSubmission: string }) => Promise<void>;
 }) {
   const profile = useProfileData();
   const challengeRef = useRef<ApplicationTextInputHandle | null>(null);
@@ -77,7 +75,9 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   return (
     <ModalComponent
       ref={ref}
-      className={isSuperListing ? "max-w-4xl w-[min(56rem,calc(100vw-2rem))]" : undefined}
+      className={
+        isSuperListing ? "max-w-4xl w-[min(56rem,calc(100vw-2rem))]" : undefined
+      }
     >
       <div
         className={`${isSuperListing ? "" : "max-w-lg mx-auto"} p-6 pt-0 overflow-auto space-y-4`}

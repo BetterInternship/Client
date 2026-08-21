@@ -1,8 +1,9 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
-import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
+import { AuthService } from "@/lib/api/services";
 
 /**
  * The third step to registering where the user inputs the verification code sent to their email.
@@ -27,8 +28,11 @@ export function OTPEnterStep({
     otpInputProps,
     requestOtp,
     sending,
-  } = useStudentOtpVerification({
+  } = useOtpVerification({
     email: eduEmail,
+    requestOtpAction: (email) => AuthService.requestActivation(email),
+    activateOtpAction: (email, otp) => AuthService.activate(email, otp),
+    invalidateQueryKeys: [["my-profile"]],
     autoActivate: {
       onSuccess: onFinishAction,
     },

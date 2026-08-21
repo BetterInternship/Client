@@ -13,6 +13,7 @@ import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { ClientProcessesProvider } from "@betterinternship/components";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { OrchestratorConfig } from "../orchestrator-config";
 
 const baseUrl = (() => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -115,6 +116,7 @@ const HTMLContent = ({
             <HeaderContextProvider>
               <html lang="en" className="h-full">
                 <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                  <OrchestratorConfig />
                   <ClientProcessesProvider>
                     <ModalProvider>
                       <AllowLanding>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import StatusBadge, {
   getStatusFilterKey,

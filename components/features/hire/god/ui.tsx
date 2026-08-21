@@ -1,12 +1,12 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@betterinternship/components";
 import { MoreHorizontal } from "lucide-react";
 
 /** Page section with a top toolbar and a bordered list container */
@@ -88,7 +88,7 @@ export function RowCard(props: {
   return (
     <li onClick={onClick} className="group px-4 py-3 hover:bg-slate-50">
       <div className="flex gap-3">
-        <div className="">{leftActions}</div>
+        <div className="flex gap-1">{leftActions}</div>
 
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium text-slate-800">{title}</div>

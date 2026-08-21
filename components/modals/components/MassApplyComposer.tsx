@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@betterinternship/components";
+import { cn } from "@betterinternship/components";
 
 export type MassApplyComposerProps = {
   disabled?: boolean;

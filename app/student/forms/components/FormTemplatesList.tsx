@@ -2,7 +2,7 @@ import { useFormRendererContext } from "@/components/features/student/forms/form
 import { FormTemplate } from "@/lib/db/forms-db.types";
 import { ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 export const FormTemplatesList = ({
   templates,

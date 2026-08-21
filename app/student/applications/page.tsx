@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 
 // UI components
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { cn, Badge, Button } from "@betterinternship/components";
 import {
   Tabs,
   TabsList,
@@ -34,7 +33,7 @@ import {
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { formatTimeAgo, cn } from "@/lib/utils";
+import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
@@ -249,8 +248,8 @@ function MyJobsPageInner() {
                     No saved jobs yet
                   </h3>
                   <p className="text-gray-500 mb-6 leading-relaxed">
-                    Save jobs by clicking the heart icon on job listings to
-                    see them here.
+                    Save jobs by clicking the heart icon on job listings to see
+                    them here.
                   </p>
                   <Link href="/search">
                     <Button className="bg-primary hover:bg-primary/90">
@@ -279,9 +278,9 @@ function MyJobsPageInner() {
                     No job alerts
                   </h3>
                   <p className="text-gray-500 mb-6 leading-relaxed">
-                    Alerts come from listings that go on a temporary pause.
-                    Turn one on from a paused listing and we&apos;ll let you
-                    know the moment it&apos;s back.
+                    Alerts come from listings that go on a temporary pause. Turn
+                    one on from a paused listing and we&apos;ll let you know the
+                    moment it&apos;s back.
                   </p>
                   <Link href="/search">
                     <Button className="bg-primary hover:bg-primary/90">
@@ -314,7 +313,8 @@ function MyJobsPageInner() {
 const AlertCard = ({ row }: { row: JobWaitlist }) => {
   const router = useRouter();
   const waitlistActions = useWaitlistActions();
-  const canOpenListing = !!row.job.id && !!row.job.is_active && !row.job.is_deleted;
+  const canOpenListing =
+    !!row.job.id && !!row.job.is_active && !row.job.is_deleted;
   const listingHref = `/search/${row.job.id}`;
 
   const handleTurnOff = async (event: React.MouseEvent) => {
@@ -381,7 +381,7 @@ const ItsBackCard = ({ row }: { row: JobWaitlist }) => {
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Badge type="supportive">
+          <Badge variant="solid" type="supportive">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             It&apos;s back!
           </Badge>
@@ -466,10 +466,10 @@ const ApplicationCard = ({
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Badge type={statusBadgeType}>{statusLabel}</Badge>
-            <Badge type="accent">
-              Applied {formatTimeAgo(appliedAtIso)}
+            <Badge variant="solid" type={statusBadgeType}>
+              {statusLabel}
             </Badge>
+            <Badge>Applied {formatTimeAgo(appliedAtIso)}</Badge>
             {isSuperListing && <SuperListingBadge compact className="w-fit" />}
           </div>
           {canOpenListing ? (

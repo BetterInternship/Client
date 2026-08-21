@@ -1,23 +1,19 @@
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserPfp } from "@/components/shared/pfp";
-import {
-  DropdownMenu,
-  type DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/services";
 import { useAppContext } from "@/lib/ctx-app";
-import { EmployerApplication, Job, PublicUser } from "@/lib/db/db.types";
+import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn } from "@/lib/utils";
+import { cn, Badge, Button } from "@betterinternship/components";
 import {
   formatMonth,
   formatOptionalTimestampDate,
 } from "@/lib/utils/date-utils";
 import {
-  ArrowLeft,
   Award,
   FileText,
   Phone,
@@ -25,18 +21,13 @@ import {
   BriefcaseBusiness,
   Github,
   Linkedin,
-  Archive,
   HandHelping,
-  Trash2,
-  ArchiveRestore,
   ChevronLeft,
   ChevronRight,
   HelpCircle,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -45,11 +36,8 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 import { useAuthContext } from "@/app/hire/authctx";
-import { ActionButton } from "@/components/ui/action-button";
-import StatusBadge from "@/components/ui/status-badge";
 import JobHeader from "./JobHeader";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/text";

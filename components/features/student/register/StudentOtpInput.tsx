@@ -3,7 +3,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { STUDENT_OTP_LENGTH } from "@/hooks/use-student-otp-verification";
+import { OTP_LENGTH } from "@/hooks/use-otp-verification";
 
 type StudentOtpInputProps = {
   containerClassName?: string;
@@ -18,13 +18,13 @@ export function StudentOtpInput({
 }: StudentOtpInputProps) {
   return (
     <InputOTP
-      maxLength={STUDENT_OTP_LENGTH}
+      maxLength={OTP_LENGTH}
       value={value}
       onChange={onChange}
       containerClassName={containerClassName}
     >
       <InputOTPGroup>
-        {Array.from({ length: STUDENT_OTP_LENGTH }, (_, index) => (
+        {Array.from({ length: OTP_LENGTH }, (_, index) => (
           <InputOTPSlot key={index} index={index} />
         ))}
       </InputOTPGroup>

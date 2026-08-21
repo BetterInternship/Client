@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { Card } from "./card";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 
 export const PageError = ({
   title,

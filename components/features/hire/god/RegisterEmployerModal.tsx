@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
 import { isValidEmail } from "@/lib/utils";
 import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
@@ -77,7 +77,10 @@ export function RegisterEmployerModal({
     }
 
     try {
-      const result: any = await registerEmployer.mutateAsync({ name: dba, user_email: email });
+      const result: any = await registerEmployer.mutateAsync({
+        name: dba,
+        user_email: email,
+      });
       if (result?.error) {
         return toast.error(`Registration failed: ${result.error}`);
       }
@@ -139,9 +142,7 @@ export function GenerateMagicLinkModal({
   const handleGen = async () => {
     if (!selectedEid) return alert("Select employer first.");
     setLoading(true);
-    const url = APIRouteBuilder("god")
-      .r("generate-magic-link")
-      .build();
+    const url = APIRouteBuilder("god").r("generate-magic-link").build();
     const res = await APIClient.post<FetchResponse & { magicLink: string }>(
       url,
       {

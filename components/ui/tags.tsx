@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 /**
  * Looks like a small rectangular tag
@@ -19,7 +19,7 @@ export const BasicRectangularTag = ({
       className={cn(
         "flex-shrink-0 border rounded-md px-3 py-2 bg-white text-gray-600 whitespace-nowrap",
         "text-" + size,
-        className
+        className,
       )}
     >
       {children}

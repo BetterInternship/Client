@@ -1,12 +1,10 @@
 // ui for the job box or card
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { cn, Badge, Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { ArrowRight, Check, Lock, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -153,21 +151,8 @@ export function JobListingsBox({
                     {reEnabling ? "Re-activating..." : "Re-activate"}
                   </Button>
                 ) : (
-                  <Badge
-                    strength="default"
-                    type="accent"
-                    className={cn(
-                      "flex items-center gap-1",
-                      job.is_active
-                        ? "bg-supportive text-white"
-                        : "text-muted-foreground flex items-center font-normal",
-                    )}
-                  >
-                    {job.is_active ? (
-                      <Check size={16} />
-                    ) : (
-                      <Pause fill="hsl(var(--muted-foreground))" size={16} />
-                    )}
+                  <Badge type={job.is_active ? "supportive" : "default"}>
+                    {job.is_active ? <Check size={16} /> : <Pause size={16} />}
                     <span>{job.is_active ? "Active" : "Paused"}</span>
                   </Badge>
                 )}
@@ -214,7 +199,7 @@ export function JobListingsBox({
               </Badge>
               <Badge
                 type={newApplicants > 0 ? "primary" : "default"}
-                strength={"default"}
+                variant={newApplicants > 0 ? "solid" : "outline"}
               >
                 {newApplicants} new applicant{newApplicants !== 1 ? "s" : ""}
               </Badge>

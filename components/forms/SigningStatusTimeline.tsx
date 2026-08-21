@@ -3,7 +3,7 @@ import { DownloadIcon } from "lucide-react";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Timeline, TimelineItem } from "../ui/timeline";
 import { AnimatedShinyText } from "../ui/animated-shiny-text";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 
 interface SigningStatusTimelineProps {
   signingParties?: IFormSigningParty[];

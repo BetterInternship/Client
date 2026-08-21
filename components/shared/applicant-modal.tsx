@@ -10,16 +10,14 @@
 
 "use client";
 
-import { useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Button } from "../ui/button";
-import { Award, FileText } from "lucide-react";
+import { Award } from "lucide-react";
 import { getFullName } from "@/lib/profile";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
 import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
-import { Badge } from "../ui/badge";
+import { Badge } from "@betterinternship/components";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,

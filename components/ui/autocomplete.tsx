@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Input } from "./input";
+import { Input } from "@betterinternship/components";
 import { useDetectClickOutside } from "react-detect-click-outside";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { PlusCircleIcon, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 
 export interface IAutocompleteOption<ID extends number | string> {

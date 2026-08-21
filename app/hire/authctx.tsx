@@ -3,7 +3,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { EmployerAuthService } from "@/lib/api/hire.api";
+import { AuthResponse, EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,9 +16,9 @@ interface IAuthContext {
   god: boolean;
   proxy: string;
   loading: boolean;
-  register: (employer: Partial<Employer>) => Promise<AuthUser | null>;
+  register: (employer: Partial<Employer> | FormData) => Promise<AuthResponse>;
   verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
-  login: (email: string, password: string) => Promise<AuthUser | null>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
   loginAs: (employer_id: string) => Promise<AuthUser | null>;
   exitProxy: () => Promise<AuthUser | null>;
   emailStatus: (
@@ -100,18 +100,20 @@ export const AuthContextProvider = ({
     return response.user;
   };
 
-  const register = async (employer: Partial<Employer>) => {
+  const register = async (employer: Partial<Employer> | FormData) => {
     const response = await EmployerAuthService.register(employer);
     return response;
   };
 
   const login = async (email: string, password: string) => {
     const response = await EmployerAuthService.login(email, password);
-    if (!response.success) return null;
+    if (!response.success || !response.user) return response;
 
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
-      queryClient.invalidateQueries({ queryKey: ["my-employer-conversations"] }),
+      queryClient.invalidateQueries({
+        queryKey: ["my-employer-conversations"],
+      }),
       queryClient.invalidateQueries({ queryKey: ["me"] }),
       queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
     ]);

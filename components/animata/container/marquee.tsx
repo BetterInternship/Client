@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 
 interface MarqueeProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -51,7 +51,7 @@ export default function Marquee({
           "flex-col": vertical,
           "flex-row": !vertical,
         },
-        className
+        className,
       )}
     >
       {Array.from({ length: repeat }).map((_, index) => (
@@ -74,7 +74,7 @@ export default function Marquee({
             {
               "bg-gradient-to-b": vertical,
               "bg-gradient-to-r": !vertical,
-            }
+            },
           )}
         />
       )}

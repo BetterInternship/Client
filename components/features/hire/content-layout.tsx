@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 import { useAuthContext } from "@/app/hire/authctx";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@betterinternship/components";
+import { cn } from "@betterinternship/components";
 
 type NavItem = {
   href: string;

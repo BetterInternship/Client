@@ -14,15 +14,15 @@ import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Button } from "@/components/ui/button";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@betterinternship/components";
 import useModalRegistry from "@/components/modals/modal-registry";
-import { cn } from "@/lib/utils";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
 import heroImage from "./components/4.jpg";
@@ -516,7 +516,11 @@ function MeaningfulWorkScrollScene({
         sharedTimeline.to(lineThreeRef.current, { autoAlpha: 1, y: 0 }, 0.62);
       }
       if (ctaRef.current) {
-        sharedTimeline.to(ctaRef.current, { autoAlpha: 1, y: 0, scale: 1 }, 0.88);
+        sharedTimeline.to(
+          ctaRef.current,
+          { autoAlpha: 1, y: 0, scale: 1 },
+          0.88,
+        );
       }
 
       ScrollTrigger.refresh();
@@ -733,8 +737,8 @@ function ListingModalContent({
 
       <div className="rounded-[0.33em] bg-[#edf4fc] p-5 sm:p-6">
         <p className="text-base leading-7 text-[#173957]/76">
-          Exciting? But before you can start the internship, you need to pass our
-          challenge.
+          Exciting? But before you can start the internship, you need to pass
+          our challenge.
         </p>
       </div>
 

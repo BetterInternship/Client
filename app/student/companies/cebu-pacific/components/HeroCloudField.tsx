@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import planeImage from "@/public/student/images/plane.png";
 import skyBgImage from "@/public/student/images/sky-bg.png";
 

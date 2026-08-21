@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button, Checkbox } from "@betterinternship/components";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useDeactivateBulkJobs,

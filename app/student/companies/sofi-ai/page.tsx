@@ -5,14 +5,14 @@ import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Megaphone, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  cn,
+  Button,
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
+} from "@betterinternship/components";
 import heroBg from "./hero-bg.png";
 import heroBgMobile from "./hero-bg-mobile.png";
 import doodlePack from "./doodle-pack.png";

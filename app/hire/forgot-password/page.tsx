@@ -1,41 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { EmployerUserService } from "@/lib/api/services";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
-import { AnimatePresence, motion } from "framer-motion";
-import { HeaderTitle } from "@/components/ui/text";
-import { HelpCircle, MailCheck } from "lucide-react";
-import { useBlurTransition } from "@/components/animata/blur";
+import { MailCheck, TriangleAlert } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
+import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 
 /**
  * Display the layout for the forgot password page.
  */
 export default function ForgotPasswordPage() {
-  const { isMobile } = useAppContext();
-
   return (
-    <div
-      className={cn(
-        "flex justify-center py-12 pt-12 h-full overflow-y-auto",
-        isMobile ? "px-2" : "px-6",
-      )}
-    >
-      <div className="flex justify-center w-full max-w-2xl h-fit">
-        <ForgotPasswordForm />
-      </div>
-    </div>
+    <Suspense fallback={<Loader>Loading password reset...</Loader>}>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }
 
-/**
- * Layout for the forgot password form.
- */
 const ForgotPasswordForm = () => {
   const GENERIC_RESET_MESSAGE =
     "If an account with that email exists, a reset link will be sent shortly.";
@@ -43,7 +29,7 @@ const ForgotPasswordForm = () => {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const blurTransition = useBlurTransition();
+  const { isMobile } = useAppContext();
 
   // send password reset request if a valid email is entered.
   const handle_request = async (e: React.FormEvent) => {
@@ -69,65 +55,89 @@ const ForgotPasswordForm = () => {
   };
 
   return (
-    <>
-      <AnimatePresence>
-        <motion.div {...blurTransition} className="w-full">
-          <Card className="flex flex-col gap-4">
-            <HeaderTitle icon={HelpCircle}>Reset password</HeaderTitle>
-            {error && (
-              <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600 justify-center">{error}</p>
-              </div>
+    <HireAuthShell
+      title="Reset password"
+      description="Enter the email associated with your employer account and we'll send you a link to reset your password."
+      footer={
+        <>
+          Remember your password?{" "}
+          <a className="font-medium text-primary" href="/login">
+            Log in here
+          </a>
+          .
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {/* Error Message */}
+        {error && (
+          <div
+            className={cn(
+              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
+              isMobile ? "flex-col items-start" : "",
             )}
-            {message && (
-              <div className="mb-2 flex items-center gap-2 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white">
-                <MailCheck className="h-5 w-5" />
-                <p className="text-sm text-white">{message}</p>
-              </div>
+          >
+            <TriangleAlert size={isMobile ? 24 : 20} />
+            <span className="text-sm justify-center">{error}</span>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {message && (
+          <div
+            className={cn(
+              "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
+              isMobile
+                ? "flex flex-col items-start gap-2"
+                : "flex items-center gap-2",
             )}
-            <FormInput
-              label="Email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-            <div className="flex justify-between items-center w-[100%]">
-              <span className="text-sm text-gray-500">
-                Remember your password?{" "}
-                <a
-                  className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  href="/login"
-                >
-                  Log in here.
-                </a>
-              </span>
-              <Button
-                type="submit"
-                onClick={(e) => void handle_request(e)}
-                disabled={isLoading}
-              >
-                {isLoading ? "Sending request..." : "Request password reset"}
-              </Button>
-            </div>
-            <span className="text-muted-foreground text-sm">
-              Need help? Contact us at{" "}
-              <a
-                href="tel://09276604999"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                0927 660 4999
-              </a>{" "}
-              or on{" "}
-              <a
-                href="viber://add?number=639276604999"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                Viber
-              </a>
-              .
-            </span>
-          </Card>
-        </motion.div>
-      </AnimatePresence>
-    </>
+          >
+            <MailCheck size={isMobile ? 24 : 20} />
+            <span className="text-sm">{message}</span>
+          </div>
+        )}
+
+        {/* Forgot Password Form */}
+        <form
+          onSubmit={(event) => void handle_request(event)}
+          className="space-y-4"
+        >
+          <FormInput
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required={false}
+          />
+
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Sending request..." : "Request password reset"}
+          </Button>
+        </form>
+
+        <span className="text-muted-foreground text-sm">
+          Need help? Contact us at{" "}
+          <a
+            href="tel://09276604999"
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
+          >
+            0927 660 4999
+          </a>{" "}
+          or on{" "}
+          <a
+            href="viber://add?number=639276604999"
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
+          >
+            Viber
+          </a>
+          .
+        </span>
+      </div>
+    </HireAuthShell>
   );
 };

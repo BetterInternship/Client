@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import React from "react";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 

@@ -12,14 +12,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button, Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
-import { cn } from "@/lib/utils";
+import { cn, Badge } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { Badge } from "@/components/ui/badge";
 import useModalRegistry from "@/components/modals/modal-registry";
 
 const headingFont = Space_Grotesk({

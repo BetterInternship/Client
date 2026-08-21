@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { FileText, History, Edit } from "lucide-react";
 
 export function FormsNavigation({

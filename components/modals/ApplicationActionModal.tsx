@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { HeaderIcon } from "../ui/text";
-import { Button } from "../ui/button";
+import { Button } from "@betterinternship/components";
 
 interface ApplicationActionModalProps {
   type: ApplicationAction;

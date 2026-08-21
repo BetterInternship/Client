@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@betterinternship/components";
 import { FormService } from "@/lib/api/services";
 import useModalRegistry from "../modal-registry";
 import { useState } from "react";

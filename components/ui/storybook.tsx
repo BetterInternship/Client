@@ -1,13 +1,13 @@
 import React, { Children, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "./button";
+import { Button } from "@betterinternship/components";
 
 export const StoryBook = ({ children }: { children: React.ReactNode }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const currentChild = useMemo(
     () => Children.toArray(children)[currentStep],
-    [children, currentStep]
+    [children, currentStep],
   );
 
   const swipeVariants = {
@@ -30,8 +30,8 @@ export const StoryBook = ({ children }: { children: React.ReactNode }) => {
     setCurrentStep((prev) =>
       Math.min(
         Math.max(prev + newDirection, 0),
-        Children.toArray(children).length - 1
-      )
+        Children.toArray(children).length - 1,
+      ),
     );
   };
 

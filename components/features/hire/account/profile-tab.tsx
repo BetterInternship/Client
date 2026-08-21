@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useMe, useUpdateSelf, useChangeMyPassword } from "@/hooks/use-employer-api";
+import { Button, Input, Label } from "@betterinternship/components";
+import {
+  useMe,
+  useUpdateSelf,
+  useChangeMyPassword,
+} from "@/hooks/use-employer-api";
 
 export function ProfileTab() {
   const { loading, data: me } = useMe();
@@ -25,7 +27,9 @@ export function ProfileTab() {
   const [passwordSaved, setPasswordSaved] = useState(false);
 
   if (loading || !me) {
-    return <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>;
+    return (
+      <Card className="p-6 text-sm text-muted-foreground">Loading...</Card>
+    );
   }
 
   const startEditingName = () => {
@@ -169,9 +173,13 @@ export function ProfileTab() {
             />
           </div>
         </div>
-        {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+        {passwordError && (
+          <p className="text-sm text-destructive">{passwordError}</p>
+        )}
         {passwordSaved && (
-          <p className="text-sm text-supportive">Password changed successfully.</p>
+          <p className="text-sm text-supportive">
+            Password changed successfully.
+          </p>
         )}
         <Button
           onClick={submitPasswordChange}

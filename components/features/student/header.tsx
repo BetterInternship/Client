@@ -14,24 +14,23 @@ import {
   Newspaper,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@betterinternship/components";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useHeaderContext } from "@/lib/ctx-header";
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import {
   JobFilterProvider,
   JobFilters,

@@ -2,8 +2,7 @@ import { RefObject, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ProcessingTransition } from "./ProcessingTransition";
 import { TriangleAlert, UploadIcon } from "lucide-react";
-import { Toast } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
+import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 
 const ResumeUpload = ({
@@ -42,10 +41,10 @@ const ResumeUpload = ({
     // accept check (relies on extension or mime)
     const allowed = accept.split(",").map((s) => s.trim().toLowerCase());
     const nameOk = allowed.some(
-      (a) => a.startsWith(".") && f.name.toLowerCase().endsWith(a)
+      (a) => a.startsWith(".") && f.name.toLowerCase().endsWith(a),
     );
     const mimeOk = allowed.some(
-      (a) => !a.startsWith(".") && f.type.toLowerCase() === a
+      (a) => !a.startsWith(".") && f.type.toLowerCase() === a,
     );
     if (!(nameOk || mimeOk)) {
       setNoFile(true);
@@ -98,24 +97,32 @@ const ResumeUpload = ({
         <ProcessingTransition promise={promise} onComplete={onComplete} />
       ) : (
         <div className="flex flex-col items-center w-full mx-auto">
-          {fileTooBig &&
-            <div className={cn(
-              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
-              isMobile ? "flex-col items-start" : ""
-            )}>
+          {fileTooBig && (
+            <div
+              className={cn(
+                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
+                isMobile ? "flex-col items-start" : "",
+              )}
+            >
               <TriangleAlert size={isMobile ? 24 : 20} />
-              <span className="text-sm justify-center">Please upload a file smaller than 2.5 MB.</span>
+              <span className="text-sm justify-center">
+                Please upload a file smaller than 2.5 MB.
+              </span>
             </div>
-          }
-          {noFile &&
-            <div className={cn(
-              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
-              isMobile ? "flex-col items-start" : ""
-            )}>
+          )}
+          {noFile && (
+            <div
+              className={cn(
+                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
+                isMobile ? "flex-col items-start" : "",
+              )}
+            >
               <TriangleAlert size={isMobile ? 24 : 20} />
-              <span className="text-sm justify-center">Please upload your resume.</span>
+              <span className="text-sm justify-center">
+                Please upload your resume.
+              </span>
             </div>
-          }
+          )}
           <div
             className={
               "flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-[0.33em] cursor-pointer transition-colors " +
