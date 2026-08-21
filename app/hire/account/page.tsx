@@ -2,7 +2,10 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PageContainer } from "@betterinternship/components/page-header";
+import {
+  PageContainer,
+  PageHeader,
+} from "@betterinternship/components/page-header";
 import { Tab, TabGroup } from "@/components/ui/tabs";
 import { useAuthContext } from "@/app/hire/authctx";
 import { ProfileTab } from "@/components/features/hire/account/profile-tab";
@@ -37,7 +40,8 @@ function AccountPageContent() {
 
   redirectIfNotLoggedIn();
 
-  const requestedTab = SLUG_TO_LABEL[searchParams.get("tab") ?? ""] ?? "Profile";
+  const requestedTab =
+    SLUG_TO_LABEL[searchParams.get("tab") ?? ""] ?? "Profile";
   // A MEMBER deep-linking (or leftover bookmark) into an ADMIN-only tab
   // falls back to Profile — the API enforces this too; this is just the UI
   // reflecting it immediately instead of erroring on first fetch.
@@ -52,28 +56,29 @@ function AccountPageContent() {
   };
 
   return (
-    <PageContainer>
-      <div className="w-full max-w-[760px] py-4 space-y-4">
-        <h1 className="text-2xl font-bold font-heading">Account</h1>
-        <TabGroup value={activeTab} onValueChange={setActiveTab}>
-          <Tab name="Profile">
-            <ProfileTab />
+    <PageContainer className="flex flex-col gap-4">
+      <PageHeader
+        title="Account"
+        description="Manage your settings and account information here."
+      />
+      <TabGroup value={activeTab} onValueChange={setActiveTab}>
+        <Tab name="Profile">
+          <ProfileTab />
+        </Tab>
+        <Tab name="Notifications">
+          <NotificationsTab />
+        </Tab>
+        {isAdmin && (
+          <Tab name="Team">
+            <TeamTab />
           </Tab>
-          <Tab name="Notifications">
-            <NotificationsTab />
+        )}
+        {isAdmin && (
+          <Tab name="Company">
+            <CompanyTab />
           </Tab>
-          {isAdmin && (
-            <Tab name="Team">
-              <TeamTab />
-            </Tab>
-          )}
-          {isAdmin && (
-            <Tab name="Company">
-              <CompanyTab />
-            </Tab>
-          )}
-        </TabGroup>
-      </div>
+        )}
+      </TabGroup>
     </PageContainer>
   );
 }
