@@ -1,7 +1,9 @@
 "use client";
 
 import EditJobPage from "@/components/features/hire/listings/editJob";
+import JobHeader from "@/components/features/hire/dashboard/JobHeader";
 import { Loader } from "@/components/ui/loader";
+import { PageContainer } from "@betterinternship/components/page-header";
 import { JobService } from "@/lib/api/services";
 import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
 import { useSearchParams } from "next/navigation";
@@ -68,17 +70,24 @@ function EditJobPageRouteContent() {
   }, [jobId]);
 
   if (loading || !jobData) {
-    return <Loader>Loading listing information...</Loader>;
+    return (
+      <PageContainer>
+        <Loader>Loading listing information...</Loader>
+      </PageContainer>
+    );
   }
 
   return (
-    <EditJobPage
-      key={jobData.id}
-      job={jobData}
-      is_editing={isEditing}
-      set_is_editing={setIsEditing}
-      saving={saving}
-      update_job={updateJob}
-    />
+    <>
+      <JobHeader job={jobData} backHref={`/dashboard/manage?jobId=${jobId}`} />
+      <EditJobPage
+        key={jobData.id}
+        job={jobData}
+        is_editing={isEditing}
+        set_is_editing={setIsEditing}
+        saving={saving}
+        update_job={updateJob}
+      />
+    </>
   );
 }
