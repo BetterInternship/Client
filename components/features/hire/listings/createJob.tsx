@@ -8,7 +8,11 @@ import {
   FormRadio,
 } from "@/components/EditForm";
 import { MDXEditor } from "@/components/MDXEditor";
-import { Button } from "@betterinternship/components";
+import {
+  Button,
+  PageContainer,
+  PageHeader,
+} from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
@@ -259,40 +263,60 @@ const CreateJobPage = ({
         <title>Create New Job | Your App</title>
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div
-          className={cn(
-            "bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm",
-            isMobile ? "pt-20" : "mt-20",
-          )}
-        >
-          <div className="max-w-5xl mx-auto flex justify-between items-center">
-            <h1
-              className={cn(
-                "text-gray-800 w-full truncate",
-                isMobile ? "text-lg" : "text-2xl",
-              )}
-            >
-              {isSuperListing ? "Create New Super Listing:" : "Create New Job:"}{" "}
-              <span className="font-bold">
-                {formData.title || "Untitled Job"}
-              </span>
-            </h1>
-            <div className="flex gap-3">
-              {!isMobile ? (
-                <>
+      {/* Header */}
+      <div
+        className={cn(
+          "bg-white border-b border-gray-200 fixed top-0 right-0 left-0 z-30",
+          isMobile ? "pt-20" : "mt-20",
+        )}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center py-4">
+          <PageHeader
+            title={`${isSuperListing ? "Create New Super Listing:" : "Create New Job:"} ${formData.title || "Untitled Job"}`}
+          />
+          <div className="flex gap-3">
+            {!isMobile ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={openAlertModal}
+                  disabled={creating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={creating || isMissing}
+                  onClick={handleSaveEdit}
+                  className="flex items-center"
+                >
+                  {creating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Publishing...
+                    </>
+                  ) : isSuperListing ? (
+                    "Publish Super Listing"
+                  ) : (
+                    "Publish Listing"
+                  )}
+                </Button>
+              </>
+            ) : (
+              // Fixed footer
+              <div className="bg-white border border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50 p-6">
+                <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
                   <Button
                     variant="outline"
                     onClick={openAlertModal}
                     disabled={creating}
+                    className="h-10"
                   >
                     Cancel
                   </Button>
                   <Button
                     disabled={creating || isMissing}
                     onClick={handleSaveEdit}
-                    className="flex items-center"
+                    className="flex items-center h-10"
                   >
                     {creating ? (
                       <>
@@ -305,570 +329,533 @@ const CreateJobPage = ({
                       "Publish Listing"
                     )}
                   </Button>
-                </>
-              ) : (
-                // Fixed footer
-                <div className="bg-white border border-gray-200 shadow-md px-6 py-4 fixed bottom-0 right-0 left-0 z-50 p-6">
-                  <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
-                    <Button
-                      variant="outline"
-                      onClick={openAlertModal}
-                      disabled={creating}
-                      className="h-10"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={creating || isMissing}
-                      onClick={handleSaveEdit}
-                      className="flex items-center h-10"
-                    >
-                      {creating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Publishing...
-                        </>
-                      ) : isSuperListing ? (
-                        "Publish Super Listing"
-                      ) : (
-                        "Publish Listing"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div>
-          <div className={cn(isMobile ? "p-0 mt-18 pb-16" : "p-6 mt-20")}>
-            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
-              {isSuperListing && (
-                <div
-                  className={cn(
-                    "py-5 border-b border-gray-200 bg-yellow-50/50",
-                    isMobile ? "px-2" : "px-6",
-                  )}
-                >
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
-                        <StepCheckIndicator
-                          checked={challengeTitle.trim().length > 0}
-                        />
-                        Challenge Title{" "}
-                        <span className="text-destructive text-sm">*</span>
-                      </h2>
-                      <Input
-                        value={challengeTitle}
-                        onChange={(e) => setChallengeTitle(e.target.value)}
-                        className="text-base font-medium h-10"
-                        placeholder="Enter challenge title..."
-                        maxLength={120}
-                        required={true}
-                      />
-                      <p className="text-xs text-gray-500 text-right mt-1">
-                        {challengeTitle.length}/120 characters
-                      </p>
-                    </div>
-
-                    <div>
-                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
-                        <StepCheckIndicator
-                          checked={challengeDescription.trim().length > 0}
-                        />
-                        Challenge Description{" "}
-                        <span className="text-destructive text-sm">*</span>
-                      </h2>
-                      <Textarea
-                        value={challengeDescription}
-                        onChange={(e) =>
-                          setChallengeDescription(e.target.value)
-                        }
-                        className="text-sm min-h-[140px]"
-                        placeholder="Describe the challenge submission expected from applicants..."
-                        maxLength={4000}
-                        required={true}
-                      />
-                      <p className="text-xs text-gray-500 text-right mt-1">
-                        {challengeDescription.length}/4000 characters
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Title Section */}
-              <div
-                className={cn(
-                  "py-5 border-b border-gray-200",
-                  isMobile ? "px-2" : "px-6",
-                )}
-              >
-                <div className="flex flex-col gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
-                      <StepCheckIndicator
-                        checked={
-                          formData.title !== "" &&
-                          formData.title !== undefined &&
-                          formData.title !== null
-                        }
-                      />
-                      Job Title/Role{" "}
-                      <span className="text-destructive text-sm">*</span>
-                    </h2>
-                    <Input
-                      value={formData.title || ""}
-                      onChange={(e) => setField("title", e.target.value)}
-                      className="text-base font-medium h-10"
-                      placeholder="Enter job title here..."
-                      maxLength={100}
-                      required={true}
-                    />
-                    <p className="text-xs text-gray-500 text-right mt-1">
-                      {(formData.title || "").length}/100 characters
-                    </p>
-                  </div>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-              {/* Form Content */}
-              <div className={cn(isMobile ? "p-2" : "p-6 overflow-hidden")}>
-                <div className="space-y-8">
-                  <div>
-                    {/* Credit Boxes */}
-                    <div>
-                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                        <StepCheckIndicator
-                          checked={
-                            !!formData.internship_preferences?.internship_types
-                              ?.length
-                          }
-                        />
-                        Are you hiring credited and/or voluntary interns?{" "}
-                        <span className="text-destructive">*</span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                        <div
-                          onClick={() =>
-                            setField("internship_preferences", {
-                              ...formData.internship_preferences,
-                              internship_types:
-                                formData.internship_preferences?.internship_types?.includes(
-                                  "credited",
-                                )
-                                  ? [
-                                      ...formData.internship_preferences?.internship_types.filter(
-                                        (it) => it !== "credited",
-                                      ),
-                                    ]
-                                  : [
-                                      ...(formData.internship_preferences
-                                        ?.internship_types ?? []),
-                                      "credited",
-                                    ],
-                            })
-                          }
-                          className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
-                        >
-                          <FormCheckbox
-                            checked={formData.internship_preferences?.internship_types?.includes(
+      {/* Main Content */}
+      <PageContainer className="mt-16">
+        <div className="rounded-[0.33em] border border-gray-200">
+          {isSuperListing && (
+            <div
+              className={cn(
+                "py-5 border-b border-gray-200 bg-yellow-50/50",
+                isMobile ? "px-2" : "px-6",
+              )}
+            >
+              <div className="space-y-4">
+                <div>
+                  <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                    <StepCheckIndicator
+                      checked={challengeTitle.trim().length > 0}
+                    />
+                    Challenge Title{" "}
+                    <span className="text-destructive text-sm">*</span>
+                  </h2>
+                  <Input
+                    value={challengeTitle}
+                    onChange={(e) => setChallengeTitle(e.target.value)}
+                    className="text-base font-medium h-10"
+                    placeholder="Enter challenge title..."
+                    maxLength={120}
+                    required={true}
+                  />
+                  <p className="text-xs text-gray-500 text-right mt-1">
+                    {challengeTitle.length}/120 characters
+                  </p>
+                </div>
+
+                <div>
+                  <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                    <StepCheckIndicator
+                      checked={challengeDescription.trim().length > 0}
+                    />
+                    Challenge Description{" "}
+                    <span className="text-destructive text-sm">*</span>
+                  </h2>
+                  <Textarea
+                    value={challengeDescription}
+                    onChange={(e) => setChallengeDescription(e.target.value)}
+                    className="text-sm min-h-[140px]"
+                    placeholder="Describe the challenge submission expected from applicants..."
+                    maxLength={4000}
+                    required={true}
+                  />
+                  <p className="text-xs text-gray-500 text-right mt-1">
+                    {challengeDescription.length}/4000 characters
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Title Section */}
+          <div
+            className={cn(
+              "py-5 border-b border-gray-200",
+              isMobile ? "px-2" : "px-6",
+            )}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                  <StepCheckIndicator
+                    checked={
+                      formData.title !== "" &&
+                      formData.title !== undefined &&
+                      formData.title !== null
+                    }
+                  />
+                  Job Title/Role{" "}
+                  <span className="text-destructive text-sm">*</span>
+                </h2>
+                <Input
+                  value={formData.title || ""}
+                  onChange={(e) => setField("title", e.target.value)}
+                  className="text-base font-medium h-10"
+                  placeholder="Enter job title here..."
+                  maxLength={100}
+                  required={true}
+                />
+                <p className="text-xs text-gray-500 text-right mt-1">
+                  {(formData.title || "").length}/100 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className={cn(isMobile ? "p-2" : "p-6 overflow-hidden")}>
+            <div className="space-y-8">
+              <div>
+                {/* Credit Boxes */}
+                <div>
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={
+                        !!formData.internship_preferences?.internship_types
+                          ?.length
+                      }
+                    />
+                    Are you hiring credited and/or voluntary interns?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div
+                      onClick={() =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types:
+                            formData.internship_preferences?.internship_types?.includes(
                               "credited",
-                            )}
-                          />
-                          <div>
-                            <Label className="text-xs font-medium text-gray-900">
-                              Credited Interns (Practicum)
-                            </Label>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Required by schools (300-600 hours) and needs
-                              Memorandum of Agreement (MOA) from university
-                            </p>
-                          </div>
-                        </div>
-                        <div
-                          onClick={() =>
-                            setField("internship_preferences", {
-                              ...formData.internship_preferences,
-                              internship_types:
-                                formData.internship_preferences?.internship_types?.includes(
-                                  "voluntary",
-                                )
-                                  ? [
-                                      ...formData.internship_preferences?.internship_types.filter(
-                                        (it) => it !== "voluntary",
-                                      ),
-                                    ]
-                                  : [
-                                      ...(formData.internship_preferences
-                                        ?.internship_types ?? []),
-                                      "voluntary",
-                                    ],
-                            })
-                          }
-                          className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
-                        >
-                          <FormCheckbox
-                            checked={formData.internship_preferences?.internship_types?.includes(
-                              "voluntary",
-                            )}
-                          />
-                          <div>
-                            <Label className="text-xs font-medium text-gray-900">
-                              Voluntary Interns
-                            </Label>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Flexbile schedule, available for hire anytime, and
-                              work is usually on top of academic load
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/*Location Input */}
-                    <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                      <StepCheckIndicator
-                        checked={
-                          formData.location !== "" &&
-                          formData.location !== undefined &&
-                          formData.location !== null
-                        }
-                      />
-                      Job Location{" "}
-                      <span className="text-destructive text-sm">*</span>
-                    </div>
-                    <div className="w-full mb-6">
-                      <div className="space-y-2 w-full">
-                        <FormInput
-                          placeholder="Enter job location here..."
-                          value={formData.location ?? ""}
-                          maxLength={100}
-                          setter={fieldSetter("location")}
-                          required={false}
-                          className="h-10"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Work types */}
-                    <div className="mb-8">
-                      <div className="grid cols-1 md:grid-cols-1 gap-x-4">
-                        <div>
-                          <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                            <StepCheckIndicator
-                              checked={
-                                formData.internship_preferences
-                                  ?.job_commitment_ids !== undefined &&
-                                formData.internship_preferences
-                                  ?.job_commitment_ids !== null &&
-                                formData.internship_preferences
-                                  ?.job_commitment_ids.length !== 0
-                              }
-                            />
-                            Work Load{" "}
-                            <span className="text-destructive">*</span>
-                          </div>
-                          <FormCheckBoxGroup
-                            required={true}
-                            values={
-                              formData.internship_preferences
-                                ?.job_commitment_ids ?? []
-                            }
-                            options={[
-                              {
-                                value: 1,
-                                label: "Part-time",
-                                description: "(Approx 20 hours/week)",
-                              },
-                              {
-                                value: 2,
-                                label: "Full-time",
-                                description: "(Approx 40 hours/week)",
-                              },
-                              {
-                                value: 3,
-                                label: "Flexible/Project-based",
-                              },
-                            ]}
-                            setter={(v) =>
-                              setField("internship_preferences", {
-                                ...formData.internship_preferences,
-                                job_commitment_ids: v,
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                            <StepCheckIndicator
-                              checked={
-                                formData.internship_preferences
-                                  ?.job_setup_ids !== undefined &&
-                                formData.internship_preferences
-                                  ?.job_setup_ids !== null &&
-                                formData.internship_preferences?.job_setup_ids
-                                  .length !== 0
-                              }
-                            />
-                            Work Mode{" "}
-                            <span className="text-destructive">*</span>
-                          </div>
-                          <FormCheckBoxGroup
-                            required={true}
-                            values={
-                              formData.internship_preferences?.job_setup_ids ??
-                              []
-                            }
-                            options={[
-                              {
-                                value: 0,
-                                label: "On-site",
-                              },
-                              {
-                                value: 1,
-                                label: "Hybrid",
-                              },
-                              {
-                                value: 2,
-                                label: "Remote",
-                              },
-                            ]}
-                            setter={(v) =>
-                              setField("internship_preferences", {
-                                ...formData.internship_preferences,
-                                job_setup_ids: v,
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mb-6">
-                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                        <StepCheckIndicator
-                          checked={formData.allowance !== undefined}
-                        />
-                        Is the internship paid?{" "}
-                        <span className="text-destructive">*</span>
-                      </div>
-                      <Card
-                        className={`${formData.allowance === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
-                      >
-                        <div>
-                          <FormRadio
-                            required={true}
-                            options={[
-                              {
-                                value: "1",
-                                label: "No",
-                              },
-                              {
-                                value: "0",
-                                label: "Yes",
-                              },
-                            ]}
-                            value={formData.allowance?.toString() ?? undefined}
-                            setter={(value) =>
-                              fieldSetter("allowance")(parseInt(value))
-                            }
-                          />
-                          {formData.allowance === 0 && (
-                            <div
-                              className={cn(
-                                "border-l-2 border-gray-300 pl-4 gap-4 m-4",
-                                isMobile ? "" : "flex flex-row",
-                              )}
-                            >
-                              <div className="space-y-2 mb-4">
-                                <Label className="text-sm font-medium text-gray-700">
-                                  Allowance{" "}
-                                  <span
-                                    className={cn(
-                                      "text-gray-300",
-                                      isMobile ? "text-xs" : "text-sm",
-                                    )}
-                                  >
-                                    (Optional)
-                                  </span>
-                                </Label>
-                                <Input
-                                  type="number"
-                                  value={formData.salary ?? ""}
-                                  onChange={(e) =>
-                                    setField("salary", parseInt(e.target.value))
-                                  }
-                                  placeholder="Enter salary amount"
-                                  className="text-sm"
-                                />
-                              </div>
-
-                              <div className="space-y-2">
-                                <Label
-                                  className={cn(
-                                    "text-sm font-medium text-gray-700",
-                                    !formData.salary ? "text-gray-400" : "",
-                                  )}
-                                >
-                                  Pay Frequency{" "}
-                                  {!formData.salary ? (
-                                    <></>
-                                  ) : (
-                                    <span className="text-destructive">*</span>
-                                  )}
-                                  {/* <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span> */}
-                                </Label>
-                                <GroupableRadioDropdown
-                                  name="pay_freq"
-                                  defaultValue={formData.salary_freq}
-                                  options={job_pay_freq}
-                                  onChange={fieldSetter("salary_freq")}
-                                  disabled={!formData.salary}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </Card>
-
-                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
-                        <StepCheckIndicator
-                          checked={
-                            formData.internship_preferences
-                              ?.expected_start_date === undefined ||
-                            formData.internship_preferences
-                              ?.expected_start_date! > 0
-                          }
-                        />
-                        When are you accepting interns for this listing?{" "}
-                        <span className="text-destructive">*</span>
-                      </div>
-                      <Card
-                        className={`${formData.internship_preferences?.expected_start_date === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
-                      >
-                        <FormRadio
-                          required={true}
-                          options={[
-                            {
-                              value: "true",
-                              label: "As soon as possible",
-                            },
-                            {
-                              value: "false",
-                              label: "I have a future date in mind",
-                            },
-                          ]}
-                          value={
-                            (formData.internship_preferences
-                              ?.expected_start_date ===
-                              undefined) +
-                            ""
-                          }
-                          setter={(v) =>
-                            setField("internship_preferences", {
-                              ...formData.internship_preferences,
-                              expected_start_date: v === "true" ? undefined : 0,
-                            })
-                          }
-                        />
-                        {formData.internship_preferences
-                          ?.expected_start_date !== undefined && (
-                          <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
-                            <div className="space-y-2">
-                              <Label className="flex flex-row text-sm font-medium text-gray-700">
-                                Start Date{" "}
-                                <span className="text-destructive">*</span>
-                              </Label>
-                              <FormDatePicker
-                                date={
-                                  formData.internship_preferences
-                                    ?.expected_start_date ?? undefined
-                                }
-                                setter={(v) =>
-                                  setField("internship_preferences", {
-                                    ...formData.internship_preferences,
-                                    expected_start_date: v,
-                                  })
-                                }
-                                disabledDays={{ before: new Date() }}
-                              />
-                            </div>
-                          </div>
+                            )
+                              ? [
+                                  ...formData.internship_preferences?.internship_types.filter(
+                                    (it) => it !== "credited",
+                                  ),
+                                ]
+                              : [
+                                  ...(formData.internship_preferences
+                                    ?.internship_types ?? []),
+                                  "credited",
+                                ],
+                        })
+                      }
+                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+                    >
+                      <FormCheckbox
+                        checked={formData.internship_preferences?.internship_types?.includes(
+                          "credited",
                         )}
-                      </Card>
-                    </div>
-
-                    <div>
-                      <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                        Category<span className="text-destructive">*</span>
-                        <p className="text-gray-500 text-sm font-normal">
-                          Choose a category that describes the job (like
-                          Cybersecurity, Legal, Design, etc.). This will help
-                          people find your listing.
+                      />
+                      <div>
+                        <Label className="text-xs font-medium text-gray-900">
+                          Credited Interns (Practicum)
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Required by schools (300-600 hours) and needs
+                          Memorandum of Agreement (MOA) from university
                         </p>
                       </div>
+                    </div>
+                    <div
+                      onClick={() =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types:
+                            formData.internship_preferences?.internship_types?.includes(
+                              "voluntary",
+                            )
+                              ? [
+                                  ...formData.internship_preferences?.internship_types.filter(
+                                    (it) => it !== "voluntary",
+                                  ),
+                                ]
+                              : [
+                                  ...(formData.internship_preferences
+                                    ?.internship_types ?? []),
+                                  "voluntary",
+                                ],
+                        })
+                      }
+                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+                    >
+                      <FormCheckbox
+                        checked={formData.internship_preferences?.internship_types?.includes(
+                          "voluntary",
+                        )}
+                      />
+                      <div>
+                        <Label className="text-xs font-medium text-gray-900">
+                          Voluntary Interns
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Flexbile schedule, available for hire anytime, and
+                          work is usually on top of academic load
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                      <GroupableRadioDropdown
-                        name="category"
-                        defaultValue={
-                          formData.internship_preferences?.job_category_ids
+                {/*Location Input */}
+                <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                  <StepCheckIndicator
+                    checked={
+                      formData.location !== "" &&
+                      formData.location !== undefined &&
+                      formData.location !== null
+                    }
+                  />
+                  Job Location{" "}
+                  <span className="text-destructive text-sm">*</span>
+                </div>
+                <div className="w-full mb-6">
+                  <div className="space-y-2 w-full">
+                    <FormInput
+                      placeholder="Enter job location here..."
+                      value={formData.location ?? ""}
+                      maxLength={100}
+                      setter={fieldSetter("location")}
+                      required={false}
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+
+                {/* Work types */}
+                <div className="mb-8">
+                  <div className="grid cols-1 md:grid-cols-1 gap-x-4">
+                    <div>
+                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                        <StepCheckIndicator
+                          checked={
+                            formData.internship_preferences
+                              ?.job_commitment_ids !== undefined &&
+                            formData.internship_preferences
+                              ?.job_commitment_ids !== null &&
+                            formData.internship_preferences?.job_commitment_ids
+                              .length !== 0
+                          }
+                        />
+                        Work Load <span className="text-destructive">*</span>
+                      </div>
+                      <FormCheckBoxGroup
+                        required={true}
+                        values={
+                          formData.internship_preferences?.job_commitment_ids ??
+                          []
                         }
-                        options={category_items}
-                        onChange={(value) =>
+                        options={[
+                          {
+                            value: 1,
+                            label: "Part-time",
+                            description: "(Approx 20 hours/week)",
+                          },
+                          {
+                            value: 2,
+                            label: "Full-time",
+                            description: "(Approx 40 hours/week)",
+                          },
+                          {
+                            value: 3,
+                            label: "Flexible/Project-based",
+                          },
+                        ]}
+                        setter={(v) =>
                           setField("internship_preferences", {
                             ...formData.internship_preferences,
-                            job_category_ids: value,
+                            job_commitment_ids: v,
                           })
                         }
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6">
-                      <div>
-                        <div className="text-xl tracking-tight font-medium my-4">
-                          <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                            Description
-                            <span className="text-destructive">*</span>
-                            <p className="text-gray-500 text-sm font-normal">
-                              What will the intern do? Briefly describe their
-                              tasks, projects, or roles in your company
-                            </p>
+                    <div>
+                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                        <StepCheckIndicator
+                          checked={
+                            formData.internship_preferences?.job_setup_ids !==
+                              undefined &&
+                            formData.internship_preferences?.job_setup_ids !==
+                              null &&
+                            formData.internship_preferences?.job_setup_ids
+                              .length !== 0
+                          }
+                        />
+                        Work Mode <span className="text-destructive">*</span>
+                      </div>
+                      <FormCheckBoxGroup
+                        required={true}
+                        values={
+                          formData.internship_preferences?.job_setup_ids ?? []
+                        }
+                        options={[
+                          {
+                            value: 0,
+                            label: "On-site",
+                          },
+                          {
+                            value: 1,
+                            label: "Hybrid",
+                          },
+                          {
+                            value: 2,
+                            label: "Remote",
+                          },
+                        ]}
+                        setter={(v) =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            job_setup_ids: v,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={formData.allowance !== undefined}
+                    />
+                    Is the internship paid?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <Card
+                    className={`${formData.allowance === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
+                  >
+                    <div>
+                      <FormRadio
+                        required={true}
+                        options={[
+                          {
+                            value: "1",
+                            label: "No",
+                          },
+                          {
+                            value: "0",
+                            label: "Yes",
+                          },
+                        ]}
+                        value={formData.allowance?.toString() ?? undefined}
+                        setter={(value) =>
+                          fieldSetter("allowance")(parseInt(value))
+                        }
+                      />
+                      {formData.allowance === 0 && (
+                        <div
+                          className={cn(
+                            "border-l-2 border-gray-300 pl-4 gap-4 m-4",
+                            isMobile ? "" : "flex flex-row",
+                          )}
+                        >
+                          <div className="space-y-2 mb-4">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Allowance{" "}
+                              <span
+                                className={cn(
+                                  "text-gray-300",
+                                  isMobile ? "text-xs" : "text-sm",
+                                )}
+                              >
+                                (Optional)
+                              </span>
+                            </Label>
+                            <Input
+                              type="number"
+                              value={formData.salary ?? ""}
+                              onChange={(e) =>
+                                setField("salary", parseInt(e.target.value))
+                              }
+                              placeholder="Enter salary amount"
+                              className="text-sm"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              className={cn(
+                                "text-sm font-medium text-gray-700",
+                                !formData.salary ? "text-gray-400" : "",
+                              )}
+                            >
+                              Pay Frequency{" "}
+                              {!formData.salary ? (
+                                <></>
+                              ) : (
+                                <span className="text-destructive">*</span>
+                              )}
+                              {/* <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span> */}
+                            </Label>
+                            <GroupableRadioDropdown
+                              name="pay_freq"
+                              defaultValue={formData.salary_freq}
+                              options={job_pay_freq}
+                              onChange={fieldSetter("salary_freq")}
+                              disabled={!formData.salary}
+                            />
                           </div>
                         </div>
-                        <div className="relative">
-                          <MDXEditor
-                            className="min-h-[250px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
-                            markdown={formData.description ?? ""}
-                            onChange={(value) => setField("description", value)}
+                      )}
+                    </div>
+                  </Card>
+
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={
+                        formData.internship_preferences?.expected_start_date ===
+                          undefined ||
+                        formData.internship_preferences?.expected_start_date! >
+                          0
+                      }
+                    />
+                    When are you accepting interns for this listing?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <Card
+                    className={`${formData.internship_preferences?.expected_start_date === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
+                  >
+                    <FormRadio
+                      required={true}
+                      options={[
+                        {
+                          value: "true",
+                          label: "As soon as possible",
+                        },
+                        {
+                          value: "false",
+                          label: "I have a future date in mind",
+                        },
+                      ]}
+                      value={
+                        (formData.internship_preferences
+                          ?.expected_start_date ===
+                          undefined) +
+                        ""
+                      }
+                      setter={(v) =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          expected_start_date: v === "true" ? undefined : 0,
+                        })
+                      }
+                    />
+                    {formData.internship_preferences?.expected_start_date !==
+                      undefined && (
+                      <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
+                        <div className="space-y-2">
+                          <Label className="flex flex-row text-sm font-medium text-gray-700">
+                            Start Date{" "}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <FormDatePicker
+                            date={
+                              formData.internship_preferences
+                                ?.expected_start_date ?? undefined
+                            }
+                            setter={(v) =>
+                              setField("internship_preferences", {
+                                ...formData.internship_preferences,
+                                expected_start_date: v,
+                              })
+                            }
+                            disabledDays={{ before: new Date() }}
                           />
                         </div>
                       </div>
+                    )}
+                  </Card>
+                </div>
 
-                      <div>
-                        <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
-                          Requirements
-                          <span className="text-destructive">*</span>
-                          <p className="text-gray-500 text-sm mb-3">
-                            List preferred courses, skills, and qualifications
-                            from applicants
-                          </p>
-                        </div>
-                        <div className="relative mb-4">
-                          <MDXEditor
-                            className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
-                            markdown={formData.requirements ?? ""}
-                            onChange={(value) =>
-                              setField("requirements", value)
-                            }
-                          />
-                        </div>
-                        <p className="text-sm text-gray-300 mb-1">(Optional)</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          {/* <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
+                <div>
+                  <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                    Category<span className="text-destructive">*</span>
+                    <p className="text-gray-500 text-sm font-normal">
+                      Choose a category that describes the job (like
+                      Cybersecurity, Legal, Design, etc.). This will help people
+                      find your listing.
+                    </p>
+                  </div>
+
+                  <GroupableRadioDropdown
+                    name="category"
+                    defaultValue={
+                      formData.internship_preferences?.job_category_ids
+                    }
+                    options={category_items}
+                    onChange={(value) =>
+                      setField("internship_preferences", {
+                        ...formData.internship_preferences,
+                        job_category_ids: value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <div className="text-xl tracking-tight font-medium my-4">
+                      <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                        Description
+                        <span className="text-destructive">*</span>
+                        <p className="text-gray-500 text-sm font-normal">
+                          What will the intern do? Briefly describe their tasks,
+                          projects, or roles in your company
+                        </p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <MDXEditor
+                        className="min-h-[250px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        markdown={formData.description ?? ""}
+                        onChange={(value) => setField("description", value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
+                      Requirements
+                      <span className="text-destructive">*</span>
+                      <p className="text-gray-500 text-sm mb-3">
+                        List preferred courses, skills, and qualifications from
+                        applicants
+                      </p>
+                    </div>
+                    <div className="relative mb-4">
+                      <MDXEditor
+                        className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        markdown={formData.requirements ?? ""}
+                        onChange={(value) => setField("requirements", value)}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-300 mb-1">(Optional)</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {/* <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
                           <FormCheckbox
                           checked={true}
                           />
@@ -882,73 +869,70 @@ const CreateJobPage = ({
                           </div>
 
                       </div> */}
-                          <div
-                            onClick={() =>
-                              setField("internship_preferences", {
-                                ...formData.internship_preferences,
-                                require_github:
-                                  !formData.internship_preferences
-                                    ?.require_github,
-                              })
-                            }
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                      <div
+                        onClick={() =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            require_github:
+                              !formData.internship_preferences?.require_github,
+                          })
+                        }
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
                         ${formData.internship_preferences?.require_github ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
-                          >
-                            <FormCheckbox
-                              checked={
-                                formData.internship_preferences
-                                  ?.require_github ?? false
-                              }
-                              setter={(v) =>
-                                setField("internship_preferences", {
-                                  ...formData.internship_preferences,
-                                  require_github: v,
-                                })
-                              }
-                            />
-                            <div className="grid grid-rows-1 md:grid-rows-2">
-                              <Label className="text-xs font-medium text-gray-900">
-                                GitHub Repository
-                              </Label>
-                              <p className="text-xs text-gray-500">
-                                Require GitHub link
-                              </p>
-                            </div>
-                          </div>
+                      >
+                        <FormCheckbox
+                          checked={
+                            formData.internship_preferences?.require_github ??
+                            false
+                          }
+                          setter={(v) =>
+                            setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_github: v,
+                            })
+                          }
+                        />
+                        <div className="grid grid-rows-1 md:grid-rows-2">
+                          <Label className="text-xs font-medium text-gray-900">
+                            GitHub Repository
+                          </Label>
+                          <p className="text-xs text-gray-500">
+                            Require GitHub link
+                          </p>
+                        </div>
+                      </div>
 
-                          <div
-                            onClick={() =>
-                              setField("internship_preferences", {
-                                ...formData.internship_preferences,
-                                require_portfolio:
-                                  !formData.internship_preferences
-                                    ?.require_portfolio,
-                              })
-                            }
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                      <div
+                        onClick={() =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            require_portfolio:
+                              !formData.internship_preferences
+                                ?.require_portfolio,
+                          })
+                        }
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
                         ${formData.internship_preferences?.require_portfolio ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
-                          >
-                            <FormCheckbox
-                              checked={
-                                formData.internship_preferences
-                                  ?.require_portfolio ?? false
-                              }
-                              setter={(v) =>
-                                setField("internship_preferences", {
-                                  ...formData.internship_preferences,
-                                  require_portfolio: v,
-                                })
-                              }
-                            />
-                            <div className="grid grid-rows-1 md:grid-rows-2">
-                              <Label className="text-xs font-medium text-gray-900">
-                                Portfolio
-                              </Label>
-                              <p className="text-xs text-gray-500">
-                                Require portfolio link
-                              </p>
-                            </div>
-                          </div>
+                      >
+                        <FormCheckbox
+                          checked={
+                            formData.internship_preferences
+                              ?.require_portfolio ?? false
+                          }
+                          setter={(v) =>
+                            setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_portfolio: v,
+                            })
+                          }
+                        />
+                        <div className="grid grid-rows-1 md:grid-rows-2">
+                          <Label className="text-xs font-medium text-gray-900">
+                            Portfolio
+                          </Label>
+                          <p className="text-xs text-gray-500">
+                            Require portfolio link
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -958,7 +942,7 @@ const CreateJobPage = ({
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
       <AlertModal>
         <div className="p-8">
           <div className="mb-8 flex flex-col items-center justify-center text-center">
