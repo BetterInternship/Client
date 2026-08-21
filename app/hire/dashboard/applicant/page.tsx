@@ -18,7 +18,6 @@ function ApplicantPageContent() {
   const applicationId = searchParams.get("applicationId");
   const [loading, setLoading] = useState(true);
   const applications = useEmployerApplications();
-  const jobs = useOwnedJobs();
   const { app_statuses } = useDbRefs();
 
   const { triggerAction } = useApplicationActions(applications.review);
