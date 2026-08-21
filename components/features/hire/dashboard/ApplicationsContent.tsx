@@ -4,7 +4,15 @@
 
 import { forwardRef, useImperativeHandle } from "react";
 import { useApplicationSelection } from "@/hooks/use-application-selection";
-import { Badge } from "@betterinternship/components";
+import {
+  Badge,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@betterinternship/components";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
@@ -350,76 +358,76 @@ export const ApplicationsContent = forwardRef<
           </div>
         </div>
       ) : (
-        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-[0.33em] overflow-hidden">
-          <thead className="bg-gray-100">
-            <tr className="text-left">
-              <th className="p-4" onClick={toggleSelectAll}>
+        <Table className="table-auto border-separate border-spacing-0 border border-gray-200 bg-white rounded-[0.33em] overflow-hidden">
+          <TableHeader className="bg-gray-50">
+            <TableRow className="hover:bg-transparent text-left">
+              <TableHead className="h-auto p-4" onClick={toggleSelectAll}>
                 <FormCheckbox
                   checked={allVisibleSelected}
                   indeterminate={someVisibleSelected}
                   setter={toggleSelectAll}
                   disabled={visibleApplications.length === 0}
                 />
-              </th>
-              <th className="p-4">
+              </TableHead>
+              <TableHead className="h-auto p-4">
                 <div className="flex items-center gap-2">
                   <User2 size={16} />
                   <span>Applicant</span>
                 </div>
-              </th>
+              </TableHead>
               {isSuperListing ? (
                 <>
-                  <th className="p-4">
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
                       <span>Date applied</span>
                     </div>
-                  </th>
-                  <th className="p-4">
+                  </TableHead>
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <ListCheck size={16} />
                       <span>Status</span>
                     </div>
-                  </th>
+                  </TableHead>
                 </>
               ) : (
                 <>
-                  <th className="p-4">
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <GraduationCap size={16} />
                       <span>Education</span>
                     </div>
-                  </th>
-                  <th className="p-4">
+                  </TableHead>
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <ContactRound size={16} />
                       <span>Crediting</span>
                     </div>
-                  </th>
-                  <th className="p-4">
+                  </TableHead>
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
                       <span>Expected start date</span>
                     </div>
-                  </th>
-                  <th className="p-4">
+                  </TableHead>
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
                       <span>Date applied</span>
                     </div>
-                  </th>
-                  <th className="p-4">
+                  </TableHead>
+                  <TableHead className="h-auto p-4">
                     <div className="flex items-center gap-2">
                       <ListCheck size={16} />
                       <span>Status</span>
                     </div>
-                  </th>
+                  </TableHead>
                 </>
               )}
-              <th className="p-4"></th>
-            </tr>
-          </thead>
-          <tbody>
+              <TableHead className="h-auto p-4"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {visibleApplications.length ? (
               visibleApplications.map((application, index) => (
                 <ApplicationRow
@@ -442,16 +450,16 @@ export const ApplicationsContent = forwardRef<
                 />
               ))
             ) : (
-              <tr>
-                <td>
+              <TableRow className="hover:bg-transparent">
+                <TableCell>
                   <Badge className="m-2">
                     No applications under this category.
                   </Badge>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       )}
     </div>
   );

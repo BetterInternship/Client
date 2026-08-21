@@ -11,7 +11,6 @@ import {
   formatTimestampDateWithoutTime,
 } from "@/lib/utils/date-utils";
 import { ApplicationAction, DB_STATUS_MAP } from "@/lib/consts/application";
-import { motion } from "framer-motion";
 import {
   Archive,
   ArchiveRestore,
@@ -28,7 +27,7 @@ import {
   type DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import StatusBadge from "@/components/ui/status-badge";
-import { useBlurTransition } from "@/components/animata/blur";
+import { TableCell, TableRow } from "@betterinternship/components";
 
 interface ApplicationRowProps {
   index?: number;
@@ -66,10 +65,6 @@ export function ApplicationRow({
   const preferences = (application.user?.internship_preferences ||
     {}) as InternshipPreferences;
 
-  // limit row animation to first 50.
-  const MAX_STAGGER_ROWS = 50;
-  const staggerDelay = index < MAX_STAGGER_ROWS ? index * 0.05 : 0;
-
   const currentStatusId = application.status?.toString() ?? "0";
   const filterKey = DB_STATUS_MAP[application.status || 0]?.key || "pending";
 
@@ -79,10 +74,8 @@ export function ApplicationRow({
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
 
-  const blurTransition = useBlurTransition({ delay: staggerDelay });
-
   return isMobile ? (
-    <motion.div key={application.id} {...blurTransition}>
+    <div key={application.id}>
       <Card
         className={`flex flex-col hover:cursor-pointer transition-colors ${
           isSuperListing
@@ -112,7 +105,7 @@ export function ApplicationRow({
           <div className="rounded-[0.33em] border border-amber-200 bg-amber-50/70 p-3">
             <p className="text-xs font-medium text-amber-700">Submission</p>
             <p
-              className={`mt-1 text-sm whitespace-pre-wrap break-words ${
+              className={`mt-1 text-sm whitespace-pre-wrap wrap-break-word ${
                 hasChallengeSubmission
                   ? "text-gray-700 line-clamp-3"
                   : "text-muted-foreground"
@@ -162,16 +155,15 @@ export function ApplicationRow({
           </div>
         )}
       </Card>
-    </motion.div>
+    </div>
   ) : isSuperListing ? (
     <>
-      <motion.tr
+      <TableRow
         key={application.id}
-        {...blurTransition}
-        className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-amber-100/50"
+        className="group hover:cursor-pointer odd:bg-white even:bg-gray-50 hover:bg-amber-100/50"
         onClick={onView}
       >
-        <td
+        <TableCell
           className="px-4 py-2"
           onClick={(e) => {
             e.stopPropagation();
@@ -182,12 +174,14 @@ export function ApplicationRow({
             checked={checkboxSelected}
             setter={(v: boolean) => onToggleSelect?.(!!v)}
           />
-        </td>
-        <td className="px-4 py-2">{getFullName(application.user)} </td>
-        <td className="px-4 py-2">
+        </TableCell>
+        <TableCell className="px-4 py-2">
+          {getFullName(application.user)}{" "}
+        </TableCell>
+        <TableCell className="px-4 py-2">
           {application.applied_at?.toLocaleDateString()}
-        </td>
-        <td className="px-4 py-2 w-40 overflow-visible">
+        </TableCell>
+        <TableCell className="px-4 py-2 w-40">
           {filterKey !== "accepted" && filterKey !== "rejected" ? (
             <DropdownMenu
               className="w-full"
@@ -197,8 +191,8 @@ export function ApplicationRow({
           ) : (
             <StatusBadge statusId={application.status || 0} />
           )}
-        </td>
-        <td>
+        </TableCell>
+        <TableCell>
           <div className="flex items-center gap-2 pr-2 flex-row justify-end">
             {application.visibility === "visible" && (
               <ActionButton
@@ -224,14 +218,14 @@ export function ApplicationRow({
               />
             )}
           </div>
-        </td>
-      </motion.tr>
-      <tr
-        className="bg-amber-50/40 hover:bg-amber-100/50 hover:cursor-pointer transition-colors"
+        </TableCell>
+      </TableRow>
+      <TableRow
+        className="bg-amber-50/40 hover:bg-amber-100/50 hover:cursor-pointer"
         onClick={onView}
       >
-        <td className="px-4 pb-3 pt-0" />
-        <td colSpan={4} className="pr-4 pb-3 pt-0">
+        <TableCell className="px-4 pb-3 pt-0" />
+        <TableCell colSpan={4} className="pr-4 pb-3 pt-0">
           <div className="rounded-[0.33em] border border-amber-200 bg-amber-50/70 p-3">
             <p className="text-xs font-medium text-amber-700">Submission</p>
             <p
@@ -246,19 +240,18 @@ export function ApplicationRow({
                 : "No challenge submission provided."}
             </p>
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     </>
   ) : (
     // desktop
-    <motion.tr
+    <TableRow
       key={application.id}
-      {...blurTransition}
-      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
+      className="group hover:cursor-pointer hover:bg-primary/[0.035]"
       onClick={onView}
     >
-      <td
-        className="px-4 py-2"
+      <TableCell
+        className="px-4 py-2 border-t"
         onClick={(e) => {
           e.stopPropagation();
           onToggleSelect?.(!checkboxSelected);
@@ -268,21 +261,27 @@ export function ApplicationRow({
           checked={checkboxSelected}
           setter={(v: boolean) => onToggleSelect?.(!!v)}
         />
-      </td>
-      <td className="px-4 py-2">{getFullName(application.user)} </td>
-      <td className="px-4 py-2 flex flex-col">
-        <span>{to_university_name(application.user?.university) || ""}</span>
-        <span className="text-gray-500">{application.user?.degree}</span>
-      </td>
-      <td className="px-4 py-2">{preferences.internship_type}</td>
-      <td className="px-4 py-2">
+      </TableCell>
+      <TableCell className="px-4 py-2 border-t">
+        {getFullName(application.user)}{" "}
+      </TableCell>
+      <TableCell className="px-4 py-2 border-t">
+        <div className="flex flex-col">
+          <span>{to_university_name(application.user?.university) || ""}</span>
+          <span className="text-gray-500">{application.user?.degree}</span>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-2 not-last:border-t">
+        {preferences.internship_type}
+      </TableCell>
+      <TableCell className="px-4 py-2 border-t">
         {formatTimestampDateWithoutTime(preferences.expected_start_date)}
-      </td>
-      <td className="px-4 py-2">
+      </TableCell>
+      <TableCell className="px-4 py-2 border-t">
         {/* man why is the applied at date a string but the expected start date is a number */}
         {formatDateWithoutTime(application.applied_at)}
-      </td>
-      <td className="px-4 py-2 w-40 overflow-visible">
+      </TableCell>
+      <TableCell className="px-4 py-2 w-40 not-last:border-t">
         {filterKey !== "accepted" && filterKey !== "rejected" ? (
           <DropdownMenu
             className="w-full"
@@ -292,8 +291,8 @@ export function ApplicationRow({
         ) : (
           <StatusBadge statusId={application.status || 0} className="py-1.5" />
         )}
-      </td>
-      <td>
+      </TableCell>
+      <TableCell className="border-t">
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
           {application.visibility !== "deleted" && (
             <ActionButton
@@ -326,7 +325,7 @@ export function ApplicationRow({
             />
           )}
         </div>
-      </td>
-    </motion.tr>
+      </TableCell>
+    </TableRow>
   );
 }
