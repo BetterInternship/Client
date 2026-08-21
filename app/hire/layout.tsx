@@ -95,8 +95,8 @@ const HTMLContent = ({
               <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                 <ModalProvider>
                   <AllowLanding>
-                    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                      <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col scroll-smooth">
+                    <div className="h-screen overflow-hidden flex flex-col">
+                      <div className="grow max-h-svh max-w-svw overflow-auto flex flex-col scroll-smooth">
                         {children}
                       </div>
                     </div>

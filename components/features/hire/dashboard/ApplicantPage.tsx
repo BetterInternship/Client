@@ -8,7 +8,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn, Badge, Button } from "@betterinternship/components";
+import { cn, Badge, Button, PageContainer } from "@betterinternship/components";
 import {
   formatMonth,
   formatOptionalTimestampDate,
@@ -34,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Loader } from "@/components/ui/loader";
-import { motion } from "framer-motion";
 import { useAuthContext } from "@/app/hire/authctx";
 import JobHeader from "./JobHeader";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
@@ -68,9 +67,6 @@ export function ApplicantPage({
         app.status === application?.status &&
         app.visibility === "visible",
     );
-  const applicantIndex = otherApplicants.findIndex(
-    (app) => app.user_id === application?.user_id,
-  );
   const internshipPreferences = user?.internship_preferences;
   const challengeSubmission = application?.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
@@ -80,15 +76,7 @@ export function ApplicantPage({
 
   redirectIfNotLoggedIn();
 
-  const [exitingBack, setExitingBack] = useState(false);
-
   const { to_university_name } = useDbRefs();
-
-  const currentStatusId = application?.status?.toString() ?? "0";
-
-  const defaultStatus: DropdownMenuItem = {
-    id: currentStatusId,
-  };
 
   const blurTransition = useBlurTransition();
 
@@ -140,471 +128,425 @@ export function ApplicantPage({
     );
   }
 
-  const prevApplicantId = otherApplicants[applicantIndex + 1]?.id;
-  const nextApplicantId = otherApplicants[applicantIndex - 1]?.id;
-
   return (
-    <div className="space-y-6">
+    <>
       <JobHeader
         job={application.job!}
         backHref={`/dashboard/manage?jobId=${jobId}`}
       />
-      <motion.div
-        key={application?.id}
-        {...blurTransition}
-        className={cn(
-          "lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-auto w-full h-full",
-          isMobile ? "px-4" : "px-6",
-        )}
-      >
-        <div className="h-fit col-span-2 mb-4">
-          {prevApplicantId ? (
-            <Link
-              replace
-              href={
-                "http://hire.localhost:3000/dashboard/applicant?applicationId=" +
-                prevApplicantId
-              }
-              aria-disabled={prevApplicantId === undefined}
-            >
-              <Button variant="ghost">
-                <ChevronLeft />
-              </Button>
-            </Link>
-          ) : (
-            <Button disabled variant="ghost">
-              <ChevronLeft />
-            </Button>
-          )}
-          {nextApplicantId ? (
-            <Link
-              replace
-              href={
-                "http://hire.localhost:3000/dashboard/applicant?applicationId=" +
-                nextApplicantId
-              }
-              aria-disabled={nextApplicantId === undefined}
-            >
-              <Button variant="ghost">
-                <ChevronRight />
-              </Button>
-            </Link>
-          ) : (
-            <Button disabled variant="ghost">
-              <ChevronRight />
-            </Button>
-          )}
-        </div>
-        <div
-          className={cn(
-            "bg-white rounded-[0.33em] border border-gray-200 ",
-            isMobile ? "p-4" : "p-6",
-          )}
-        >
-          {/* "header" ish portion */}
-          <div className="mb-4">
-            <div className="lg:flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
-                  <UserPfp
-                    user_id={user?.id || ""}
-                    size={cn(isMobile ? "16" : "20")}
-                  />
-                </div>
-                <div className="mx-2">
-                  <div className="flex gap-2">
-                    <h3 className={cn(isMobile ? "text-lg" : "text-xl")}>
-                      {getFullName(application?.user)}
-                    </h3>
-                    {internshipPreferences?.internship_type === "credited" ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="bg-supportive/10 rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-supportive">
-                            <Award className="w-4 h-4" />
-                            <span>Credited</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-gray-500 text-xs">
-                            This applicant is looking for internships for credit
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="bg-muted rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-muted-foreground">
-                            <HandHelping className="w-4 h-4" />
-                            <span>Voluntary</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-gray-500 text-xs">
-                            This applicant is looking for internships
-                            voluntarily
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+      <PageContainer>
+        <div key={application?.id} className="flex flex-col md:flex-row">
+          <div className="p-4 rounded-[0.33em] border md:w-1/2">
+            {/* "header" ish portion */}
+            <div className="mb-4">
+              <div className="lg:flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
+                    <UserPfp
+                      user_id={user?.id || ""}
+                      size={cn(isMobile ? "16" : "20")}
+                    />
                   </div>
-                  <div
-                    className={cn(
-                      "items-center gap-2 text-xs text-gray-500",
-                      isMobile ? "flex-col" : "flex",
-                    )}
-                  >
-                    {/* COntact info */}
-                    <div className="flex gap-1 items-center">
-                      <Phone className="h-4 w-4" />
-                      <p className="text-gray-500 text-xs">
-                        {application?.user?.phone_number}
-                      </p>
-                    </div>
-                    {!isMobile && <p className="text-xs text-gray-500"> | </p>}
-                    <div className="flex gap-1">
-                      <Mail className="h-4 w-4" />
-                      <p className="text-gray-500 text-xs">
-                        {application?.user?.edu_verification_email}
-                      </p>
-                    </div>
-                  </div>
-                  {/* links */}
-                  <div
-                    className={cn(
-                      "flex gap-4 items-center",
-                      isMobile ? "mt-2" : "mt-4",
-                    )}
-                  >
-                    <div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {user?.portfolio_link ? (
-                            <a
-                              href={user?.portfolio_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                            >
-                              <BriefcaseBusiness className="h-4 w-4" />
-                            </a>
-                          ) : (
-                            <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                              <BriefcaseBusiness className="h-4 w-4" />
+                  <div className="mx-2">
+                    <div className="flex gap-2">
+                      <h3 className={cn(isMobile ? "text-lg" : "text-xl")}>
+                        {getFullName(application?.user)}
+                      </h3>
+                      {internshipPreferences?.internship_type === "credited" ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="bg-supportive/10 rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-supportive">
+                              <Award className="w-4 h-4" />
+                              <span>Credited</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-gray-500 text-xs">
+                              This applicant is looking for internships for
+                              credit
                             </p>
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs text-gray-500">
-                            Applicant Portfolio
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="bg-muted rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-muted-foreground">
+                              <HandHelping className="w-4 h-4" />
+                              <span>Voluntary</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-gray-500 text-xs">
+                              This applicant is looking for internships
+                              voluntarily
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
+                    <div
+                      className={cn(
+                        "items-center gap-2 text-xs text-gray-500",
+                        isMobile ? "flex-col" : "flex",
+                      )}
+                    >
+                      {/* COntact info */}
+                      <div className="flex gap-1 items-center">
+                        <Phone className="h-4 w-4" />
+                        <p className="text-gray-500 text-xs">
+                          {application?.user?.phone_number}
+                        </p>
+                      </div>
+                      {!isMobile && (
+                        <p className="text-xs text-gray-500"> | </p>
+                      )}
+                      <div className="flex gap-1">
+                        <Mail className="h-4 w-4" />
+                        <p className="text-gray-500 text-xs">
+                          {application?.user?.edu_verification_email}
+                        </p>
+                      </div>
+                    </div>
+                    {/* links */}
+                    <div
+                      className={cn(
+                        "flex gap-4 items-center",
+                        isMobile ? "mt-2" : "mt-4",
+                      )}
+                    >
+                      <div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {user?.portfolio_link ? (
+                              <a
+                                href={user?.portfolio_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                              >
+                                <BriefcaseBusiness className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
+                                <BriefcaseBusiness className="h-4 w-4" />
+                              </p>
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs text-gray-500">
+                              Applicant Portfolio
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
 
-                    <div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {user?.github_link ? (
-                            <a
-                              href={user?.github_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                            >
-                              <Github className="h-4 w-4" />
-                            </a>
-                          ) : (
-                            <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                              <Github className="h-4 w-4" />
+                      <div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {user?.github_link ? (
+                              <a
+                                href={user?.github_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                              >
+                                <Github className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
+                                <Github className="h-4 w-4" />
+                              </p>
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs text-gray-500">
+                              Applicant Github
                             </p>
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs text-gray-500">
-                            Applicant Github
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
 
-                    <div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {user?.linkedin_link ? (
-                            <a
-                              href={user?.linkedin_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                            >
-                              <Linkedin className="h-4 w-4" />
-                            </a>
-                          ) : (
-                            <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                              <Linkedin className="h-4 w-4" />
+                      <div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {user?.linkedin_link ? (
+                              <a
+                                href={user?.linkedin_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                              >
+                                <Linkedin className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
+                                <Linkedin className="h-4 w-4" />
+                              </p>
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs text-gray-500">
+                              Applicant Linkedin
                             </p>
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs text-gray-500">
-                            Applicant Linkedin
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {isMobile ? (
-            <>
-              {hasChallengeSubmission && (
+            {isMobile ? (
+              <>
+                {hasChallengeSubmission && (
+                  <HorizontalCollapsible
+                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                    title="Challenge Submission"
+                  >
+                    <span className="text-sm/5 whitespace-pre-wrap break-words">
+                      {challengeSubmission}
+                    </span>
+                  </HorizontalCollapsible>
+                )}
                 <HorizontalCollapsible
-                  className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                  title="Challenge Submission"
+                  className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                  title="Applicant Information"
                 >
-                  <span className="text-sm/5 whitespace-pre-wrap break-words">
-                    {challengeSubmission}
-                  </span>
-                </HorizontalCollapsible>
-              )}
-              <HorizontalCollapsible
-                className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                title="Applicant Information"
-              >
-                <div className="grid gap-2">
-                  <div className={cn(isMobile ? "flex justify-between" : "")}>
-                    <p className={cn("text-gray-500 text-xs")}>
-                      Program / Degree
-                    </p>
-                    <p
-                      className={cn(
-                        "font-medium text-gray-900",
-                        isMobile ? "text-xs" : "text-sm",
-                      )}
-                    >
-                      {user?.degree}
-                    </p>
-                  </div>
-                  <div className={cn(isMobile ? "flex justify-between" : "")}>
-                    <p className={cn("text-gray-500 text-xs")}>Institution</p>
-                    <p
-                      className={cn(
-                        "font-medium text-gray-900",
-                        isMobile ? "text-xs" : "text-sm",
-                      )}
-                    >
-                      {to_university_name(user?.university)}
-                    </p>
-                  </div>
-                  <div className={cn(isMobile ? "flex justify-between" : "")}>
-                    <p className={cn("text-gray-500 text-xs")}>
-                      Expected Graduation Date
-                    </p>
-                    <p
-                      className={cn(
-                        "font-medium text-gray-900",
-                        isMobile ? "text-xs" : "text-sm",
-                      )}
-                    >
-                      {formatMonth(user?.expected_graduation_date)}
-                    </p>
-                  </div>
-                </div>
-              </HorizontalCollapsible>
-
-              <HorizontalCollapsible
-                className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                title="Internship Requirements"
-              >
-                <div className="grid gap-2">
-                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                  <div className="grid gap-2">
                     <div className={cn(isMobile ? "flex justify-between" : "")}>
                       <p className={cn("text-gray-500 text-xs")}>
+                        Program / Degree
+                      </p>
+                      <p
+                        className={cn(
+                          "font-medium text-gray-900",
+                          isMobile ? "text-xs" : "text-sm",
+                        )}
+                      >
+                        {user?.degree}
+                      </p>
+                    </div>
+                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                      <p className={cn("text-gray-500 text-xs")}>Institution</p>
+                      <p
+                        className={cn(
+                          "font-medium text-gray-900",
+                          isMobile ? "text-xs" : "text-sm",
+                        )}
+                      >
+                        {to_university_name(user?.university)}
+                      </p>
+                    </div>
+                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                      <p className={cn("text-gray-500 text-xs")}>
+                        Expected Graduation Date
+                      </p>
+                      <p
+                        className={cn(
+                          "font-medium text-gray-900",
+                          isMobile ? "text-xs" : "text-sm",
+                        )}
+                      >
+                        {formatMonth(user?.expected_graduation_date)}
+                      </p>
+                    </div>
+                  </div>
+                </HorizontalCollapsible>
+
+                <HorizontalCollapsible
+                  className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
+                  title="Internship Requirements"
+                >
+                  <div className="grid gap-2">
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                      <div
+                        className={cn(isMobile ? "flex justify-between" : "")}
+                      >
+                        <p className={cn("text-gray-500 text-xs")}>
+                          Expected Start Date
+                        </p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {formatOptionalTimestampDate(
+                            internshipPreferences?.expected_start_date,
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-xs text-gray-500">
+                          Expected Duration (Hours)
+                        </p>
+                        <p className="text-xs font-medium text-gray-900">
+                          {internshipPreferences?.expected_duration_hours}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </HorizontalCollapsible>
+              </>
+            ) : (
+              <>
+                {hasChallengeSubmission && (
+                  <HorizontalCollapsible
+                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                    title="Challenge Submission"
+                  >
+                    <span className="text-sm/5 whitespace-pre-wrap break-words">
+                      {challengeSubmission}
+                    </span>
+                  </HorizontalCollapsible>
+                )}
+                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                  {application?.user?.bio ? (
+                    <div>
+                      <p className="text-xs">{application?.user?.bio}</p>
+                      <Divider />
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs">Applicant has not added a bio.</p>
+                      <Divider />
+                    </div>
+                  )}
+                  <div className="items-center gap-3 mb-4 sm:mb-5">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                      Applicant Information
+                    </h3>
+                    {application?.job && (
+                      <p className="text-xs text-gray-500 mb-2">
+                        Applying for: {application?.job?.title}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    <div>
+                      <p className={cn("text-gray-500 text-xs")}>Education</p>
+                      <p
+                        className={cn(
+                          "font-medium text-gray-900",
+                          isMobile ? "text-xs" : "text-sm",
+                        )}
+                      >
+                        {to_university_name(user?.university)}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.degree}</p>
+                    </div>
+                    <div>
+                      <p className={cn("text-gray-500 text-xs")}>
+                        Expected Graduation Date
+                      </p>
+                      <p
+                        className={cn(
+                          "font-medium text-gray-900",
+                          isMobile ? "text-xs" : "text-sm",
+                        )}
+                      >
+                        {formatMonth(user?.expected_graduation_date)}
+                      </p>
+                    </div>
+                  </div>
+                  <Divider />
+                  <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                      Internship Requirements
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                      <p
+                        className={cn(
+                          "text-gray-500",
+                          isMobile ? "text-sm" : "text-xs",
+                        )}
+                      >
                         Expected Start Date
                       </p>
-                      <p className="text-xs font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900">
                         {formatOptionalTimestampDate(
                           internshipPreferences?.expected_start_date,
                         )}
                       </p>
                     </div>
-                    <div className="flex justify-between">
+                    <div>
                       <p className="text-xs text-gray-500">
                         Expected Duration (Hours)
                       </p>
-                      <p className="text-xs font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900">
                         {internshipPreferences?.expected_duration_hours}
                       </p>
                     </div>
                   </div>
                 </div>
-              </HorizontalCollapsible>
-            </>
-          ) : (
-            <>
-              {hasChallengeSubmission && (
-                <HorizontalCollapsible
-                  className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                  title="Challenge Submission"
-                >
-                  <span className="text-sm/5 whitespace-pre-wrap break-words">
-                    {challengeSubmission}
-                  </span>
-                </HorizontalCollapsible>
-              )}
-              <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
-                {application?.user?.bio ? (
-                  <div>
-                    <p className="text-xs">{application?.user?.bio}</p>
-                    <Divider />
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-xs">Applicant has not added a bio.</p>
-                    <Divider />
-                  </div>
-                )}
-                <div className="items-center gap-3 mb-4 sm:mb-5">
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                    Applicant Information
-                  </h3>
-                  {application?.job && (
-                    <p className="text-xs text-gray-500 mb-2">
-                      Applying for: {application?.job?.title}
-                    </p>
-                  )}
-                </div>
 
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <div>
-                    <p className={cn("text-gray-500 text-xs")}>Education</p>
-                    <p
-                      className={cn(
-                        "font-medium text-gray-900",
-                        isMobile ? "text-xs" : "text-sm",
-                      )}
-                    >
-                      {to_university_name(user?.university)}
-                    </p>
-                    <p className="text-xs text-gray-500">{user?.degree}</p>
+                {/* other roles *note: will make this look better */}
+                <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                  <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                    {application?.job ? (
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                        Other Applied Roles
+                      </h3>
+                    ) : (
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                        Applied Roles
+                      </h3>
+                    )}
                   </div>
-                  <div>
-                    <p className={cn("text-gray-500 text-xs")}>
-                      Expected Graduation Date
-                    </p>
-                    <p
-                      className={cn(
-                        "font-medium text-gray-900",
-                        isMobile ? "text-xs" : "text-sm",
-                      )}
-                    >
-                      {formatMonth(user?.expected_graduation_date)}
-                    </p>
-                  </div>
-                </div>
-                <Divider />
-                <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                    Internship Requirements
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <div className={cn(isMobile ? "flex justify-between" : "")}>
-                    <p
-                      className={cn(
-                        "text-gray-500",
-                        isMobile ? "text-sm" : "text-xs",
-                      )}
-                    >
-                      Expected Start Date
-                    </p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {formatOptionalTimestampDate(
-                        internshipPreferences?.expected_start_date,
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">
-                      Expected Duration (Hours)
-                    </p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {internshipPreferences?.expected_duration_hours}
-                    </p>
+                  <div className="flex flex-wrap gap-1">
+                    {userApplications?.length !== 0 ? (
+                      userApplications?.map((a) => (
+                        <Badge>
+                          <p className="inline-flex items-center text-gray-500 text-xs">
+                            {a.job?.title}
+                          </p>
+                        </Badge>
+                      ))
+                    ) : (
+                      <>
+                        {application?.job ? (
+                          <p className="text-gray-500 text-sm">
+                            {" "}
+                            No applied roles
+                          </p>
+                        ) : (
+                          <p className="text-gray-500 text-sm">
+                            {" "}
+                            No other applied roles
+                          </p>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              {/* other roles *note: will make this look better */}
-              <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
-                <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                  {application?.job ? (
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                      Other Applied Roles
-                    </h3>
-                  ) : (
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                      Applied Roles
-                    </h3>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {userApplications?.length !== 0 ? (
-                    userApplications?.map((a) => (
-                      <Badge>
-                        <p className="inline-flex items-center text-gray-500 text-xs">
-                          {a.job?.title}
-                        </p>
-                      </Badge>
-                    ))
-                  ) : (
-                    <>
-                      {application?.job ? (
-                        <p className="text-gray-500 text-sm">
-                          {" "}
-                          No applied roles
-                        </p>
-                      ) : (
-                        <p className="text-gray-500 text-sm">
-                          {" "}
-                          No other applied roles
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* resume */}
-        {application?.resume_id ? (
-          <div
-            className={cn(
-              "h-full flex flex-col justify-center items-center",
-              isMobile ? "mt-4 w-full" : "",
+              </>
             )}
-          >
-            <PDFPreview url={resumeURL} />
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center px-8 w-full">
-            <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                No Resume Available
-              </h1>
-              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
-                This applicant has not uploaded a resume yet.
+
+          {/* resume */}
+          {application?.resume_id ? (
+            <div
+              className={cn(
+                "h-full flex flex-col justify-center items-center",
+                isMobile ? "mt-4 w-full" : "",
+              )}
+            >
+              <PDFPreview url={resumeURL} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center px-8 w-full">
+              <div className="text-center">
+                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                  No Resume Available
+                </h1>
+                <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                  This applicant has not uploaded a resume yet.
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
+          )}
+        </div>
+      </PageContainer>
+    </>
   );
 }

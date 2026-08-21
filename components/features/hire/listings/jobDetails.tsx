@@ -4,7 +4,7 @@ import { JobDetails } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "@/lib/ctx-app";
 import { Job } from "@/lib/db/db.types";
-import { cn } from "@betterinternship/components";
+import { cn, PageContainer } from "@betterinternship/components";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -19,33 +19,17 @@ const JobDetailsPage = ({ job }: JobDetailsPageProps) => {
   const { isMobile } = useAppContext();
   const [exitingBack, setExitingBack] = useState(false);
 
-  const handleBack = () => {
-    setExitingBack(true);
-    router.push(`/dashboard/manage?jobId=${job.id}`);
-  };
-
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={
-          exitingBack
-            ? { scale: 0.98, filter: "blur(4px)", opacity: 0 }
-            : { scale: 1, filter: "blur(0px)", opacity: 1 }
-        }
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className={cn("py-2", isMobile ? "px-1" : "")}
-      >
-        <Card>
-          {/* Employers share to candidates too — same dialog, same endpoint,
+    <PageContainer>
+      <Card>
+        {/* Employers share to candidates too — same dialog, same endpoint,
               still a student-domain link (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D14). */}
-          <JobDetails
-            job={job}
-            actions={[<ShareJobButton key="share" job={job} />]}
-          />
-        </Card>
-      </motion.div>
-    </AnimatePresence>
+        <JobDetails
+          job={job}
+          actions={[<ShareJobButton key="share" job={job} />]}
+        />
+      </Card>
+    </PageContainer>
   );
 };
 

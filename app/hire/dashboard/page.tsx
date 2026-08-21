@@ -1,64 +1,44 @@
-// Main dashboard page - uses clean architecture with focused hooks and context
-// Wraps everything in DashboardProvider for shared state management
 "use client";
 
-import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { PausedListingsBanner } from "@/components/features/hire/paused-listings-banner";
-import { PendingVerificationBanner } from "@/components/features/hire/pending-verification-banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
   useOwnedJobs,
   useProfile,
 } from "@/hooks/use-employer-api";
-import { useMobile } from "@/hooks/use-mobile";
-import { cn } from "@betterinternship/components";
-import { Briefcase, Plus } from "lucide-react";
-import { useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
-import { HeaderTitle } from "@/components/ui/text";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState } from "react";
+import {
+  PageContainer,
+  PageHeader,
+} from "@betterinternship/components/page-header";
+import { StatusNotice } from "@betterinternship/components/status-notice";
+import { Button } from "@betterinternship/components";
+import { Pause, Plus } from "lucide-react";
 
-const SUPER_LISTING_CREATE_PATH =
-  "/ft2mkyEVxHrAJwaphVVSop3TIau0pWDq/listings/create";
 const NORMAL_LISTING_CREATE_PATH = "/listings/create";
 
 function DashboardContent() {
-  const { isMobile } = useMobile();
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const router = useRouter();
-  const superListingTapState = useRef({ count: 0, lastTapMs: 0 });
   const profile = useProfile();
   const applications = useEmployerApplications();
   const { ownedJobs, update_job, unpause_job, unpause_all_jobs, loading } =
     useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active);
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active);
+  const pausedJobs = ownedJobs.filter((job) => job.paused).length;
+  const [reEnabling, setReEnabling] = useState(false);
 
   redirectIfNotLoggedIn();
 
   const handleAddListingClick = () => {
     router.push(NORMAL_LISTING_CREATE_PATH);
-  };
-
-  const handleSecretSuperListingAccess = () => {
-    const now = Date.now();
-    const TAP_TIMEOUT_MS = 1200;
-    const REQUIRED_TAPS = 5;
-
-    if (now - superListingTapState.current.lastTapMs > TAP_TIMEOUT_MS) {
-      superListingTapState.current.count = 0;
-    }
-
-    superListingTapState.current.count += 1;
-    superListingTapState.current.lastTapMs = now;
-
-    if (superListingTapState.current.count >= REQUIRED_TAPS) {
-      superListingTapState.current.count = 0;
-      router.push(SUPER_LISTING_CREATE_PATH);
-    }
   };
 
   const handleUpdateJob = async (jobId: string, updates: Partial<Job>) => {
@@ -68,31 +48,54 @@ function DashboardContent() {
 
   if (loading || !isAuthenticated()) {
     return (
-      <ContentLayout>
+      <PageContainer>
         <Loader>Loading dashboard...</Loader>
-      </ContentLayout>
+      </PageContainer>
     );
   }
 
   return (
-    <ContentLayout
-      topSlot={
-        <PendingVerificationBanner isVerified={profile.data?.is_verified} />
-      }
-    >
-      <div
-        className={cn(
-          "flex-1 flex flex-col w-full py-4",
-          isMobile ? "px-1" : "px-4",
-        )}
+    <PageContainer>
+      <PageHeader
+        title="Job listings"
+        description="Manage your job listings here."
+        actionsClassName="self-center sm:self-auto"
       >
-        <HeaderTitle icon={Briefcase} onClick={handleSecretSuperListingAccess}>
-          Job listings
-        </HeaderTitle>
-        <PausedListingsBanner
-          jobs={ownedJobs}
-          onUnpauseAll={unpause_all_jobs}
-        />
+        <Button
+          asChild
+          size="icon"
+          className="sm:h-8 sm:w-auto sm:px-[1em] sm:py-[0.33em]"
+        >
+          <Link href={NORMAL_LISTING_CREATE_PATH} aria-label="Add listing">
+            <Plus />
+            <span className="hidden sm:inline">Add listing</span>
+          </Link>
+        </Button>
+      </PageHeader>
+      <div className="flex-1 flex flex-col">
+        {pausedJobs !== 0 && (
+          <StatusNotice
+            icon={Pause}
+            title="Paused listings"
+            description={`You have ${pausedJobs} paused listing${pausedJobs !== 1 ? "s" : ""}.`}
+            variant="warning"
+            action={
+              <Button
+                size="sm"
+                variant="outline"
+                scheme="primary"
+                disabled={reEnabling}
+                onClick={() => {
+                  setReEnabling(true);
+                  void unpause_all_jobs();
+                  setReEnabling(false);
+                }}
+              >
+                {reEnabling ? "Re-activating..." : "Re-activate all"}
+              </Button>
+            }
+          />
+        )}
         <div className="flex flex-col flex-1">
           <div>
             <div className="flex gap-4 mb-4">
@@ -118,19 +121,10 @@ function DashboardContent() {
               onAddListingClick={handleAddListingClick}
               isLoading={loading}
             />
-            {isMobile && (
-              <button
-                aria-label="Create new listing"
-                className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl"
-                onClick={handleAddListingClick}
-              >
-                <Plus className="h-5 w-5 text-white" />
-              </button>
-            )}
           </div>
         </div>
       </div>
-    </ContentLayout>
+    </PageContainer>
   );
 }
 
