@@ -64,7 +64,7 @@ function InfoGroup({
 }) {
   return (
     <section>
-      <h3 className="mb-2 text-base font-semibold text-[#061858]">{title}</h3>
+      <h3 className="mb-2 text-base font-semibold]">{title}</h3>
       <dl className="space-y-2">{children}</dl>
     </section>
   );
@@ -73,10 +73,8 @@ function InfoGroup({
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="grid gap-1 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-8">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className="text-sm font-medium text-[#061858]">
-        {displayValue(value)}
-      </dd>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium">{displayValue(value)}</dd>
     </div>
   );
 }

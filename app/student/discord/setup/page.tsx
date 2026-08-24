@@ -148,9 +148,7 @@ function DiscordSetupContent() {
           <MessageCircle className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-[#061858]">
-            Apply through Discord
-          </h1>
+          <h1 className="text-2xl font-semibold">Apply through Discord</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {listing?.title
               ? `Complete setup to apply for ${listing.title}.`
@@ -159,8 +157,8 @@ function DiscordSetupContent() {
         </div>
 
         {resumeList.length === 0 && setupState !== "success" && (
-          <div className="space-y-3 rounded-md border border-blue-100 bg-blue-50/50 p-4">
-            <p className="text-sm text-[#061858]">
+          <div className="space-y-3 rounded-md border p-4">
+            <p className="text-sm">
               Upload a resume before connecting Discord. It will be used for
               this application.
             </p>
@@ -178,7 +176,7 @@ function DiscordSetupContent() {
 
         {needsDefault && setupState !== "success" && (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-[#061858]">
+            <p className="text-sm font-medium">
               Choose the resume to use for this application:
             </p>
             {resumeList.map((resume) => (

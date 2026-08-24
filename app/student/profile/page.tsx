@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle2, Loader2, X } from "lucide-react";
+import { Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { PublicUser, Resume } from "@/lib/db/db.types";
 import { UserService } from "@/lib/api/services";
-import { Button } from "@betterinternship/components";
+import { Button, PageContainer } from "@betterinternship/components";
 import { useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
@@ -235,7 +235,6 @@ export default function ProfilePage() {
       <Button
         type="button"
         variant="outline"
-        className="sm:w-fit w-full text-xs"
         onClick={handleCancelEditing}
         disabled={saving}
       >
@@ -244,11 +243,10 @@ export default function ProfilePage() {
       </Button>
       <Button
         type="button"
-        className="sm:w-fit w-full text-xs"
         onClick={() => void handleSaveEditing()}
         disabled={saving}
       >
-        <CheckCircle2 className="h-4 w-4 mr-1" />
+        <Check className="h-4 w-4 mr-1" />
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Save</>}
       </Button>
     </div>
@@ -292,7 +290,7 @@ export default function ProfilePage() {
   if (profile.error) {
     return (
       <Card className="flex flex-col items-center justify-center max-w-md m-auto p-6 gap-4">
-        <p className="text-red-600 text-base sm:text-lg text-center">
+        <p className="text-destructive text-base sm:text-lg text-center">
           Failed to load profile: {profile.error.message}
         </p>
         <Button onClick={() => window.location.reload()}>Try Again</Button>
@@ -302,12 +300,12 @@ export default function ProfilePage() {
 
   return (
     data && (
-      <div className="relative isolate min-h-0 flex-1 overflow-y-auto bg-slate-50/70">
+      <div className="relative isolate min-h-0 flex-1 overflow-y-auto">
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
           style={{ backgroundImage: `url(${bg2.src})` }}
         />
-        <main className="relative z-10 mx-auto flex w-full max-w-[960px] flex-col gap-4 px-4 py-6 sm:gap-5 sm:px-6 sm:py-8">
+        <PageContainer className="relative z-10 mx-auto flex w-full flex-col gap-4 px-4 py-6 sm:gap-5 sm:px-6 sm:py-8">
           <ProfileHeaderCard
             profile={data}
             fileInputRef={pfpFileInputRef}
@@ -369,7 +367,7 @@ export default function ProfilePage() {
               </ProfileEditForm>
             )}
           </div>
-        </main>
+        </PageContainer>
 
         <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] max-w-[80vw] sm:mt-20">
           <PDFPreview url={resumeURL} />
