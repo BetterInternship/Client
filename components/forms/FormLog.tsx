@@ -101,6 +101,7 @@ export const FormLog = ({
         <div className="flex items-center gap-2">
           {status === "rejected" ? (
             <Badge
+              variant="solid"
               type="destructive"
               className=" gap-1 flex items-center font-medium"
             >
@@ -109,6 +110,7 @@ export const FormLog = ({
             </Badge>
           ) : status === "cancelled" ? (
             <Badge
+              variant="solid"
               type="destructive"
               className=" gap-1 flex items-center font-medium"
             >
@@ -117,6 +119,7 @@ export const FormLog = ({
             </Badge>
           ) : status === "done" ? (
             <Badge
+              variant="solid"
               type="supportive"
               className="gap-1 flex items-center font-medium"
             >
@@ -125,6 +128,7 @@ export const FormLog = ({
             </Badge>
           ) : (
             <Badge
+              variant="solid"
               type="warning"
               className="gap-1 flex items-center font-medium"
             >
@@ -146,7 +150,7 @@ export const FormLog = ({
             </div>
 
             {/* Desktop action buttons and chevron */}
-            <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 shrink-0">
               {!rejectionReason && status !== "done" && (
                 <>
                   <Button
