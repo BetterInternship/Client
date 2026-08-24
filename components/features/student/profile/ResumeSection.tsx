@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { FormInput } from "@/components/EditForm";
-import { Button } from "@betterinternship/components";
+import { Badge, Button } from "@betterinternship/components";
 import type { Resume } from "@/lib/db/db.types";
 import {
   compareResumesByUploadedAtDesc,
@@ -58,13 +58,13 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
     <div className="space-y-4">
       <div className="space-y-3">
         {loading && (
-          <div className="rounded-[0.33em] border border-blue-100 p-4 text-sm text-muted-foreground">
+          <div className="rounded-[0.33em] border p-4 text-sm text-muted-foreground">
             Loading resumes...
           </div>
         )}
 
         {!loading && sortedResumes.length === 0 && (
-          <div className="rounded-[0.33em] border border-dashed border-blue-100 p-4 text-sm text-muted-foreground">
+          <div className="rounded-[0.33em] border border-dashed p-4 text-sm text-muted-foreground">
             No resumes uploaded yet.
           </div>
         )}
@@ -101,7 +101,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
             return (
               <div
                 key={resume.id}
-                className="flex flex-col gap-3 rounded-[0.33em] border border-blue-100 p-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-[0.33em] border p-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="min-w-0 flex-1">
@@ -125,18 +125,18 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         disabled={isRenaming}
                       />
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="truncate text-sm font-semibold text-[#061858]">
+                      <div className="flex items-center gap-3">
+                        <div className="truncate text-sm font-semibold">
                           {resume.label || resume.filename || "Untitled resume"}
                         </div>
                         {isDefault && (
-                          <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          <Badge variant="solid" type="primary">
                             Default
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     )}
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-muted-foreground">
                       Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
                     </div>
                   </div>
@@ -223,7 +223,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-muted-foreground">
           You can have up to {maxAllowed} resumes.
         </span>
         <Button

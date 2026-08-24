@@ -442,9 +442,7 @@ export const ProfileEditor = forwardRef<
           >
             <div className="space-y-6">
               <section>
-                <div className="text-base font-semibold text-[#061858]">
-                  Identity
-                </div>
+                <div className="text-base font-semibold">Identity</div>
                 <div className="mt-3 space-y-3">
                   <EditFieldRow label="First Name">
                     <FormInput
@@ -482,9 +480,7 @@ export const ProfileEditor = forwardRef<
               </section>
 
               <section>
-                <div className="text-base font-semibold text-[#061858]">
-                  Education
-                </div>
+                <div className="text-base font-semibold">Education</div>
                 <div className="mt-3 flex flex-col space-y-3">
                   <EditFieldRow label="University">
                     <Autocomplete
@@ -544,9 +540,7 @@ export const ProfileEditor = forwardRef<
               </section>
 
               <section>
-                <div className="text-base font-semibold text-[#061858]">
-                  External Profiles
-                </div>
+                <div className="text-base font-semibold">External Profiles</div>
                 <div className="mt-3 flex flex-col space-y-3">
                   <EditFieldRow label="Portfolio Link">
                     <FormInput
@@ -609,8 +603,8 @@ function EditAccordionItem({
   children: ReactNode;
 }) {
   return (
-    <AccordionItem value={value} className="border-blue-100">
-      <AccordionTrigger className="px-4 py-4 text-[#061858] hover:no-underline sm:px-5">
+    <AccordionItem value={value}>
+      <AccordionTrigger className="px-4 py-4 hover:no-underline sm:px-5">
         <span className="flex items-center gap-3 text-base font-semibold">
           <span className="text-primary">{icon}</span>
           {title}
@@ -640,7 +634,9 @@ function EditFieldRow({
     <div
       className={`grid gap-1 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-8 ${className}`}
     >
-      <div className="pt-1 text-xs font-medium text-slate-500">{label}</div>
+      <div className="pt-1 text-xs font-medium text-muted-foreground">
+        {label}
+      </div>
       <div className="min-w-0">{children}</div>
     </div>
   );

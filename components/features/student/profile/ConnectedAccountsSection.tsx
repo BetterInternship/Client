@@ -52,7 +52,7 @@ export function ConnectedAccountsSection() {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="font-medium text-[#061858]">Discord</p>
+        <p className="font-medium">Discord</p>
         <p className="text-sm text-muted-foreground">
           {status.data?.linked
             ? "Connected for one-click applications."

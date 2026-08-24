@@ -39,7 +39,7 @@ export function ProfileAccordion({
       onValueChange={(value) =>
         onOpenSectionsChange(value as ProfileSectionKey[])
       }
-      className="overflow-hidden rounded-[0.33em] border border-blue-100 bg-white shadow-sm"
+      className="overflow-hidden rounded-[0.33em] border border-gray-300 bg-white"
     >
       <ProfileAccordionItem
         value="resume"
@@ -88,8 +88,8 @@ function ProfileAccordionItem({
   children: ReactNode;
 }) {
   return (
-    <AccordionItem value={value} className="border-blue-100">
-      <AccordionTrigger className="px-4 py-4 text-[#061858] hover:no-underline sm:px-5">
+    <AccordionItem value={value}>
+      <AccordionTrigger className="px-4 py-4 hover:no-underline sm:px-5">
         <span className="flex items-center gap-3 text-base font-semibold">
           <span className="text-primary">{icon}</span>
           {title}
