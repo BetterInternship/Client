@@ -1,8 +1,7 @@
 // ui for the job box or card
 
 import { useState } from "react";
-import { cn, Badge, Button } from "@betterinternship/components";
-import { Card } from "@/components/ui/card";
+import { cn, Badge, Button, Card } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -91,16 +90,12 @@ export function JobListingsBox({
 
   return (
     <div className="relative">
-      {/* <Link href={{
-          pathname: pathName(),
-          query: { jobId: job.id }
-      }}> */}
       <Card
         className={cn(
-          "flex flex-col gap-4 hover:cursor-pointer",
+          "flex flex-col gap-4 hover:cursor-pointer px-6 py-6",
           isSuperListing
             ? "super-card group relative isolate rounded-[0.33em] bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]"
-            : "hover:bg-primary/10",
+            : "hover:bg-primary/[0.035]",
           !job.is_active && !job.paused ? "opacity-70" : "",
         )}
         onClick={handleClick}
@@ -123,7 +118,7 @@ export function JobListingsBox({
             <div className="flex items-start justify-between gap-2">
               <h1
                 className={cn(
-                  "flex-1 text-base leading-snug break-words",
+                  "flex-1 text-base leading-snug wrap-break-word",
                   job.paused
                     ? "line-clamp-1 opacity-70 grayscale"
                     : "line-clamp-2 min-h-12",
@@ -180,23 +175,14 @@ export function JobListingsBox({
                   <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
                 </div>
               ) : (
-                <Badge strength={"medium"}>
+                <Badge>
                   {applicants.length} total applicant
                   {applicants.length !== 1 ? "s" : ""}
                 </Badge>
               )}
             </div>
           ) : (
-            <div
-              className={cn(
-                "flex min-h-8 flex-row items-center gap-2 rounded-sm",
-                job.paused && "opacity-70 grayscale",
-              )}
-            >
-              <Badge strength={"medium"}>
-                {applicants.length} total applicant
-                {applicants.length !== 1 ? "s" : ""}
-              </Badge>
+            <div className={cn(job.paused && "opacity-70 grayscale")}>
               <Badge
                 type={newApplicants > 0 ? "primary" : "default"}
                 variant={newApplicants > 0 ? "solid" : "outline"}
@@ -207,7 +193,6 @@ export function JobListingsBox({
           )}
         </div>
       </Card>
-      {/* </Link> */}
     </div>
   );
 }

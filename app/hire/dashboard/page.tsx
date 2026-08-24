@@ -1,7 +1,6 @@
 "use client";
 
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
-import { PausedListingsBanner } from "@/components/features/hire/paused-listings-banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
@@ -99,13 +98,13 @@ function DashboardContent() {
         <div className="flex flex-col flex-1">
           <div>
             <div className="flex gap-4 mb-4">
-              <span className="text-gray-500 pb-2">
+              <span className="text-muted-foreground">
                 <span className="text-primary font-bold">
                   {activeJobs.length}
                 </span>{" "}
                 listing{activeJobs.length !== 1 ? "s" : ""} turned on
               </span>
-              <span className="text-gray-500 pb-2">
+              <span className="text-muted-foreground">
                 <span className="text-primary font-bold">
                   {inactiveJobs.length}
                 </span>{" "}
