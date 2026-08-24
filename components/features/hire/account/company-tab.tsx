@@ -11,7 +11,7 @@ import { Camera, Edit2 } from "lucide-react";
 import { useProfile } from "@/hooks/use-employer-api";
 import { cn, Button, Badge, BoolBadge } from "@betterinternship/components";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Card } from "@/components/ui/card";
+import { Card } from "@betterinternship/components";
 import { Employer } from "@/lib/db/db.types";
 import { isValidEmail, isValidUUID } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
@@ -92,14 +92,9 @@ export function CompanyTab() {
 
   return (
     <div className="space-y-4">
-      <div
-        className={cn(
-          "bg-background py-4 rounded-lg border-gray-300 border",
-          isMobile ? "px-2" : "px-8",
-        )}
-      >
+      <Card className={cn(isMobile ? "px-2" : "px-8")}>
         <header className="flex flex-col items-start gap-2 flex-1 w-full m-auto ">
-          <div className="relative flex-shrink-0">
+          <div className="relative shrink-0">
             <MyEmployerPfp size={isMobile ? "20" : "28"} />
             <Button
               variant="outline"
@@ -139,7 +134,7 @@ export function CompanyTab() {
                 )}
               </div>
             </div>
-            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
+            <div className="flex w-full flex-row flex-wrap gap-2 shrink-0 mt-4">
               {isEditing ? (
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button
@@ -194,7 +189,7 @@ export function CompanyTab() {
             </ProfileEditForm>
           )}
         </div>
-      </div>
+      </Card>
       {!isEditing && <IomLinkCard profile={profile} />}
     </div>
   );
@@ -332,85 +327,83 @@ const ProfileEditor = forwardRef<
 
   return (
     <>
-      <Card>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
-          About
-        </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.name} />
-        </div>
-        <div className={"mb-4 flex flex-col space-y-3"}>
-          <FormInput
-            label="Company Name"
-            value={formData.name ?? ""}
-            setter={fieldSetter("name")}
-            maxLength={100}
-          />
-          <FormInput
-            label="Legal Entity Name"
-            value={formData.legal_entity_name ?? ""}
-            setter={fieldSetter("legal_entity_name")}
-            maxLength={100}
-          />
-          <FormInput
-            label="Location"
-            value={formData.location ?? ""}
-            setter={fieldSetter("location")}
-            maxLength={100}
-            required={false}
-          />
-          <FormDropdown
-            label="Industry"
-            value={formData.industry ?? ""}
-            options={industries.sort((a, b) => a.name.localeCompare(b.name))}
-            setter={fieldSetter("industry")}
-            required={false}
-          />
-        </div>
-        <label className="text-xs text-gray-400 italic mb-1 block">
-          Description
-        </label>
-        <textarea
-          value={formData.description || ""}
-          onChange={(e) => setField("description", e.target.value)}
-          placeholder="Let applicants know what they're in for..."
-          className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-          required={false}
-          maxLength={750}
+      <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+        About
+      </div>
+      <div className="flex flex-col space-y-1 mb-2">
+        <ErrorLabel value={formErrors.name} />
+      </div>
+      <div className={"mb-4 flex flex-col space-y-3"}>
+        <FormInput
+          label="Company Name"
+          value={formData.name ?? ""}
+          setter={fieldSetter("name")}
+          maxLength={100}
         />
-        <p className="text-xs text-muted-foreground text-right">
-          {(formData.description || "").length}/750 characters
-        </p>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
-          Contact Information
-        </div>
-        <div className="mb-3">
-          <ErrorLabel value={formErrors.email} />
-          <FormInput
-            label="Company Email"
-            value={formData.email ?? ""}
-            setter={fieldSetter("email")}
-          />
-        </div>
-        <div className="mb-3">
-          <ErrorLabel value={formErrors.phone_number} />
-          <FormInput
-            label="Phone Number"
-            value={formData.phone_number ?? ""}
-            setter={fieldSetter("phone_number")}
-            required={false}
-          />
-        </div>
-        <div className="mb-3">
-          <ErrorLabel value={formErrors.website} />
-          <FormInput
-            label="Website"
-            value={formData.website ?? ""}
-            setter={fieldSetter("website")}
-            required={false}
-          />
-        </div>
-      </Card>
+        <FormInput
+          label="Legal Entity Name"
+          value={formData.legal_entity_name ?? ""}
+          setter={fieldSetter("legal_entity_name")}
+          maxLength={100}
+        />
+        <FormInput
+          label="Location"
+          value={formData.location ?? ""}
+          setter={fieldSetter("location")}
+          maxLength={100}
+          required={false}
+        />
+        <FormDropdown
+          label="Industry"
+          value={formData.industry ?? ""}
+          options={industries.sort((a, b) => a.name.localeCompare(b.name))}
+          setter={fieldSetter("industry")}
+          required={false}
+        />
+      </div>
+      <label className="text-xs text-gray-400 italic mb-1 block">
+        Description
+      </label>
+      <textarea
+        value={formData.description || ""}
+        onChange={(e) => setField("description", e.target.value)}
+        placeholder="Let applicants know what they're in for..."
+        className="w-full border rounded-[0.33em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+        required={false}
+        maxLength={750}
+      />
+      <p className="text-xs text-muted-foreground text-right">
+        {(formData.description || "").length}/750 characters
+      </p>
+      <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+        Contact Information
+      </div>
+      <div className="mb-3">
+        <ErrorLabel value={formErrors.email} />
+        <FormInput
+          label="Company Email"
+          value={formData.email ?? ""}
+          setter={fieldSetter("email")}
+        />
+      </div>
+      <div className="mb-3">
+        <ErrorLabel value={formErrors.phone_number} />
+        <FormInput
+          label="Phone Number"
+          value={formData.phone_number ?? ""}
+          setter={fieldSetter("phone_number")}
+          required={false}
+        />
+      </div>
+      <div className="mb-3">
+        <ErrorLabel value={formErrors.website} />
+        <FormInput
+          label="Website"
+          value={formData.website ?? ""}
+          setter={fieldSetter("website")}
+          required={false}
+        />
+      </div>
       <br />
       <br />
     </>

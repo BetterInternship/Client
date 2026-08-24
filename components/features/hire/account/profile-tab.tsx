@@ -106,23 +106,23 @@ export function ProfileTab() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
+              <div className="space-y-2">
                 <Label>First name</Label>
                 <Input
                   value={firstName ?? ""}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Middle name</Label>
                 <Input
                   value={middleName ?? ""}
                   onChange={(e) => setMiddleName(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Last name</Label>
                 <Input
                   value={lastName ?? ""}
@@ -130,7 +130,7 @@ export function ProfileTab() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 self-end">
               <Button onClick={saveName} disabled={updateSelf.isPending}>
                 {updateSelf.isPending ? "Saving..." : "Save"}
               </Button>
@@ -145,10 +145,10 @@ export function ProfileTab() {
         )}
       </Card>
 
-      <Card className="p-5 space-y-3">
+      <Card className="p-5 flex flex-col gap-4">
         <div className="text-lg font-medium">Change password</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
+          <div className="space-y-2">
             <Label>Current password</Label>
             <Input
               type="password"
@@ -156,7 +156,7 @@ export function ProfileTab() {
               onChange={(e) => setCurrentPassword(e.target.value)}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>New password</Label>
             <Input
               type="password"
@@ -164,7 +164,7 @@ export function ProfileTab() {
               onChange={(e) => setNewPassword(e.target.value)}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Confirm new password</Label>
             <Input
               type="password"
@@ -174,10 +174,10 @@ export function ProfileTab() {
           </div>
         </div>
         {passwordError && (
-          <p className="text-sm text-destructive">{passwordError}</p>
+          <p className="text-right text-sm text-destructive">{passwordError}</p>
         )}
         {passwordSaved && (
-          <p className="text-sm text-supportive">
+          <p className="text-right text-sm text-supportive">
             Password changed successfully.
           </p>
         )}
@@ -186,6 +186,7 @@ export function ProfileTab() {
           disabled={
             changePassword.isPending || !currentPassword || !newPassword
           }
+          className="self-end"
         >
           {changePassword.isPending ? "Updating..." : "Update password"}
         </Button>
