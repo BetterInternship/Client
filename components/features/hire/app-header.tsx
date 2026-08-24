@@ -43,9 +43,9 @@ export function HireAppHeader() {
   if (isMobile && MOBILE_HIDE_ROUTES.includes(pathname)) return null;
 
   const nav: NavItem[] = [
-    { href: "/listings/create", label: "Add Listing", icon: Plus },
-    { href: "/dashboard", label: "Job listings", icon: Briefcase },
-    { href: "/help", label: "Help", icon: HelpCircle },
+    { href: "/listings/create", label: "Add listing", icon: Plus },
+    { href: "/dashboard", label: "Dashboard", icon: Briefcase },
+    { href: "/help", label: "Get help", icon: HelpCircle },
   ];
 
   const isGodActive = pathname.startsWith("/god");
@@ -64,7 +64,7 @@ export function HireAppHeader() {
       >
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-gray-500" />
-          <span>Admin</span>
+          <span>Administrator</span>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-300" />
       </button>
@@ -82,7 +82,7 @@ export function HireAppHeader() {
         }}
       >
         <ShieldCheck className="h-6! w-6!" strokeWidth={1.7} />
-        <span className="text-xs">Admin</span>
+        <span className="text-xs">Administrator</span>
       </Button>
     )
   ) : undefined;

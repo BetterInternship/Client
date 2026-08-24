@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card } from "@betterinternship/components";
 import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
 import { EmployerService } from "@/lib/api/services";
@@ -90,7 +90,7 @@ function IomLinkCardContent({ profile }: { profile: Employer }) {
   if (isLinked) {
     return (
       <Card className="flex-row items-center gap-3 px-5 py-4">
-        <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-600" />
+        <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
         <div>
           <p className="text-sm font-medium text-gray-900">
             Linked to your IOM account

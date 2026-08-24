@@ -1,7 +1,7 @@
 ﻿import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatCurrency } from "@/lib/utils";
-import { cn, Badge, BoolBadge } from "@betterinternship/components";
+import { cn, Badge, BoolBadge, Card } from "@betterinternship/components";
 import {
   AlertTriangle,
   ArrowRight,
@@ -15,7 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
@@ -199,7 +198,7 @@ export const EmployerMOA = ({
   if (!hasMoa || !university_id) return <></>;
 
   return (
-    <Badge type="supportive">
+    <Badge variant="solid" type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
       {toAbbreviation(get_university(university_id)?.name)} MOA
     </Badge>
@@ -421,10 +420,10 @@ export const JobCard = ({
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "group relative isolate overflow-hidden",
+        "px-6 py-6 group relative isolate overflow-hidden",
         selected
           ? "ring-1 ring-primary ring-offset-1"
-          : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
+          : "hover:shadow-sm cursor-pointer",
       )}
     >
       <div className="relative z-10 space-y-3">
@@ -486,8 +485,8 @@ export const MobileJobCard = ({
   const onAlert = waitlists.isWaitlisted(job.id);
 
   return (
-    <div
-      className="card hover-lift relative isolate overflow-hidden animate-fade-in p-6"
+    <Card
+      className="card relative isolate overflow-hidden animate-fade-in p-6"
       onClick={on_click}
     >
       <div className="mb-4">
@@ -496,13 +495,13 @@ export const MobileJobCard = ({
             <h3
               className={cn(
                 "font-semibold text-gray-900 mb-2 leading-tight text-lg",
-                job.hibernating ? "line-clamp-2 break-words" : "truncate",
+                job.hibernating ? "line-clamp-2 wrap-break-word" : "truncate",
               )}
             >
               {job.title}
             </h3>
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-              <Building className="w-4 h-4 flex-shrink-0" />
+              <Building className="w-4 h-4 shrink-0" />
               <span className="font-medium truncate">{job.employer?.name}</span>
             </div>
           </div>
@@ -540,7 +539,7 @@ export const MobileJobCard = ({
           className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
         />
       )}
-    </div>
+    </Card>
   );
 };
 
