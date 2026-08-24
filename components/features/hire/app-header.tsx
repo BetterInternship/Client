@@ -81,7 +81,7 @@ export function HireAppHeader() {
           void handleGodClick();
         }}
       >
-        <ShieldCheck className="!h-6 !w-6" strokeWidth={1.7} />
+        <ShieldCheck className="h-6! w-6!" strokeWidth={1.7} />
         <span className="text-xs">Admin</span>
       </Button>
     )
