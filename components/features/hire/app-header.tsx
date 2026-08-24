@@ -90,7 +90,7 @@ export function HireAppHeader() {
   return (
     <AppHeader
       portal="Recruiters"
-      brand="BetterInternship"
+      brand="Partners"
       logoPath="/BetterInternshipLogo.png"
       homeHref="/dashboard"
       nav={nav}
