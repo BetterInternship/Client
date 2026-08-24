@@ -24,7 +24,7 @@ export const HeaderTitle = () => {
       >
         <img
           src="/BetterInternshipLogo.png"
-          className="w-8 h-8 flex-shrink-0 aspect-square object-contain"
+          className="w-8 h-8 shrink-0 aspect-square object-contain"
           alt="BetterInternship logo"
         ></img>
         <span className="xl:inline-block hidden">BetterInternship</span>
