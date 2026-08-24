@@ -103,7 +103,7 @@ function LoginContent() {
   return (
     <HireAuthShell
       title="Log in"
-      description="Enter your employer account details to access the portal."
+      description="Enter your recruiter account details to access the portal."
       footer={
         <>
           Don&apos;t have an account?{" "}
@@ -134,7 +134,7 @@ function LoginContent() {
                   isMobile ? "text-lg" : "text-xl",
                 )}
               >
-                You already have a marketplace account. Login to link it.
+                You already have a recruiter account. Log in to link it.
               </span>
             </div>
             <img
