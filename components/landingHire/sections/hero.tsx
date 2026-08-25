@@ -75,7 +75,7 @@ export function HeroSection() {
                 variants={line}
                 className="inline-flex items-center gap-4 whitespace-nowrap"
               >
-                Hire interns in the{" "}
+                Hire interns in {" "}
                 <img
                   className="inline h-[1.25em]"
                   src="/landingPage/ph.png"
