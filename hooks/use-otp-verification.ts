@@ -95,6 +95,12 @@ export function useOtpVerification({
     setOtpState(value);
   }, []);
 
+  const resetOtp = useCallback(() => {
+    autoActivationAttemptRef.current = "";
+    setError("");
+    setOtpState("");
+  }, []);
+
   const startCooldown = useCallback(
     (seconds = cooldownSeconds) => {
       setIsCoolingDown(true);
@@ -217,6 +223,7 @@ export function useOtpVerification({
       onChange: setOtp,
       value: otp,
     },
+    resetOtp,
     requestOtp,
     sending,
   };

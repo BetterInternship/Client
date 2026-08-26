@@ -104,11 +104,6 @@ export const EmployerService = {
   },
 };
 
-interface EmployerUserResponse extends FetchResponse {
-  success: boolean;
-  message: string;
-}
-
 interface EmployerSelfResponse extends FetchResponse {
   user: EmployerSelf;
 }
@@ -138,20 +133,6 @@ interface EmployerTeamMemberResponse extends FetchResponse {
 }
 
 export const EmployerUserService = {
-  async requestPasswordReset(email: string) {
-    return APIClient.post<EmployerUserResponse>(
-      APIRouteBuilder("employer-users").r("forgot-password").build(),
-      { email },
-    );
-  },
-
-  async resetPassword(hash: string, newPassword: string) {
-    return APIClient.post<EmployerUserResponse>(
-      APIRouteBuilder("employer-users").r("reset-password", hash).build(),
-      { newPassword },
-    );
-  },
-
   // ── Self-service ────────────────────────────────────────────────────
 
   async getMe() {
@@ -168,13 +149,6 @@ export const EmployerUserService = {
     return APIClient.put<EmployerSelfResponse>(
       APIRouteBuilder("employer-users").r("me").build(),
       data,
-    );
-  },
-
-  async changeMyPassword(current_password: string, new_password: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer-users").r("me", "password").build(),
-      { current_password, new_password },
     );
   },
 

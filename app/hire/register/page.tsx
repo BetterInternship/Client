@@ -33,7 +33,7 @@ export default function RegisterPage() {
     <HireAuthShell
       className="max-w-xl"
       title="Register your company"
-      description="Tell us about your company and primary contact. You'll add your login details next."
+      description="Tell us about your company and primary contact. We'll verify your email next."
       footer={
         <>
           Already have an account?{" "}

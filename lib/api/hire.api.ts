@@ -27,25 +27,7 @@ export interface AuthResponse extends FetchResponse {
   login_url?: string;
 }
 
-interface EmailStatusResponse extends FetchResponse {
-  existing_user: boolean;
-  verified_user: boolean;
-}
-
-interface OnboardStatusResponse extends FetchResponse {
-  valid: boolean;
-  needs_onboarding?: boolean;
-  employer_name?: string;
-}
-
 export const EmployerAuthService = {
-  async emailStatus(email: string) {
-    return APIClient.post<EmailStatusResponse>(
-      APIRouteBuilder("auth").r("hire", "email-status").build(),
-      { email },
-    );
-  },
-
   async register(employer: Partial<Employer> | FormData) {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "register").build(),
@@ -54,10 +36,17 @@ export const EmployerAuthService = {
     );
   },
 
-  async login(email: string, password: string) {
+  async requestLoginOtp(email: string) {
     return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "login").build(),
-      { email, password },
+      APIRouteBuilder("auth").r("hire", "login", "otp", "request").build(),
+      { email },
+    );
+  },
+
+  async verifyLoginOtp(email: string, otp: string) {
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("auth").r("hire", "login", "otp", "verify").build(),
+      { email, otp },
     );
   },
 
@@ -100,19 +89,6 @@ export const EmployerAuthService = {
   async loggedIn() {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "loggedin").build(),
-    );
-  },
-
-  async getOnboardStatus(uid: string, hash: string) {
-    return APIClient.get<OnboardStatusResponse>(
-      APIRouteBuilder("auth").r("hire", "onboard", uid, hash).build(),
-    );
-  },
-
-  async onboard(uid: string, hash: string, password: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("hire", "onboard").build(),
-      { employer_user_id: uid, hash, password },
     );
   },
 

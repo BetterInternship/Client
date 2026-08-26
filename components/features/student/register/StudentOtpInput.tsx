@@ -19,6 +19,7 @@ export function StudentOtpInput({
   return (
     <InputOTP
       maxLength={OTP_LENGTH}
+      autoComplete="one-time-code"
       value={value}
       onChange={onChange}
       containerClassName={containerClassName}
