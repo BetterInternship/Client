@@ -27,11 +27,7 @@ interface MoaUniversitiesResponse extends FetchResponse {
   universityIds: string[];
 }
 
-interface IomLinkRequestResponse extends FetchResponse {
-  censoredEmail: string;
-}
-
-interface IomStartRegistrationResponse extends FetchResponse {
+interface IomStartResponse extends FetchResponse {
   url: string;
 }
 
@@ -82,15 +78,15 @@ export const EmployerService = {
     );
   },
 
-  async requestIomLink(tin: string) {
-    return APIClient.post<IomLinkRequestResponse>(
-      APIRouteBuilder("employer").r("iom-link", "request").build(),
-      { tin },
+  async startIomLogin() {
+    return APIClient.post<IomStartResponse>(
+      APIRouteBuilder("employer").r("iom-link", "start-login").build(),
+      {},
     );
   },
 
   async startIomRegistration() {
-    return APIClient.post<IomStartRegistrationResponse>(
+    return APIClient.post<IomStartResponse>(
       APIRouteBuilder("employer").r("iom-link", "start-registration").build(),
       {},
     );

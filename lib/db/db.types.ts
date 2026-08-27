@@ -49,6 +49,8 @@ export type PublicUser = Omit<
 // returns it on GET /employer/me, this just types what's already on the wire.
 export type Employer = Partial<Selectable<CareerEmployers>> & {
   tin?: string | null;
+  iom_company_id?: string | null;
+  iom_account_email?: string | null;
   // God-only: employer_users rows for this employer, joined server-side
   // (GET /god/employers only — not a real employers column).
   team_emails?: { email: string; receives_applicant_digest: boolean }[] | null;
@@ -73,8 +75,7 @@ export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 export type EmployerUserRole = "ADMIN" | "MEMBER";
 export type EmployerUserTeamStatus = "Pending" | "Disabled" | "Active";
 
-export interface EmployerSelf
-  extends Omit<PublicEmployerUser, "role"> {
+export interface EmployerSelf extends Omit<PublicEmployerUser, "role"> {
   role: EmployerUserRole;
   is_owner: boolean;
   receives_applicant_digest: boolean;
@@ -85,8 +86,7 @@ export interface EmployerSelf
   other_subscribed_recipients: number;
 }
 
-export interface EmployerTeamMember
-  extends Omit<PrivateEmployerUser, "role"> {
+export interface EmployerTeamMember extends Omit<PrivateEmployerUser, "role"> {
   role: EmployerUserRole;
   is_owner: boolean;
   receives_applicant_digest: boolean;

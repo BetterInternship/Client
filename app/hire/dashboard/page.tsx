@@ -21,6 +21,7 @@ import {
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Button } from "@betterinternship/components";
 import { Pause, Plus } from "lucide-react";
+import { IomPartnershipCta } from "@/components/features/hire/iom-partnership-cta";
 
 const NORMAL_LISTING_CREATE_PATH = "/listings/create";
 const MAGIC_LINK_NEXT_PATHS = new Set([
@@ -75,7 +76,7 @@ function MagicLinkContinuation({
 }
 
 function DashboardContent() {
-  const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
+  const { isAuthenticated, redirectIfNotLoggedIn, user } = useAuthContext();
   const router = useRouter();
   const profile = useProfile();
   const applications = useEmployerApplications();
@@ -107,10 +108,15 @@ function DashboardContent() {
 
   return (
     <PageContainer>
+      {profile.data && (
+        <IomPartnershipCta
+          profile={profile.data}
+          recruiterEmail={user?.email}
+        />
+      )}
       <PageHeader
         title="Job listings"
-        description="Manage your job listings here."
-        actionsClassName="self-center sm:self-auto"
+        actionsClassName="self-center"
       >
         <Button
           asChild

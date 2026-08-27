@@ -22,7 +22,6 @@ import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { EmployerService } from "@/lib/api/services";
-import { IomLinkCard } from "@/components/features/hire/iom-link-card";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
@@ -190,7 +189,6 @@ export function CompanyTab() {
           )}
         </div>
       </Card>
-      {!isEditing && <IomLinkCard profile={profile} />}
     </div>
   );
 }
