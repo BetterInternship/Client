@@ -1,6 +1,6 @@
 "use client";
 
-import ContentLayout from "@/components/features/hire/content-layout";
+import { PageContainer } from "@betterinternship/components/page-header";
 import JobHeader from "@/components/features/hire/dashboard/JobHeader";
 import JobDetailsPage from "@/components/features/hire/listings/jobDetails";
 import { Loader } from "@/components/ui/loader";
@@ -53,14 +53,14 @@ function JobDetailsPageRouteContent() {
 
   if (loading || !jobData) {
     return (
-      <ContentLayout>
+      <PageContainer>
         <Loader>Loading listing information...</Loader>
-      </ContentLayout>
+      </PageContainer>
     );
   }
 
   return (
-    <ContentLayout className="!p-0">
+    <div className="flex-1 flex justify-center">
       <div className="w-full h-full">
         <JobHeader
           job={jobData}
@@ -71,6 +71,6 @@ function JobDetailsPageRouteContent() {
           <JobDetailsPage job={jobData} />
         </div>
       </div>
-    </ContentLayout>
+    </div>
   );
 }

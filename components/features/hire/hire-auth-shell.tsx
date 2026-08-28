@@ -98,10 +98,8 @@ export function HireAuthShell({
           </div>
         </aside>
 
-        <main className="relative flex h-full min-h-0 w-full items-center overflow-y-auto border-gray-300 bg-white px-5 py-10 lg:col-span-2 lg:overflow-hidden lg:border-l lg:px-8 xl:px-12">
-          <div
-            className={cn("relative z-10 mx-auto w-full max-w-md", className)}
-          >
+        <main className="flex w-full items-center border-gray-300 bg-white px-5 py-10 lg:col-span-2 lg:min-h-screen lg:border-l lg:px-8 xl:px-12">
+          <div className={cn("mx-auto w-full max-w-md", className)}>
             <div className="mb-8 flex items-center gap-2">
               <Image
                 src="/BetterInternshipLogo.png"
@@ -109,7 +107,15 @@ export function HireAuthShell({
                 width={26}
                 height={26}
               />
-              <span className="font-bold text-gray-900">BetterInternship</span>
+              <span className="font-display font-bold text-gray-900">
+                BetterInternship
+              </span>
+              <span className="mx-1 text-gray-300" aria-hidden="true">
+                |
+              </span>
+              <span className="font-display text-sm font-medium text-gray-500">
+                Recruiter
+              </span>
             </div>
             <div className="mb-7 space-y-2">
               {headerBefore}

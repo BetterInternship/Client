@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
-import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
+import { HireOtpInput } from "@/components/features/hire/hire-otp-input";
 import { Loader } from "@/components/ui/loader";
 import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { EmployerAuthService } from "@/lib/api/hire.api";
@@ -20,7 +20,6 @@ export default function VerifyHireRegistrationPage() {
   const { loading, redirectIfLoggedIn, refreshAuthentication, register } =
     useAuthContext();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [registrationProfile, setRegistrationProfile] =
     useState<RegistrationProfile | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
@@ -92,11 +91,6 @@ export default function VerifyHireRegistrationPage() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (registrationProfile && !accountCreated) {
-      if (password.length < 8) {
-        setRegistrationError("Password must be at least 8 characters.");
-        return;
-      }
-
       const formData = new FormData();
       for (const [key, value] of Object.entries(registrationProfile)) {
         if (
@@ -107,8 +101,6 @@ export default function VerifyHireRegistrationPage() {
           formData.append(key, String(value));
       }
       formData.append("email", normalizedEmail);
-      formData.append("password", password);
-
       setIsRegistering(true);
       try {
         const response = await register(formData);
@@ -151,7 +143,7 @@ export default function VerifyHireRegistrationPage() {
       title="Verify your email"
       description={
         registrationProfile
-          ? "Choose your login details, then we'll send a six-digit code to activate your account."
+          ? "Enter your work email and we'll send a six-digit code to activate your account."
           : "Enter your work email and we'll send a six-digit code to activate your employer account."
       }
       headerBefore={
@@ -181,31 +173,9 @@ export default function VerifyHireRegistrationPage() {
           placeholder="you@company.com"
         />
 
-        {registrationProfile && (
-          <div>
-            <FormInput
-              label="Password"
-              type="password"
-              value={password}
-              setter={(value) => {
-                setPassword(value);
-                setRegistrationError("");
-              }}
-              disabled={accountCreated}
-              maxLength={100}
-            />
-            <span className="mt-1 block text-xs text-muted-foreground">
-              Use at least 8 characters.
-            </span>
-          </div>
-        )}
-
         {hasSentCode && (
-          <div className="space-y-4 rounded-[0.5em] border border-primary/20 p-4">
-            <p className="mb-3 text-center text-sm font-medium text-gray-700">
-              Enter the 6-digit code sent to {email.trim()}.
-            </p>
-            <StudentOtpInput {...otpInputProps} />
+          <div className="space-y-4">
+            <HireOtpInput {...otpInputProps} autoFocus disabled={activating} />
             <div className="text-center">
               <button
                 type="button"
@@ -241,8 +211,7 @@ export default function VerifyHireRegistrationPage() {
               sending ||
               isRegistering ||
               activating ||
-              (hasSentCode && otpInputProps.value.length < 6) ||
-              (!!registrationProfile && !accountCreated && password.length < 8)
+              (hasSentCode && otpInputProps.value.length < 6)
             }
           >
             {isRegistering

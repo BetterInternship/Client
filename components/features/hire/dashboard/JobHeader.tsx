@@ -179,7 +179,10 @@ export default function JobHeader({
             variant="ghost"
             size="sm"
             disabled={saving}
-            className="hover:bg-primary/10 gap-1"
+            className={cn(
+              "hover:bg-primary/10 gap-1",
+              pathname === "/listings/edit" ? "bg-primary/10 text-primary" : "",
+            )}
           >
             <Edit size={16} />
             <span>Edit</span>
@@ -200,8 +203,8 @@ export default function JobHeader({
   );
 
   return (
-    <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
-      <div className="mx-auto px-4 md:px-6 py-3">
+    <div className="sticky top-0 z-30 border-b border-gray-200 bg-white">
+      <div className="mx-auto max-w-7xl px-6 py-3">
         {isMobile ? (
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">

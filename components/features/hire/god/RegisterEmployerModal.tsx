@@ -84,7 +84,7 @@ export function RegisterEmployerModal({
       if (result?.error) {
         return toast.error(`Registration failed: ${result.error}`);
       }
-      toast.success(`"${dba}" registered. Check email for password.`);
+      toast.success(`"${dba}" registered. Check email for a sign-in link.`);
       onClose();
     } catch (e: any) {
       toast.error(e?.message ?? "Registration failed.");

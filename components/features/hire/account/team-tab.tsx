@@ -322,10 +322,20 @@ function TeamMemberRow({
       <TableCell>
         <div className="font-medium flex items-center gap-2 flex-wrap">
           {name}
-          {member.is_owner && <Badge type="accent">Owner</Badge>}
-          {member.status === "Pending" && <Badge type="warning">Pending</Badge>}
+          {member.is_owner && (
+            <Badge variant="solid" type="primary">
+              Owner
+            </Badge>
+          )}
+          {member.status === "Pending" && (
+            <Badge variant="solid" type="warning">
+              Pending
+            </Badge>
+          )}
           {member.status === "Disabled" && (
-            <Badge type="destructive">Deactivated</Badge>
+            <Badge variant="solid" type="destructive">
+              Deactivated
+            </Badge>
           )}
         </div>
         <div className="text-xs text-muted-foreground">{member.email}</div>

@@ -47,34 +47,42 @@ export const UI_STATUS_MAP = new Map<string, StatusProps>([
     "pending",
     {
       icon: Clock,
-      bgColor: "bg-orange-700/10",
-      fgColor: "text-orange-700",
+      bgColor: "bg-warning",
+      fgColor: "text-warning-foreground",
     },
   ],
   [
     "shortlisted",
-    { icon: Star, bgColor: "bg-amber-700/10", fgColor: "text-amber-700" },
+    { icon: Star, bgColor: "bg-primary", fgColor: "text-primary-foreground" },
   ],
   [
     "accepted",
-    { icon: Check, bgColor: "bg-green-700/10", fgColor: "text-green-700" },
+    {
+      icon: Check,
+      bgColor: "bg-supportive",
+      fgColor: "text-supportive-foreground",
+    },
   ],
   [
     "deleted",
     {
       icon: Trash,
-      bgColor: "bg-stone-700/10",
-      fgColor: "text-stone-700",
+      bgColor: "bg-muted",
+      fgColor: "text-muted-foreground",
       destructive: true,
     },
   ],
   [
     "rejected",
-    { icon: Ban, bgColor: "bg-red-700/10", fgColor: "text-red-700" },
+    {
+      icon: Ban,
+      bgColor: "bg-destructive",
+      fgColor: "text-destructive-foreground",
+    },
   ],
   [
     "archived",
-    { icon: Archive, bgColor: "bg-stone-700/10", fgColor: "text-stone-700" },
+    { icon: Archive, bgColor: "bg-muted", fgColor: "text-muted-foreground" },
   ],
 ]);
 

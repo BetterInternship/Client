@@ -47,7 +47,9 @@ export default function StatusBadge({ statusId, className }: StatusBadgeProps) {
       variant="outline"
       className={cn(
         "h-full w-full justify-start gap-3 border px-2 py-1",
-        STATUS_COLOR_CLASSES[filterKey],
+        status.bgColor,
+        status.fgColor,
+        `hover:${status.bgColor}`,
         className,
       )}
     >

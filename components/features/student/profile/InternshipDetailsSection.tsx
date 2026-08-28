@@ -42,10 +42,8 @@ export function InternshipDetailsSection({ profile }: { profile: PublicUser }) {
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="grid gap-1 py-1.5 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-8">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className="text-sm font-medium text-[#061858]">
-        {displayValue(value)}
-      </dd>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium">{displayValue(value)}</dd>
     </div>
   );
 }
@@ -53,7 +51,7 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 function PillRow({ label, values }: { label: string; values: string[] }) {
   return (
     <div className="grid gap-1 py-1.5 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-8">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd>
         {values.length ? (
           <div className="flex flex-wrap gap-1.5">
@@ -62,7 +60,7 @@ function PillRow({ label, values }: { label: string; values: string[] }) {
             ))}
           </div>
         ) : (
-          <span className="text-sm font-medium text-[#061858]">{"\u2014"}</span>
+          <span className="text-sm font-medium">{"\u2014"}</span>
         )}
       </dd>
     </div>

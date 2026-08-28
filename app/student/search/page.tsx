@@ -31,7 +31,6 @@ import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
-import { motion, AnimatePresence } from "framer-motion";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";

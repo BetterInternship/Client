@@ -69,7 +69,7 @@ export const TabGroup = ({
 
   return (
     <>
-      <div className="flex flex-row items-start gap-1 bg-white w-fit h-fit p-1 z-50 rounded-md border-2">
+      <div className="flex flex-row items-start gap-1 bg-white w-fit h-fit p-1 z-50 rounded-[0.33em] border-2">
         {Children.map(children, (child) => {
           if (!React.isValidElement(child)) return null;
           const name = child.props?.name ?? "No name";
@@ -82,7 +82,7 @@ export const TabGroup = ({
               variant="ghost"
               role="tab"
               aria-selected={selected}
-              className="relative px-5 py-4 text-primary aria-selected:text-white aria-selected:bg-primary w-fit rounded-s"
+              className="relative px-5 py-4 text-primary aria-selected:text-white aria-selected:bg-primary w-fit rounded-[0.33em]"
               onClick={() => setActive(name)}
             >
               <span className="flex flex-row items-center text-xs gap-1">

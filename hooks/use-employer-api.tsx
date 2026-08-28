@@ -336,18 +336,6 @@ export function useUpdateSelf() {
   });
 }
 
-export function useChangeMyPassword() {
-  return useMutation({
-    mutationFn: ({
-      currentPassword,
-      newPassword,
-    }: {
-      currentPassword: string;
-      newPassword: string;
-    }) => EmployerUserService.changeMyPassword(currentPassword, newPassword),
-  });
-}
-
 export function useUpdateMyNotifications() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -445,4 +433,3 @@ export function useUpdateMemberNotifications() {
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
 }
-

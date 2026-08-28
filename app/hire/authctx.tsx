@@ -5,7 +5,6 @@ import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { AuthResponse, EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
-import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 
@@ -17,13 +16,10 @@ interface IAuthContext {
   proxy: string;
   loading: boolean;
   register: (employer: Partial<Employer> | FormData) => Promise<AuthResponse>;
-  verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
-  login: (email: string, password: string) => Promise<AuthResponse>;
+  requestLoginOtp: (email: string) => Promise<AuthResponse>;
+  verifyLoginOtp: (email: string, otp: string) => Promise<AuthResponse>;
   loginAs: (employer_id: string) => Promise<AuthUser | null>;
   exitProxy: () => Promise<AuthUser | null>;
-  emailStatus: (
-    email: string,
-  ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
   refreshAuthentication: () => Promise<AuthUser | null>;
@@ -105,8 +101,12 @@ export const AuthContextProvider = ({
     return response;
   };
 
-  const login = async (email: string, password: string) => {
-    const response = await EmployerAuthService.login(email, password);
+  const requestLoginOtp = async (email: string) => {
+    return EmployerAuthService.requestLoginOtp(email);
+  };
+
+  const verifyLoginOtp = async (email: string, otp: string) => {
+    const response = await EmployerAuthService.verifyLoginOtp(email, otp);
     if (!response.success || !response.user) return response;
 
     await Promise.all([
@@ -160,11 +160,6 @@ export const AuthContextProvider = ({
     return response.user;
   };
 
-  const emailStatus = async (email: string) => {
-    const response = await EmployerAuthService.emailStatus(email);
-    return response;
-  };
-
   const logout = async () => {
     await EmployerAuthService.logout();
     queryClient.clear();
@@ -203,16 +198,12 @@ export const AuthContextProvider = ({
         user,
         god,
         proxy,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
         register,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        login,
+        requestLoginOtp,
+        verifyLoginOtp,
         loginAs,
         exitProxy,
         loading,
-        emailStatus,
         logout,
         refreshAuthentication,
         isAuthenticated: () => isAuthenticated,
