@@ -606,11 +606,12 @@ export const useModalRegistry = () => {
               onClose={() => close("iom-partnership")}
             />,
             {
-              title: "Do you have an existing Partners account?",
+              title:
+                "Has your company partnered with universities through our Partnership Portal?",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
-              panelClassName: "sm:max-w-4xl",
+              showHeaderDivider: false,
+              panelClassName: "sm:max-w-5xl",
             },
           ),
         close: () => close("iom-partnership"),

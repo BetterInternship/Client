@@ -45,43 +45,47 @@ export function IomPartnershipModalContent({
 
   return (
     <>
+      <p className="mb-5 text-sm leading-6 text-muted-foreground">
+        Companies can sign MOAs with universities directly through
+        moa.betterinternship.com.
+      </p>
       <div className="grid gap-5 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => void openIom(() => EmployerService.startIomLogin())}
-          disabled={isPending}
-          className="group min-h-72 rounded-[0.33em] border border-gray-200 p-7 text-left transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Link2 className="mb-8 h-8 w-8 text-primary" />
-          <p className="text-lg font-semibold text-gray-900">
-            I already have a Partners account
-          </p>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Sign in to securely connect your existing account.
-          </p>
-          <span className="mt-8 inline-flex items-center gap-1 text-sm font-medium text-primary">
-            {isPending ? "Opening..." : "Connect account"}
-            <ArrowRight className="h-4 w-4" />
-          </span>
-        </button>
         <button
           type="button"
           onClick={() =>
             void openIom(() => EmployerService.startIomRegistration())
           }
           disabled={isPending}
-          className="group min-h-72 rounded-[0.33em] border border-gray-200 p-7 text-left transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+          className="group flex min-h-72 cursor-pointer flex-col rounded-[0.33em] border border-gray-200 p-7 text-left transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Building2 className="mb-8 h-8 w-8 text-primary" />
+          <Building2 className="mb-8 h-10 w-10 text-primary" />
           <p className="text-lg font-semibold text-gray-900">
-            I need to create a Partners account
+            This is our first time.
           </p>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             Set up your company account and prepare to partner with
             universities.
           </p>
-          <span className="mt-8 inline-flex items-center gap-1 text-sm font-medium text-primary">
+          <span className="mt-auto inline-flex items-center gap-1 pt-8 text-sm font-medium text-primary">
             {isPending ? "Opening..." : "Create account"}
+            <ArrowRight className="h-4 w-4" />
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => void openIom(() => EmployerService.startIomLogin())}
+          disabled={isPending}
+          className="group flex min-h-72 cursor-pointer flex-col rounded-[0.33em] border border-gray-200 p-7 text-left transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Link2 className="mb-8 h-10 w-10 text-primary" />
+          <p className="text-lg font-semibold text-gray-900">
+            We've signed MOAs through BetterInternship
+          </p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Connect our existing MOAs on moa.betterinternship.com.
+          </p>
+          <span className="mt-auto inline-flex items-center gap-1 pt-8 text-sm font-medium text-primary">
+            {isPending ? "Opening..." : "Connect account"}
             <ArrowRight className="h-4 w-4" />
           </span>
         </button>
