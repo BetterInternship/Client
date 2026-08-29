@@ -149,6 +149,7 @@ const BasicStep = ({
               })
             }
             fallback="Select a category"
+            className="w-fit"
           />
         </div>
       </Card>
