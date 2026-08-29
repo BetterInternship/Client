@@ -112,7 +112,7 @@ export const BasicStepIllustration: React.FC<IllustrationProps> = ({
             y="-78"
             width="16"
             height="10"
-            className="fill-primary/30 stroke-foreground"
+            className="fill-muted stroke-foreground"
             strokeWidth="2.5"
           />
           {/* Eraser */}
