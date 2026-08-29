@@ -1,7 +1,6 @@
 "use client";
 
-import { Button, Card, CardHeader } from "@betterinternship/components";
-import { InfoCard } from "@/components/ui/card";
+import { Button } from "@betterinternship/components";
 import { FileUp, CheckCircle2, Upload, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { usePostHog } from "@posthog/react";
