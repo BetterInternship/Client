@@ -34,7 +34,7 @@ export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
           </div>
           <p className="text-xs text-muted-foreground -mt-1">
             Describe the role, tasks, and any requirements (course, skills,
-            qualifications). Add a "Requirements:" heading at the end if needed.
+            qualifications).
           </p>
           <div className="relative">
             <MDXEditor
