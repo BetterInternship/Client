@@ -148,11 +148,6 @@ const EditJobPage = ({
       return;
     }
 
-    if (!formData.requirements?.trim()) {
-      alert("Job requirements is required");
-      return;
-    }
-
     if (isSuperListing && !challengeTitle.trim()) {
       alert("Challenge title is required");
       return;
@@ -161,7 +156,7 @@ const EditJobPage = ({
     const edited_job: UpdateJobChallengeListingPayload = {
       title: formData.title,
       description: formData.description ?? "",
-      requirements: formData.requirements ?? "",
+      requirements: null,
       location: formData.location ?? profile.data?.location ?? "",
       allowance: formData.allowance,
       salary: formData.allowance === 0 ? formData.salary : undefined,
@@ -190,7 +185,11 @@ const EditJobPage = ({
 
   useEffect(() => {
     if (job) {
-      setFields(job);
+      const merged =
+        job.requirements?.trim()
+          ? `${job.description ?? ""}\n\n### Requirements\n${job.requirements}`.trim()
+          : (job.description ?? "");
+      setFields({ ...job, description: merged, requirements: null } as Job);
       setChallengeTitle(job.challenge?.title ?? "");
       setChallengeDescription(job.challenge?.description ?? "");
     }
@@ -202,7 +201,7 @@ const EditJobPage = ({
         id: formData.id,
         title: formData.title ?? "",
         description: formData.description ?? "",
-        requirements: formData.requirements ?? "",
+        requirements: null,
         location: formData.location ?? "",
         allowance: formData.allowance ?? undefined,
         salary: formData.salary ?? null,
@@ -234,7 +233,6 @@ const EditJobPage = ({
       !formData.title?.trim() ||
       !formData.location?.trim() ||
       !formData.description?.trim() ||
-      !formData.requirements?.trim() ||
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
@@ -246,7 +244,6 @@ const EditJobPage = ({
     formData.title,
     formData.location,
     formData.description,
-    formData.requirements,
     formData.allowance,
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
