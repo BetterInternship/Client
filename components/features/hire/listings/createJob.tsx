@@ -5,8 +5,6 @@ import {
   PageContainer,
   PageHeader,
 } from "@betterinternship/components";
-import { Input } from "@betterinternship/components";
-import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
 import { CreateJobChallengeListingPayload, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -14,12 +12,12 @@ import { useFormData } from "@/lib/form-data";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
-import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from "lucide-react";
 import { cn } from "@betterinternship/components";
 import { BasicStep } from "./create-job-steps/BasicStep";
 import { SetupStep } from "./create-job-steps/SetupStep";
 import { DetailsStep } from "./create-job-steps/DetailsStep";
+import { useModalRegistry } from "@/components/modals/modal-registry";
 
 interface CreateJobPageProps {
   createJob?: (job: Partial<Job>) => Promise<any>;
@@ -34,7 +32,6 @@ const CreateJobPage = ({
 }: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
   const [isMissing, setMissing] = useState(false);
-  const [step, setStep] = useState(0);
   const [challengeTitle, setChallengeTitle] = useState("");
   const [challengeDescription, setChallengeDescription] = useState("");
   const { formData, setField, fieldSetter } = useFormData<Job>();
@@ -81,11 +78,7 @@ const CreateJobPage = ({
       })
       .filter(Boolean) ?? [];
 
-  const {
-    open: openAlertModal,
-    close: closeAlertModal,
-    Modal: AlertModal,
-  } = useModal("alert-modal", { showCloseButton: false });
+  const registry = useModalRegistry();
 
   const listingInternshipPreferences = () => ({
     internship_types: formData.internship_preferences?.internship_types,
@@ -112,10 +105,6 @@ const CreateJobPage = ({
 
     if (!formData.description?.trim()) {
       missingFields.push("Description");
-    }
-
-    if (!formData.requirements?.trim()) {
-      missingFields.push("Requirements");
     }
 
     if (formData.internship_preferences?.internship_types === null) {
@@ -158,7 +147,7 @@ const CreateJobPage = ({
     const job: Partial<Job> = {
       title: formData.title,
       description: formData.description ?? "",
-      requirements: formData.requirements ?? "",
+      requirements: null,
       location: formData.location ?? profile.data?.location ?? "",
       allowance: formData.allowance,
       salary: formData.allowance === 0 ? formData.salary : undefined,
@@ -212,7 +201,6 @@ const CreateJobPage = ({
       !formData.title?.trim() ||
       !formData.location?.trim() ||
       !formData.description?.trim() ||
-      !formData.requirements?.trim() ||
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
@@ -228,7 +216,6 @@ const CreateJobPage = ({
     formData.title,
     formData.location,
     formData.description,
-    formData.requirements,
     formData.allowance,
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
@@ -241,44 +228,6 @@ const CreateJobPage = ({
     isSuperListing,
   ]);
 
-  // step count
-  const totalSteps = 3;
-
-  const isBasicValid =
-    !!formData.title?.trim() &&
-    !!formData.location?.trim() &&
-    !!(
-      formData.internship_preferences?.job_category_ids &&
-      (Array.isArray(formData.internship_preferences?.job_category_ids)
-        ? (formData.internship_preferences?.job_category_ids as any).length > 0
-        : true)
-    );
-
-  const isSetupValid =
-    !!formData.internship_preferences?.internship_types?.length &&
-    !!formData.internship_preferences?.job_commitment_ids?.length &&
-    !!formData.internship_preferences?.job_setup_ids?.length &&
-    formData.allowance !== undefined &&
-    !payFreqMissing &&
-    !(
-      formData.internship_preferences?.expected_start_date !== undefined &&
-      formData.internship_preferences?.expected_start_date !== null &&
-      formData.internship_preferences?.expected_start_date <= 0
-    );
-
-  const canGoNext =
-    step === 0 ? isBasicValid : step === 1 ? isSetupValid : true;
-
-  const isLastStep = step === totalSteps - 1;
-
-  const handleNext = () => {
-    if (step < totalSteps - 1 && canGoNext) setStep((s) => s + 1);
-  };
-
-  const handleBack = () => {
-    if (step > 0) setStep((s) => s - 1);
-  };
-
   return (
     <>
       {/* Header */}
@@ -289,14 +238,9 @@ const CreateJobPage = ({
         )}
       >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center py-4">
-          <div className="flex gap-4 items-center">
-            <PageHeader
-              title={`${isSuperListing ? "Create New Super Listing" : "Create new listing"}`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {totalSteps > 1 ? `Step ${step + 1} of ${totalSteps}` : undefined}
-            </span>
-          </div>
+          <PageHeader
+            title={`${isSuperListing ? "Create New Super Listing" : "Create new listing"}`}
+          />
 
           <div className="flex gap-3 items-center">
             {/* Desktop actions */}
@@ -304,210 +248,118 @@ const CreateJobPage = ({
               <>
                 <Button
                   variant="outline"
-                  onClick={openAlertModal}
+                  onClick={() =>
+                    registry.warning.open({
+                      icon: TriangleAlert,
+                      iconColor: "text-primary",
+                      title: "Are you sure you want to cancel?",
+                      message: "All unsaved changes will be lost.",
+                      primaryAction: {
+                        label: "Continue Editing",
+                        onClick: () => {},
+                      },
+                      secondaryAction: {
+                        label: "Discard Listing",
+                        onClick: () => router.push("/dashboard"),
+                      },
+                      panelClassName: "sm:max-w-md",
+                    })
+                  }
                   disabled={creating}
                 >
                   Cancel
                 </Button>
-                {step > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={handleBack}
-                    disabled={creating}
-                  >
-                    Back
-                  </Button>
-                )}
-                {isLastStep ? (
-                  <Button
-                    disabled={creating || isMissing}
-                    onClick={handleSaveEdit}
-                    className="flex items-center"
-                  >
-                    {creating ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Publishing...
-                      </>
-                    ) : isSuperListing ? (
-                      "Publish Super Listing"
-                    ) : (
-                      "Publish Listing"
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleNext}
-                    disabled={creating || !canGoNext}
-                    className="flex items-center"
-                  >
-                    Next
-                  </Button>
-                )}
-              </>
-            ) : null}
-          </div>
-        </div>
-        {/* Progress bar */}
-        <div className="h-0.5 w-full">
-          <div
-            className="h-0.5 rounded-[0.33em] bg-primary transition-all duration-300"
-            style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Mobile fixed footer */}
-      {isMobile && (
-        <div className="bg-white border-t border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50">
-          <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={openAlertModal}
-              disabled={creating}
-              className="h-10"
-            >
-              Cancel
-            </Button>
-            <div className="flex gap-3">
-              {step > 0 && (
                 <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={creating || step < 1 || step > totalSteps}
-                  className="h-10"
-                >
-                  Back
-                </Button>
-              )}
-              {isLastStep ? (
-                <Button
-                  disabled={creating || isMissing || step >= totalSteps}
+                  disabled={creating || isMissing}
                   onClick={handleSaveEdit}
-                  className="flex items-center h-10"
+                  className="flex items-center"
                 >
                   {creating ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Publishing...
                     </>
+                  ) : isSuperListing ? (
+                    "Publish Super Listing"
                   ) : (
-                    "Publish"
+                    "Publish Listing"
                   )}
                 </Button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile fixed footer - publish only */}
+      {isMobile && (
+        <div className="bg-white border-t border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50">
+          <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() =>
+                registry.warning.open({
+                  icon: TriangleAlert,
+                  iconColor: "text-primary",
+                  title: "Are you sure you want to cancel?",
+                  message: "All unsaved changes will be lost.",
+                  primaryAction: {
+                    label: "Continue Editing",
+                    onClick: () => {},
+                  },
+                  secondaryAction: {
+                    label: "Discard Listing",
+                    onClick: () => router.push("/dashboard"),
+                  },
+                  panelClassName: "sm:max-w-md",
+                })
+              }
+              disabled={creating}
+              className="h-10"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={creating || isMissing}
+              onClick={handleSaveEdit}
+              className="flex items-center h-10"
+            >
+              {creating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Publishing...
+                </>
               ) : (
-                <Button
-                  onClick={handleNext}
-                  disabled={creating || !canGoNext}
-                  className="flex items-center h-10"
-                >
-                  Next
-                </Button>
+                "Publish"
               )}
-            </div>
+            </Button>
           </div>
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - one-page stacked Cards */}
       <PageContainer className={cn("mt-20", isMobile ? "pb-20" : "")}>
-        {step === 0 && (
-          <>
-            {isSuperListing && (
-              <div
-                className={cn(
-                  "border border-gray-200 rounded-[0.33em] bg-yellow-50/50 mb-6 p-6 space-y-4",
-                  isMobile ? "px-4" : "px-6",
-                )}
-              >
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Challenge Title
-                      </span>
-                      <span className="text-destructive text-xs">*</span>
-                    </div>
-                    <Input
-                      value={challengeTitle}
-                      onChange={(e) => setChallengeTitle(e.target.value)}
-                      className="text-base font-medium h-10"
-                      placeholder="Enter challenge title..."
-                      maxLength={120}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground text-right">
-                      {challengeTitle.length}/120 characters
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Challenge Description
-                      </span>
-                      <span className="text-destructive text-xs">*</span>
-                    </div>
-                    <Textarea
-                      value={challengeDescription}
-                      onChange={(e) => setChallengeDescription(e.target.value)}
-                      className="text-sm min-h-[120px]"
-                      placeholder="Describe the challenge submission expected from applicants..."
-                      maxLength={4000}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground text-right">
-                      {challengeDescription.length}/4000 characters
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            <BasicStep
-              formData={formData}
-              fieldSetter={fieldSetter}
-              setField={setField}
-              categoryOptions={category_items as any}
-              step={1}
-              totalSteps={totalSteps}
-            />
-          </>
-        )}
-
-        {step === 1 && (
+        <div className="space-y-24">
+          <BasicStep
+            formData={formData}
+            fieldSetter={fieldSetter}
+            setField={setField}
+            categoryOptions={category_items as any}
+            isSuperListing={isSuperListing}
+            challengeTitle={challengeTitle}
+            challengeDescription={challengeDescription}
+            setChallengeTitle={setChallengeTitle}
+            setChallengeDescription={setChallengeDescription}
+          />
           <SetupStep
             formData={formData}
             setField={setField}
             fieldSetter={fieldSetter}
             job_pay_freq={job_pay_freq as any}
           />
-        )}
-
-        {step === 2 && <DetailsStep formData={formData} setField={setField} />}
-      </PageContainer>
-      <AlertModal>
-        <div className="p-8">
-          <div className="mb-8 flex flex-col items-center justify-center text-center">
-            <TriangleAlert className="text-primary h-8 w-8 mb-4" />
-            <div className="flex flex-col items-center">
-              <h3 className="text-lg">Are you sure you want to cancel?</h3>
-              <p className="text-gray-500 text-sm">
-                All unsaved changes will be lost.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-center gap-6">
-            <Button
-              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-              onClick={() => {
-                router.push(`/dashboard`);
-              }}
-            >
-              Discard Listing
-            </Button>
-            <Button onClick={closeAlertModal}>Continue Editing</Button>
-          </div>
+          <DetailsStep formData={formData} setField={setField} />
         </div>
-      </AlertModal>
+      </PageContainer>
     </>
   );
 };
