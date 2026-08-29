@@ -44,7 +44,7 @@ export const SetupStep = ({
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
             <span className="text-xs font-medium text-muted-foreground">
-              Are you hiring credited and/or voluntary interns?
+              What types of interns are you searching for?
             </span>
             <span className="text-destructive text-xs">*</span>
           </div>
@@ -78,12 +78,8 @@ export const SetupStep = ({
               />
               <div>
                 <Label className="text-xs font-medium text-gray-900">
-                  Credited Interns (Practicum)
+                  Credited (Practicum)
                 </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Required by schools (300-600 hours) and needs Memorandum of
-                  Agreement (MOA) from university
-                </p>
               </div>
             </div>
             <div
@@ -115,12 +111,8 @@ export const SetupStep = ({
               />
               <div>
                 <Label className="text-xs font-medium text-gray-900">
-                  Voluntary Interns
+                  Voluntary
                 </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Flexible schedule, available for hire anytime, and work is
-                  usually on top of academic load
-                </p>
               </div>
             </div>
           </div>
