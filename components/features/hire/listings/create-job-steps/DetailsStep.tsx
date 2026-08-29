@@ -5,6 +5,7 @@ import { MDXEditor } from "@/components/MDXEditor";
 import { Card, PageHeader } from "@betterinternship/components";
 import { Label } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
+import { DetailsStepIllustration } from "./illustrations/DetailsStepIllustration";
 
 interface DetailsStepProps {
   formData: Partial<Job>;
@@ -13,14 +14,17 @@ interface DetailsStepProps {
 
 export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Details"
-        description="Describe the role and what you're looking for."
-      />
+    <div className="space-y-4">
+      <div className="w-full flex justify-between">
+        <PageHeader
+          title="3. Details"
+          description="Describe the role and what you're looking for."
+        />
+        <DetailsStepIllustration className="w-24" />
+      </div>
 
       <Card className="px-4 space-y-6">
-        {/* Description */}
+        {/* Description — merged with requirements */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
             <span className="text-xs font-medium text-muted-foreground">
@@ -29,36 +33,22 @@ export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
             <span className="text-destructive text-xs">*</span>
           </div>
           <p className="text-xs text-muted-foreground -mt-1">
-            What will the intern do? Briefly describe their tasks, projects, or
-            roles in your company
+            Describe the role, tasks, and any requirements (course, skills,
+            qualifications). Add a "Requirements:" heading at the end if needed.
           </p>
           <div className="relative">
             <MDXEditor
-              className="min-h-[200px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
+              className="min-h-[240px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
               markdown={formData.description ?? ""}
               onChange={(value) => setField("description", value)}
             />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Tip: include requirements directly here.
+          </p>
         </div>
 
-        {/* Requirements */}
         <div className="space-y-2">
-          <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
-              Requirements
-            </span>
-            <span className="text-destructive text-xs">*</span>
-          </div>
-          <p className="text-xs text-muted-foreground -mt-1">
-            List preferred courses, skills, and qualifications from applicants
-          </p>
-          <div className="relative mb-4">
-            <MDXEditor
-              className="min-h-[160px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
-              markdown={formData.requirements ?? ""}
-              onChange={(value) => setField("requirements", value)}
-            />
-          </div>
           <p className="text-xs text-muted-foreground mb-2">(Optional)</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
@@ -125,10 +115,6 @@ export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
           </div>
         </div>
       </Card>
-
-      <p className="text-xs text-muted-foreground">
-        Add clear details to attract the right applicants.
-      </p>
     </div>
   );
 };

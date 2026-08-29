@@ -4,14 +4,20 @@ import { FormInput } from "@/components/EditForm";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { Job } from "@/lib/db/db.types";
 import { Card, PageHeader } from "@betterinternship/components";
+import { Input } from "@betterinternship/components";
+import { Textarea } from "@/components/ui/textarea";
+import { BasicStepIllustration } from "./illustrations/BasicStepIllustration";
 
 interface BasicStepProps {
   formData: Partial<Job>;
   fieldSetter: (key: keyof Job) => (value: any) => void;
   setField: (key: keyof Job, value: any) => void;
   categoryOptions: { id: string | number; name: string }[];
-  step?: number;
-  totalSteps?: number;
+  isSuperListing?: boolean;
+  challengeTitle?: string;
+  challengeDescription?: string;
+  setChallengeTitle?: (v: string) => void;
+  setChallengeDescription?: (v: string) => void;
 }
 
 const BasicStep = ({
@@ -19,21 +25,69 @@ const BasicStep = ({
   fieldSetter,
   setField,
   categoryOptions,
-  step = 1,
-  totalSteps = 3,
+  isSuperListing = false,
+  challengeTitle = "",
+  challengeDescription = "",
+  setChallengeTitle,
+  setChallengeDescription,
 }: BasicStepProps) => {
   const titleLength = (formData.title || "").length;
   const categoryValue = formData.internship_preferences
     ?.job_category_ids as any;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Basic information"
-        description="Start with the essentials. This helps students find your listing."
-      />
+    <div className="space-y-4">
+      <div className="w-full flex justify-between">
+        <PageHeader
+          title="1. Basic information"
+          description="Start with the essentials. This helps students find your listing."
+        />
+        <BasicStepIllustration className="w-24" />
+      </div>
 
       <Card className="px-4">
+        {isSuperListing && (
+          <div className="space-y-4 pb-6 mb-6 border-b">
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Challenge Title
+                </span>
+                <span className="text-destructive text-xs">*</span>
+              </div>
+              <Input
+                value={challengeTitle}
+                onChange={(e) => setChallengeTitle?.(e.target.value)}
+                className="text-base font-medium h-10"
+                placeholder="Enter challenge title..."
+                maxLength={120}
+                required
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {challengeTitle.length}/120 characters
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Challenge Description
+                </span>
+                <span className="text-destructive text-xs">*</span>
+              </div>
+              <Textarea
+                value={challengeDescription}
+                onChange={(e) => setChallengeDescription?.(e.target.value)}
+                className="text-sm min-h-[120px]"
+                placeholder="Describe the challenge submission expected from applicants..."
+                maxLength={4000}
+                required
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {challengeDescription.length}/4000 characters
+              </p>
+            </div>
+          </div>
+        )}
         {/* Title */}
         <div className="space-y-2">
           <FormInput
@@ -98,10 +152,6 @@ const BasicStep = ({
           />
         </div>
       </Card>
-
-      <p className="text-xs text-muted-foreground">
-        You can edit these details anytime before publishing.
-      </p>
     </div>
   );
 };

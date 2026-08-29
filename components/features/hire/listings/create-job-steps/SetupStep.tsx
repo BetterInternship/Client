@@ -12,6 +12,7 @@ import { Input, Label } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
 import { useMobile } from "@/hooks/use-mobile";
 import { Job } from "@/lib/db/db.types";
+import { SetupStepIllustration } from "./illustrations/SetupStepIllustration";
 
 interface SetupStepProps {
   formData: Partial<Job>;
@@ -29,11 +30,14 @@ export const SetupStep = ({
   const { isMobile } = useMobile();
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Internship setup"
-        description="Tell us how this internship will work."
-      />
+    <div className="space-y-4">
+      <div className="w-full flex justify-between">
+        <PageHeader
+          title="2. Internship setup"
+          description="Tell us how this internship will work."
+        />
+        <SetupStepIllustration className="w-24" />
+      </div>
 
       <Card className="px-4 space-y-6">
         {/* Internship type */}
@@ -226,7 +230,9 @@ export const SetupStep = ({
                     <Input
                       type="number"
                       value={formData.salary ?? ""}
-                      onChange={(e) => setField("salary", parseInt(e.target.value))}
+                      onChange={(e) =>
+                        setField("salary", parseInt(e.target.value))
+                      }
                       placeholder="Enter salary amount"
                       className="text-sm"
                     />
@@ -299,8 +305,8 @@ export const SetupStep = ({
                     </Label>
                     <FormDatePicker
                       date={
-                        formData.internship_preferences
-                          ?.expected_start_date ?? undefined
+                        formData.internship_preferences?.expected_start_date ??
+                        undefined
                       }
                       setter={(v) =>
                         setField("internship_preferences", {
@@ -317,10 +323,6 @@ export const SetupStep = ({
           </Card>
         </div>
       </Card>
-
-      <p className="text-xs text-muted-foreground">
-        You can edit the setup anytime before publishing.
-      </p>
     </div>
   );
 };
