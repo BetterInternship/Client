@@ -12,7 +12,7 @@
     "test": "npx jest --no-color --passWithNoTests >jest.log 2>&1"
   },
   "dependencies": {
-    "@betterinternship/components": "^2.4.4",
+    "@betterinternship/components": "^2.5.1",
     "@betterinternship/core": "^2.22.1",
     "@betterinternship/schema": "^1.0.0",
     "@marsidev/react-turnstile": "^1.4.2",
