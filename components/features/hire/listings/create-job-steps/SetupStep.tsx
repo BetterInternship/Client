@@ -121,7 +121,8 @@ export const SetupStep = ({
         <div className="space-y-3">
           <div className="flex items-baseline gap-1">
             <span className="text-xs font-medium text-muted-foreground">
-              What types of interns are you searching for?
+              What types of interns are you searching for? (Select all that
+              apply)
             </span>
             <span className="text-destructive text-xs">*</span>
           </div>
@@ -130,7 +131,7 @@ export const SetupStep = ({
               onClick={handleCreditedToggle}
               className={`flex items-start gap-4 p-3 border rounded-[0.33em] cursor-pointer h-fit transition-colors ${
                 isCreditedSelected
-                  ? "border-primary border-opacity-85 bg-primary/5"
+                  ? "border-primary border-opacity-85"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -146,7 +147,11 @@ export const SetupStep = ({
             </div>
             <div
               onClick={handleVoluntaryToggle}
-              className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+              className={`flex items-start gap-4 p-3 border rounded-[0.33em] cursor-pointer h-fit transition-colors ${
+                isVoluntarySelected
+                  ? "border-primary border-opacity-85"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
             >
               <FormCheckbox checked={isVoluntarySelected} />
               <div>
