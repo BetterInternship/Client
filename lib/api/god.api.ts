@@ -261,13 +261,15 @@ export function useApproveMoaUpload() {
     mutationFn: ({
       moaId,
       universityId,
+      expiresAt,
     }: {
       moaId: string;
       universityId: string;
+      expiresAt?: string;
     }) =>
       APIClient.post<FetchResponse>(
         APIRouteBuilder("god").r("moa-documents", moaId, "approve").build(),
-        { university_id: universityId },
+        { university_id: universityId, expires_at: expiresAt },
       ),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-moa-uploads"] });
