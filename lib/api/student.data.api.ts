@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   JobService,
   UserService,
@@ -178,18 +178,52 @@ export function useShareLink(jobId: string | undefined) {
 /**
  * Requests profile information and allows profile updates.
  *
+ * A non-OK response (401 on a lapsed session, 429 from the rate limiter, any
+ * 5xx) resolves through APIClient instead of throwing, so React Query files it
+ * as a *successful* query whose payload carries no `user`. The app-wide
+ * staleTime of 24h then treats that entry as fresh: the queryFn never runs
+ * again, the bad payload gets persisted to localStorage, and every consumer
+ * reads `data: null` for a full day — which is how the profile page ended up
+ * rendering a blank screen with neither a loader nor an error.
+ *
+ * Staleness-based refetching cannot rescue that, precisely because the entry
+ * is considered fresh. So spot a settled-but-profileless payload and force one
+ * refetch. `isPending` is held while it runs, so callers keep their loader
+ * rather than flashing an empty profile; if the refetch still yields no
+ * profile, surface an error so callers show their error state instead of
+ * rendering nothing. One attempt per hook instance keeps a genuine 401 from
+ * turning into a refetch loop (concurrent instances dedupe onto one request).
+ *
  * @hook
  */
 export function useProfileData() {
-  const { isPending, data, error } = useQuery({
+  const { isPending, data, error, refetch } = useQuery({
     queryKey: ["my-profile"],
     queryFn: () => UserService.getMyProfile(),
   });
 
+  const cachedFailure = !isPending && !error && !data?.user;
+  const attempted = useRef(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!cachedFailure || attempted.current) return;
+    attempted.current = true;
+    setRefreshing(true);
+    void refetch().finally(() => setRefreshing(false));
+  }, [cachedFailure, refetch]);
+
+  // Refresh is either in flight or not yet kicked off by the effect above.
+  const recovering = cachedFailure && (refreshing || !attempted.current);
+
   return {
     data: (data?.user as PublicUser) ?? null,
-    error,
-    isPending,
+    error:
+      error ??
+      (cachedFailure && !recovering
+        ? new Error(data?.message ?? "Could not load your profile.")
+        : null),
+    isPending: isPending || recovering,
   };
 }
 
