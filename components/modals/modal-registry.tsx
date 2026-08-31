@@ -30,6 +30,7 @@ import DeleteResumeModal from "./DeleteResumeModal";
 import { AddResumeModal } from "../features/student/profile/AddResumeModal";
 import { HeaderIcon } from "../ui/text";
 import { DigestOptoutModalContent } from "../features/hire/account/digest-optout-dialog";
+import { IomPartnershipModalContent } from "../features/hire/iom-partnership-modal";
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
 import { MoaUploadModal } from "../features/hire/listings/MoaUploadModal";
@@ -595,6 +596,26 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("digest-optout"),
+      },
+
+      iomPartnership: {
+        open: () =>
+          open(
+            "iom-partnership",
+            DefaultModalLayout,
+            <IomPartnershipModalContent
+              onClose={() => close("iom-partnership")}
+            />,
+            {
+              title:
+                "Has your company partnered with universities through our Partnership Portal?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+              panelClassName: "sm:max-w-5xl",
+            },
+          ),
+        close: () => close("iom-partnership"),
       },
 
       // Blocks turning a listing back on (activating or reactivating) while

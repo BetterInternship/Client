@@ -75,15 +75,16 @@ export function HeroSection() {
                 variants={line}
                 className="inline-flex items-center gap-4 whitespace-nowrap"
               >
-                Hire interns in the{" "}
+                Hire{" "}
                 <img
                   className="inline h-[1.25em]"
                   src="/landingPage/ph.png"
                   fetchPriority="high"
-                />
+                />{" "}
+                Interns
               </motion.span>
               <motion.span variants={line} className="block">
-                faster, easier, <span className="text-primary">better</span>.
+                Faster, Easier, <span className="text-primary">Better</span>.
               </motion.span>
             </motion.h1>
           </div>

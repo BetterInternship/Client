@@ -27,11 +27,7 @@ interface MoaUniversitiesResponse extends FetchResponse {
   universityIds: string[];
 }
 
-interface IomLinkRequestResponse extends FetchResponse {
-  censoredEmail: string;
-}
-
-interface IomStartRegistrationResponse extends FetchResponse {
+interface IomStartResponse extends FetchResponse {
   url: string;
 }
 
@@ -82,15 +78,15 @@ export const EmployerService = {
     );
   },
 
-  async requestIomLink(tin: string) {
-    return APIClient.post<IomLinkRequestResponse>(
-      APIRouteBuilder("employer").r("iom-link", "request").build(),
-      { tin },
+  async startIomLogin() {
+    return APIClient.post<IomStartResponse>(
+      APIRouteBuilder("employer").r("iom-link", "start-login").build(),
+      {},
     );
   },
 
   async startIomRegistration() {
-    return APIClient.post<IomStartRegistrationResponse>(
+    return APIClient.post<IomStartResponse>(
       APIRouteBuilder("employer").r("iom-link", "start-registration").build(),
       {},
     );
@@ -103,11 +99,6 @@ export const EmployerService = {
     );
   },
 };
-
-interface EmployerUserResponse extends FetchResponse {
-  success: boolean;
-  message: string;
-}
 
 interface EmployerSelfResponse extends FetchResponse {
   user: EmployerSelf;
@@ -138,20 +129,6 @@ interface EmployerTeamMemberResponse extends FetchResponse {
 }
 
 export const EmployerUserService = {
-  async requestPasswordReset(email: string) {
-    return APIClient.post<EmployerUserResponse>(
-      APIRouteBuilder("employer-users").r("forgot-password").build(),
-      { email },
-    );
-  },
-
-  async resetPassword(hash: string, newPassword: string) {
-    return APIClient.post<EmployerUserResponse>(
-      APIRouteBuilder("employer-users").r("reset-password", hash).build(),
-      { newPassword },
-    );
-  },
-
   // ── Self-service ────────────────────────────────────────────────────
 
   async getMe() {
@@ -168,13 +145,6 @@ export const EmployerUserService = {
     return APIClient.put<EmployerSelfResponse>(
       APIRouteBuilder("employer-users").r("me").build(),
       data,
-    );
-  },
-
-  async changeMyPassword(current_password: string, new_password: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer-users").r("me", "password").build(),
-      { current_password, new_password },
     );
   },
 

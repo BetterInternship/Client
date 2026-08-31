@@ -9,9 +9,11 @@ import {
 } from "@/hooks/use-employer-api";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { EmployerService } from "@/lib/api/services";
 import {
   PageContainer,
   PageHeader,
@@ -19,11 +21,62 @@ import {
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Button } from "@betterinternship/components";
 import { Pause, Plus } from "lucide-react";
+import { IomPartnershipCta } from "@/components/features/hire/iom-partnership-cta";
 
 const NORMAL_LISTING_CREATE_PATH = "/listings/create";
+const MAGIC_LINK_NEXT_PATHS = new Set([
+  "dashboard",
+  "listings/create",
+  "account",
+  "account?tab=notifications",
+]);
+
+function MagicLinkContinuation({
+  autoLinkToken,
+  next,
+}: {
+  autoLinkToken: string;
+  next: string | null;
+}) {
+  const { loading, user } = useAuthContext();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const redeemed = useRef(false);
+
+  useEffect(() => {
+    if (loading || redeemed.current) return;
+    redeemed.current = true;
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    const target = MAGIC_LINK_NEXT_PATHS.has(next ?? "")
+      ? `/${next}`
+      : "/dashboard";
+
+    void (async () => {
+      try {
+        await EmployerService.autoLinkIomAccount(autoLinkToken);
+      } finally {
+        await queryClient.invalidateQueries({
+          queryKey: ["my-employer-profile"],
+        });
+        router.replace(target);
+      }
+    })();
+  }, [autoLinkToken, loading, next, queryClient, router, user]);
+
+  return (
+    <PageContainer>
+      <Loader>Finishing account setup...</Loader>
+    </PageContainer>
+  );
+}
 
 function DashboardContent() {
-  const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
+  const { isAuthenticated, redirectIfNotLoggedIn, user } = useAuthContext();
   const router = useRouter();
   const profile = useProfile();
   const applications = useEmployerApplications();
@@ -55,10 +108,15 @@ function DashboardContent() {
 
   return (
     <PageContainer>
+      {profile.data && (
+        <IomPartnershipCta
+          profile={profile.data}
+          recruiterEmail={user?.email}
+        />
+      )}
       <PageHeader
         title="Job listings"
-        description="Manage your job listings here."
-        actionsClassName="self-center sm:self-auto"
+        actionsClassName="self-center"
       >
         <Button
           asChild
@@ -127,6 +185,26 @@ function DashboardContent() {
   );
 }
 
-export default function Dashboard() {
+function DashboardPageContent() {
+  const searchParams = useSearchParams();
+  const autoLinkToken = searchParams.get("auto_link");
+
+  if (autoLinkToken) {
+    return (
+      <MagicLinkContinuation
+        autoLinkToken={autoLinkToken}
+        next={searchParams.get("next")}
+      />
+    );
+  }
+
   return <DashboardContent />;
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<Loader>Loading dashboard...</Loader>}>
+      <DashboardPageContent />
+    </Suspense>
+  );
 }
