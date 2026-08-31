@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Button, Badge } from "@betterinternship/components";
 import {
@@ -85,6 +85,12 @@ function GodMoaUploadsPageContent() {
 
   const [approveTarget, setApproveTarget] = useState<MoaUpload | null>(null);
   const [selectedUniversity, setSelectedUniversity] = useState("");
+  const defaultExpiry = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return d.toISOString().slice(0, 10);
+  }, []);
+  const [expiresAt, setExpiresAt] = useState(defaultExpiry);
 
   const handleApprove = async () => {
     if (!approveTarget || !selectedUniversity) {
@@ -95,6 +101,7 @@ function GodMoaUploadsPageContent() {
       const result: any = await approveMoa.mutateAsync({
         moaId: approveTarget.id,
         universityId: selectedUniversity,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
       });
       if (result?.error) {
         toast.error(`Failed: ${result.error}`);
@@ -264,6 +271,18 @@ function GodMoaUploadsPageContent() {
               </option>
             ))}
           </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-muted-foreground">
+              Expires on
+            </label>
+            <input
+              type="date"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              min={new Date().toISOString().slice(0, 10)}
+              className="rounded-md border px-3 py-1.5 text-sm w-full"
+            />
+          </div>
           <div className="flex gap-2 pt-2">
             <Button
               scheme="supportive"
