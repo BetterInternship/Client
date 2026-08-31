@@ -14,7 +14,7 @@
   "dependencies": {
     "@betterinternship/components": "^2.4.4",
     "@betterinternship/core": "^2.22.1",
-    "@betterinternship/schema": "^0.0.0",
+    "@betterinternship/schema": "^1.0.0",
     "@marsidev/react-turnstile": "^1.4.2",
     "@mdxeditor/editor": "^3.35.1",
     "@posthog/react": "^1.8.1",

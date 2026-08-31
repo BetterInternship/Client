@@ -40,11 +40,10 @@ export const SetupStep = ({
   job_pay_freq,
 }: SetupStepProps) => {
   const { isMobile } = useMobile();
-  const { data: moaData } = useMoaUniversities();
-  const activeMoaCount = moaData?.universityIds?.length ?? 0;
+  const { universityIds } = useMoaUniversities();
+  const activeMoaCount = universityIds?.length ?? 0;
   const registry = useModalRegistry();
   const posthog = usePostHog();
-  const [showDetails, setShowDetails] = useState(false);
 
   const isCreditedSelected =
     !!formData.internship_preferences?.internship_types?.includes("credited");
@@ -163,104 +162,78 @@ export const SetupStep = ({
 
           {/* Inline credited benefits - nudge, not gate */}
           <div className="space-y-2">
-            {activeMoaCount > 0 ? (
-              <Card className="py-3 px-4">
-                You have {activeMoaCount} active MOA
-                {activeMoaCount > 1 ? "s" : ""} — visible to credited students
-                at {activeMoaCount} universitie
-                {activeMoaCount === 1 ? "y" : "s"}.
-                {isCreditedSelected
-                  ? " Selecting credited makes you discoverable there."
-                  : " Select credited to reach them — listings that accept credited get interns 10x faster."}
-              </Card>
-            ) : (
-              <Card className="py-3 px-4 bg-primary/10 border-primary">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">
-                    {isCreditedSelected
-                      ? "You can accept credited interns — but you’re not yet verified"
-                      : "Get interns 10x faster"}
-                  </p>
-                  <p className="text-xs leading-relaxed">
-                    Credited interns require a Memorandum of Agreement (MOA) —
-                    one agreement per university. You can get MOAs instantly
-                    verified with our partner universities at the{" "}
-                    <Link
-                      href="https://moa.betterinternship.com/company/verification"
-                      className="font-bold underline"
-                    >
-                      Partners Portal
-                    </Link>{" "}
-                    or upload your existing MOAs here.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowDetails((v) => !v)}
-                    className="text-xs font-medium flex items-center gap-1 hover:cursor-pointer"
-                  >
-                    {showDetails ? (
-                      <>
-                        Hide benefits <ChevronUp className="h-3 w-3" />
-                      </>
-                    ) : (
-                      <>
-                        Show benefits <ChevronDown className="h-3 w-3" />
-                      </>
-                    )}
-                  </button>
-                  {showDetails && (
-                    <ul className="text-xs leading-relaxed list-disc pl-4 space-y-1 pt-1">
-                      <li>
-                        <span className="font-medium">CHED-compliant:</span>{" "}
-                        practicum credit requires a university-signed Standard
-                        MOA.
-                      </li>
-                      <li>
-                        <span className="font-medium">
-                          Larger pool, faster fill:
-                        </span>{" "}
-                        credited pool is curricula-mandated, hence 10x faster
-                        fulfillment.
-                      </li>
-                      <li>
-                        <span className="font-medium">
-                          One partnership. One agreement:
-                        </span>{" "}
-                        create, sign, and manage institutional MOAs in one
-                        secure place.
-                      </li>
-                    </ul>
-                  )}
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        posthog.capture("hire_moa_iom_link_clicked", {
-                          source: "create_listing_setup",
-                        });
-                        window.open(
-                          "https://moa.betterinternship.com/company/verification",
-                          "_blank",
-                        );
-                      }}
-                      className="h-8 gap-1"
-                    >
-                      Get instant MOAs at the Partners Portal{" "}
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleUploadClick}
-                      className="h-8 gap-1"
-                    >
-                      <FileUp className="h-4 w-4" />
-                      Upload MOA documents
-                    </Button>
+            <Card className="py-3 px-4 bg-primary/10 border-primary">
+              <div className="space-y-1">
+                {activeMoaCount > 0 ? (
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {isCreditedSelected
+                        ? "You're accepting credited interns"
+                        : "Get interns 10x faster by hiring credited interns"}
+                    </p>
+                    <p className="text-xs leading-relaxed">
+                      You have {activeMoaCount} active MOA
+                      {activeMoaCount > 1 ? "s" : ""} with {activeMoaCount}{" "}
+                      {activeMoaCount === 1 ? "university" : "universities"}. If
+                      you want to partner with more universities, you can go to
+                      the{" "}
+                      <Link
+                        href="https://moa.betterinternship.com/company/verification"
+                        className="font-bold underline"
+                      >
+                        Partners Portal
+                      </Link>
+                      {". "}
+                    </p>
                   </div>
+                ) : (
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {isCreditedSelected
+                        ? "You're not yet verified"
+                        : "Get verified to reach more students"}
+                    </p>
+                    <p className="text-xs leading-relaxed">
+                      Credited interns require a Memorandum of Agreement (MOA).
+                      Verify instantly via the{" "}
+                      <Link
+                        href="https://moa.betterinternship.com/company/verification"
+                        className="font-bold underline"
+                      >
+                        Partners Portal
+                      </Link>{" "}
+                      or upload an existing file.
+                    </p>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      posthog.capture("hire_moa_iom_link_clicked", {
+                        source: "create_listing_setup",
+                      });
+                      window.open(
+                        "https://moa.betterinternship.com/company/verification",
+                        "_blank",
+                      );
+                    }}
+                    className="h-8 gap-1"
+                  >
+                    Get instant MOAs <ExternalLink className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleUploadClick}
+                    className="h-8 gap-1"
+                  >
+                    <FileUp className="h-4 w-4" />
+                    Upload MOA
+                  </Button>
                 </div>
-              </Card>
-            )}
+              </div>
+            </Card>
           </div>
         </div>
 
