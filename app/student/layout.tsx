@@ -11,9 +11,11 @@ import AllowLanding from "./allowLanding";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
-import { ClientProcessesProvider } from "@betterinternship/components";
+import { ClientProcessesProvider, MQJobsProvider } from "@betterinternship/components";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OrchestratorConfig } from "../orchestrator-config";
+import { pollMqJob } from "@/lib/api/services";
+import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
 
 const baseUrl = (() => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -118,16 +120,20 @@ const HTMLContent = ({
                 <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                   <OrchestratorConfig />
                   <ClientProcessesProvider>
-                    <ModalProvider>
-                      <AllowLanding>
-                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                          <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
-                            {children}
-                          </div>
-                          <MobileNavWrapper />
-                        </div>
-                      </AllowLanding>
-                    </ModalProvider>
+                    <MQJobsProvider poll={pollMqJob}>
+                      <FilloutJobsProvider>
+                        <ModalProvider>
+                          <AllowLanding>
+                            <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                              <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                                {children}
+                              </div>
+                              <MobileNavWrapper />
+                            </div>
+                          </AllowLanding>
+                        </ModalProvider>
+                      </FilloutJobsProvider>
+                    </MQJobsProvider>
                   </ClientProcessesProvider>
                   <SonnerToaster />
                 </body>

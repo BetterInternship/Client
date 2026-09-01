@@ -48,6 +48,29 @@ export interface ProcessResponse {
   message?: string;
 }
 
+export interface MqJobQueuedResponse {
+  jobId?: string;
+  success: boolean;
+  message?: string;
+}
+
+export type MqJobStatus = "queued" | "processing" | "done" | "failed";
+
+export interface MqJobDto {
+  id: string;
+  type: string;
+  status: MqJobStatus;
+  progress?: { total: number; done: number; failed: number };
+  result?: unknown;
+  error?: string;
+}
+
+export interface MqJobResponse {
+  job?: MqJobDto;
+  success: boolean;
+  message?: string;
+}
+
 export const EmployerService = {
   async getMyProfile() {
     return APIClient.get<EmployerResponse>(
@@ -342,6 +365,18 @@ export type UploadSignatureImageResponse = {
   };
 };
 
+/**
+ * `poll` fn for `<MQJobsProvider>` (`@betterinternship/components`) — the
+ * package knows no URL or response envelope, so this adapts Career-Server's
+ * `{success, job, message}` wrapper into the bare job the hook expects.
+ */
+export const pollMqJob = async (jobId: string): Promise<MqJobDto> => {
+  const response = await FormService.getMqJob(jobId);
+  if (!response.success || !response.job)
+    throw new Error(response.message ?? "Job not found.");
+  return response.job;
+};
+
 export const FormService = {
   async uploadSignatureImage(data: {
     source: "draw" | "upload";
@@ -375,9 +410,15 @@ export const FormService = {
     values: Record<string, string>;
     disableEsign?: boolean;
   }) {
-    return APIClient.post<ProcessResponse>(
+    return APIClient.post<MqJobQueuedResponse>(
       APIRouteBuilder("users").r("me/fillout-form").build(),
       data,
+    );
+  },
+
+  async getMqJob(jobId: string) {
+    return APIClient.get<MqJobResponse>(
+      APIRouteBuilder("users").r("me/mq-jobs", jobId).build(),
     );
   },
 
