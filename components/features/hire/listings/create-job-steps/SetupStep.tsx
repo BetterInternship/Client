@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  FormCheckbox,
   FormCheckBoxGroup,
   FormDatePicker,
   FormRadio,
@@ -16,15 +15,11 @@ import { useModalRegistry } from "@/components/modals/modal-registry";
 import { usePostHog } from "@posthog/react";
 import { Job } from "@/lib/db/db.types";
 import { SetupStepIllustration } from "./illustrations/SetupStepIllustration";
-import {
-  Star,
-  ChevronDown,
-  ChevronUp,
-  FileUp,
-  ExternalLink,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { FileUp, ExternalLink } from "lucide-react";
+import { useEffect } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { useBlurTransition } from "@/components/animata/blur";
 
 interface SetupStepProps {
   formData: Partial<Job>;
@@ -45,10 +40,9 @@ export const SetupStep = ({
   const registry = useModalRegistry();
   const posthog = usePostHog();
 
-  const isCreditedSelected =
-    !!formData.internship_preferences?.internship_types?.includes("credited");
-  const isVoluntarySelected =
-    !!formData.internship_preferences?.internship_types?.includes("voluntary");
+  const internshipTypes =
+    formData.internship_preferences?.internship_types ?? [];
+  const isCreditedSelected = internshipTypes.includes("credited");
 
   useEffect(() => {
     posthog.capture("hire_credited_benefits_viewed", {
@@ -58,38 +52,17 @@ export const SetupStep = ({
     });
   }, [activeMoaCount, isCreditedSelected, posthog]);
 
-  const handleCreditedToggle = () => {
-    const willBeChecked = !isCreditedSelected;
-    posthog.capture("hire_credited_toggle_clicked", {
-      value: willBeChecked,
-      activeMoaCount,
-      source: "create_listing_setup",
-    });
-    setField("internship_preferences", {
-      ...formData.internship_preferences,
-      internship_types: willBeChecked
-        ? [
-            ...(formData.internship_preferences?.internship_types ?? []),
-            "credited",
-          ]
-        : (formData.internship_preferences?.internship_types.filter(
-            (it) => it !== "credited",
-          ) ?? []),
-    });
-  };
-
-  const handleVoluntaryToggle = () => {
-    setField("internship_preferences", {
-      ...formData.internship_preferences,
-      internship_types: isVoluntarySelected
-        ? (formData.internship_preferences?.internship_types.filter(
-            (it) => it !== "voluntary",
-          ) ?? [])
-        : [
-            ...(formData.internship_preferences?.internship_types ?? []),
-            "voluntary",
-          ],
-    });
+  const handleInternshipTypeToggle = (
+    value: string | number,
+    checked: boolean,
+  ) => {
+    if (value === "credited") {
+      posthog.capture("hire_credited_toggle_clicked", {
+        value: checked,
+        activeMoaCount,
+        source: "create_listing_setup",
+      });
+    }
   };
 
   const handleUploadClick = () => {
@@ -106,6 +79,8 @@ export const SetupStep = ({
     });
   };
 
+  const blurTransition = useBlurTransition();
+
   return (
     <div className="space-y-4">
       <div className="w-full flex justify-between">
@@ -121,124 +96,118 @@ export const SetupStep = ({
         <div className="space-y-3">
           <div className="flex items-baseline gap-1">
             <span className="text-xs font-medium text-muted-foreground">
-              What types of interns are you searching for? (Select all that
-              apply)
+              What types of interns are you searching for?
             </span>
             <span className="text-destructive text-xs">*</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              onClick={handleCreditedToggle}
-              className={`flex items-start gap-4 p-3 border rounded-[0.33em] cursor-pointer h-fit transition-colors ${
-                isCreditedSelected
-                  ? "border-primary border-opacity-85"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <FormCheckbox checked={isCreditedSelected} />
-              <div>
-                <Label className="text-xs font-medium text-gray-900">
-                  Credited (Practicum)
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Practicum students needing a Memorandum of Agreement.
-                </p>
-              </div>
-            </div>
-            <div
-              onClick={handleVoluntaryToggle}
-              className={`flex items-start gap-4 p-3 border rounded-[0.33em] cursor-pointer h-fit transition-colors ${
-                isVoluntarySelected
-                  ? "border-primary border-opacity-85"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <FormCheckbox checked={isVoluntarySelected} />
-              <div>
-                <Label className="text-xs font-medium text-gray-900">
-                  Voluntary
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Flexible, non-credit internships
-                </p>
-              </div>
-            </div>
-          </div>
+          <FormCheckBoxGroup
+            columns={2}
+            values={internshipTypes}
+            options={[
+              {
+                value: "credited",
+                label: "Credited (Practicum)",
+                description:
+                  "Practicum students needing a Memorandum of Agreement.",
+              },
+              {
+                value: "voluntary",
+                label: "Voluntary",
+                description: "Flexible, non-credit internships",
+              },
+            ]}
+            onToggle={handleInternshipTypeToggle}
+            setter={(v) =>
+              setField("internship_preferences", {
+                ...formData.internship_preferences,
+                internship_types: v,
+              })
+            }
+          />
 
           {/* Inline credited benefits - nudge, not gate */}
           <div className="space-y-2">
-            <Card className="py-3 px-4 bg-primary/10 border-primary">
-              <div className="space-y-1">
-                {activeMoaCount > 0 ? (
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {isCreditedSelected
-                        ? "You're accepting credited interns"
-                        : "Get interns 10x faster by hiring credited interns"}
-                    </p>
-                    <p className="text-xs leading-relaxed">
-                      You have {activeMoaCount} active MOA
-                      {activeMoaCount > 1 ? "s" : ""} with {activeMoaCount}{" "}
-                      {activeMoaCount === 1 ? "university" : "universities"}. If
-                      you want to partner with more universities, you can go to
-                      the{" "}
-                      <Link
-                        href="https://moa.betterinternship.com/company/verification"
-                        className="font-bold underline"
-                      >
-                        Partners Portal
-                      </Link>
-                      {". "}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {isCreditedSelected
-                        ? "You're not yet verified"
-                        : "Get verified to reach more students"}
-                    </p>
-                    <p className="text-xs leading-relaxed">
-                      Credited interns require a Memorandum of Agreement (MOA).
-                      Verify instantly via the{" "}
-                      <Link
-                        href="https://moa.betterinternship.com/company/verification"
-                        className="font-bold underline"
-                      >
-                        Partners Portal
-                      </Link>{" "}
-                      or upload an existing file.
-                    </p>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      posthog.capture("hire_moa_iom_link_clicked", {
-                        source: "create_listing_setup",
-                      });
-                      window.open(
-                        "https://moa.betterinternship.com/company/verification",
-                        "_blank",
-                      );
-                    }}
-                    className="h-8 gap-1"
-                  >
-                    Get instant MOAs <ExternalLink className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleUploadClick}
-                    className="h-8 gap-1"
-                  >
-                    <FileUp className="h-4 w-4" />
-                    Upload MOA
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <AnimatePresence>
+              {isCreditedSelected && (
+                <motion.div {...blurTransition}>
+                  <Card className="py-3 px-4 bg-primary/10 border-primary">
+                    <div className="space-y-1">
+                      {activeMoaCount > 0 ? (
+                        <div className="space-y-1">
+                          <p className="font-medium">
+                            {isCreditedSelected
+                              ? "You're accepting credited interns"
+                              : "Get interns 10x faster by hiring credited interns"}
+                          </p>
+                          <p className="text-xs leading-relaxed">
+                            You have {activeMoaCount} active MOA
+                            {activeMoaCount > 1 ? "s" : ""} with{" "}
+                            {activeMoaCount}{" "}
+                            {activeMoaCount === 1
+                              ? "university"
+                              : "universities"}
+                            . If you want to partner with more universities, you
+                            can go to the{" "}
+                            <Link
+                              href="https://moa.betterinternship.com/company/verification"
+                              className="font-bold underline"
+                            >
+                              Partners Portal
+                            </Link>
+                            {". "}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <p className="font-medium">
+                            {isCreditedSelected
+                              ? "You're not yet verified"
+                              : "Get verified to reach more students"}
+                          </p>
+                          <p className="text-xs leading-relaxed">
+                            Credited interns require a Memorandum of Agreement
+                            (MOA). Verify instantly via the{" "}
+                            <Link
+                              href="https://moa.betterinternship.com/company/verification"
+                              className="font-bold underline"
+                            >
+                              Partners Portal
+                            </Link>{" "}
+                            or upload an existing file.
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            posthog.capture("hire_moa_iom_link_clicked", {
+                              source: "create_listing_setup",
+                            });
+                            window.open(
+                              "https://moa.betterinternship.com/company/verification",
+                              "_blank",
+                            );
+                          }}
+                          className="h-8 gap-1"
+                        >
+                          Get instant MOAs <ExternalLink className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleUploadClick}
+                          className="h-8 gap-1"
+                        >
+                          <FileUp className="h-4 w-4" />
+                          Upload MOA
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
