@@ -89,7 +89,7 @@ const BasicStep = ({
           </div>
         )}
         {/* Title */}
-        <div className="space-y-2">
+        <div className="space-y-2 lg:w-1/2">
           <FormInput
             label="Listing title"
             required
@@ -106,7 +106,7 @@ const BasicStep = ({
         </div>
 
         {/* Location */}
-        <div className="space-y-2">
+        <div className="space-y-2 -mt-4 lg:w-1/2">
           <FormInput
             label="Location"
             required
@@ -119,9 +119,9 @@ const BasicStep = ({
         </div>
 
         {/* Category */}
-        <div className="space-y-2">
+        <div className="space-y-2 lg:w-1/2">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Category
             </span>
             <span className="text-destructive text-xs">*</span>
@@ -137,7 +137,6 @@ const BasicStep = ({
               })
             }
             fallback="Select a category"
-            className="w-fit"
           />
         </div>
       </Card>

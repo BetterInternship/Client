@@ -183,8 +183,8 @@ export function LabelWithTooltip({
   return (
     <div className="mb-1 flex w-full justify-between gap-2 md:items-center">
       <div className="flex gap-2 md:items-center">
-        <span className="text-xs text-gray-600">
-          {label} {required && <span className="text-red-500">*</span>}
+        <span className="text-sm font-medium text-muted-foreground">
+          {label} {required && <span className="text-destructive">*</span>}
         </span>
         <div className="hover:cursor-help">
           <MessageCircleQuestion
@@ -243,7 +243,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           onChange={(e) => setter && setter(e.target.value)}
           className={cn(
             className,
-            "placeholder:text-gray-400 placeholder:italic focus:placeholder:text-primary/70",
+            "placeholder:text-muted-foreground placeholder:italic focus:placeholder:text-primary/70",
           )}
           {...props}
         />
@@ -426,7 +426,7 @@ export const FormCheckbox = ({
         </Checkbox>
         {sentence && (
           <div
-            className="text-xs text-gray-500 cursor-pointer select-none"
+            className="text-sm text-muted-foreground cursor-pointer select-none"
             onClick={() => setter?.(!checked)}
             role="button"
           >
@@ -616,20 +616,20 @@ export const FormRadio = <T extends string | boolean = string>({
               value={option.value.toString()}
               id={`${name}-${option.value.toString()}`}
               className={cn(
-                "w-4 h-4 rounded-full border-2 border-gray-300",
+                "w-4 h-4 rounded-full border border-gray-300 shadow-xs bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-primary/50",
                 "data-[state=checked]:border-primary data-[state=checked]:bg-primary",
                 "transition-colors duration-200",
               )}
             >
               <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative">
-                <div className="w-2 h-2 rounded-full bg-white" />
+                <motion.div className="w-2 h-2 rounded-full bg-white" />
               </RadioGroup.Indicator>
             </RadioGroup.Item>
 
             <label
               htmlFor={`${name}-${option.value.toString()}`}
-              className="text-sm font-medium cursor-pointer flex-1"
+              className="text-xs font-medium cursor-pointer flex-1"
             >
               {option.label}
             </label>
