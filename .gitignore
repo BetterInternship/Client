@@ -5,6 +5,7 @@
 
 # VSCODE
 .vscode/
+.serena/
 
 # Dependencies
 **/node_modules/

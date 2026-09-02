@@ -9,8 +9,8 @@ import { getRefsData } from "@/lib/db/use-refs-backend";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import Header from "@/components/features/student/header";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
-import { ClientProcessesProvider } from "@betterinternship/components";
-import { OrchestratorConfig } from "../orchestrator-config";
+import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
+import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import { Suspense } from "react";
@@ -45,23 +45,24 @@ export default async function MaintenanceLayout({
               <AppContextProvider>
                 <AuthContextProvider>
                   <HeaderContextProvider>
-                    <OrchestratorConfig />
-                    <ClientProcessesProvider>
-                      <ModalProvider>
-                        <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
-                          <div
-                            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
-                            style={{ backgroundImage: `url(${bg2.src})` }}
-                          />
-                          <Suspense>
-                            <Header showActions={false} transparent />
-                          </Suspense>
-                          <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-auto">
-                            {children}
+                    <AppMQJobsProvider>
+                      <FilloutJobsProvider>
+                        <ModalProvider>
+                          <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
+                            <div
+                              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+                              style={{ backgroundImage: `url(${bg2.src})` }}
+                            />
+                            <Suspense>
+                              <Header showActions={false} transparent />
+                            </Suspense>
+                            <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-auto">
+                              {children}
+                            </div>
                           </div>
-                        </div>
-                      </ModalProvider>
-                    </ClientProcessesProvider>
+                        </ModalProvider>
+                      </FilloutJobsProvider>
+                    </AppMQJobsProvider>
                     <SonnerToaster />
                   </HeaderContextProvider>
                 </AuthContextProvider>
