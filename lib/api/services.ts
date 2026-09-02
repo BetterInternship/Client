@@ -31,19 +31,6 @@ interface IomStartResponse extends FetchResponse {
   url: string;
 }
 
-export interface ProcessCallbackDto {
-  processId: string;
-  processName: string;
-}
-
-export interface ProcessResponse {
-  processId: string;
-  processName: string;
-  processCallbackUrl: string;
-  success: boolean;
-  message?: string;
-}
-
 export interface MqJobQueuedResponse {
   jobId?: string;
   success: boolean;
