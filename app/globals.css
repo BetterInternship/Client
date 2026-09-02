@@ -654,11 +654,20 @@ layer(base);
   }
 
   div[contenteditable="true"] {
-    position: absolute;
-    padding: 1.5rem 2rem;
-    border-left: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.75rem;
-    margin: 0.25rem 0em;
+    position: relative;
+    padding: 1rem;
+    border-left: none;
+    border-radius: 0;
+    margin: 0;
+    min-height: 100%;
+    width: 100%;
+    outline: none;
+  }
+
+  /* Ensure the MDXEditor root fills its Card and shows text cursor */
+  .mdxeditor {
+    cursor: text;
+    width: 100%;
   }
 
   .markdown > * {
