@@ -11,10 +11,10 @@ import AllowLanding from "./allowLanding";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
-import { ClientProcessesProvider, MQJobsProvider } from "@betterinternship/components";
+import { ClientProcessesProvider } from "@betterinternship/components";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OrchestratorConfig } from "../orchestrator-config";
-import { pollMqJob } from "@/lib/api/services";
+import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
 import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
 
 const baseUrl = (() => {
@@ -120,7 +120,7 @@ const HTMLContent = ({
                 <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                   <OrchestratorConfig />
                   <ClientProcessesProvider>
-                    <MQJobsProvider poll={pollMqJob}>
+                    <AppMQJobsProvider>
                       <FilloutJobsProvider>
                         <ModalProvider>
                           <AllowLanding>
@@ -133,7 +133,7 @@ const HTMLContent = ({
                           </AllowLanding>
                         </ModalProvider>
                       </FilloutJobsProvider>
-                    </MQJobsProvider>
+                    </AppMQJobsProvider>
                   </ClientProcessesProvider>
                   <SonnerToaster />
                 </body>
