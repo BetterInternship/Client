@@ -95,7 +95,7 @@ export const SetupStep = ({
         {/* Internship type */}
         <div className="space-y-3">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               What types of interns are you searching for?
             </span>
             <span className="text-destructive text-xs">*</span>
@@ -214,10 +214,10 @@ export const SetupStep = ({
         {/* Work Load */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Work Load
             </span>
-            <span className="text-destructive text-xs">*</span>
+            <span className="text-destructive text-sm">*</span>
           </div>
           <FormCheckBoxGroup
             required
@@ -250,10 +250,10 @@ export const SetupStep = ({
         {/* Work Mode */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Work Mode
             </span>
-            <span className="text-destructive text-xs">*</span>
+            <span className="text-destructive text-sm">*</span>
           </div>
           <FormCheckBoxGroup
             required
@@ -275,136 +275,120 @@ export const SetupStep = ({
         {/* Paid */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Is the internship paid?
             </span>
-            <span className="text-destructive text-xs">*</span>
+            <span className="text-destructive text-sm">*</span>
           </div>
-          <Card
-            className={`${formData.allowance === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
-          >
-            <div className="p-3">
-              <FormRadio
-                required
-                options={[
-                  { value: "1", label: "No" },
-                  { value: "0", label: "Yes" },
-                ]}
-                value={formData.allowance?.toString() ?? undefined}
-                setter={(value) => fieldSetter("allowance")(parseInt(value))}
-              />
-              {formData.allowance === 0 && (
-                <div
-                  className={cn(
-                    "border-l-2 border-gray-300 pl-4 gap-4 mt-4",
-                    isMobile ? "" : "flex flex-row",
-                  )}
-                >
-                  <div className="space-y-2 mb-4 flex-1">
-                    <Label className="text-xs font-medium text-muted-foreground">
-                      Allowance{" "}
-                      <span
-                        className={cn(
-                          "text-muted-foreground/50",
-                          isMobile ? "text-xs" : "text-xs",
-                        )}
-                      >
-                        (Optional)
-                      </span>
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.salary ?? ""}
-                      onChange={(e) =>
-                        setField("salary", parseInt(e.target.value))
-                      }
-                      placeholder="Enter salary amount"
-                      className="text-sm"
-                    />
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <Label
-                      className={cn(
-                        "text-xs font-medium",
-                        !formData.salary
-                          ? "text-muted-foreground/50"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      Pay Frequency{" "}
-                      {!formData.salary ? null : (
-                        <span className="text-destructive">*</span>
-                      )}
-                    </Label>
-                    <GroupableRadioDropdown
-                      name="pay_freq"
-                      defaultValue={formData.salary_freq}
-                      options={job_pay_freq}
-                      onChange={fieldSetter("salary_freq")}
-                      disabled={!formData.salary}
-                    />
-                  </div>
+          <Card className="p-0 border-transparent">
+            <FormRadio
+              required
+              options={[
+                { value: "1", label: "No" },
+                { value: "0", label: "Yes" },
+              ]}
+              value={formData.allowance?.toString() ?? undefined}
+              setter={(value) => fieldSetter("allowance")(parseInt(value))}
+            />
+            {formData.allowance === 0 && (
+              <div
+                className={cn(
+                  "border-l-2 border-gray-300 pl-4 gap-4 mt-4",
+                  isMobile ? "" : "flex flex-row",
+                )}
+              >
+                <div className="space-y-2 mb-4 flex-1">
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Allowance{" "}
+                    <span className="text-muted-foreground">(Optional)</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    value={formData.salary ?? ""}
+                    onChange={(e) =>
+                      setField("salary", parseInt(e.target.value))
+                    }
+                    placeholder="Enter salary amount"
+                    className="text-sm"
+                  />
                 </div>
-              )}
-            </div>
+                <div className="space-y-2 flex-1">
+                  <Label
+                    className={cn(
+                      "text-sm font-medium transition-colors",
+                      !formData.salary
+                        ? "text-muted-foreground/50"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    Pay Frequency{" "}
+                    {!formData.salary ? null : (
+                      <span className="text-destructive">*</span>
+                    )}
+                  </Label>
+                  <GroupableRadioDropdown
+                    name="pay_freq"
+                    defaultValue={formData.salary_freq}
+                    options={job_pay_freq}
+                    onChange={fieldSetter("salary_freq")}
+                    disabled={!formData.salary}
+                  />
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 
         {/* Start date */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               When are you accepting interns for this listing?
             </span>
-            <span className="text-destructive text-xs">*</span>
+            <span className="text-destructive text-sm">*</span>
           </div>
-          <Card
-            className={`${formData.internship_preferences?.expected_start_date === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
-          >
-            <div className="p-3">
-              <FormRadio
-                required
-                options={[
-                  { value: "true", label: "As soon as possible" },
-                  { value: "false", label: "I have a future date in mind" },
-                ]}
-                value={
-                  (formData.internship_preferences?.expected_start_date ===
-                    undefined) +
-                  ""
-                }
-                setter={(v) =>
-                  setField("internship_preferences", {
-                    ...formData.internship_preferences,
-                    expected_start_date: v === "true" ? undefined : 0,
-                  })
-                }
-              />
-              {formData.internship_preferences?.expected_start_date !==
-                undefined && (
-                <div className="flex flex-row gap-4 mt-4 border-l-2 border-gray-300 pl-4">
-                  <div className="space-y-2">
-                    <Label className="flex flex-row text-xs font-medium text-muted-foreground">
-                      Start Date{" "}
-                      <span className="text-destructive ml-1">*</span>
-                    </Label>
-                    <FormDatePicker
-                      date={
-                        formData.internship_preferences?.expected_start_date ??
-                        undefined
-                      }
-                      setter={(v) =>
-                        setField("internship_preferences", {
-                          ...formData.internship_preferences,
-                          expected_start_date: v,
-                        })
-                      }
-                      disabledDays={{ before: new Date() }}
-                    />
-                  </div>
+          <Card className="p-0 border-transparent">
+            <FormRadio
+              required
+              options={[
+                { value: "true", label: "As soon as possible" },
+                { value: "false", label: "I have a future date in mind" },
+              ]}
+              value={
+                (formData.internship_preferences?.expected_start_date ===
+                  undefined) +
+                ""
+              }
+              setter={(v) =>
+                setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  expected_start_date: v === "true" ? undefined : 0,
+                })
+              }
+            />
+            {formData.internship_preferences?.expected_start_date !==
+              undefined && (
+              <div className="flex flex-row gap-4 mt-4 border-l-2 border-gray-300 pl-4">
+                <div className="space-y-2">
+                  <Label className="flex flex-row text-sm font-medium text-muted-foreground">
+                    Start Date <span className="text-destructive ml-1">*</span>
+                  </Label>
+                  <FormDatePicker
+                    date={
+                      formData.internship_preferences?.expected_start_date ??
+                      undefined
+                    }
+                    setter={(v) =>
+                      setField("internship_preferences", {
+                        ...formData.internship_preferences,
+                        expected_start_date: v,
+                      })
+                    }
+                    disabledDays={{ before: new Date() }}
+                  />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </Card>
         </div>
       </Card>
