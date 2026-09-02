@@ -62,7 +62,7 @@ export function HireAppHeader() {
           isGodActive ? "text-primary" : "text-gray-700",
         )}
       >
-        <div className="flex items-center gap-2 ">
+        <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-gray-500" />
           <span>Administrator</span>
         </div>
@@ -72,7 +72,7 @@ export function HireAppHeader() {
       <Button
         variant="ghost"
         className={cn(
-          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive!",
+          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1",
           isGodActive
             ? "text-primary"
             : "opacity-80 hover:bg-gray-100 hover:opacity-100",

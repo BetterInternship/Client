@@ -107,7 +107,7 @@ function DashboardContent() {
   }
 
   return (
-    <PageContainer className="flex flex-col gap-2">
+    <PageContainer>
       {profile.data && (
         <IomPartnershipCta
           profile={profile.data}
@@ -116,7 +116,6 @@ function DashboardContent() {
       )}
       <PageHeader
         title="Job listings"
-        description={`${activeJobs.length} active listings, ${inactiveJobs.length} inactive listings`}
         actionsClassName="self-center"
       >
         <Button
@@ -130,38 +129,58 @@ function DashboardContent() {
           </Link>
         </Button>
       </PageHeader>
-      {pausedJobs !== 0 && (
-        <StatusNotice
-          icon={Pause}
-          title="Paused listings"
-          description={`You have ${pausedJobs} paused listing${pausedJobs !== 1 ? "s" : ""}.`}
-          variant="warning"
-          action={
-            <Button
-              size="sm"
-              variant="outline"
-              scheme="primary"
-              disabled={reEnabling}
-              onClick={() => {
-                setReEnabling(true);
-                void unpause_all_jobs();
-                setReEnabling(false);
-              }}
-            >
-              {reEnabling ? "Re-activating..." : "Re-activate all"}
-            </Button>
-          }
-        />
-      )}
-      <JobsContent
-        applications={applications.employer_applications}
-        jobs={ownedJobs}
-        employerId={profile.data?.id || ""}
-        updateJob={handleUpdateJob}
-        onReactivate={unpause_job}
-        onAddListingClick={handleAddListingClick}
-        isLoading={loading}
-      />
+      <div className="flex-1 flex flex-col">
+        {pausedJobs !== 0 && (
+          <StatusNotice
+            icon={Pause}
+            title="Paused listings"
+            description={`You have ${pausedJobs} paused listing${pausedJobs !== 1 ? "s" : ""}.`}
+            variant="warning"
+            action={
+              <Button
+                size="sm"
+                variant="outline"
+                scheme="primary"
+                disabled={reEnabling}
+                onClick={() => {
+                  setReEnabling(true);
+                  void unpause_all_jobs();
+                  setReEnabling(false);
+                }}
+              >
+                {reEnabling ? "Re-activating..." : "Re-activate all"}
+              </Button>
+            }
+          />
+        )}
+        <div className="flex flex-col flex-1">
+          <div>
+            <div className="flex gap-4 mb-4">
+              <span className="text-muted-foreground">
+                <span className="text-primary font-bold">
+                  {activeJobs.length}
+                </span>{" "}
+                listing{activeJobs.length !== 1 ? "s" : ""} turned on
+              </span>
+              <span className="text-muted-foreground">
+                <span className="text-primary font-bold">
+                  {inactiveJobs.length}
+                </span>{" "}
+                listing{inactiveJobs.length !== 1 ? "s" : ""} turned off
+              </span>
+            </div>
+            <JobsContent
+              applications={applications.employer_applications}
+              jobs={ownedJobs}
+              employerId={profile.data?.id || ""}
+              updateJob={handleUpdateJob}
+              onReactivate={unpause_job}
+              onAddListingClick={handleAddListingClick}
+              isLoading={loading}
+            />
+          </div>
+        </div>
+      </div>
     </PageContainer>
   );
 }
