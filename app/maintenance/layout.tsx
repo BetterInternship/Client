@@ -9,9 +9,9 @@ import { getRefsData } from "@/lib/db/use-refs-backend";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import Header from "@/components/features/student/header";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
-import { ClientProcessesProvider, MQJobsProvider } from "@betterinternship/components";
+import { ClientProcessesProvider } from "@betterinternship/components";
 import { OrchestratorConfig } from "../orchestrator-config";
-import { pollMqJob } from "@/lib/api/services";
+import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
 import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
@@ -49,7 +49,7 @@ export default async function MaintenanceLayout({
                   <HeaderContextProvider>
                     <OrchestratorConfig />
                     <ClientProcessesProvider>
-                      <MQJobsProvider poll={pollMqJob}>
+                      <AppMQJobsProvider>
                         <FilloutJobsProvider>
                           <ModalProvider>
                             <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
@@ -66,7 +66,7 @@ export default async function MaintenanceLayout({
                             </div>
                           </ModalProvider>
                         </FilloutJobsProvider>
-                      </MQJobsProvider>
+                      </AppMQJobsProvider>
                     </ClientProcessesProvider>
                     <SonnerToaster />
                   </HeaderContextProvider>
