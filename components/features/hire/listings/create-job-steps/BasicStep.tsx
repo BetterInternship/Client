@@ -3,7 +3,7 @@
 import { FormInput } from "@/components/EditForm";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { Job } from "@/lib/db/db.types";
-import { Card, PageHeader } from "@betterinternship/components";
+import { AnimatedCount, Card, PageHeader } from "@betterinternship/components";
 import { Input } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import { BasicStepIllustration } from "./illustrations/BasicStepIllustration";
@@ -100,7 +100,8 @@ const BasicStep = ({
             className="h-10"
           />
           <p className="text-xs text-muted-foreground tabular-nums shrink-0 text-right">
-            {titleLength}/100
+            <AnimatedCount value={titleLength} />
+            /100
           </p>
         </div>
 
