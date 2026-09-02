@@ -99,15 +99,9 @@ const BasicStep = ({
             maxLength={100}
             className="h-10"
           />
-          <div className="flex justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
-              Keep it clear and specific. “Frontend Intern” works better than
-              “Intern”.
-            </p>
-            <p className="text-xs text-muted-foreground tabular-nums shrink-0">
-              {titleLength}/100
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground tabular-nums shrink-0 text-right">
+            {titleLength}/100
+          </p>
         </div>
 
         {/* Location */}
@@ -121,9 +115,6 @@ const BasicStep = ({
             maxLength={100}
             className="h-10"
           />
-          <p className="text-xs text-muted-foreground">
-            Where will the intern work? You can change this later.
-          </p>
         </div>
 
         {/* Category */}
@@ -134,10 +125,6 @@ const BasicStep = ({
             </span>
             <span className="text-destructive text-xs">*</span>
           </div>
-          <p className="text-xs text-muted-foreground -mt-1">
-            Choose a category that describes the job (like Cybersecurity, Legal,
-            Design, etc.).
-          </p>
           <GroupableRadioDropdown
             name="category"
             defaultValue={categoryValue}
