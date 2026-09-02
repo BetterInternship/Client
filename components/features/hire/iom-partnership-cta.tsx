@@ -57,10 +57,7 @@ export function IomPartnershipCta({
             Build internship partnerships and manage MOAs with universities.
             {linked && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-supportive px-2.5 py-1.5 text-sm font-semibold whitespace-nowrap text-supportive-foreground">
-                <CheckCircle2
-                  className="h-3.5 w-3.5 shrink-0"
-                  aria-hidden="true"
-                />
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 Linked
               </span>
             )}
@@ -75,12 +72,10 @@ export function IomPartnershipCta({
               event.stopPropagation();
               activate();
             }}
-            className="w-full shrink-0 bg-transparent transition-all sm:bg-background sm:group-hover/status-notice:w-fit"
+            className="w-full bg-transparent transition-[width] sm:w-52 sm:shrink-0 sm:bg-background sm:group-hover/status-notice:w-64"
           >
             <Handshake aria-hidden="true" />
-            <span className="button-label whitespace-nowrap">
-              Partners Portal
-            </span>
+            <span className="button-label">Partner with Universities</span>
           </Button>
         }
         role="button"
@@ -92,7 +87,7 @@ export function IomPartnershipCta({
             activate();
           }
         }}
-        className="group/status-notice mb-6 cursor-pointer border-gray-200 bg-gray-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="mb-6 cursor-pointer border-gray-200 bg-gray-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       />
     </>
   );

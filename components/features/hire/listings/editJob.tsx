@@ -1,16 +1,22 @@
 "use client";
 
 import {
-  Button,
+  FormCheckbox,
+  FormCheckBoxGroup,
+  FormDatePicker,
+  FormInput,
+  FormRadio,
+} from "@/components/EditForm";
+import { MDXEditor } from "@/components/MDXEditor";
+import { Button, Input, Label } from "@betterinternship/components";
+import {
   PageContainer,
   PageHeader,
-} from "@betterinternship/components";
-import { TriangleAlert } from "lucide-react";
-import { cn } from "@betterinternship/components";
-import { BasicStep } from "./create-job-steps/BasicStep";
-import { SetupStep } from "./create-job-steps/SetupStep";
-import { DetailsStep } from "./create-job-steps/DetailsStep";
-import { useModalRegistry } from "@/components/modals/modal-registry";
+} from "@betterinternship/components/page-header";
+import { Card } from "@/components/ui/card";
+import { GroupableRadioDropdown } from "@/components/ui/dropdown";
+import { BooleanCheckIcon } from "@/components/ui/icons";
+import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -18,6 +24,9 @@ import { useFormData } from "@/lib/form-data";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
+import { useModal } from "@/hooks/use-modal";
+import { TriangleAlert } from "lucide-react";
+import { cn } from "@betterinternship/components";
 
 interface EditJobPageProps {
   job: Job;
@@ -31,6 +40,14 @@ interface EditJobPageProps {
   actions?: React.ReactNode[];
 }
 
+const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
+  return (
+    <div className={checked ? "text-supportive" : ""}>
+      <BooleanCheckIcon checked={checked} />
+    </div>
+  );
+};
+
 const EditJobPage = ({
   job,
   is_editing = false,
@@ -39,8 +56,9 @@ const EditJobPage = ({
   update_job,
   actions = [],
 }: EditJobPageProps) => {
-  const { job_pay_freq, isNotNull } = useDbRefs();
+  const { job_pay_freq } = useDbRefs();
   const { isMobile } = useMobile();
+  const [editing, set_editing] = useState(false);
   const [isMissing, setMissing] = useState(false);
   const [challengeTitle, setChallengeTitle] = useState("");
   const [challengeDescription, setChallengeDescription] = useState("");
@@ -54,7 +72,7 @@ const EditJobPage = ({
 
   const { job_categories } = useDbRefs();
 
-  // keep duplicate tempDisable per instruction
+  // !! This is a temporary grouping
   const tempDisable = [
     "f5bd5b55-14e3-44c7-be02-477e3ae446d2",
     "381239bf-7c82-4f87-a1b8-39d952f8876b",
@@ -69,15 +87,15 @@ const EditJobPage = ({
     "657da8d0-69a7-4312-8da1-7bd97145310b",
   ];
 
-  // create category groups - copied from createJob
+  // create category groups
   const category_items =
     job_categories
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
       .map((category) => {
         if (
           tempDisable.includes(category.id) ||
-          category.parent_id == null ||
-          category.name == "Engineering"
+          category.parent_id == null || // for the subheaders
+          category.name == "Engineering" // ! this is temp bc engineering is a subheader but its placed under others for now
         )
           return null;
 
@@ -88,10 +106,11 @@ const EditJobPage = ({
       })
       .filter(Boolean) ?? [];
 
-  const registry = useModalRegistry();
-
-  const isSalaryFilled = typeof formData.salary === "number" && formData.salary;
-  const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
+  const {
+    open: openAlertModal,
+    close: closeAlertModal,
+    Modal: AlertModal,
+  } = useModal("alert-modal", { showCloseButton: false });
 
   const listingInternshipPreferences = () => ({
     internship_types: formData.internship_preferences?.internship_types,
@@ -113,6 +132,7 @@ const EditJobPage = ({
   }, [refreshFlag]);
 
   const handleSaveEdit = async () => {
+    // Validate required fields
     if (!formData.title?.trim()) {
       alert("Job title is required");
       return;
@@ -128,6 +148,11 @@ const EditJobPage = ({
       return;
     }
 
+    if (!formData.requirements?.trim()) {
+      alert("Job requirements is required");
+      return;
+    }
+
     if (isSuperListing && !challengeTitle.trim()) {
       alert("Challenge title is required");
       return;
@@ -136,7 +161,7 @@ const EditJobPage = ({
     const edited_job: UpdateJobChallengeListingPayload = {
       title: formData.title,
       description: formData.description ?? "",
-      requirements: null,
+      requirements: formData.requirements ?? "",
       location: formData.location ?? profile.data?.location ?? "",
       allowance: formData.allowance,
       salary: formData.allowance === 0 ? formData.salary : undefined,
@@ -153,6 +178,8 @@ const EditJobPage = ({
         : {}),
     };
 
+    set_editing(true);
+
     if (job.id) {
       const result = await update_job(job.id, edited_job);
       if (result.success) {
@@ -163,10 +190,7 @@ const EditJobPage = ({
 
   useEffect(() => {
     if (job) {
-      const merged = job.requirements?.trim()
-        ? `${job.description ?? ""}\n\n### Requirements\n${job.requirements}`.trim()
-        : (job.description ?? "");
-      setFields({ ...job, description: merged, requirements: null } as Job);
+      setFields(job);
       setChallengeTitle(job.challenge?.title ?? "");
       setChallengeDescription(job.challenge?.description ?? "");
     }
@@ -178,7 +202,7 @@ const EditJobPage = ({
         id: formData.id,
         title: formData.title ?? "",
         description: formData.description ?? "",
-        requirements: null,
+        requirements: formData.requirements ?? "",
         location: formData.location ?? "",
         allowance: formData.allowance ?? undefined,
         salary: formData.salary ?? null,
@@ -198,6 +222,7 @@ const EditJobPage = ({
       update_job(edited_job.id ?? "", edited_job).then(
         // @ts-ignore
         ({ job: updated_job }) => {
+          // if (!updated_job) alert("Invalid input provided for job update.");
           set_is_editing(false);
         },
       );
@@ -209,54 +234,36 @@ const EditJobPage = ({
       !formData.title?.trim() ||
       !formData.location?.trim() ||
       !formData.description?.trim() ||
+      !formData.requirements?.trim() ||
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
       !formData.internship_preferences?.job_setup_ids?.length ||
-      !formData.internship_preferences?.job_category_ids?.length ||
-      (isSuperListing && !challengeTitle.trim()) ||
-      payFreqMissing;
+      (isSuperListing && !challengeTitle.trim());
 
     setMissing(missing);
   }, [
     formData.title,
     formData.location,
     formData.description,
+    formData.requirements,
     formData.allowance,
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
     formData.internship_preferences?.job_setup_ids,
-    formData.internship_preferences?.job_category_ids,
-    formData.salary,
-    formData.salary_freq,
     challengeTitle,
     isSuperListing,
   ]);
 
-  const openDiscardModal = () =>
-    registry.warning.open({
-      icon: TriangleAlert,
-      iconColor: "text-primary",
-      title: "Are you sure you want to cancel?",
-      message: "All unsaved changes will be lost.",
-      primaryAction: { label: "Continue Editing", onClick: () => {} },
-      secondaryAction: {
-        label: "Discard Edits",
-        onClick: () => router.push(`/dashboard/manage?jobId=${job.id}`),
-      },
-      panelClassName: "sm:max-w-md",
-    });
-
   return (
     <>
-      {!isMobile && (
-        <div className="sticky top-[56px] z-20 border-b border-gray-200 bg-white">
-          <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between gap-4">
-            <PageHeader title="Edit listing" />
-            <div className="flex gap-3 items-center">
+      <PageContainer className="pb-24 sm:pb-8 flex flex-col gap-4">
+        <PageHeader title="Edit listing" actionsClassName="self-start">
+          {!isMobile && (
+            <>
               <Button
                 variant="outline"
-                onClick={openDiscardModal}
+                onClick={openAlertModal}
                 disabled={saving}
               >
                 Cancel
@@ -275,43 +282,603 @@ const EditJobPage = ({
                   "Save Edits"
                 )}
               </Button>
+            </>
+          )}
+        </PageHeader>
+
+        {/* Main Content */}
+        <div className="rounded-[0.33em] border">
+          {isSuperListing && (
+            <div
+              className={cn(
+                "py-5 border-b border-gray-200 bg-yellow-50/50",
+                isMobile ? "px-2" : "px-6",
+              )}
+            >
+              <div className="space-y-4">
+                <div>
+                  <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                    <StepCheckIndicator
+                      checked={challengeTitle.trim().length > 0}
+                    />
+                    Challenge Title{" "}
+                    <span className="text-destructive text-sm">*</span>
+                  </h2>
+                  <Input
+                    value={challengeTitle}
+                    onChange={(e) => setChallengeTitle(e.target.value)}
+                    className="text-base font-medium h-10"
+                    placeholder="Enter challenge title..."
+                    maxLength={120}
+                    required={true}
+                  />
+                  <p className="text-xs text-gray-500 text-right mt-1">
+                    {challengeTitle.length}/120 characters
+                  </p>
+                </div>
+
+                <div>
+                  <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                    <StepCheckIndicator
+                      checked={challengeDescription.trim().length > 0}
+                    />
+                    Challenge Description
+                  </h2>
+                  <Textarea
+                    value={challengeDescription}
+                    onChange={(e) => setChallengeDescription(e.target.value)}
+                    className="text-sm min-h-[140px]"
+                    placeholder="Describe the challenge submission expected from applicants..."
+                    maxLength={4000}
+                  />
+                  <p className="text-xs text-gray-500 text-right mt-1">
+                    {challengeDescription.length}/4000 characters
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Title Section */}
+          <div
+            className={cn(
+              "py-5 border-b border-gray-200",
+              isMobile ? "px-2" : "px-6",
+            )}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                  <StepCheckIndicator
+                    checked={
+                      formData.title !== "" &&
+                      formData.title !== undefined &&
+                      formData.title !== null
+                    }
+                  />
+                  Job Title/Role{" "}
+                  <span className="text-destructive text-sm">*</span>
+                </h2>
+                <FormInput
+                  value={formData.title ?? ""}
+                  onChange={(e) => setField("title", e.target.value)}
+                  className="text-base font-medium h-10"
+                  placeholder="Enter job title here..."
+                  maxLength={100}
+                  required={true}
+                  setter={fieldSetter("title")}
+                />
+                <p className="text-xs text-gray-500 text-right mt-1">
+                  {(formData.title || "").length}/100 characters
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className={cn(isMobile ? "p-2" : "p-6 overflow-hidden")}>
+            <div className="space-y-8">
+              <div>
+                {/* Credit Boxes */}
+                <div>
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={
+                        !!formData.internship_preferences?.internship_types
+                          ?.length
+                      }
+                    />
+                    Are you hiring credited and/or voluntary interns?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div
+                      onClick={() =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types:
+                            formData.internship_preferences?.internship_types?.includes(
+                              "credited",
+                            )
+                              ? [
+                                  ...formData.internship_preferences?.internship_types.filter(
+                                    (it) => it !== "credited",
+                                  ),
+                                ]
+                              : [
+                                  ...(formData.internship_preferences
+                                    ?.internship_types ?? []),
+                                  "credited",
+                                ],
+                        })
+                      }
+                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+                    >
+                      <FormCheckbox
+                        checked={formData.internship_preferences?.internship_types?.includes(
+                          "credited",
+                        )}
+                      />
+                      <div>
+                        <Label className="text-xs font-medium text-gray-900">
+                          Credited Interns (Practicum)
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Required by schools (300-600 hours) and needs
+                          Memorandum of Agreement (MOA) from university
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      onClick={() =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types:
+                            formData.internship_preferences?.internship_types?.includes(
+                              "voluntary",
+                            )
+                              ? [
+                                  ...formData.internship_preferences?.internship_types.filter(
+                                    (it) => it !== "voluntary",
+                                  ),
+                                ]
+                              : [
+                                  ...(formData.internship_preferences
+                                    ?.internship_types ?? []),
+                                  "voluntary",
+                                ],
+                        })
+                      }
+                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+                    >
+                      <FormCheckbox
+                        checked={formData.internship_preferences?.internship_types?.includes(
+                          "voluntary",
+                        )}
+                      />
+                      <div>
+                        <Label className="text-xs font-medium text-gray-900">
+                          Voluntary Interns
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Flexbile schedule, available for hire anytime, and
+                          work is usually on top of academic load
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/*Location Input */}
+                <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                  <StepCheckIndicator
+                    checked={
+                      formData.location !== "" &&
+                      formData.location !== undefined &&
+                      formData.location !== null
+                    }
+                  />
+                  Job Location{" "}
+                  <span className="text-destructive text-sm">*</span>
+                </div>
+                <div className="w-full mb-6">
+                  <div className="space-y-2 w-full">
+                    <FormInput
+                      value={formData.location ?? ""}
+                      maxLength={100}
+                      setter={fieldSetter("location")}
+                      required={false}
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+
+                {/* Work types */}
+                <div className="mb-8">
+                  <div className="grid cols-1 md:grid-cols-1 gap-x-4">
+                    <div>
+                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                        <StepCheckIndicator
+                          checked={
+                            formData.internship_preferences
+                              ?.job_commitment_ids !== undefined &&
+                            formData.internship_preferences
+                              ?.job_commitment_ids !== null &&
+                            formData.internship_preferences?.job_commitment_ids
+                              .length !== 0
+                          }
+                        />
+                        Work Load <span className="text-destructive">*</span>
+                      </div>
+                      <FormCheckBoxGroup
+                        required={true}
+                        values={
+                          formData.internship_preferences?.job_commitment_ids ??
+                          []
+                        }
+                        options={[
+                          {
+                            value: 1,
+                            label: "Part-time",
+                            description: "(Approx 20 hours/week)",
+                          },
+                          {
+                            value: 2,
+                            label: "Full-time",
+                            description: "(Approx 40 hours/week)",
+                          },
+                          {
+                            value: 3,
+                            label: "Flexible/Project-based",
+                          },
+                        ]}
+                        setter={(v) =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            job_commitment_ids: v,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                        <StepCheckIndicator
+                          checked={
+                            formData.internship_preferences?.job_setup_ids !==
+                              undefined &&
+                            formData.internship_preferences?.job_setup_ids !==
+                              null &&
+                            formData.internship_preferences?.job_setup_ids
+                              .length !== 0
+                          }
+                        />
+                        Work Mode <span className="text-destructive">*</span>
+                      </div>
+                      <FormCheckBoxGroup
+                        required={true}
+                        values={
+                          formData.internship_preferences?.job_setup_ids ?? []
+                        }
+                        options={[
+                          {
+                            value: 0,
+                            label: "On-site",
+                          },
+                          {
+                            value: 1,
+                            label: "Hybrid",
+                          },
+                          {
+                            value: 2,
+                            label: "Remote",
+                          },
+                        ]}
+                        setter={(v) =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            job_setup_ids: v,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={formData.allowance !== undefined}
+                    />
+                    Is the internship paid?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <Card
+                    className={`${formData.allowance === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
+                  >
+                    <div>
+                      <FormRadio
+                        required={true}
+                        options={[
+                          {
+                            value: "1",
+                            label: "No",
+                          },
+                          {
+                            value: "0",
+                            label: "Yes",
+                          },
+                        ]}
+                        value={formData.allowance?.toString() ?? undefined}
+                        setter={(value) =>
+                          fieldSetter("allowance")(parseInt(value))
+                        }
+                      />
+                      {formData.allowance === 0 && (
+                        <div
+                          className={cn(
+                            "border-l-2 border-gray-300 pl-4 gap-4 m-4",
+                            isMobile ? "" : "flex flex-row",
+                          )}
+                        >
+                          <div className="space-y-2 mb-4">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Allowance{" "}
+                              <span
+                                className={cn(
+                                  "text-gray-300",
+                                  isMobile ? "text-xs" : "text-sm",
+                                )}
+                              >
+                                (Optional)
+                              </span>
+                            </Label>
+                            <Input
+                              type="number"
+                              value={formData.salary ?? ""}
+                              onChange={(e) =>
+                                setField("salary", parseInt(e.target.value))
+                              }
+                              placeholder="Enter salary amount"
+                              className="text-sm"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Pay Frequency{" "}
+                              <span
+                                className={cn(
+                                  "text-gray-300",
+                                  isMobile ? "text-xs" : "text-sm",
+                                )}
+                              >
+                                (Optional)
+                              </span>
+                            </Label>
+                            <GroupableRadioDropdown
+                              name="pay_freq"
+                              defaultValue={formData.salary_freq}
+                              options={job_pay_freq}
+                              onChange={fieldSetter("salary_freq")}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+
+                  <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                    <StepCheckIndicator
+                      checked={
+                        formData.internship_preferences?.expected_start_date ===
+                          undefined ||
+                        formData.internship_preferences?.expected_start_date! >
+                          0
+                      }
+                    />
+                    When are you accepting interns for this listing?{" "}
+                    <span className="text-destructive">*</span>
+                  </div>
+                  <Card
+                    className={`${formData.internship_preferences?.expected_start_date === undefined ? "border-gray-200" : "border-primary border-opacity-85"}`}
+                  >
+                    <FormRadio
+                      required={true}
+                      options={[
+                        {
+                          value: "true",
+                          label: "As soon as possible",
+                        },
+                        {
+                          value: "false",
+                          label: "I have a future date in mind",
+                        },
+                      ]}
+                      value={
+                        (formData.internship_preferences
+                          ?.expected_start_date ===
+                          undefined) +
+                        ""
+                      }
+                      setter={(v) =>
+                        setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          expected_start_date: v === "true" ? undefined : 0,
+                        })
+                      }
+                    />
+                    {formData.internship_preferences?.expected_start_date !==
+                      undefined && (
+                      <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
+                        <div className="space-y-2">
+                          <Label className="flex flex-row text-sm font-medium text-gray-700">
+                            Start Date{" "}
+                            <span className="text-destructive">*</span>
+                          </Label>
+                          <FormDatePicker
+                            date={
+                              formData.internship_preferences
+                                ?.expected_start_date ?? undefined
+                            }
+                            setter={(v) =>
+                              setField("internship_preferences", {
+                                ...formData.internship_preferences,
+                                expected_start_date: v,
+                              })
+                            }
+                            disabledDays={{ before: new Date() }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                </div>
+
+                <div>
+                  <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                    Category<span className="text-destructive">*</span>
+                    <p className="text-gray-500 text-sm font-normal">
+                      Choose a category that describes the job (like
+                      Cybersecurity, Legal, Design, etc.). This will help people
+                      find your listing.
+                    </p>
+                  </div>
+
+                  <GroupableRadioDropdown
+                    name="category"
+                    defaultValue={
+                      formData.internship_preferences?.job_category_ids
+                    }
+                    options={category_items}
+                    onChange={(value) =>
+                      setField("internship_preferences", {
+                        ...formData.internship_preferences,
+                        job_category_ids: value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <div className="text-xl tracking-tight font-medium my-4">
+                      <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                        Description
+                        <span className="text-destructive">*</span>
+                      </div>
+                      <p className="text-gray-500 text-sm font-normal">
+                        What will the intern do? Briefly describe their tasks,
+                        projects, or roles in your company
+                      </p>
+                    </div>
+                    <div className="relative mdx-click-area">
+                      <MDXEditor
+                        className="min-h-[250px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        markdown={formData.description ?? ""}
+                        onChange={(value) => setField("description", value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
+                      Requirements
+                      <span className="text-destructive">*</span>
+                    </div>
+                    <p className="text-gray-500 text-sm mb-3">
+                      List preferred courses, skills, and qualifications from
+                      applicants
+                    </p>
+                    <div className="relative mb-4">
+                      <MDXEditor
+                        className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        markdown={formData.requirements ?? ""}
+                        onChange={(value) => setField("requirements", value)}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-400 mb-1">(Optional)</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div
+                        onClick={() =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            require_github:
+                              !formData.internship_preferences?.require_github,
+                          })
+                        }
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                            ${formData.internship_preferences?.require_github ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <FormCheckbox
+                          checked={
+                            formData.internship_preferences?.require_github ??
+                            false
+                          }
+                          setter={(v) =>
+                            setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_github: v,
+                            })
+                          }
+                        />
+                        <div className="grid grid-rows-1 md:grid-rows-2">
+                          <Label className="text-xs font-medium text-gray-900">
+                            GitHub Repository
+                          </Label>
+                          <p className="text-xs text-gray-500">
+                            Require GitHub link
+                          </p>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() =>
+                          setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            require_portfolio:
+                              !formData.internship_preferences
+                                ?.require_portfolio,
+                          })
+                        }
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                            ${formData.internship_preferences?.require_portfolio ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <FormCheckbox
+                          checked={
+                            formData.internship_preferences
+                              ?.require_portfolio ?? false
+                          }
+                          setter={(v) =>
+                            setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_portfolio: v,
+                            })
+                          }
+                        />
+                        <div className="grid grid-rows-1 md:grid-rows-2">
+                          <Label className="text-xs font-medium text-gray-900">
+                            Portfolio
+                          </Label>
+                          <p className="text-xs text-gray-500">
+                            Require portfolio link
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
-      <PageContainer
-        className={cn(
-          "pb-24 sm:pb-8 flex flex-col gap-8",
-          isMobile ? "pb-20" : "",
-        )}
-      >
-        <div className="space-y-24">
-          <BasicStep
-            formData={formData}
-            fieldSetter={fieldSetter}
-            setField={setField}
-            categoryOptions={category_items as any}
-            isSuperListing={isSuperListing}
-            challengeTitle={challengeTitle}
-            challengeDescription={challengeDescription}
-            setChallengeTitle={setChallengeTitle}
-            setChallengeDescription={setChallengeDescription}
-          />
-          <SetupStep
-            formData={formData}
-            setField={setField}
-            fieldSetter={fieldSetter}
-            job_pay_freq={job_pay_freq as any}
-          />
-          <DetailsStep formData={formData} setField={setField} />
-        </div>
       </PageContainer>
+
       {isMobile && (
-        <div className="bg-white border-t border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50">
-          <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
+        <div className="bg-white border border-gray-200 shadow-md px-6 py-4 fixed bottom-0 right-0 left-0 z-50 p-6">
+          <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
             <Button
               variant="outline"
-              onClick={openDiscardModal}
+              onClick={openAlertModal}
               disabled={saving}
               className="h-10"
             >
@@ -334,6 +901,31 @@ const EditJobPage = ({
           </div>
         </div>
       )}
+
+      <AlertModal>
+        <div className="p-8">
+          <div className="mb-8 flex flex-col items-center justify-center text-center">
+            <TriangleAlert className="text-primary h-8 w-8 mb-4" />
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">Are you sure you want to cancel?</h3>
+              <p className="text-gray-500 text-sm">
+                All unsaved changes will be lost.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-center gap-6">
+            <Button
+              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+              onClick={() => {
+                router.push(`/dashboard/manage?jobId=${job.id}`);
+              }}
+            >
+              Discard Edits
+            </Button>
+            <Button onClick={closeAlertModal}>Continue Editing</Button>
+          </div>
+        </div>
+      </AlertModal>
     </>
   );
 };

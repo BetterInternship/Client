@@ -46,8 +46,8 @@ export function IomPartnershipModalContent({
   return (
     <>
       <p className="mb-5 text-sm leading-6 text-muted-foreground">
-        Companies can sign MOAs with universities directly through the Partners
-        Portal.
+        Companies can sign MOAs with universities directly through
+        moa.betterinternship.com.
       </p>
       <div className="grid gap-5 sm:grid-cols-2">
         <button

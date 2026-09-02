@@ -6,20 +6,13 @@ import {
   JobService,
   handleApiError,
 } from "@/lib/api/services";
-import {
-  Employer,
-  EmployerApplication,
-  EmployerUserRole,
-  Job,
-} from "@/lib/db/db.types";
+import { Employer, EmployerApplication, EmployerUserRole, Job } from "@/lib/db/db.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCache } from "./use-cache";
 
 /** Invalidated by every self-service or team-management mutation (plan §6.4) — "me" for the caller's own identity/prefs, "my-employer-team" for the roster. */
-const invalidateAccountQueries = (
-  queryClient: ReturnType<typeof useQueryClient>,
-) =>
+const invalidateAccountQueries = (queryClient: ReturnType<typeof useQueryClient>) =>
   Promise.all([
     queryClient.invalidateQueries({ queryKey: ["me"] }),
     queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
@@ -405,13 +398,8 @@ export function useResendInvite() {
 export function useChangeMemberRole() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      userId,
-      role,
-    }: {
-      userId: string;
-      role: EmployerUserRole;
-    }) => EmployerUserService.changeRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: EmployerUserRole }) =>
+      EmployerUserService.changeRole(userId, role),
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
 }
@@ -419,8 +407,7 @@ export function useChangeMemberRole() {
 export function useDeactivateMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) =>
-      EmployerUserService.deactivateMember(userId),
+    mutationFn: (userId: string) => EmployerUserService.deactivateMember(userId),
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
 }
@@ -428,8 +415,7 @@ export function useDeactivateMember() {
 export function useReactivateMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) =>
-      EmployerUserService.reactivateMember(userId),
+    mutationFn: (userId: string) => EmployerUserService.reactivateMember(userId),
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
 }
