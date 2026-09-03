@@ -13,6 +13,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  AnimatedCount,
 } from "@betterinternship/components";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -25,6 +26,7 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 import {
   CalendarDays,
   Check,
+  CheckCheck,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -33,14 +35,14 @@ import {
   Minus,
 } from "lucide-react";
 import * as React from "react";
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Input } from "@betterinternship/components";
 import { Tooltip } from "react-tooltip";
 import { Textarea } from "./ui/textarea";
 import { Matcher } from "react-day-picker";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useBlurTransition } from "./animata/blur";
 
 interface EditFormContext<T extends IFormData> {
@@ -181,8 +183,8 @@ export function LabelWithTooltip({
   return (
     <div className="mb-1 flex w-full justify-between gap-2 md:items-center">
       <div className="flex gap-2 md:items-center">
-        <span className="text-xs text-gray-600">
-          {label} {required && <span className="text-red-500">*</span>}
+        <span className="text-sm font-medium text-muted-foreground">
+          {label} {required && <span className="text-destructive">*</span>}
         </span>
         <div className="hover:cursor-help">
           <MessageCircleQuestion
@@ -241,7 +243,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           onChange={(e) => setter && setter(e.target.value)}
           className={cn(
             className,
-            "placeholder:text-gray-400 placeholder:italic focus:placeholder:text-primary/70",
+            "placeholder:text-muted-foreground placeholder:italic focus:placeholder:text-primary/70",
           )}
           {...props}
         />
@@ -424,7 +426,7 @@ export const FormCheckbox = ({
         </Checkbox>
         {sentence && (
           <div
-            className="text-xs text-gray-500 cursor-pointer select-none"
+            className="text-sm text-muted-foreground cursor-pointer select-none"
             onClick={() => setter?.(!checked)}
             role="button"
           >
@@ -439,13 +441,25 @@ export const FormCheckbox = ({
 interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
-  setter: (value: any) => void;
+  setter: (values: (string | number)[]) => void;
   label?: string;
   required?: boolean;
   className?: string;
   tooltip?: string;
   tooltipId?: string;
+  /** Multi-select hint shown above the options. Pass `null` to hide it. */
+  hint?: React.ReactNode;
+  /** Columns on md+ screens. Defaults to 3. */
+  columns?: 1 | 2 | 3;
+  /** Fired when a single option is toggled, before the setter runs. */
+  onToggle?: (value: string | number, checked: boolean) => void;
 }
+
+const GRID_COLS: Record<1 | 2 | 3, string> = {
+  1: "",
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+};
 
 export const FormCheckBoxGroup = ({
   options,
@@ -456,15 +470,22 @@ export const FormCheckBoxGroup = ({
   className,
   tooltip,
   tooltipId,
+  hint = "Select all that apply",
+  columns = 3,
+  onToggle,
   ...props
 }: FormCheckBoxGroupProps) => {
   const handleValueChange = (optionValue: string | number) => {
-    if (values.includes(optionValue)) {
-      setter(values.filter((v) => v !== optionValue));
-    } else {
-      setter([...values, optionValue]);
-    }
+    const willBeChecked = !values.includes(optionValue);
+    onToggle?.(optionValue, willBeChecked);
+    setter(
+      willBeChecked
+        ? [...values, optionValue]
+        : values.filter((v) => v !== optionValue),
+    );
   };
+
+  const blurTransition = useBlurTransition();
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -477,16 +498,43 @@ export const FormCheckBoxGroup = ({
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {(hint || values.length > 0) && (
+        <div className="flex items-center gap-2 text-xs">
+          {hint && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
+              <CheckCheck className="h-3 w-3" />
+              {hint}
+            </span>
+          )}
+          <AnimatePresence>
+            {values.length > 0 && (
+              <motion.span
+                className="font-medium text-primary"
+                {...blurTransition}
+              >
+                <AnimatedCount value={values.length} /> selected
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      <div className={cn("grid grid-cols-1 gap-4", GRID_COLS[columns])}>
         {options.map((option) => {
           const isChecked = values.includes(option.value);
 
           return (
             <div
               key={option.value}
+              role="checkbox"
+              aria-checked={isChecked}
               onClick={() => handleValueChange(option.value)}
-              className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                ${isChecked ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+              className={cn(
+                "flex items-start gap-3 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit",
+                isChecked
+                  ? "border-primary border-opacity-85 bg-primary/5"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
+              )}
             >
               <FormCheckbox checked={isChecked ?? false} />
               <div className="grid grid-rows-1 md:grid-rows-2">
@@ -568,20 +616,20 @@ export const FormRadio = <T extends string | boolean = string>({
               value={option.value.toString()}
               id={`${name}-${option.value.toString()}`}
               className={cn(
-                "w-4 h-4 rounded-full border-2 border-gray-300",
+                "w-4 h-4 rounded-full border border-gray-300 shadow-xs bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-primary/50",
                 "data-[state=checked]:border-primary data-[state=checked]:bg-primary",
                 "transition-colors duration-200",
               )}
             >
               <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative">
-                <div className="w-2 h-2 rounded-full bg-white" />
+                <motion.div className="w-2 h-2 rounded-full bg-white" />
               </RadioGroup.Indicator>
             </RadioGroup.Item>
 
             <label
               htmlFor={`${name}-${option.value.toString()}`}
-              className="text-sm font-medium cursor-pointer flex-1"
+              className="text-xs font-medium cursor-pointer flex-1"
             >
               {option.label}
             </label>

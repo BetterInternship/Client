@@ -108,7 +108,7 @@ function LoginContent() {
       title={hasSentCode ? "Check your email" : "Log in"}
       description={
         hasSentCode ? (
-          <span className="block text-center">
+          <span className="block">
             If an eligible account exists, we sent a 6-digit code to{" "}
             <span className="font-medium text-foreground">{email}</span>.
             <Button

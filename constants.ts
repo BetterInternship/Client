@@ -22,7 +22,7 @@ export const SUPPORT_VIBER = "viber://chat?number=%2B639276604999";
 
 // support email
 export const SUPPORT_EMAIL = "hello@betterinternship.com";
-export const SUPPORT_EMAIL_LINK = "mailto://hello@betterinternship.com";
+export const SUPPORT_EMAIL_LINK = "mailto:hello@betterinternship.com";
 
 // internships subreddit
 export const INTERNSHIPS_SUBREDDIT = "https://www.reddit.com/r/InternshipsPH";
