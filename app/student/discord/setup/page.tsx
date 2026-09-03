@@ -103,7 +103,9 @@ function DiscordSetupContent() {
     try {
       const result = await DiscordService.getMobileAuthorizationUrl(jobId);
       if (!result.success || !result.authorizationUrl) {
-        throw new Error(result.message || "Could not start Discord connection.");
+        throw new Error(
+          result.message || "Could not start Discord connection.",
+        );
       }
 
       const webAuthorizationUrl = result.authorizationUrl;
@@ -111,6 +113,16 @@ function DiscordSetupContent() {
         window.location.assign(webAuthorizationUrl);
       }, 1500);
 
+      // An external app handoff hides the page without necessarily unloading it.
+      document.addEventListener(
+        "visibilitychange",
+        () => {
+          if (document.visibilityState === "hidden") {
+            window.clearTimeout(fallback);
+          }
+        },
+        { once: true },
+      );
       window.addEventListener("pagehide", () => window.clearTimeout(fallback), {
         once: true,
       });
