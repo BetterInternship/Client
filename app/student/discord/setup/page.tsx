@@ -9,6 +9,7 @@ import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { DiscordService } from "@/lib/api/discord.api";
+import { toDiscordAppAuthorizationUrl } from "@/lib/discord/mobile-oauth";
 import { JobService, UserService } from "@/lib/api/services";
 import { useAuthContext } from "@/lib/ctx-auth";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -92,8 +93,33 @@ function DiscordSetupContent() {
     void apply();
   }, [resumeReady, status.data?.linked]);
 
-  const connect = () => {
-    window.location.assign(DiscordService.authorizationUrl(jobId));
+  const connect = async () => {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobile) {
+      window.location.assign(DiscordService.authorizationUrl(jobId));
+      return;
+    }
+
+    try {
+      const result = await DiscordService.getMobileAuthorizationUrl(jobId);
+      if (!result.success || !result.authorizationUrl) {
+        throw new Error(result.message || "Could not start Discord connection.");
+      }
+
+      const webAuthorizationUrl = result.authorizationUrl;
+      const fallback = window.setTimeout(() => {
+        window.location.assign(webAuthorizationUrl);
+      }, 1500);
+
+      window.addEventListener("pagehide", () => window.clearTimeout(fallback), {
+        once: true,
+      });
+      window.location.assign(toDiscordAppAuthorizationUrl(webAuthorizationUrl));
+    } catch {
+      // The regular OAuth page is the supported fallback when the app cannot
+      // be opened or a device blocks custom URL schemes.
+      window.location.assign(DiscordService.authorizationUrl(jobId));
+    }
   };
 
   const setDefaultResume = async (resumeId: string) => {
@@ -197,7 +223,7 @@ function DiscordSetupContent() {
         )}
 
         {!status.data?.linked && resumeReady && (
-          <Button className="w-full" onClick={connect}>
+          <Button className="w-full" onClick={() => void connect()}>
             Connect Discord and Apply
           </Button>
         )}
