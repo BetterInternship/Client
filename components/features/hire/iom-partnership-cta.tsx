@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircle2, Handshake } from "lucide-react";
-import { Button } from "@betterinternship/components";
+import { ArrowUpRight, CheckCircle2, Handshake } from "lucide-react";
+import { Badge, Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { useModalRegistry } from "@/components/modals/modal-registry";
 import type { Employer } from "@/lib/db/db.types";
@@ -54,15 +54,18 @@ export function IomPartnershipCta({
         title="Partner with universities through MOAs"
         description={
           <div className="flex items-center gap-2">
-            Build internship partnerships and manage MOAs with universities.
+            <span>
+              Build internship partnerships and manage MOAs with universities on
+              the <b className="font-medium">Partners Portal</b>.
+            </span>
             {linked && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-supportive px-2.5 py-1.5 text-sm font-semibold whitespace-nowrap text-supportive-foreground">
+              <Badge variant="solid" type="supportive" className="gap-1">
                 <CheckCircle2
                   className="h-3.5 w-3.5 shrink-0"
                   aria-hidden="true"
                 />
                 Linked
-              </span>
+              </Badge>
             )}
           </div>
         }
@@ -77,7 +80,7 @@ export function IomPartnershipCta({
             }}
             className="w-full shrink-0 bg-transparent transition-all sm:bg-background sm:group-hover/status-notice:w-fit"
           >
-            <Handshake aria-hidden="true" />
+            <ArrowUpRight aria-hidden="true" />
             <span className="button-label whitespace-nowrap">
               Partners Portal
             </span>

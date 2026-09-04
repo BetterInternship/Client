@@ -9,7 +9,6 @@ import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
-import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
@@ -120,11 +119,10 @@ const HTMLContent = ({
                     <FilloutJobsProvider>
                       <ModalProvider>
                         <AllowLanding>
-                          <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="h-screen bg-background overflow-hidden flex flex-col">
                             <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
                               {children}
                             </div>
-                            <MobileNavWrapper />
                           </div>
                         </AllowLanding>
                       </ModalProvider>
