@@ -119,7 +119,7 @@ const HTMLContent = ({
                     <FilloutJobsProvider>
                       <ModalProvider>
                         <AllowLanding>
-                          <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="h-screen bg-background overflow-hidden flex flex-col">
                             <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
                               {children}
                             </div>
