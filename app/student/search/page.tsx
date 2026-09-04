@@ -8,7 +8,6 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckSquare, Square } from "lucide-react";
 import {
   useJobListingsPage,
   useJobStatus,
@@ -17,23 +16,18 @@ import {
 } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
-import { Paginator } from "@/components/ui/paginator";
 import { useModalRef } from "@/hooks/use-modal";
-import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
-import { cn } from "@betterinternship/components";
-import { SaveJobButton } from "@/components/features/student/job/save-job-button";
-import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
-import { ShareJobButton } from "@/components/features/student/job/share-job-button";
-import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
+import { SearchResultsMobile } from "@/components/features/student/search/SearchResultsMobile";
+import { SearchResultsDesktop } from "@/components/features/student/search/SearchResultsDesktop";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -67,6 +61,11 @@ export default function SearchPage() {
   // page + pagination
   const jobsPageSize = 10;
   const [_jobsPage, setJobsPage] = useState(1);
+
+  const handlePageChange = (page: number) => {
+    setJobsPage(page);
+    scrollToTop();
+  };
 
   // hooks
   const profile = useProfileData();
@@ -377,227 +376,36 @@ export default function SearchPage() {
         {jobs.isPending ? (
           <Loader>Loading...</Loader>
         ) : isMobile ? (
-          // Mobile list
-          <div className="relative w-full flex flex-col h-full">
-            <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
-              {jobs.error ? (
-                <PageError
-                  title="Failed to load jobs."
-                  description="Please check your internet connection."
-                  image
-                  flush
-                  onRetry={() => void jobs.refetch()}
-                />
-              ) : (
-                <>
-                  {jobsPage.length ? (
-                    <div className="space-y-4">
-                      {jobsPage.map((job) => (
-                        <div
-                          key={job.id}
-                          className="relative group"
-                          onClick={() => handleJobCardClick(job)}
-                        >
-                          {!job.challenge && !job.hibernating && (
-                            <button
-                              type="button"
-                              className={cn(
-                                "absolute right-4 top-5 z-10 bg-white p-1",
-                                "hover:shadow transition",
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!selectMode) setSelectMode(true);
-                                toggleSelect(job);
-                              }}
-                            >
-                              {isSelected(job.id) ? (
-                                <CheckSquare className="w-6 h-6 text-primary" />
-                              ) : (
-                                <Square className="w-6 h-6 text-gray-400" />
-                              )}
-                            </button>
-                          )}
-
-                          <MobileJobCard
-                            job={job}
-                            on_click={() => handleJobCardClick(job)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="p-4">No jobs found.</p>
-                    </div>
-                  )}
-
-                  <div className="my-4">
-                    <Paginator
-                      totalItems={jobs.total}
-                      itemsPerPage={jobsPageSize}
-                      currentPage={_jobsPage}
-                      onPageChange={(page) => {
-                        setJobsPage(page);
-                        scrollToTop();
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-            {jobs.isFetching && !jobs.isPending && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
-                <Loader />
-              </div>
-            )}
-          </div>
+          <SearchResultsMobile
+            jobs={jobs}
+            jobsPage={jobsPage}
+            jobsPageSize={jobsPageSize}
+            currentPage={_jobsPage}
+            onPageChange={handlePageChange}
+            listRef={listRef}
+            selectMode={selectMode}
+            setSelectMode={setSelectMode}
+            toggleSelect={toggleSelect}
+            isSelected={isSelected}
+            onJobCardClick={handleJobCardClick}
+          />
         ) : (
-          // Desktop split view
-          <>
-            {/* Left: List */}
-            <div className="relative w-1/3 border-r">
-              <div
-                ref={listRef}
-                className={cn(
-                  "h-full overflow-x-hidden overflow-y-auto",
-                  jobs.error ? "p-2" : "p-6",
-                )}
-              >
-                {jobs.error ? (
-                  <PageError
-                    title="Failed to load jobs."
-                    description="Please check your internet connection."
-                    image
-                    flush
-                    topAlign
-                    onRetry={() => void jobs.refetch()}
-                  />
-                ) : (
-                  <>
-                    {jobsPage.length ? (
-                      <div className="space-y-3">
-                        {jobsPage.map((job) => (
-                          <div key={job.id} className="relative group">
-                            {!job.challenge && !job.hibernating && (
-                              <button
-                                type="button"
-                                aria-label={
-                                  isSelected(job.id)
-                                    ? "Unselect job"
-                                    : "Select job"
-                                }
-                                className={cn(
-                                  "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
-                                  "flex items-center justify-center transition-opacity",
-                                )}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!selectMode) setSelectMode(true);
-                                  toggleSelect(job);
-                                }}
-                              >
-                                {isSelected(job.id) ? (
-                                  <CheckSquare
-                                    className="w-5 h-5 text-warning transition-all duration-200 scale-100"
-                                    strokeWidth={2}
-                                  />
-                                ) : (
-                                  <Square
-                                    className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
-                                    strokeWidth={2}
-                                  />
-                                )}
-                              </button>
-                            )}
-
-                            <div
-                              className={cn(
-                                "transition-all duration-300",
-                                isSelected(job.id) &&
-                                  "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em] shadow-sm",
-                              )}
-                              onClick={() => handleJobCardClick(job)}
-                            >
-                              <JobCard
-                                job={job}
-                                selected={selectedJob?.id === job.id}
-                                on_click={() => handleJobCardClick(job)}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="p-4">No jobs found.</p>
-                      </div>
-                    )}
-
-                    <div className="mt-2 mb-8">
-                      <Paginator
-                        totalItems={jobs.total}
-                        itemsPerPage={jobsPageSize}
-                        currentPage={_jobsPage}
-                        onPageChange={(page) => {
-                          setJobsPage(page);
-                          scrollToTop();
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-              {jobs.isFetching && !jobs.isPending && (
-                <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
-                  <Loader />
-                </div>
-              )}
-            </div>
-
-            {/* Right: Details */}
-            <div className="w-2/3 flex flex-col overflow-hidden">
-              {selectedJob?.id ? (
-                <JobDetails
-                  user={{
-                    github_link: profile.data?.github_link ?? null,
-                    portfolio_link: profile.data?.portfolio_link ?? null,
-                  }}
-                  job={selectedJob}
-                  actions={[
-                    <ShareJobButton job={selectedJob} />,
-                    <SaveJobButton job={selectedJob} />,
-                    <ApplyToJobButton
-                      profile={profile.data}
-                      job={selectedJob}
-                      onApply={handleSingleApply}
-                    />,
-                  ]}
-                />
-              ) : (
-                <div className="h-full m-auto">
-                  <div className="flex flex-col items-center pt-[25vh] h-screen">
-                    <div className="opacity-35 mb-10">
-                      <div className="flex flex-row justify-center w-full">
-                        <h1 className="block text-6xl font-heading font-bold ">
-                          BetterInternship
-                        </h1>
-                      </div>
-                      <br />
-                      <div className="flex flex-row justify-center w-full">
-                        <p className="block text-2xl tracking-tight">
-                          Better Internships Start Here
-                        </p>
-                      </div>
-                    </div>
-                    <div className="w-prose text-center border border-primary border-opacity-50 text-primary shadow-sm rounded-[0.33em] opacity-85 p-4 bg-white">
-                      Click on a job listing to view more details!
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
+          <SearchResultsDesktop
+            jobs={jobs}
+            jobsPage={jobsPage}
+            jobsPageSize={jobsPageSize}
+            currentPage={_jobsPage}
+            onPageChange={handlePageChange}
+            listRef={listRef}
+            selectMode={selectMode}
+            setSelectMode={setSelectMode}
+            toggleSelect={toggleSelect}
+            isSelected={isSelected}
+            onJobCardClick={handleJobCardClick}
+            selectedJob={selectedJob}
+            profileData={profile.data}
+            onSingleApply={handleSingleApply}
+          />
         )}
       </div>
 
