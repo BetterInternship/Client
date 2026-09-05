@@ -796,7 +796,7 @@ export function SuperChallengeDetails({
               {superChallengeTitle || "Tell us your funniest joke."}
             </h3>
           </div>
-          <div className="relative whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
+          <div className="relative whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-gray-700">
             {superChallengeDescription || "No challenge description provided."}
           </div>
         </div>
@@ -833,17 +833,10 @@ export function JobDetails({
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
-  const { isMobile } = useAppContext();
-
   return (
     <>
-      {job.hibernating && <HibernatingListingBanner job={job} />}
-      <div
-        className={cn(
-          "flex-1 overflow-y-auto space-y-5",
-          isMobile ? "px-3 py-4" : "px-8 pt-7",
-        )}
-      >
+      <div className={cn("flex-1 overflow-y-auto space-y-5")}>
+        {job.hibernating && <HibernatingListingBanner job={job} />}
         <HeaderWithActions
           job={job}
           actions={job.hibernating ? [] : actions}

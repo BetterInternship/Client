@@ -131,7 +131,7 @@ export function SearchResultsDesktop({
       </div>
 
       {/* Right: Details */}
-      <div className="w-2/3 flex flex-col overflow-hidden">
+      <div className="w-2/3 flex flex-col overflow-hidden p-6">
         {selectedJob?.id ? (
           <JobDetails
             user={{
