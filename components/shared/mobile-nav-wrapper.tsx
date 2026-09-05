@@ -20,11 +20,11 @@ export default function MobileNavWrapper() {
     pathname.startsWith("/forms/") ||
     pathname === "/miro" ||
     pathname === "/fff" ||
-    pathname === "/super-listing" ||
-    pathname === "/super-listing/search" ||
     pathname === "/register" ||
     pathname === "/register/verify" ||
-    pathname.startsWith("/companies/");
+    pathname.startsWith("/companies/") ||
+    pathname === "/super-listing" ||
+    pathname.startsWith("/super-listing/");
 
   if (!isMobile || hide) {
     return null;

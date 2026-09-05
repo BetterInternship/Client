@@ -631,6 +631,53 @@ function DetailsPanel() {
   );
 }
 
+/**
+ * The filter tabs + active panel, with no trigger button or sheet chrome —
+ * for embedding directly in a larger surface (e.g. the mobile search
+ * overlay). Must be rendered inside a {@link JobFilterProvider}.
+ *
+ * @component
+ */
+export function JobFilterPanels() {
+  const { dispatch } = useJobFilter();
+  const [tab, setTab] = useState<"category" | "details">("category");
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between pb-2">
+        <div className="flex gap-2">
+          <button
+            className={cn(
+              "text-sm px-3 py-1 rounded-full",
+              tab === "category" ? "bg-gray-900 text-white" : "bg-gray-100",
+            )}
+            onClick={() => setTab("category")}
+          >
+            Category
+          </button>
+          <button
+            className={cn(
+              "text-sm px-3 py-1 rounded-full",
+              tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100",
+            )}
+            onClick={() => setTab("details")}
+          >
+            Details
+          </button>
+        </div>
+        <button
+          onClick={() => dispatch({ type: "CLEAR" })}
+          className="text-sm hover:underline transition-all text-gray-600"
+        >
+          Clear all
+        </button>
+      </div>
+
+      {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
+    </div>
+  );
+}
+
 export function JobFilters({
   onApply,
   isDesktop = false,
