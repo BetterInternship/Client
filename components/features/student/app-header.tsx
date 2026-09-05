@@ -273,6 +273,7 @@ export function StudentAppHeader({
         profileHref="/profile"
         search={desktopSearch}
         onSearchClick={() => setOverlayOpen(true)}
+        showMobileMenu={false}
       />
     );
   };
