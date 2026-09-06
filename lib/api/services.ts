@@ -381,14 +381,12 @@ export const FormService = {
     values: Record<string, string>;
     audit: any;
   }) {
-    return APIClient.post<{
-      formProcessId: string;
-      isPending?: string;
-      documentId?: string;
-      documentUrl?: string;
-      success?: boolean;
-      message?: string;
-    }>(APIRouteBuilder("users").r("me/initiate-form").build(), data);
+    // Docs-Server now queues this (docs-signing RabbitMQ migration plan §6.2)
+    // and returns `{ success, jobId }` — poll it via `getMqJob` below.
+    return APIClient.post<MqJobQueuedResponse>(
+      APIRouteBuilder("users").r("me/initiate-form").build(),
+      data,
+    );
   },
 
   async filloutForm(data: {

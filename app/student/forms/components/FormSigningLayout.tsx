@@ -24,7 +24,10 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { getClientAudit } from "@/lib/audit";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStateRecord } from "@/hooks/base/useStateRecord";
-import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
+import {
+  useFormFilloutProcessRunner,
+  useTrackFilloutJob,
+} from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { withDerivedFormValues } from "@/lib/derived-form-values";
 import { expandRepeatedPreviewBlocks } from "@/lib/repeated-pdf-fields";
@@ -189,6 +192,7 @@ export function FormSigningLayout({
   }, []);
 
   const formFilloutProcess = useFormFilloutProcessRunner();
+  const trackFilloutJob = useTrackFilloutJob();
   const fromMe = useMemo(
     () =>
       recipients.some(
@@ -643,19 +647,27 @@ export function FormSigningLayout({
         audit: getClientAudit(),
       });
 
-      if (!response.success) {
+      if (!response.success || !response.jobId) {
         setNextLoading(false);
         alert("Something went wrong, please try again.");
         console.error(response.message);
         return;
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+      // 202 { jobId } now — the render, the new form process and the
+      // advance-to-first-signatory all happen async (plan §6.2, §8.2).
+      // Track it via the same synthetic-pending-row machinery fillout uses:
+      // `initiateForm` also produces a form process that doesn't exist yet.
+      trackFilloutJob(response.jobId, form.formLabel, new Date().toISOString());
       modalRegistry.formSubmissionSuccess.open(
         "esign",
         () => {
-          setCurrentStep(initialStep);
-          onBack();
+          void queryClient
+            .invalidateQueries({ queryKey: ["my-forms"] })
+            .then(() => {
+              setCurrentStep(initialStep);
+              onBack();
+            });
         },
         firstRecipient,
       );
@@ -672,6 +684,7 @@ export function FormSigningLayout({
     onBack,
     queryClient,
     recipientEmails,
+    trackFilloutJob,
   ]);
 
   // Clean up when switching form

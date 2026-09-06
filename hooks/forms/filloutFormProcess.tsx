@@ -155,6 +155,17 @@ const useFilloutJobsApi = () => {
   return ctx;
 };
 
+/**
+ * Tracks a job started elsewhere (docs-signing RabbitMQ migration plan §8.2:
+ * `initiateForm` produces a *new* form process, the same synthetic-pending-
+ * row case fillout already solves — so it reuses this provider's tracking
+ * instead of duplicating it) rather than one this module started itself.
+ */
+export const useTrackFilloutJob = () => {
+  const { track } = useFilloutJobsApi();
+  return track;
+};
+
 export const useFormFilloutProcessRunner = () => {
   const { track } = useFilloutJobsApi();
 
