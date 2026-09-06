@@ -57,8 +57,8 @@ const EMPLOYER_FONT_STEPS = [
 const EMPLOYER_FONT_FALLBACK = 28;
 
 /**
- * Compensation tag text (D2): the exact figure when the job is salaried,
- * the allowance-category label otherwise. Mirrors the allowance === 0
+ * Compensation tag text (D2): the exact figure when the job is salaried.
+ * Unpaid internships do not receive a compensation badge. Mirrors the allowance === 0
  * sentinel + pay-freq branching already established in JobDetailsSummary
  * (components/shared/jobs.tsx). Returns null when nothing meaningful
  * resolves, so the caller can drop the tag instead of showing a blank pill.
@@ -70,6 +70,8 @@ function formatCompensation(
   >,
   jobPayFreqHelpers: ReturnType<typeof createRefHelpers<number, JobPayFreq>>,
 ): string | null {
+  if (job.allowance === 1) return null;
+
   if (job.allowance === 0) {
     const salaryNum = job.salary ? Number(job.salary) : null;
     if (!salaryNum) return "With pay";
