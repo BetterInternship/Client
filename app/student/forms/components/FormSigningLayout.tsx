@@ -632,12 +632,15 @@ export function FormSigningLayout({
       }
 
       modalRegistry.formSubmissionSuccess.open("manual", () => {
-        void queryClient
-          .invalidateQueries({ queryKey: ["my-forms"] })
-          .then(() => {
-            setCurrentStep(initialStep);
-            onBack();
-          });
+        // Reset/navigate back synchronously — the success modal closes the
+        // instant this callback returns, so gating the reset behind the
+        // invalidation round trip left the "confirm" step (with its
+        // Submit button) briefly exposed underneath as it closed. The
+        // synthetic pending/handled rows already cover the gap until this
+        // invalidation lands.
+        setCurrentStep(initialStep);
+        onBack();
+        void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
       });
     } else {
       const response = await FormService.initiateForm({
@@ -662,12 +665,12 @@ export function FormSigningLayout({
       modalRegistry.formSubmissionSuccess.open(
         "esign",
         () => {
-          void queryClient
-            .invalidateQueries({ queryKey: ["my-forms"] })
-            .then(() => {
-              setCurrentStep(initialStep);
-              onBack();
-            });
+          // See the "manual" branch above: reset/navigate back synchronously
+          // so nothing from the "confirm" step is exposed while the success
+          // modal closes.
+          setCurrentStep(initialStep);
+          onBack();
+          void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
         },
         firstRecipient,
       );
