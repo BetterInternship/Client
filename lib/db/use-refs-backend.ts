@@ -14,16 +14,17 @@ import {
   JobType,
   JobMode,
   JobAllowance,
+  JobPayFreq,
   AppStatus,
   Industry,
   JobCategory,
   Department,
   RefDomain,
   RefsData,
-  IRefsContext,
 } from "./db.types";
 import { DB } from "@betterinternship/schema";
 import { Kysely, PostgresDialect } from "kysely";
+import { unstable_cache } from "next/cache";
 import { Pool } from "pg";
 
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -34,6 +35,11 @@ const db = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: DATABASE_URL,
+      // A Vercel instance gets its own pool. Keep this tiny so scaling the
+      // frontend cannot exhaust the database's regular connection slots.
+      max: 1,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 5_000,
     }),
   }),
 });
@@ -41,7 +47,7 @@ const db = new Kysely<DB>({
 /**
  * Fetches all refs tables on the server and returns serializable data for clients.
  */
-export const getRefsData = async (): Promise<RefsData> => {
+const loadRefsData = async (): Promise<RefsData> => {
   const [
     colleges,
     universities,
@@ -96,3 +102,9 @@ export const getRefsData = async (): Promise<RefsData> => {
     domains,
   };
 };
+
+// Reference tables change rarely. Sharing this result through Next's data
+// cache prevents every layout render from opening a database connection.
+export const getRefsData = unstable_cache(loadRefsData, ["refs-data"], {
+  revalidate: 3600,
+});
