@@ -16,7 +16,13 @@ import {
 } from "lucide-react";
 
 // UI components
-import { cn, Badge, Button } from "@betterinternship/components";
+import {
+  cn,
+  Badge,
+  Button,
+  PageHeader,
+  PageContainer,
+} from "@betterinternship/components";
 import {
   Tabs,
   TabsList,
@@ -147,166 +153,162 @@ function MyJobsPageInner() {
   };
 
   return (
-    <div className="h-full overflow-y-auto py-6 px-4 [scrollbar-gutter:stable]">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6 sm:mb-8 overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <HeaderTitle icon={TAB_META[tab].icon}>
-                {TAB_META[tab].label}
-              </HeaderTitle>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="sticky top-0 z-10 mb-8 flex w-full bg-white">
-            <TabsTrigger value="applications" className={tabTriggerClassName}>
-              Applications
-              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-                {`(${applications.data.length})`}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="saved" className={tabTriggerClassName}>
-              Saved
-              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-                {`(${savedJobs.length})`}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className={tabTriggerClassName}>
-              Alerts
-              {alertsCount > 0 && (
-                <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-                  {`(${alertsCount})`}
-                </span>
-              )}
-              {hasItsBack && (
-                <span
-                  aria-hidden="true"
-                  className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-supportive align-middle"
-                />
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="applications">
-            {applications.isPending ? (
-              <Loader>Loading your applications...</Loader>
-            ) : applications.error ? (
-              <PageError
-                title="Failed to load applications"
-                description={applications.error.message}
-              />
-            ) : applications.data.length === 0 ? (
-              <div className="text-center py-16 animate-fade-in">
-                <Card className="max-w-md m-auto">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No applications yet
-                  </h3>
-                  <p className="text-gray-500 mb-6 leading-relaxed">
-                    Ready to start your internship journey? Browse our job
-                    listings and submit your first application.
-                  </p>
-                  <Link href="/search">
-                    <Button className="bg-primary hover:bg-primary/90">
-                      Browse Jobs
-                    </Button>
-                  </Link>
-                </Card>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {applications.data.map((application) => (
-                  <ApplicationCard
-                    key={application.id ?? application.job_id}
-                    application={application}
-                    onPreviewResume={openResumePreview}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="saved">
-            {jobs.isPending ? (
-              <Loader>Loading saved jobs...</Loader>
-            ) : jobs.error ? (
-              <PageError
-                title="Failed to load saved jobs."
-                description={jobs.error.message}
-              />
-            ) : savedJobs.length === 0 ? (
-              <div className="text-center py-16 animate-fade-in">
-                <Card className="max-w-md m-auto">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No saved jobs yet
-                  </h3>
-                  <p className="text-gray-500 mb-6 leading-relaxed">
-                    Save jobs by clicking the heart icon on job listings to see
-                    them here.
-                  </p>
-                  <Link href="/search">
-                    <Button className="bg-primary hover:bg-primary/90">
-                      Browse Jobs
-                    </Button>
-                  </Link>
-                </Card>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {savedJobs.map((savedJob, index) => (
-                  <SavedJobCard
-                    key={savedJob.id ?? savedJob.job_id ?? `saved-job-${index}`}
-                    savedJob={savedJob}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="alerts">
-            {!waitlists.alerts.length && !visibleNotified.length ? (
-              <div className="text-center py-16 animate-fade-in">
-                <Card className="max-w-md m-auto">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No job alerts
-                  </h3>
-                  <p className="text-gray-500 mb-6 leading-relaxed">
-                    Alerts come from listings that go on a temporary pause. Turn
-                    one on from a paused listing and we&apos;ll let you know the
-                    moment it&apos;s back.
-                  </p>
-                  <Link href="/search">
-                    <Button className="bg-primary hover:bg-primary/90">
-                      Browse Jobs
-                    </Button>
-                  </Link>
-                </Card>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {waitlists.alerts.map((row) => (
-                  <AlertCard key={row.id} row={row} />
-                ))}
-                {visibleNotified.map((row) => (
-                  <ItsBackCard key={row.id} row={row} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        <ResumeModal className="max-w-[80vw]">
-          <PDFPreview url={resumeURL} />
-        </ResumeModal>
+    <PageContainer>
+      <div className="mb-6 sm:mb-8 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <PageHeader title={TAB_META[tab].label} />
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
+
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="sticky top-0 z-10 mb-8 flex w-full bg-white">
+          <TabsTrigger value="applications" className={tabTriggerClassName}>
+            Applications
+            <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+              {`(${applications.data.length})`}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="saved" className={tabTriggerClassName}>
+            Saved
+            <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+              {`(${savedJobs.length})`}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className={tabTriggerClassName}>
+            Alerts
+            {alertsCount > 0 && (
+              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+                {`(${alertsCount})`}
+              </span>
+            )}
+            {hasItsBack && (
+              <span
+                aria-hidden="true"
+                className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-supportive align-middle"
+              />
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="applications">
+          {applications.isPending ? (
+            <Loader>Loading your applications...</Loader>
+          ) : applications.error ? (
+            <PageError
+              title="Failed to load applications"
+              description={applications.error.message}
+            />
+          ) : applications.data.length === 0 ? (
+            <div className="text-center py-16 animate-fade-in">
+              <Card className="max-w-md m-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No applications yet
+                </h3>
+                <p className="text-gray-500 mb-6 leading-relaxed">
+                  Ready to start your internship journey? Browse our job
+                  listings and submit your first application.
+                </p>
+                <Link href="/search">
+                  <Button className="bg-primary hover:bg-primary/90">
+                    Browse Jobs
+                  </Button>
+                </Link>
+              </Card>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {applications.data.map((application) => (
+                <ApplicationCard
+                  key={application.id ?? application.job_id}
+                  application={application}
+                  onPreviewResume={openResumePreview}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="saved">
+          {jobs.isPending ? (
+            <Loader>Loading saved jobs...</Loader>
+          ) : jobs.error ? (
+            <PageError
+              title="Failed to load saved jobs."
+              description={jobs.error.message}
+            />
+          ) : savedJobs.length === 0 ? (
+            <div className="text-center py-16 animate-fade-in">
+              <Card className="max-w-md m-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No saved jobs yet
+                </h3>
+                <p className="text-gray-500 mb-6 leading-relaxed">
+                  Save jobs by clicking the heart icon on job listings to see
+                  them here.
+                </p>
+                <Link href="/search">
+                  <Button className="bg-primary hover:bg-primary/90">
+                    Browse Jobs
+                  </Button>
+                </Link>
+              </Card>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {savedJobs.map((savedJob, index) => (
+                <SavedJobCard
+                  key={savedJob.id ?? savedJob.job_id ?? `saved-job-${index}`}
+                  savedJob={savedJob}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="alerts">
+          {!waitlists.alerts.length && !visibleNotified.length ? (
+            <div className="text-center py-16 animate-fade-in">
+              <Card className="max-w-md m-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No job alerts
+                </h3>
+                <p className="text-gray-500 mb-6 leading-relaxed">
+                  Alerts come from listings that go on a temporary pause. Turn
+                  one on from a paused listing and we&apos;ll let you know the
+                  moment it&apos;s back.
+                </p>
+                <Link href="/search">
+                  <Button className="bg-primary hover:bg-primary/90">
+                    Browse Jobs
+                  </Button>
+                </Link>
+              </Card>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {waitlists.alerts.map((row) => (
+                <AlertCard key={row.id} row={row} />
+              ))}
+              {visibleNotified.map((row) => (
+                <ItsBackCard key={row.id} row={row} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      <ResumeModal className="max-w-[80vw]">
+        <PDFPreview url={resumeURL} />
+      </ResumeModal>
+    </PageContainer>
   );
 }
 

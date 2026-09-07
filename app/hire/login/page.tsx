@@ -137,7 +137,13 @@ function LoginContent() {
         </>
       }
     >
-      <div className="w-full space-y-4">
+      <form
+        className="w-full space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void (hasSentCode ? submitCode() : sendCode());
+        }}
+      >
         {autoLinkToken && (
           <div className="rounded-[0.33em] bg-primary/10 px-4 py-3 text-sm font-medium text-primary">
             Sign in to link your company account.
@@ -191,10 +197,9 @@ function LoginContent() {
         )}
 
         <Button
-          type="button"
+          type="submit"
           size="lg"
           className="w-full"
-          onClick={() => void (hasSentCode ? submitCode() : sendCode())}
           disabled={
             sending ||
             activating ||
@@ -210,7 +215,7 @@ function LoginContent() {
                 ? "Verify and log in"
                 : "Send sign-in code"}
         </Button>
-      </div>
+      </form>
     </HireAuthShell>
   );
 }

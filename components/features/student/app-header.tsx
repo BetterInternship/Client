@@ -13,6 +13,7 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useHeaderContext } from "@/lib/ctx-header";
+import { usePfpUrl } from "@/hooks/use-pfp";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { SearchInput } from "@/components/features/student/search/SearchInput";
@@ -58,6 +59,15 @@ export function StudentAppHeader({
   const profile = useProfileData();
 
   const authenticated = isAuthenticated();
+
+  // profile.data.profile_picture is the GCS object key, not a URL — the pfp
+  // has to be resolved through the hashed /users/me/pic endpoint.
+  const { url: avatarUrl } = usePfpUrl({
+    id: "me",
+    source: "users",
+    enabled: authenticated,
+  });
+
   const showFormsTab = hasFormsEnabledUniversity(profile.data);
   const showFilters = pathname.startsWith("/search");
 
@@ -274,6 +284,7 @@ export function StudentAppHeader({
         search={desktopSearch}
         onSearchClick={() => setOverlayOpen(true)}
         showMobileMenu={false}
+        userAvatarUrl={avatarUrl || null}
       />
     );
   };

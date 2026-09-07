@@ -3,6 +3,7 @@
 import { useAuthContext } from "@/app/hire/authctx";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePfpUrl } from "@/hooks/use-pfp";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AppHeader,
@@ -31,6 +32,15 @@ export function HireAppHeader() {
   const router = useRouter();
   const { god, proxy, exitProxy, user, logout } = useAuthContext();
   const { data: profile } = useProfile();
+
+  // The hire-side "profile picture" is the company logo (uploaded in
+  // account > company). Empty until it resolves, so AppHeader falls back to
+  // its own icon rather than flashing a broken image.
+  const { url: logoUrl } = usePfpUrl({
+    id: "me",
+    source: "employer",
+    enabled: !!user,
+  });
 
   // Proxying leaves the acting god's own identity shadowed by the employer
   // being viewed (setProxyCookie never gets undone on its own) — hopping back
@@ -96,6 +106,7 @@ export function HireAppHeader() {
       nav={nav}
       userPrimary={profile?.name}
       userSecondary={user?.email}
+      userAvatarUrl={logoUrl || null}
       logout={logout}
       postLogoutPath="/"
       accountNav={[{ href: "/account", label: "Account", icon: UserCircle }]}

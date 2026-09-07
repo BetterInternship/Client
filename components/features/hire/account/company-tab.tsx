@@ -19,7 +19,7 @@ import { Divider } from "@/components/ui/divider";
 import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
-import { MyEmployerPfp } from "@/components/shared/pfp";
+import { MyEmployerPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { EmployerService } from "@/lib/api/services";
 
@@ -72,6 +72,9 @@ export function CompanyTab() {
           alert("Could not upload profile picture.");
           return;
         }
+        // Re-sync every mounted pfp (this card and the header) against the
+        // new hash — without this the old logo lingers until a reload.
+        window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
         alert("Profile picture uploaded successfully!");
       } catch (error: any) {
         alert(error.message || "Failed to upload profile picture");
