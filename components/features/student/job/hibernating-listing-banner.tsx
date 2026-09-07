@@ -1,9 +1,8 @@
 import { toast } from "sonner";
-import { Bell, BellOff, CheckCircle2, Clock, HeartCrack } from "lucide-react";
+import { Bell, CheckCircle2, HeartCrack } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Job } from "@/lib/db/db.types";
-import { cn } from "@betterinternship/components";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";

@@ -20,6 +20,8 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
+import { useProfile } from "@/hooks/use-employer-api";
+import { useAuthContext } from "@/app/hire/authctx";
 
 interface SetupStepProps {
   formData: Partial<Job>;
@@ -80,6 +82,45 @@ export const SetupStep = ({
   };
 
   const blurTransition = useBlurTransition();
+
+  // connect to iom site
+  const profile = useProfile();
+  const linked = profile.data?.iom_company_id;
+  const modalRegistry = useModalRegistry();
+  const { user } = useAuthContext();
+
+  function getIomCompanyUrl(): string {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      if (host.startsWith("dev."))
+        return "https://dev.moa.betterinternship.com";
+      if (host.endsWith(".betterinternship.com"))
+        return "https://moa.betterinternship.com";
+    }
+    return "http://moa.localhost:4100";
+  }
+
+  const activate = () => {
+    if (linked) openIomLogin();
+    else openSetup();
+  };
+
+  const openIomLogin = () => {
+    const url = new URL("/login", getIomCompanyUrl());
+    const accountEmail = profile.data?.iom_account_email || user?.email;
+    if (accountEmail) url.searchParams.set("email", accountEmail);
+    url.searchParams.set("linked_account", "1");
+    if (profile.data?.iom_account_email) {
+      url.searchParams.set("managed_account", profile.data?.iom_account_email);
+    }
+    if (profile.data?.name)
+      url.searchParams.set("company_name", profile.data?.name);
+    window.open(url.toString(), "_blank", "noopener,noreferrer");
+  };
+
+  const openSetup = () => {
+    modalRegistry.iomPartnership.open();
+  };
 
   return (
     <div className="space-y-4">
@@ -147,14 +188,7 @@ export const SetupStep = ({
                               ? "university"
                               : "universities"}
                             . If you want to partner with more universities, you
-                            can go to the{" "}
-                            <Link
-                              href="https://moa.betterinternship.com/company/verification"
-                              className="font-bold underline"
-                            >
-                              Partners Portal
-                            </Link>
-                            {". "}
+                            can go to the Partners Portal.
                           </p>
                         </div>
                       ) : (
@@ -166,14 +200,8 @@ export const SetupStep = ({
                           </p>
                           <p className="text-xs leading-relaxed">
                             Credited interns require a Memorandum of Agreement
-                            (MOA). Verify instantly via the{" "}
-                            <Link
-                              href="https://moa.betterinternship.com/company/verification"
-                              className="font-bold underline"
-                            >
-                              Partners Portal
-                            </Link>{" "}
-                            or upload an existing file.
+                            (MOA). Verify instantly via the Partners Portal or
+                            upload an existing file.
                           </p>
                         </div>
                       )}
@@ -184,10 +212,7 @@ export const SetupStep = ({
                             posthog.capture("hire_moa_iom_link_clicked", {
                               source: "create_listing_setup",
                             });
-                            window.open(
-                              "https://moa.betterinternship.com/company/verification",
-                              "_blank",
-                            );
+                            activate();
                           }}
                           className="h-8 gap-1"
                         >

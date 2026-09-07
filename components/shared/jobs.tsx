@@ -19,7 +19,6 @@ import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { useMobile } from "@/hooks/use-mobile";
-import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData, useWaitlistsData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
