@@ -1,6 +1,6 @@
 "use client";
 
-import { useWeeklyStats } from "@/lib/api/god.api";
+import { useEmployerLoginMetrics, useWeeklyStats } from "@/lib/api/god.api";
 import { useMemo } from "react";
 
 function WeeklyChart({ data }: { data: { week_start: string; applications: number }[] }) {
@@ -57,15 +57,50 @@ function WeeklyChart({ data }: { data: { week_start: string; applications: numbe
 
 export default function GodStatsPage() {
   const { data, isFetching } = useWeeklyStats();
+  const { data: loginMetricsData } = useEmployerLoginMetrics();
 
   const stats = data?.stats ?? [];
   const tableStats = useMemo(() => [...stats].reverse(), [stats]);
+  const loginMetrics = loginMetricsData?.stats;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <h1 className="text-lg font-semibold text-slate-800 mb-4">
         Weekly Application Stats
       </h1>
+
+      {loginMetrics && (
+        <section className="mb-6">
+          <h2 className="text-sm font-medium text-slate-600 mb-3">
+            Employer Login Stats
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              label="Logged In This Week"
+              value={`${loginMetrics.logged_in_this_week_percent}%`}
+              detail={`${loginMetrics.logged_in_this_week} of ${loginMetrics.total_employers} employers`}
+            />
+            <MetricCard
+              label="Employers Returning"
+              value={`${loginMetrics.returning_this_week_percent}%`}
+              detail={`${loginMetrics.returning_this_week} of ${loginMetrics.previously_logged_in} previously active`}
+            />
+            <MetricCard
+              label="First-Time Logins"
+              value={loginMetrics.first_time_logins_this_week}
+              detail="This week"
+            />
+            <MetricCard
+              label="Never Logged In"
+              value={`${loginMetrics.never_logged_in_percent}%`}
+              detail={`${loginMetrics.never_logged_in} employers`}
+            />
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            Updated nightly: {new Date(loginMetrics.cached_at).toLocaleString()}
+          </p>
+        </section>
+      )}
 
       {isFetching && !stats.length && (
         <p className="text-sm text-slate-500">Loading...</p>
@@ -155,6 +190,26 @@ export default function GodStatsPage() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string | number;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-md border bg-white p-4 shadow-sm">
+      <p className="text-sm text-slate-600">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-800">
+        {value}
+      </p>
+      <p className="mt-1 text-xs text-slate-400">{detail}</p>
     </div>
   );
 }

@@ -35,6 +35,23 @@ export interface WeeklyStatsResponse extends FetchResponse {
   }[];
 }
 
+export interface EmployerLoginMetrics {
+  total_employers: number;
+  logged_in_this_week: number;
+  logged_in_this_week_percent: number;
+  previously_logged_in: number;
+  returning_this_week: number;
+  returning_this_week_percent: number;
+  first_time_logins_this_week: number;
+  never_logged_in: number;
+  never_logged_in_percent: number;
+  cached_at: string;
+}
+
+export interface EmployerLoginMetricsResponse extends FetchResponse {
+  stats: EmployerLoginMetrics;
+}
+
 export function useGodEmployers(params: {
   page: number;
   limit: number;
@@ -97,6 +114,16 @@ export function useWeeklyStats(weeks?: number) {
           .build(),
       ),
     staleTime: 0,
+  });
+}
+
+export function useEmployerLoginMetrics() {
+  return useQuery({
+    queryKey: ["god-employer-login-metrics"],
+    queryFn: () =>
+      APIClient.get<EmployerLoginMetricsResponse>(
+        APIRouteBuilder("god").r("stats", "employer-logins").build(),
+      ),
   });
 }
 
