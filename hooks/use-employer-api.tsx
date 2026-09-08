@@ -181,6 +181,66 @@ export function useEmployerApplications() {
 }
 
 /**
+ * A single owned listing, shared by the Applicants / Preview / Edit tabs.
+ *
+ * Those three are separate routes, so each used to hold its own useState +
+ * useEffect copy of this fetch behind a blocking full-page loader — meaning
+ * every tab switch refetched the same job and flashed a spinner. Reading
+ * through the query cache instead (staleTime 24h, see app/tanstack-provider)
+ * means only the first visit pays; later hops resolve synchronously and
+ * render with no loading state at all.
+ *
+ * @hook
+ */
+export function useJob(jobId: string | null) {
+  const queryClient = useQueryClient();
+  const { isPending, data, error, refetch } = useQuery({
+    queryKey: ["job", jobId],
+    queryFn: async () => {
+      // APIClient resolves failure bodies rather than throwing (see AGENTS.md
+      // "Responses extend FetchResponse"), so a failed load would otherwise
+      // look like a success carrying no job — and the page would sit on a
+      // loader forever. Raise it so react-query reports it as an error.
+      const response = await JobService.getAnyJobById(jobId!);
+      if (!response.success)
+        throw new Error(response.message || "Could not load this listing.");
+      return response;
+    },
+    enabled: !!jobId,
+    // Default is 3 tries with backoff — roughly seven seconds staring at a
+    // spinner before the failure is admitted. One retry covers a blip.
+    retry: 1,
+  });
+
+  // Settled means "we are done asking": no jobId to look up, or the query
+  // finished one way or the other.
+  const settled = !jobId || (!isPending && !error);
+
+  /** Fold an edit into the cache so all three tabs see it without a refetch. */
+  const updateJob = useCallback(
+    (updates: Partial<Job>) => {
+      queryClient.setQueryData<{ job?: Job }>(["job", jobId], (prev) =>
+        prev?.job ? { ...prev, job: { ...prev.job, ...updates } } : prev,
+      );
+    },
+    [queryClient, jobId],
+  );
+
+  return {
+    // A disabled query sits at "pending" forever — without a jobId there is
+    // nothing to wait for, so don't report that as loading.
+    loading: !!jobId && isPending,
+    error,
+    // The server answers a deleted or unowned listing with success + a null
+    // job (jobs.controller.ts findOne), which is a 404, not a failure.
+    notFound: settled && !data?.job,
+    job: data?.job ?? null,
+    updateJob,
+    refetch,
+  };
+}
+
+/**
  * Hook for dealing with jobs owned by employer.
  * @returns
  */
@@ -194,6 +254,7 @@ export function useOwnedJobs(
     industry?: string;
   } = {},
 ) {
+  const queryClient = useQueryClient();
   const { get_cache, set_cache } = useCache<Job[]>("_jobs_owned_list");
   const [ownedJobs, setOwnedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,6 +270,13 @@ export function useOwnedJobs(
       if (response.success) {
         setOwnedJobs(response.jobs ?? []);
         set_cache(response.jobs ?? []);
+
+        // /jobs/owned and /jobs/owned/:id build the same row (both end in
+        // toEmployerClientJob over job + employer + challenge + pause), so
+        // the list already holds everything useJob would fetch. Seeding it
+        // means opening a listing from the dashboard skips the loader too.
+        for (const job of response.jobs ?? [])
+          queryClient.setQueryData(["job", job.id], { success: true, job });
       }
     } catch (err) {
       const errorMessage = handleApiError(err);
@@ -216,7 +284,7 @@ export function useOwnedJobs(
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queryClient]);
 
   const update_job = async (job_id: string, job: Partial<Job>) => {
     const response = await JobService.updateJob(job_id, job);
