@@ -449,6 +449,15 @@ interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElem
   tooltipId?: string;
   /** Multi-select hint shown above the options. Pass `null` to hide it. */
   hint?: React.ReactNode;
+  /**
+   * Whether the "N selected" count renders in its own row above the
+   * options. Defaults to true. Set to false when the count is shown
+   * elsewhere instead (e.g. via `labelAddon`) — otherwise selecting the
+   * first option inserts this row and shifts the options below it.
+   */
+  showSelectedCount?: boolean;
+  /** Rendered to the right of the label, on the label's own row. */
+  labelAddon?: React.ReactNode;
   /** Columns on md+ screens. Defaults to 3. */
   columns?: 1 | 2 | 3;
   /** Fired when a single option is toggled, before the setter runs. */
@@ -471,6 +480,8 @@ export const FormCheckBoxGroup = ({
   tooltip,
   tooltipId,
   hint = "Select all that apply",
+  showSelectedCount = true,
+  labelAddon,
   columns = 3,
   onToggle,
   ...props
@@ -495,10 +506,11 @@ export const FormCheckBoxGroup = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
 
-      {(hint || values.length > 0) && (
+      {(hint || (showSelectedCount && values.length > 0)) && (
         <div className="flex items-center gap-2 text-xs">
           {hint && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
@@ -507,7 +519,7 @@ export const FormCheckBoxGroup = ({
             </span>
           )}
           <AnimatePresence>
-            {values.length > 0 && (
+            {showSelectedCount && values.length > 0 && (
               <motion.span
                 className="font-medium text-primary"
                 {...blurTransition}
