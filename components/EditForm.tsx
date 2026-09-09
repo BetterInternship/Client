@@ -536,7 +536,10 @@ export const FormCheckBoxGroup = ({
                   : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
               )}
             >
-              <FormCheckbox checked={isChecked ?? false} />
+              <FormCheckbox
+                className="pointer-events-none"
+                checked={isChecked ?? false}
+              />
               <div className="grid grid-rows-1 md:grid-rows-2">
                 <Label className="text-xs font-medium text-gray-900">
                   {option.label}
