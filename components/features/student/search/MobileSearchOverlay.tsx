@@ -12,6 +12,7 @@ import {
   JobFilterProvider,
   useJobFilter,
 } from "@/components/features/student/search/JobFilters";
+import { FormCheckbox } from "@/components/EditForm";
 
 interface MobileSearchOverlayProps {
   open: boolean;
@@ -178,21 +179,9 @@ function OverlayBody({
         </div>
       </div>
 
-      {/* Quick toggle */}
       <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
-        <button
-          type="button"
-          onClick={toggleForCredit}
-          aria-pressed={forCredit}
-          className={cn(
-            "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-            forCredit
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-gray-300 text-gray-600 hover:bg-gray-50",
-          )}
-        >
-          For Credit only
-        </button>
+        <FormCheckbox checked={forCredit} setter={toggleForCredit} />
+        <span className="text-sm font-medium">For Credit</span>
       </div>
 
       {/* Filters */}
