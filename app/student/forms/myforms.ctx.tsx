@@ -55,7 +55,11 @@ export const MyFormsContextProvider = ({
   } = useQuery({
     queryKey: ["my-forms"],
     queryFn: () => FormService.getMyGeneratedForms(),
-    staleTime: Infinity,
+    // Was Infinity — combined with the persisted query cache (tanstack-provider.tsx),
+    // that meant a form's signing status could never be refetched (not even on reload)
+    // once another signatory acted outside this browser. A short staleTime lets the
+    // default refetchOnMount/refetchOnWindowFocus behavior pick up real updates.
+    staleTime: 60 * 1000,
     gcTime: 60 * 60 * 1000,
   });
 

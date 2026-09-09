@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "@/components/features/student/header";
+import StudentAppHeader from "@/components/features/student/app-header";
 import { Suspense } from "react";
 
 export default function AllowLanding({
@@ -26,7 +26,7 @@ export default function AllowLanding({
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
       <Suspense>
-        <Header />
+        <StudentAppHeader />
       </Suspense>
       <div className="flex-grow overflow-auto flex flex-col">{children}</div>
     </div>

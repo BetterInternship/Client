@@ -246,17 +246,19 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         {/* shrinkable text container */}
         <span className="flex-1 min-w-0 text-left pr-2 leading-relaxed">
           {selected ? (
-            <span className="block whitespace-normal break-words">
+            <span className="block whitespace-normal wrap-break-word">
               {selected.name}
             </span>
           ) : (
-            <span className="text-gray-500 font-normal">{fallback}</span>
+            <span className="text-muted-foreground font-normal">
+              {fallback}
+            </span>
           )}
         </span>
 
         <ChevronDown
           className={cn(
-            "shrink-0 w-4 h-4 text-gray-600 transition-transform",
+            "shrink-0 w-4 h-4 text-muted-foreground transition-transform",
             isOpen ? "rotate-180" : "",
           )}
         />
@@ -275,8 +277,8 @@ export const GroupableRadioDropdown = <ID extends number | string>({
           <div
             className={cn(
               isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100 z-[9999] duration-200 ease-out transition-all max-w-full",
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-[0.33em] border border-b-0 border-gray-200 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 top-full mt-1 bg-white rounded-[0.33em] shadow-xl overflow-hidden border border-gray-100 z-[9999] duration-200 ease-out transition-all max-w-full",
             )}
             role="listbox"
           >
@@ -296,7 +298,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
                     highlighted={value === option.id}
                     on_click={() => handleChange(option.id)}
                   >
-                    <span className="block whitespace-normal break-words pr-2">
+                    <span className="block whitespace-normal wrap-break-word pr-2">
                       {option.name}
                     </span>
                   </DropdownOption>

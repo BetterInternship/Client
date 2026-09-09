@@ -35,6 +35,23 @@ export interface WeeklyStatsResponse extends FetchResponse {
   }[];
 }
 
+export interface EmployerLoginMetrics {
+  total_employers: number;
+  logged_in_this_week: number;
+  logged_in_this_week_percent: number;
+  previously_logged_in: number;
+  returning_this_week: number;
+  returning_this_week_percent: number;
+  first_time_logins_this_week: number;
+  never_logged_in: number;
+  never_logged_in_percent: number;
+  cached_at: string;
+}
+
+export interface EmployerLoginMetricsResponse extends FetchResponse {
+  stats: EmployerLoginMetrics;
+}
+
 export function useGodEmployers(params: {
   page: number;
   limit: number;
@@ -97,6 +114,16 @@ export function useWeeklyStats(weeks?: number) {
           .build(),
       ),
     staleTime: 0,
+  });
+}
+
+export function useEmployerLoginMetrics() {
+  return useQuery({
+    queryKey: ["god-employer-login-metrics"],
+    queryFn: () =>
+      APIClient.get<EmployerLoginMetricsResponse>(
+        APIRouteBuilder("god").r("stats", "employer-logins").build(),
+      ),
   });
 }
 
@@ -207,5 +234,96 @@ export function useMassApply() {
   return useMutation({
     mutationFn: (dto: { jobId: string; studentIds: string[] }) =>
       StudentGodAPI.massApply(dto),
+  });
+}
+
+// ── MOA document verification ───────────────────────────────────────────
+
+export interface MoaUpload {
+  id: string;
+  employer_id: string;
+  document_link: string | null;
+  status: string | null;
+  university_id: string | null;
+  start_date: string;
+  expires_at: string;
+  employer_name: string | null;
+  university_name: string | null;
+}
+
+export interface PaginatedMoaUploadsResponse extends FetchResponse {
+  data: MoaUpload[];
+  total: number;
+}
+
+export interface University {
+  id: string;
+  name: string;
+}
+
+export function useGodMoaUploads(params: {
+  page: number;
+  limit: number;
+  status?: string;
+}) {
+  return useQuery({
+    queryKey: ["god-moa-uploads", params],
+    queryFn: () =>
+      APIClient.get<PaginatedMoaUploadsResponse>(
+        APIRouteBuilder("god")
+          .r("moa-documents")
+          .p({
+            page: params.page,
+            limit: params.limit,
+            status: params.status,
+          })
+          .build(),
+      ),
+  });
+}
+
+export function useApproveMoaUpload() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      moaId,
+      universityId,
+      expiresAt,
+    }: {
+      moaId: string;
+      universityId: string;
+      expiresAt?: string;
+    }) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("moa-documents", moaId, "approve").build(),
+        { university_id: universityId, expires_at: expiresAt },
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-moa-uploads"] });
+    },
+  });
+}
+
+export function useRejectMoaUpload() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (moaId: string) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("moa-documents", moaId, "reject").build(),
+        {},
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-moa-uploads"] });
+    },
+  });
+}
+
+export function useGodUniversities() {
+  return useQuery({
+    queryKey: ["god-universities"],
+    queryFn: () =>
+      APIClient.get<{ universities: University[] }>(
+        APIRouteBuilder("god").r("moa-universities").build(),
+      ),
   });
 }

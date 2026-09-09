@@ -155,6 +155,17 @@ const useFilloutJobsApi = () => {
   return ctx;
 };
 
+/**
+ * Tracks a job started elsewhere (docs-signing RabbitMQ migration plan §8.2:
+ * `initiateForm` produces a *new* form process, the same synthetic-pending-
+ * row case fillout already solves — so it reuses this provider's tracking
+ * instead of duplicating it) rather than one this module started itself.
+ */
+export const useTrackFilloutJob = () => {
+  const { track } = useFilloutJobsApi();
+  return track;
+};
+
 export const useFormFilloutProcessRunner = () => {
   const { track } = useFilloutJobsApi();
 
@@ -261,7 +272,13 @@ export const useFormFilloutProcessHandled = () => {
           downloadUrl: (handledForm.result as FilloutFormProcessResult)
             .documentUrl,
           pending: false,
-          status: "done",
+          // "done" here would mean *generation* done, but FormLog reads
+          // `status` as the form process's own status ("pending" | "done" —
+          // see registerSignatoryForm), where "done" means fully signed.
+          // Generating the doc only gets it to its first signer, i.e. the
+          // real row's eventual status once `myForms` catches up — so match
+          // that instead of flashing a false "Completed" in between.
+          status: "pending",
         })),
     [formFilloutProcessReader, myForms.forms],
   );
