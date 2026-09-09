@@ -215,7 +215,7 @@ export function StudentAppHeader({
       />
       {showFilters && (
         <JobFilterProvider initial={initialFromUrl}>
-          <JobFilters isDesktop onApply={onApplyFilters} />
+          <JobFilters onApply={onApplyFilters} />
         </JobFilterProvider>
       )}
     </div>

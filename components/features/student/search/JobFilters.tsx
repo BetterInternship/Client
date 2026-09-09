@@ -8,8 +8,17 @@ import React, {
   useEffect,
 } from "react";
 import { Filter as FilterIcon, Check } from "lucide-react";
-import { Button } from "@betterinternship/components";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  AnimatedCount,
+  Badge,
+  Button,
+} from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
+import { FormCheckbox, FormCheckBoxGroup } from "@/components/EditForm";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
@@ -140,12 +149,32 @@ const ALLOWANCE_OPTIONS: SubOption[] = [
   { name: "Non-paid", value: "1" },
 ];
 
-const MOA_OPTIONS: SubOption[] = [
-  { name: "Credited", value: "Has MOA" },
-  { name: "Voluntary", value: "No MOA" },
-];
-
 /* ================= UI primitives ================= */
+
+/**
+ * Selection count badge, for sitting beside a title so it never inserts its
+ * own row — appearing/disappearing there would push everything below it up
+ * or down. Used on both filter tabs' section headers.
+ */
+function SelectionBadge({ count }: { count: number }) {
+  const blurTransition = useBlurTransition();
+  return (
+    <AnimatePresence>
+      {count > 0 && (
+        <motion.div {...blurTransition}>
+          <Badge
+            variant="solid"
+            type="accent"
+            size="xs"
+            className="py-0 text-muted-foreground"
+          >
+            <AnimatedCount value={count} />
+          </Badge>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function CheckboxRow({
   checked,
@@ -165,59 +194,45 @@ function CheckboxRow({
       )}
     >
       <span className="text-sm">{label}</span>
-      <span
-        className={cn(
-          "inline-flex items-center justify-center w-5 h-5 rounded border",
-          checked ? "border-blue-500 bg-blue-100" : "border-gray-300",
-        )}
-      >
-        {checked ? <Check className="w-3.5 h-3.5 text-blue-600" /> : null}
-      </span>
+      <FormCheckbox checked={checked} setter={onChange} />
     </button>
   );
 }
 
-/* ================= Panels ================= */
+/* ================= Category tree ================= */
 
-function PositionPanel() {
-  const { state, dispatch } = useJobFilter();
-  const selected = new Set(state.position);
+// IDs of categories that should be hidden from direct display
+// (Full Stack, Backend, Frontend, QA will only appear under Software Engineering)
+const SOFTWARE_ENGINEERING_ID = "fc5ba110-e6df-440c-878f-b5f29be54ba9";
+const SOFTWARE_ENGINEERING_PARENT_ID = "1e3b7585-293b-430a-a5cb-c773e0639bb0";
+const ENGINEERING_ID = "ab93abaf-c117-4482-9594-8bfecec44f69";
+const SOFTWARE_ENGINEERING_HIDDEN_IDS = [
+  "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
+  "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
+  "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
+  "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+];
+const HIDDEN_CATEGORIES = new Set(SOFTWARE_ENGINEERING_HIDDEN_IDS);
+// Categories that should not appear at top level
+const MOVE_TO_OTHERS = new Set([ENGINEERING_ID]); // Engineering (will be under Others)
+const OTHERS_ID = "0debeda8-f257-49a6-881f-11a6b8eb560b";
 
-  const toggle = (value: string, on?: boolean) =>
-    dispatch({ type: "TOGGLE", key: "position", value, on });
-
+/**
+ * The job-category tree behind the Category tab: top-level categories, each
+ * one's visible children, and the id-group a child actually toggles.
+ *
+ * Two children — Software Engineering and Engineering — are each a single
+ * visible row standing in for several ids at once (SE for itself + 4 hidden
+ * sibling categories; Engineering for itself + its 6 subcategories).
+ * `idsForChild` is the one place that resolves a row to its id-group, so
+ * every consumer — a row's own checkmark, a category's selection badge, and
+ * the tab's total count — agrees on what "selected" means for that row.
+ */
+function usePositionCategoryTree() {
   const { job_categories } = useDbRefs();
 
-  // IDs of categories that should be hidden from direct display
-  // (Full Stack, Backend, Frontend, QA will only appear under Software Engineering)
-  const HIDDEN_CATEGORIES = new Set([
-    "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
-    "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
-    "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
-    "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
-  ]);
-
-  // Categories that should not appear at top level
-  const MOVE_TO_OTHERS = new Set([
-    "ab93abaf-c117-4482-9594-8bfecec44f69", // Engineering (will be under Others)
-  ]);
-
-  // Get all top-level categories, excluding those in MOVE_TO_OTHERS
-  const categories: PositionCategory[] = job_categories
-    .filter(
-      (category) =>
-        category.parent_id === null && !MOVE_TO_OTHERS.has(category.id),
-    )
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .map((category) => ({
-      name: category.name,
-      value: category.id,
-      children: [],
-    }));
-
-  // Helper to get children of a category
-  const getChildrenIds = (parentId: string): string[] => {
-    return job_categories
+  const getChildrenIds = (parentId: string): string[] =>
+    job_categories
       .filter(
         (category) =>
           category.parent_id === parentId &&
@@ -225,10 +240,9 @@ function PositionPanel() {
       )
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((c) => c.id);
-  };
 
-  // Helper to get display info for children
-  const getChildren = (parentId: string) => {
+  // Visible children of a category, as rendered.
+  const getChildren = (parentId: string): SubOption[] => {
     const baseChildren = job_categories
       .filter(
         (category) =>
@@ -236,398 +250,275 @@ function PositionPanel() {
           !HIDDEN_CATEGORIES.has(category.id),
       )
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      .map((c) => ({
-        name: c.name,
-        value: c.id,
-      }));
+      .map((c) => ({ name: c.name, value: c.id }));
 
     // !! TEMP: Software Engineering should show the hidden categories (Full Stack, Backend, Frontend, QA)
-    if (parentId === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
-      const hiddenChildren = job_categories
+    if (parentId === SOFTWARE_ENGINEERING_ID) {
+      return job_categories
         .filter((category) => HIDDEN_CATEGORIES.has(category.id))
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((c) => ({
-          name: c.name,
-          value: c.id,
-        }));
-      return hiddenChildren;
+        .map((c) => ({ name: c.name, value: c.id }));
     }
 
     // !! TEMP: If this is Others, show Engineering as a single item (not individual engineering types)
-    if (parentId === "0debeda8-f257-49a6-881f-11a6b8eb560b") {
-      const engineeringCategory = {
-        name: "Engineering",
-        value: "ab93abaf-c117-4482-9594-8bfecec44f69",
-      };
-      return [...baseChildren, engineeringCategory];
+    if (parentId === OTHERS_ID) {
+      return [...baseChildren, { name: "Engineering", value: ENGINEERING_ID }];
     }
 
     return baseChildren;
   };
 
-  const mapChildren = (parentId: string) => {
+  // The full flattened id set a category's "All <Category>" toggle affects.
+  const mapChildren = (parentId: string): string[] => {
     const baseIds = getChildrenIds(parentId);
 
     // !! TEMP: If Others, include Engineering + all 6 engineering subcategories (Civil, Industrial, Electronics, Aerospace, Chemical, Electrical)
-    if (parentId === "0debeda8-f257-49a6-881f-11a6b8eb560b") {
-      const engineeringId = "ab93abaf-c117-4482-9594-8bfecec44f69";
+    if (parentId === OTHERS_ID) {
       const engineeringChildIds = job_categories
-        .filter((category) => category.parent_id === engineeringId)
+        .filter((category) => category.parent_id === ENGINEERING_ID)
         .map((c) => c.id);
-      return [...baseIds, engineeringId, ...engineeringChildIds];
+      return [...baseIds, ENGINEERING_ID, ...engineeringChildIds];
     }
 
     // !! TEMP: Software Engineering includes all 4 hidden categories when selected
-    if (parentId === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
-      return [
-        "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
-        "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
-        "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
-        "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
-      ];
+    if (parentId === SOFTWARE_ENGINEERING_ID) {
+      return SOFTWARE_ENGINEERING_HIDDEN_IDS;
     }
 
     // Special case: Parent of Software Engineering - include SE + its mapped items
-    if (parentId === "1e3b7585-293b-430a-a5cb-c773e0639bb0") {
+    if (parentId === SOFTWARE_ENGINEERING_PARENT_ID) {
       const mappedIds = [
-        "fc5ba110-e6df-440c-878f-b5f29be54ba9", // Software Engineering itself
-        "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
-        "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
-        "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
-        "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+        SOFTWARE_ENGINEERING_ID,
+        ...SOFTWARE_ENGINEERING_HIDDEN_IDS,
       ];
       // Keep all non-SE children + add SE + its mapped items
-      const nonSE = baseIds.filter(
-        (id) => id !== "fc5ba110-e6df-440c-878f-b5f29be54ba9",
-      );
+      const nonSE = baseIds.filter((id) => id !== SOFTWARE_ENGINEERING_ID);
       return [...nonSE, ...mappedIds];
     }
 
     return baseIds;
   };
 
-  const MasterCheckbox = ({
-    checked,
-    indeterminate,
-  }: {
-    checked: boolean;
-    indeterminate?: boolean;
-  }) => (
-    <span
-      className={cn(
-        "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
-        checked ? "border-blue-500 bg-blue-100" : "border-gray-300 bg-white",
-      )}
-      aria-hidden="true"
-    >
-      {indeterminate ? (
-        <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
-      ) : checked ? (
-        <Check className="w-3 h-3 text-blue-600" />
-      ) : null}
-    </span>
-  );
+  /**
+   * The id(s) one visible child row represents — see the file-level note
+   * above. Almost always just its own id.
+   */
+  const idsForChild = (child: SubOption): string[] => {
+    if (child.value === SOFTWARE_ENGINEERING_ID) {
+      return [SOFTWARE_ENGINEERING_ID, ...SOFTWARE_ENGINEERING_HIDDEN_IDS];
+    }
+    if (child.value === ENGINEERING_ID) {
+      return [
+        child.value,
+        ...job_categories
+          .filter((category) => category.parent_id === child.value)
+          .map((category) => category.id),
+      ];
+    }
+    return [child.value];
+  };
+
+  // Top-level categories, excluding those moved under "Others".
+  const categories: PositionCategory[] = job_categories
+    .filter(
+      (category) =>
+        category.parent_id === null && !MOVE_TO_OTHERS.has(category.id),
+    )
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((category) => ({ name: category.name, value: category.id }));
+
+  return { categories, getChildren, mapChildren, idsForChild };
+}
+
+/* ================= Panels ================= */
+
+function PositionPanel() {
+  const { state, dispatch } = useJobFilter();
+  const selected = new Set(state.position);
+  const { categories, getChildren, mapChildren, idsForChild } =
+    usePositionCategoryTree();
+
+  const toggle = (value: string, on?: boolean) =>
+    dispatch({ type: "TOGGLE", key: "position", value, on });
+
+  /** Selects or clears a whole category - parent plus everything mapped under it. */
+  const setWholeCategory = (cat: PositionCategory, on: boolean) =>
+    dispatch({
+      type: "BULK_SET",
+      key: "position",
+      values: [cat.value, ...mapChildren(cat.value)],
+      on,
+    });
 
   return (
-    <div className="space-y-2">
+    // pb-3 lives on the scrolled content (not the scroll container): bottom
+    // padding on an overflow-auto container is excluded from the scrollable
+    // overflow area, clipping the last card's border flush to the edge.
+    <Accordion type="multiple" className="space-y-2 pb-3">
       {categories.map((cat) => {
         const children = getChildren(cat.value);
         const childIds = mapChildren(cat.value);
         const hasChildren = childIds.length > 0;
 
-        const catChecked = selected.has(cat.value);
-        const selectedChildren = childIds.filter((id) => selected.has(id));
-        const allChildrenChecked =
-          hasChildren && selectedChildren.length === childIds.length;
-        const headerChecked =
-          catChecked && (allChildrenChecked || !hasChildren);
-        const headerIndeterminate =
-          (catChecked && hasChildren && !allChildrenChecked) ||
-          (!catChecked && selectedChildren.length > 0);
+        // Counts checked rows, not raw ids — see idsForChild above.
+        const selectedCount = children.filter((c) =>
+          idsForChild(c).every((id) => selected.has(id)),
+        ).length;
 
-        const expanded = headerChecked || headerIndeterminate || hasChildren;
+        // A category with nothing under it is a plain choice, not a section.
+        if (!hasChildren) {
+          return (
+            <div
+              key={cat.value}
+              className="border rounded-md overflow-hidden bg-white px-1"
+            >
+              <CheckboxRow
+                checked={selected.has(cat.value)}
+                onChange={(on) => toggle(cat.value, on)}
+                label={<span className="font-medium">{cat.name}</span>}
+              />
+            </div>
+          );
+        }
 
-        const handleHeaderToggle = () => {
-          const turnOn = !(headerChecked || headerIndeterminate);
-          const childIds = mapChildren(cat.value);
-          const valuesToDispatch = [cat.value, ...childIds];
-          // toggle parent + all children
-          dispatch({
-            type: "BULK_SET",
-            key: "position",
-            values: valuesToDispatch,
-            on: turnOn,
-          });
-        };
+        const allSelected =
+          selected.has(cat.value) && childIds.every((id) => selected.has(id));
 
         return (
-          <div key={cat.value} className="border rounded-md overflow-hidden">
-            {/* Header row is clickable */}
-            <div
-              role="button"
-              tabIndex={0}
-              aria-pressed={headerChecked}
-              aria-expanded={expanded}
-              aria-checked={headerIndeterminate ? "mixed" : headerChecked}
-              className={cn(
-                "flex items-center justify-between px-3 py-2 gap-2 cursor-pointer",
-                "bg-white hover:bg-gray-50 active:bg-gray-100",
-              )}
-              onClick={handleHeaderToggle}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleHeaderToggle();
-                }
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <MasterCheckbox
-                  checked={headerChecked}
-                  indeterminate={headerIndeterminate}
-                />
+          <AccordionItem
+            key={cat.value}
+            value={cat.value}
+            className="border rounded-md overflow-hidden bg-white"
+          >
+            <AccordionTrigger className="px-3 py-2 hover:no-underline">
+              <span className="flex items-center gap-2">
                 <span className="font-medium text-sm">{cat.name}</span>
-                {hasChildren && selectedChildren.length > 0 && (
-                  <span className="text-[11px] text-gray-500">
-                    ({selectedChildren.length} selected)
-                  </span>
-                )}
-              </div>
+                <SelectionBadge count={selectedCount} />
+              </span>
+            </AccordionTrigger>
 
-              <div className="flex items-center gap-3">
-                {hasChildren && (
-                  <button
-                    type="button"
-                    className="text-sm hover:underline transition-all text-gray-600 hover:text-gray-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const turnOn = !(headerChecked || headerIndeterminate);
+            <AccordionContent className="border-t px-2 py-1">
+              <CheckboxRow
+                checked={allSelected}
+                onChange={(on) => setWholeCategory(cat, on)}
+                label={<span className="font-medium">All {cat.name}</span>}
+              />
+
+              {children.map((c) => {
+                const ids = idsForChild(c);
+                const checked = ids.every((id) => selected.has(id));
+                return (
+                  <CheckboxRow
+                    key={c.value}
+                    checked={checked}
+                    onChange={(on) =>
                       dispatch({
                         type: "BULK_SET",
                         key: "position",
-                        values: [cat.value, ...childIds],
-                        on: turnOn,
-                      });
-                    }}
-                  >
-                    {headerChecked || headerIndeterminate
-                      ? "Clear"
-                      : "Select all"}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Children */}
-            {expanded && hasChildren && (
-              <div className="border-t px-2 py-1 bg-white">
-                {children.map((c) => {
-                  // Helper function to render special category items (SE, Engineering, etc)
-                  const renderSpecialCategory = (
-                    categoryId: string,
-                    childIds: string[],
-                  ) => {
-                    const itemChecked = selected.has(categoryId);
-                    const selectedChildren = childIds.filter((id) =>
-                      selected.has(id),
-                    );
-                    const allChildrenChecked =
-                      selectedChildren.length === childIds.length;
-                    const headerChecked = itemChecked && allChildrenChecked;
-                    const headerIndeterminate =
-                      (itemChecked && !allChildrenChecked) ||
-                      (!itemChecked && selectedChildren.length > 0);
-
-                    return (
-                      <button
-                        key={categoryId}
-                        type="button"
-                        onClick={() => {
-                          const turnOn = !(
-                            headerChecked || headerIndeterminate
-                          );
-                          dispatch({
-                            type: "BULK_SET",
-                            key: "position",
-                            values: [categoryId, ...childIds],
-                            on: turnOn,
-                          });
-                        }}
-                        className={cn(
-                          "flex items-center justify-between w-full text-left px-2 py-2 rounded hover:bg-gray-50 border border-transparent",
-                        )}
-                      >
-                        <span className="text-sm">{c.name}</span>
-                        <span
-                          className={cn(
-                            "inline-flex items-center justify-center w-5 h-5 rounded border",
-                            headerChecked
-                              ? "border-blue-500 bg-blue-100"
-                              : "border-gray-300",
-                          )}
-                        >
-                          {headerIndeterminate ? (
-                            <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
-                          ) : headerChecked ? (
-                            <Check className="w-3.5 h-3.5 text-blue-600" />
-                          ) : null}
-                        </span>
-                      </button>
-                    );
-                  };
-
-                  // !! TEMP: Software Engineering - clicking it selects itself + 4 hidden categories
-                  if (c.value === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
-                    const softwareEngineeringHiddenIds = [
-                      "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
-                      "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
-                      "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
-                      "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
-                    ];
-                    return renderSpecialCategory(
-                      c.value,
-                      softwareEngineeringHiddenIds,
-                    );
-                  }
-
-                  // !! TEMP: Engineering - clicking it selects itself + all 6 engineering subcategories
-                  if (c.value === "ab93abaf-c117-4482-9594-8bfecec44f69") {
-                    const engineeringChildIds = job_categories
-                      .filter(
-                        (cat) =>
-                          cat.parent_id ===
-                          "ab93abaf-c117-4482-9594-8bfecec44f69",
-                      )
-                      .map((cat) => cat.id);
-                    return renderSpecialCategory(c.value, engineeringChildIds);
-                  }
-
-                  return (
-                    <CheckboxRow
-                      key={c.value}
-                      checked={selected.has(c.value)}
-                      onChange={(v) => toggle(c.value, v)}
-                      label={c.name}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                        values: ids,
+                        on,
+                      })
+                    }
+                    label={c.name}
+                  />
+                );
+              })}
+            </AccordionContent>
+          </AccordionItem>
         );
       })}
-    </div>
+    </Accordion>
+  );
+}
+
+/**
+ * One labelled group of the shared form checkbox grid. Hoisted out of
+ * DetailsPanel so it isn't redefined (and its subtree remounted) on every
+ * render.
+ */
+function DetailsGroup({
+  title,
+  keyName,
+  options,
+}: {
+  title: string;
+  keyName: keyof JobFilter;
+  options: SubOption[];
+}) {
+  const { state, dispatch } = useJobFilter();
+
+  return (
+    <FormCheckBoxGroup
+      label={title}
+      labelAddon={<SelectionBadge count={state[keyName].length} />}
+      hint={null}
+      showSelectedCount={false}
+      columns={2}
+      className="[&>div.grid]:gap-2! [&>div.grid>div]:gap-2! [&>div.grid>div]:p-2!"
+      values={state[keyName]}
+      setter={(values) =>
+        dispatch({
+          type: "SET_ALL",
+          payload: { [keyName]: values as string[] },
+        })
+      }
+      options={options.map((o) => ({ value: o.value, label: o.name }))}
+    />
   );
 }
 
 function DetailsPanel() {
-  const { state, dispatch } = useJobFilter();
-
-  const Group = ({
-    title,
-    keyName,
-    options,
-  }: {
-    title: string;
-    keyName: keyof JobFilter;
-    options: SubOption[];
-  }) => {
-    const selected = new Set(state[keyName] as string[]);
-    const allIds = options.map((o) => o.value);
-    const selectedCount = allIds.filter((id) => selected.has(id)).length;
-
-    const checked = selectedCount === allIds.length && allIds.length > 0;
-    const indeterminate = selectedCount > 0 && selectedCount < allIds.length;
-
-    const toggleOne = (id: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key: keyName, value: id, on });
-
-    const toggleAll = (on: boolean) =>
-      dispatch({ type: "BULK_SET", key: keyName, values: allIds, on });
-
-    return (
-      <div className="border rounded-md overflow-hidden">
-        {/* Group header with master checkbox */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-checked={indeterminate ? "mixed" : checked}
-          className="flex items-center justify-between px-3 py-2 cursor-pointer bg-white hover:bg-gray-50 active:bg-gray-100"
-          onClick={() => toggleAll(!(checked || indeterminate))}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggleAll(!(checked || indeterminate));
-            }
-          }}
-        >
-          <div className="flex items-center gap-2">
-            {/* master checkbox visual */}
-            <span
-              className={cn(
-                "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
-                checked
-                  ? "border-blue-500 bg-blue-100"
-                  : "border-gray-300 bg-white",
-              )}
-              aria-hidden="true"
-            >
-              {indeterminate ? (
-                <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
-              ) : checked ? (
-                <Check className="w-3 h-3 text-blue-600" />
-              ) : null}
-            </span>
-            <span className="font-medium text-sm">{title}</span>
-            {selectedCount > 0 && (
-              <span className="text-[11px] text-gray-500">
-                ({selectedCount})
-              </span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            className="text-[11px] underline text-gray-600 hover:text-gray-800"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleAll(!(checked || indeterminate));
-            }}
-          >
-            {checked || indeterminate ? "Clear" : "Select all"}
-          </button>
-        </div>
-
-        {/* Options */}
-        <div className="border-t px-2 py-1">
-          {options.map((o) => (
-            <CheckboxRow
-              key={o.value}
-              checked={selected.has(o.value)}
-              onChange={(v) => toggleOne(o.value, v)}
-              label={o.name}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="space-y-2">
-      <Group
+    // pb-3 here for the same scroll-container bottom-padding reason as above.
+    <div className="space-y-4 pb-3">
+      <DetailsGroup
         title="Internship Workload"
         keyName="jobWorkload"
         options={WORKLOAD_OPTIONS}
       />
-      <Group title="Internship Mode" keyName="jobMode" options={MODE_OPTIONS} />
-      <Group
+      <DetailsGroup
+        title="Internship Mode"
+        keyName="jobMode"
+        options={MODE_OPTIONS}
+      />
+      <DetailsGroup
         title="Internship Allowance"
         keyName="jobAllowance"
         options={ALLOWANCE_OPTIONS}
       />
-      <Group title="Internship Type" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
+  );
+}
+
+/** A pill tab carrying the number of selections made under it. */
+function TabPill({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "text-sm px-3 py-1 rounded-full transition",
+        active ? "bg-gray-900 text-white" : "bg-gray-100",
+      )}
+    >
+      {label}{" "}
+      {count > 0 && (
+        <span>
+          {" "}
+          (<AnimatedCount value={count} />){" "}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -639,38 +530,49 @@ function DetailsPanel() {
  * @component
  */
 export function JobFilterPanels() {
-  const { dispatch } = useJobFilter();
+  const { state } = useJobFilter();
   const [tab, setTab] = useState<"category" | "details">("category");
+  const { categories, getChildren, idsForChild } = usePositionCategoryTree();
+
+  // Counts on the tabs so the split never hides what's already selected.
+  // Clearing lives with the surface that embeds this (the mobile overlay's
+  // footer), so there's exactly one clear action on screen.
+  //
+  // categoryCount sums the same "checked rows" PositionPanel's own badges
+  // show (see idsForChild's doc comment) rather than state.position.length —
+  // that would double-count Software Engineering / Engineering's hidden ids,
+  // and the tab total would read higher than its categories' badges added up.
+  const selectedPosition = new Set(state.position);
+  const categoryCount = categories.reduce((sum, cat) => {
+    const children = getChildren(cat.value);
+    if (children.length === 0) {
+      return sum + (selectedPosition.has(cat.value) ? 1 : 0);
+    }
+    return (
+      sum +
+      children.filter((c) =>
+        idsForChild(c).every((id) => selectedPosition.has(id)),
+      ).length
+    );
+  }, 0);
+  const detailsCount =
+    state.jobWorkload.length + state.jobMode.length + state.jobAllowance.length;
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between pb-2">
-        <div className="flex gap-2">
-          <button
-            className={cn(
-              "text-sm px-3 py-1 rounded-full",
-              tab === "category" ? "bg-gray-900 text-white" : "bg-gray-100",
-            )}
-            onClick={() => setTab("category")}
-          >
-            Category
-          </button>
-          <button
-            className={cn(
-              "text-sm px-3 py-1 rounded-full",
-              tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100",
-            )}
-            onClick={() => setTab("details")}
-          >
-            Details
-          </button>
-        </div>
-        <button
-          onClick={() => dispatch({ type: "CLEAR" })}
-          className="text-sm hover:underline transition-all text-gray-600"
-        >
-          Clear all
-        </button>
+      <div className="flex items-center gap-2 pb-2">
+        <TabPill
+          label="Category"
+          count={categoryCount}
+          active={tab === "category"}
+          onClick={() => setTab("category")}
+        />
+        <TabPill
+          label="Details"
+          count={detailsCount}
+          active={tab === "details"}
+          onClick={() => setTab("details")}
+        />
       </div>
 
       {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
@@ -680,10 +582,8 @@ export function JobFilterPanels() {
 
 export function JobFilters({
   onApply,
-  isDesktop = false,
 }: {
   onApply: (state: JobFilter) => void;
-  isDesktop?: boolean;
 }) {
   const { state, dispatch } = useJobFilter();
   const [open, setOpen] = useState(false);
@@ -701,175 +601,82 @@ export function JobFilters({
 
   const blurTransition = useBlurTransition();
 
-  /* ----- Desktop: compact single button in the bar ----- */
-  if (isDesktop) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => setOpen((p) => !p)}
-              className="justify-between p-2 px-3"
-            >
-              <span className="inline-flex items-center gap-2">
-                <FilterIcon className="w-4 h-4" />
-              </span>
-            </Button>
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setOpen((p) => !p)}
+            className="justify-between p-2 px-3"
+          >
+            <span className="inline-flex items-center gap-2">
+              <FilterIcon className="w-4 h-4" />
+            </span>
+          </Button>
 
-            <AnimatePresence>
-              {open && (
-                <motion.div
-                  className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-[0.33em] shadow-xl
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-[0.33em] shadow-xl
                      flex flex-col"
-                  {...blurTransition}
-                >
-                  {/* Tabs Header */}
-                  <div className="px-3 py-2 border-b flex items-center justify-between">
-                    <div className="flex gap-2">
-                      <button
-                        className={cn(
-                          "text-sm px-3 py-1 rounded-full",
-                          tab === "category"
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100",
-                        )}
-                        onClick={() => setTab("category")}
-                      >
-                        Category
-                      </button>
-                      <button
-                        className={cn(
-                          "text-sm  px-3 py-1 rounded-full",
-                          tab === "details"
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100",
-                        )}
-                        onClick={() => setTab("details")}
-                      >
-                        Details
-                      </button>
-                    </div>
+                {...blurTransition}
+              >
+                {/* Tabs Header */}
+                <div className="px-3 py-2 border-b flex items-center justify-between">
+                  <div className="flex gap-2">
                     <button
-                      onClick={clearAll}
-                      className="text-sm hover:underline transition-all text-gray-600"
+                      className={cn(
+                        "text-sm px-3 py-1 rounded-full",
+                        tab === "category"
+                          ? "bg-gray-900 text-white"
+                          : "bg-gray-100",
+                      )}
+                      onClick={() => setTab("category")}
                     >
-                      Clear all
+                      Category
+                    </button>
+                    <button
+                      className={cn(
+                        "text-sm  px-3 py-1 rounded-full",
+                        tab === "details"
+                          ? "bg-gray-900 text-white"
+                          : "bg-gray-100",
+                      )}
+                      onClick={() => setTab("details")}
+                    >
+                      Details
                     </button>
                   </div>
+                  <button
+                    onClick={clearAll}
+                    className="text-sm hover:underline transition-all text-gray-600"
+                  >
+                    Clear all
+                  </button>
+                </div>
 
-                  {/* Scrollable content */}
-                  <div className="p-3 overflow-auto flex-1">
-                    {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
+                {/* Scrollable content */}
+                <div className="p-3 overflow-auto flex-1">
+                  {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
+                </div>
+
+                {/* Non-scrollable footer */}
+                <div className="p-3 border-t">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={apply}>Apply</Button>
                   </div>
-
-                  {/* Non-scrollable footer */}
-                  <div className="p-3 border-t">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={apply}>Apply</Button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>Search filters</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  /* ----- Mobile: bottom sheet ----- */
-  return (
-    <>
-      <Button
-        variant="outline"
-        size={"md"}
-        className="justify-between p-2 px-3"
-        onClick={() => setOpen(true)}
-      >
-        <FilterIcon />
-      </Button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
-            role="dialog"
-            aria-modal="true"
-            onClick={() => setOpen(false)}
-            {...blurTransition}
-          >
-            <aside
-              className="fixed bottom-0 inset-x-0 z-[101] bg-white rounded-t-xl shadow-xl max-h-[88svh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="px-4 pt-3 pb-2 border-b flex items-center justify-between">
-                <div className="font-semibold">Filters</div>
-                <button
-                  className="text-sm hover:underline transition-all text-gray-600"
-                  onClick={clearAll}
-                >
-                  Clear all
-                </button>
-              </div>
-
-              {/* Tabs */}
-              <div className="px-4 py-2 flex gap-2">
-                <button
-                  className={cn(
-                    "text-sm px-3 py-1 rounded-full",
-                    tab === "category"
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100",
-                  )}
-                  onClick={() => setTab("category")}
-                >
-                  Category
-                </button>
-                <button
-                  className={cn(
-                    "text-sm px-3 py-1 rounded-full",
-                    tab === "details"
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100",
-                  )}
-                  onClick={() => setTab("details")}
-                >
-                  Details
-                </button>
-              </div>
-
-              {/* Content */}
-              <div
-                className="px-4 overflow-y-auto"
-                style={{ maxHeight: "60svh" }}
-              >
-                {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
-              </div>
-
-              {/* Sticky footer */}
-              <div className="p-3 border-t flex gap-2">
-                <Button
-                  variant="outline"
-                  className="w-1/2"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button className="w-1/2" onClick={apply}>
-                  Apply
-                </Button>
-              </div>
-            </aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>Search filters</TooltipContent>
+    </Tooltip>
   );
 }
