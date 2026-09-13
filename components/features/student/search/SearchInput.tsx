@@ -56,7 +56,7 @@ export const SearchInput = ({
 
       {showForCredit && (
         <>
-          <div className="h-6 w-0.5 bg-gray-300" />
+          <div className="h-6 w-px bg-gray-300" />
           <FormCheckbox
             checked={moaOnly}
             setter={(v: boolean) => onToggleMoa(v)}
