@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckSquare, Square } from "lucide-react";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
 import { Loader } from "@/components/ui/loader";
 import { PageError } from "@/components/ui/error";
 import { JobCard } from "@/components/shared/jobs";
+import { FormCheckbox } from "@/components/EditForm";
 import type { SearchResultsBaseProps } from "./search-results.types";
 
 /**
@@ -49,24 +49,18 @@ export function SearchResultsMobile({
                     onClick={() => onJobCardClick(job)}
                   >
                     {!job.challenge && !job.hibernating && (
-                      <button
-                        type="button"
-                        className={cn(
-                          "absolute right-4 top-5 z-10 bg-white p-1",
-                          "hover:shadow transition",
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!selectMode) setSelectMode(true);
-                          toggleSelect(job);
-                        }}
+                      <div
+                        className={cn("absolute right-4 top-5 z-10 p-1")}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {isSelected(job.id) ? (
-                          <CheckSquare className="w-6 h-6 text-primary" />
-                        ) : (
-                          <Square className="w-6 h-6 text-gray-400" />
-                        )}
-                      </button>
+                        <FormCheckbox
+                          checked={isSelected(job.id)}
+                          setter={() => {
+                            if (!selectMode) setSelectMode(true);
+                            toggleSelect(job);
+                          }}
+                        />
+                      </div>
                     )}
 
                     <JobCard job={job} on_click={() => onJobCardClick(job)} />

@@ -43,14 +43,14 @@ export const JobHead = ({
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 break-words",
+          "font-semibold leading-tight transition-colors line-clamp-2 wrap-break-word",
           wrap ? "whitespace-normal" : "truncate whitespace-pre-wrap",
         )}
       >
         {title}
       </h1>
-      <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
-        <p className="text-sm text-gray-600 font-medium">
+      <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1">
+        <p className="text-sm text-muted-foreground font-medium">
           {employer ?? "Unknown"}
         </p>
       </div>
@@ -64,8 +64,8 @@ export const JobLocation = ({
   location: string | null | undefined;
 }) => {
   return location ? (
-    <div className="flex items-center text-sm text-gray-500">
-      <Building className="w-4 h-4 mr-1 flex-shrink-0" />
+    <div className="flex items-center text-sm text-muted-foreground">
+      <Building className="w-4 h-4 mr-1 shrink-0" />
       <div className="truncate">{location}</div>
     </div>
   ) : (
@@ -449,12 +449,6 @@ export const JobCard = ({
       </div>
       <JobLocation location={job.location} />
       <JobBadges job={job} />
-      {job.hibernating && (
-        <div
-          aria-hidden
-          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
-        />
-      )}
     </Card>
   );
 };

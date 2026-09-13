@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckSquare, Square } from "lucide-react";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
 import { Loader } from "@/components/ui/loader";
 import { PageError } from "@/components/ui/error";
 import { JobCard, JobDetails } from "@/components/shared/jobs";
+import { FormCheckbox } from "@/components/EditForm";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
@@ -60,33 +60,24 @@ export function SearchResultsDesktop({
                   {jobsPage.map((job) => (
                     <div key={job.id} className="relative group">
                       {!job.challenge && !job.hibernating && (
-                        <button
-                          type="button"
+                        <div
                           aria-label={
                             isSelected(job.id) ? "Unselect job" : "Select job"
                           }
                           className={cn(
-                            "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
+                            "absolute right-5 top-6 z-20 bg-white/95 backdrop-blur",
                             "flex items-center justify-center transition-opacity",
                           )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!selectMode) setSelectMode(true);
-                            toggleSelect(job);
-                          }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {isSelected(job.id) ? (
-                            <CheckSquare
-                              className="w-5 h-5 text-warning transition-all duration-200 scale-100"
-                              strokeWidth={2}
-                            />
-                          ) : (
-                            <Square
-                              className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
-                              strokeWidth={2}
-                            />
-                          )}
-                        </button>
+                          <FormCheckbox
+                            checked={isSelected(job.id)}
+                            setter={() => {
+                              if (!selectMode) setSelectMode(true);
+                              toggleSelect(job);
+                            }}
+                          />
+                        </div>
                       )}
 
                       <div
