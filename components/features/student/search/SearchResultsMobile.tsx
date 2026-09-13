@@ -5,7 +5,7 @@ import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
 import { Loader } from "@/components/ui/loader";
 import { PageError } from "@/components/ui/error";
-import { MobileJobCard } from "@/components/shared/jobs";
+import { JobCard } from "@/components/shared/jobs";
 import type { SearchResultsBaseProps } from "./search-results.types";
 
 /**
@@ -69,10 +69,7 @@ export function SearchResultsMobile({
                       </button>
                     )}
 
-                    <MobileJobCard
-                      job={job}
-                      on_click={() => onJobCardClick(job)}
-                    />
+                    <JobCard job={job} on_click={() => onJobCardClick(job)} />
                   </div>
                 ))}
               </div>

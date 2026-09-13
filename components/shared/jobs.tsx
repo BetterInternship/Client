@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
+  HeartCrack,
   Monitor,
   PhilippinePeso,
   UserCheck,
@@ -163,7 +164,7 @@ export const JobBadges = ({
   const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="flex flex-wrap gap-2 ">
       {!excludes.includes("moa") && universityId && (
         <EmployerMOA university_id={universityId} hasMoa={job.has_moa} />
       )}
@@ -425,113 +426,29 @@ export const JobCard = ({
           : "hover:shadow-sm cursor-pointer",
       )}
     >
-      <div className="relative z-10 space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <JobHead
-            title={job.title}
-            employer={job.employer?.name}
-            wrap={!!job.hibernating}
-          />
-          {job.hibernating && (
-            <Badge
-              className={cn(
-                "relative z-30 shrink-0 gap-1",
-                onAlert
-                  ? "bg-blue-100 text-primary"
-                  : "bg-yellow-100 text-yellow-800",
-              )}
-            >
-              {onAlert ? (
-                <Clock className="w-3 h-3" />
-              ) : (
-                <AlertTriangle className="w-3 h-3" />
-              )}
-              {onAlert ? "Waiting..." : "Just missed"}
-            </Badge>
-          )}
-        </div>
-        <JobLocation location={job.location} />
-        <JobBadges job={job} />
-      </div>
-      {job.hibernating && (
-        <div
-          aria-hidden
-          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+      <div className="relative z-10 flex flex-col justify-between gap-3">
+        {job.hibernating && (
+          <Badge
+            variant="solid"
+            type={onAlert ? "primary" : "warning"}
+            className="flex gap-1 items-center w-fit"
+          >
+            {onAlert ? (
+              <Clock className="w-3 h-3" />
+            ) : (
+              <HeartCrack className="w-3 h-3" />
+            )}
+            {onAlert ? "Waiting..." : "Just missed"}
+          </Badge>
+        )}
+        <JobHead
+          title={job.title}
+          employer={job.employer?.name}
+          wrap={!!job.hibernating}
         />
-      )}
-    </Card>
-  );
-};
-
-/**
- * The mobile version of the job card.
- *
- * @component
- */
-export const MobileJobCard = ({
-  job,
-  on_click,
-}: {
-  job: Job;
-  on_click: () => void;
-}) => {
-  const waitlists = useWaitlistsData();
-  const isSuperListing = Boolean(job.challenge);
-  if (isSuperListing) {
-    return <SuperJobCard job={job} onClick={on_click} mobile />;
-  }
-
-  const onAlert = waitlists.isWaitlisted(job.id);
-
-  return (
-    <Card
-      className="card relative isolate overflow-hidden animate-fade-in p-6"
-      onClick={on_click}
-    >
-      <div className="mb-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3
-              className={cn(
-                "font-semibold text-gray-900 mb-2 leading-tight text-lg",
-                job.hibernating ? "line-clamp-2 wrap-break-word" : "truncate",
-              )}
-            >
-              {job.title}
-            </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-              <Building className="w-4 h-4 shrink-0" />
-              <span className="font-medium truncate">{job.employer?.name}</span>
-            </div>
-          </div>
-          {job.hibernating && (
-            <Badge
-              className={cn(
-                "relative z-30 shrink-0 gap-1",
-                onAlert
-                  ? "bg-blue-100 text-primary"
-                  : "bg-yellow-100 text-yellow-800",
-              )}
-            >
-              {onAlert ? (
-                <Clock className="w-3 h-3" />
-              ) : (
-                <AlertTriangle className="w-3 h-3" />
-              )}
-              {onAlert ? "Waiting..." : "Just missed"}
-            </Badge>
-          )}
-        </div>
       </div>
+      <JobLocation location={job.location} />
       <JobBadges job={job} />
-      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-        {job.description || "No description available."}
-      </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-        <div className="flex-1 min-w-0">
-          <JobLocation location={job.location} />
-        </div>
-      </div>
       {job.hibernating && (
         <div
           aria-hidden
