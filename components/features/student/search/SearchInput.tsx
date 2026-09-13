@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckSquare, Search, Square } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@betterinternship/components";
+import { FormCheckbox } from "@/components/EditForm";
 
 /**
  * The marketplace search field — a bordered pill with an optional inline
@@ -56,21 +57,16 @@ export const SearchInput = ({
       {showForCredit && (
         <>
           <div className="h-6 w-0.5 bg-gray-300" />
-          <button
-            type="button"
-            onClick={() => onToggleMoa(!moaOnly)}
-            className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50 transition-all"
-            aria-pressed={moaOnly}
-          >
-            {moaOnly ? (
-              <CheckSquare className="h-5 w-5 text-primary" />
-            ) : (
-              <Square className="h-5 w-5 text-gray-400" />
-            )}
-            <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
-              For Credit
-            </label>
-          </button>
+          <FormCheckbox
+            checked={moaOnly}
+            setter={(v: boolean) => onToggleMoa(v)}
+            className="flex items-center px-3 h-10 hover:bg-gray-50 transition-all"
+            sentence={
+              <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                For Credit
+              </span>
+            }
+          />
         </>
       )}
     </div>
