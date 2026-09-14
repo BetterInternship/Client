@@ -436,16 +436,23 @@ const DETAILS_GROUPS: {
   keyName: keyof JobFilter;
   options: SubOption[];
 }[] = [
-  { title: "Internship Workload", keyName: "jobWorkload", options: WORKLOAD_OPTIONS },
+  {
+    title: "Internship Workload",
+    keyName: "jobWorkload",
+    options: WORKLOAD_OPTIONS,
+  },
   { title: "Internship Mode", keyName: "jobMode", options: MODE_OPTIONS },
-  { title: "Internship Allowance", keyName: "jobAllowance", options: ALLOWANCE_OPTIONS },
+  {
+    title: "Internship Allowance",
+    keyName: "jobAllowance",
+    options: ALLOWANCE_OPTIONS,
+  },
 ];
 
 function DetailsPanel() {
   const { state, dispatch } = useJobFilter();
 
   return (
-    // pb-3 lives on the scrolled content, matching PositionPanel above.
     <Accordion type="multiple" className="space-y-2 pb-3">
       {DETAILS_GROUPS.map((group) => {
         const selected = new Set(state[group.keyName]);
@@ -654,10 +661,6 @@ export function JobFilters({
                   </button>
                 </div>
 
-                {/* Scrollable content. No pb-3 here: bottom padding on an
-                    overflow-auto container is excluded from the scrollable
-                    overflow area, clipping the last card's border flush to
-                    the edge. The panels themselves carry pb-3 instead. */}
                 <div className="px-3 pt-3 overflow-auto flex-1">
                   {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
                 </div>
