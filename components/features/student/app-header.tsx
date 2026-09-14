@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import {
   AppHeader,
   type NavItem,
@@ -238,34 +240,58 @@ export function StudentAppHeader({
       );
     }
 
-    // Signed out: no nav to show — a minimal bar with search + "Log in".
+    // Signed out: same chrome as the signed-in AppHeader (below) — sticky
+    // bar, brand block, search slot — with a "Log in" action standing in
+    // for the nav + account menu.
     if (!authenticated) {
       return (
-        <div className="flex items-center gap-3 border-b border-gray-100 bg-white/80 px-4 py-2 backdrop-blur-md md:px-8">
-          <HeaderTitle />
-          <div className="hidden min-w-0 flex-1 md:flex md:items-center md:justify-center md:px-4">
-            {desktopSearch}
-          </div>
-          <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
-            <button
-              type="button"
-              aria-label="Search"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 md:hidden"
-              onClick={() => setOverlayOpen(true)}
+        <header className="bg-background/70 sticky top-0 z-40 border-b py-1 backdrop-blur md:py-2">
+          <div className="mx-auto flex h-14 items-center justify-between gap-2 px-4 sm:px-6 md:h-16 lg:px-8">
+            <Link
+              href="/search"
+              aria-label="BetterInternship"
+              className="block shrink-0 border-none text-black! outline-none focus:outline-none"
             >
-              <Search className="h-5 w-5" />
-            </button>
-            <Button
-              type="button"
-              variant="outline"
-              size="md"
-              className="h-10 border-gray-300 hover:bg-gray-50"
-              onClick={loginRedirect}
-            >
-              Log in
-            </Button>
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/BetterInternshipLogo.png"
+                  alt=""
+                  width={25}
+                  height={25}
+                  className="flex-none"
+                />
+                <div className="hidden items-center md:flex">
+                  <h1 className="font-display text-lg font-bold text-gray-900">
+                    BetterInternship
+                  </h1>
+                </div>
+              </div>
+            </Link>
+
+            <div className="hidden min-w-0 flex-1 md:flex md:items-center md:px-4">
+              {desktopSearch}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Search"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 md:hidden"
+                onClick={() => setOverlayOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                onClick={loginRedirect}
+              >
+                Log in
+              </Button>
+            </div>
           </div>
-        </div>
+        </header>
       );
     }
 
