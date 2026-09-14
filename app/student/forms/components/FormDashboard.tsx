@@ -269,7 +269,7 @@ export default function FormDashboard({
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
   return (
-    <div className="relative h-full min-h-0 w-full overflow-hidden bg-gray-50">
+    <div className="relative h-full min-h-0 w-full overflow-hidden">
       <div
         className={cn(
           "grid h-[calc(100%-2px)] min-h-0 transition-[grid-template-columns] duration-500 ease-in-out",

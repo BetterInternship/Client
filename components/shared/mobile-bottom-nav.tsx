@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Search,
+  Home,
   Newspaper,
   BookA,
   User,
@@ -86,14 +86,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const profile = useProfileData();
   const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
-  // Not logged in: show minimal nav with Search and Sign In
+  // Not logged in: show minimal nav with Home and Sign In
   if (!isAuthenticated()) {
     return (
       <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
         {/* Search Button */}
         <NavButton
-          icon={<Search className="w-6 h-6" />}
-          label="Search"
+          icon={<Home className="w-6 h-6" />}
+          label="Home"
           isActive={pathname === "/search"}
           onClick={() => router.push("/search")}
         />
@@ -117,8 +117,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
       {/* Search Button */}
       <NavButton
-        icon={<Search className="w-6 h-6" />}
-        label="Search"
+        icon={<Home className="w-6 h-6" />}
+        label="Home"
         isActive={pathname === "/search"}
         onClick={() => router.push("/search")}
       />

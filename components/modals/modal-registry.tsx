@@ -33,6 +33,7 @@ import { DigestOptoutModalContent } from "../features/hire/account/digest-optout
 import { IomPartnershipModalContent } from "../features/hire/iom-partnership-modal";
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
+import { MoaUploadModal } from "./MoaUploadModal";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -646,6 +647,29 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("notifications-required"),
+      },
+
+      moaUpload: {
+        open: ({ onDone }: { onDone?: () => void } = {}) =>
+          open(
+            "moa-upload",
+            DefaultModalLayout,
+            <MoaUploadModal
+              onDone={() => {
+                onDone?.();
+                close("moa-upload");
+              }}
+              onCancel={() => close("moa-upload")}
+            />,
+            {
+              title: modalTitleWithIcon(FileUp, "Upload MOA Documents"),
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+              panelClassName: "sm:max-w-2xl",
+            },
+          ),
+        close: () => close("moa-upload"),
       },
 
       closeAll: () => close(),

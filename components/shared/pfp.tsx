@@ -1,64 +1,44 @@
-import { useFile } from "@/hooks/use-file";
-import { EmployerService, UserService } from "@/lib/api/services";
-import { useCallback, useEffect, useState } from "react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Loader } from "../ui/loader";
+"use client";
 
-export const PFP_UPDATED_EVENT = "bi:pfp-updated";
+import { Avatar } from "../ui/avatar";
+import { usePfpUrl, type PfpSource } from "@/hooks/use-pfp";
+
+export { PFP_UPDATED_EVENT } from "@/hooks/use-pfp";
+
+// next.config.mjs's domain rewrite deliberately excludes image extensions,
+// so "/images/default-pfp.jpg" never resolves to either audience's actual
+// asset (public/hire/images/... or public/student/images/...) — it 404s
+// and renders as a blank/broken image. Route by source instead.
+const DEFAULT_PFP_URL: Record<PfpSource, string> = {
+  employer: "/hire/images/default-pfp.jpg",
+  users: "/student/images/default-pfp.jpg",
+};
 
 /**
  * A profile picture of a given user.
- * Accessible only to employers.
  *
  * @component
  */
 const Pfp = ({
   id,
   source,
-  pfp_fetcher,
   size = "10",
 }: {
   id: string;
-  source: string;
-  pfp_fetcher: () => Promise<any>;
+  source: PfpSource;
   size?: string;
 }) => {
-  // next.config.mjs's domain rewrite deliberately excludes image extensions,
-  // so "/images/default-pfp.jpg" never resolves to either audience's actual
-  // asset (public/hire/images/... or public/student/images/...) — it 404s
-  // and renders as a blank/broken image. Route by source instead.
-  const defaultURL =
-    source === "employer"
-      ? "/hire/images/default-pfp.jpg"
-      : "/student/images/default-pfp.jpg";
-
-  const { url, sync, loading } = useFile({
-    route: `/${source}/` + id + "/pic",
-    fetcher: pfp_fetcher,
-    defaultURL,
-  });
-
-  useEffect(() => {
-    void sync();
-  }, [sync]);
-
-  useEffect(() => {
-    const handlePfpUpdated = () => {
-      void sync();
-    };
-
-    window.addEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
-    return () => {
-      window.removeEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
-    };
-  }, [sync]);
+  const defaultURL = DEFAULT_PFP_URL[source];
+  const { url, loading } = usePfpUrl({ id, source, defaultURL });
 
   return (
     <Avatar
       className={`relative w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
     >
       {loading ? (
-        <div className="rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"><img src={defaultURL}></img></div>
+        <div className="rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto">
+          <img src={defaultURL}></img>
+        </div>
       ) : (
         <img src={url}></img>
       )}
@@ -79,15 +59,7 @@ export const UserPfp = ({
   user_id: string;
   size?: string;
 }) => {
-
-  const pfp_fetcher = useCallback(
-    async () => UserService.getUserPfpURL(user_id),
-    [user_id]
-  );
-
-  return (
-    <Pfp key={user_id} id={user_id} size={size} source={"users"} pfp_fetcher={pfp_fetcher}/>
-  );
+  return <Pfp key={user_id} id={user_id} size={size} source={"users"} />;
 };
 
 /**
@@ -103,19 +75,7 @@ export const EmployerPfp = ({
   employer_id: string;
   size?: string;
 }) => {
-  const pfp_fetcher = useCallback(
-    async () => EmployerService.getEmployerPfpURL(employer_id),
-    [employer_id]
-  );
-
-  return (
-    <Pfp
-      id={employer_id}
-      size={size}
-      source={"employer"}
-      pfp_fetcher={pfp_fetcher}
-    />
-  );
+  return <Pfp id={employer_id} size={size} source={"employer"} />;
 };
 
 /**

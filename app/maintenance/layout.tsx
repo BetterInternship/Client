@@ -7,7 +7,7 @@ import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { getRefsData } from "@/lib/db/use-refs-backend";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
-import Header from "@/components/features/student/header";
+import StudentAppHeader from "@/components/features/student/app-header";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
 import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
@@ -54,7 +54,10 @@ export default async function MaintenanceLayout({
                               style={{ backgroundImage: `url(${bg2.src})` }}
                             />
                             <Suspense>
-                              <Header showActions={false} transparent />
+                              <StudentAppHeader
+                                showActions={false}
+                                transparent
+                              />
                             </Suspense>
                             <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-auto">
                               {children}

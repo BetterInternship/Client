@@ -3,6 +3,7 @@
 import { useAuthContext } from "@/app/hire/authctx";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePfpUrl } from "@/hooks/use-pfp";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AppHeader,
@@ -31,6 +32,15 @@ export function HireAppHeader() {
   const router = useRouter();
   const { god, proxy, exitProxy, user, logout } = useAuthContext();
   const { data: profile } = useProfile();
+
+  // The hire-side "profile picture" is the company logo (uploaded in
+  // account > company). Empty until it resolves, so AppHeader falls back to
+  // its own icon rather than flashing a broken image.
+  const { url: logoUrl } = usePfpUrl({
+    id: "me",
+    source: "employer",
+    enabled: !!user,
+  });
 
   // Proxying leaves the acting god's own identity shadowed by the employer
   // being viewed (setProxyCookie never gets undone on its own) — hopping back
@@ -62,7 +72,7 @@ export function HireAppHeader() {
           isGodActive ? "text-primary" : "text-gray-700",
         )}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ">
           <ShieldCheck className="h-4 w-4 text-gray-500" />
           <span>Administrator</span>
         </div>
@@ -72,7 +82,7 @@ export function HireAppHeader() {
       <Button
         variant="ghost"
         className={cn(
-          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1",
+          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive!",
           isGodActive
             ? "text-primary"
             : "opacity-80 hover:bg-gray-100 hover:opacity-100",
@@ -89,13 +99,14 @@ export function HireAppHeader() {
 
   return (
     <AppHeader
-      portal="Recruiter"
+      siteName="Recruiter Portal"
       brand="BetterInternship"
       logoPath="/BetterInternshipLogo.png"
       homeHref="/dashboard"
       nav={nav}
       userPrimary={profile?.name}
       userSecondary={user?.email}
+      userAvatarUrl={logoUrl || null}
       logout={logout}
       postLogoutPath="/"
       accountNav={[{ href: "/account", label: "Account", icon: UserCircle }]}

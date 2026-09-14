@@ -159,7 +159,13 @@ export default function VerifyHireRegistrationPage() {
         </Button>
       }
     >
-      <div className="flex flex-col gap-4">
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void (hasSentCode ? submitCode() : sendCode());
+        }}
+      >
         <FormInput
           label="Work email"
           type="email"
@@ -202,10 +208,9 @@ export default function VerifyHireRegistrationPage() {
 
         <div>
           <Button
-            type="button"
+            type="submit"
             size="lg"
             className="w-full"
-            onClick={() => void (hasSentCode ? submitCode() : sendCode())}
             disabled={
               !isValidEmail(email) ||
               sending ||
@@ -225,7 +230,7 @@ export default function VerifyHireRegistrationPage() {
                     : "Send code"}
           </Button>
         </div>
-      </div>
+      </form>
     </HireAuthShell>
   );
 }

@@ -140,7 +140,7 @@ export default function JobHeader({
           size="sm"
           disabled={saving}
           className={cn(
-            "hover:bg-primary/10 gap-1",
+            "hover:bg-primary/[0.035] gap-1",
             pathname === "/listings/details"
               ? "bg-primary/10 text-primary"
               : "",
@@ -157,7 +157,7 @@ export default function JobHeader({
               <Button
                 variant="ghost"
                 size="sm"
-                className="hover:bg-primary/10 gap-1"
+                className="hover:bg-primary/[0.035] gap-1"
               >
                 <Edit size={16} />
                 <span>Edit</span>
@@ -180,7 +180,7 @@ export default function JobHeader({
             size="sm"
             disabled={saving}
             className={cn(
-              "hover:bg-primary/10 gap-1",
+              "hover:bg-primary/[0.035] gap-1",
               pathname === "/listings/edit" ? "bg-primary/10 text-primary" : "",
             )}
           >

@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
+  HeartCrack,
   Monitor,
   PhilippinePeso,
   UserCheck,
@@ -19,7 +20,6 @@ import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { useMobile } from "@/hooks/use-mobile";
-import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData, useWaitlistsData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
@@ -43,14 +43,14 @@ export const JobHead = ({
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 break-words",
+          "font-semibold leading-tight transition-colors line-clamp-2 wrap-break-word",
           wrap ? "whitespace-normal" : "truncate whitespace-pre-wrap",
         )}
       >
         {title}
       </h1>
-      <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
-        <p className="text-sm text-gray-600 font-medium">
+      <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1">
+        <p className="text-sm text-muted-foreground font-medium">
           {employer ?? "Unknown"}
         </p>
       </div>
@@ -64,8 +64,8 @@ export const JobLocation = ({
   location: string | null | undefined;
 }) => {
   return location ? (
-    <div className="flex items-center text-sm text-gray-500">
-      <Building className="w-4 h-4 mr-1 flex-shrink-0" />
+    <div className="flex items-center text-sm text-muted-foreground">
+      <Building className="w-4 h-4 mr-1 shrink-0" />
       <div className="truncate">{location}</div>
     </div>
   ) : (
@@ -164,7 +164,7 @@ export const JobBadges = ({
   const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="flex flex-wrap gap-2 ">
       {!excludes.includes("moa") && universityId && (
         <EmployerMOA university_id={universityId} hasMoa={job.has_moa} />
       )}
@@ -426,119 +426,29 @@ export const JobCard = ({
           : "hover:shadow-sm cursor-pointer",
       )}
     >
-      <div className="relative z-10 space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <JobHead
-            title={job.title}
-            employer={job.employer?.name}
-            wrap={!!job.hibernating}
-          />
-          {job.hibernating && (
-            <Badge
-              className={cn(
-                "relative z-30 shrink-0 gap-1",
-                onAlert
-                  ? "bg-blue-100 text-primary"
-                  : "bg-yellow-100 text-yellow-800",
-              )}
-            >
-              {onAlert ? (
-                <Clock className="w-3 h-3" />
-              ) : (
-                <AlertTriangle className="w-3 h-3" />
-              )}
-              {onAlert ? "Waiting..." : "Just missed"}
-            </Badge>
-          )}
-        </div>
-        <JobLocation location={job.location} />
-        <JobBadges job={job} />
-      </div>
-      {job.hibernating && (
-        <div
-          aria-hidden
-          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+      <div className="relative z-10 flex flex-col justify-between gap-3">
+        {job.hibernating && (
+          <Badge
+            variant="solid"
+            type={onAlert ? "primary" : "warning"}
+            className="flex gap-1 items-center w-fit"
+          >
+            {onAlert ? (
+              <Clock className="w-3 h-3" />
+            ) : (
+              <HeartCrack className="w-3 h-3" />
+            )}
+            {onAlert ? "Waiting..." : "Just missed"}
+          </Badge>
+        )}
+        <JobHead
+          title={job.title}
+          employer={job.employer?.name}
+          wrap={!!job.hibernating}
         />
-      )}
-    </Card>
-  );
-};
-
-/**
- * The mobile version of the job card.
- *
- * @component
- */
-export const MobileJobCard = ({
-  job,
-  on_click,
-}: {
-  job: Job;
-  on_click: () => void;
-}) => {
-  const waitlists = useWaitlistsData();
-  const isSuperListing = Boolean(job.challenge);
-  if (isSuperListing) {
-    return <SuperJobCard job={job} onClick={on_click} mobile />;
-  }
-
-  const onAlert = waitlists.isWaitlisted(job.id);
-
-  return (
-    <Card
-      className="card relative isolate overflow-hidden animate-fade-in p-6"
-      onClick={on_click}
-    >
-      <div className="mb-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3
-              className={cn(
-                "font-semibold text-gray-900 mb-2 leading-tight text-lg",
-                job.hibernating ? "line-clamp-2 wrap-break-word" : "truncate",
-              )}
-            >
-              {job.title}
-            </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-              <Building className="w-4 h-4 shrink-0" />
-              <span className="font-medium truncate">{job.employer?.name}</span>
-            </div>
-          </div>
-          {job.hibernating && (
-            <Badge
-              className={cn(
-                "relative z-30 shrink-0 gap-1",
-                onAlert
-                  ? "bg-blue-100 text-primary"
-                  : "bg-yellow-100 text-yellow-800",
-              )}
-            >
-              {onAlert ? (
-                <Clock className="w-3 h-3" />
-              ) : (
-                <AlertTriangle className="w-3 h-3" />
-              )}
-              {onAlert ? "Waiting..." : "Just missed"}
-            </Badge>
-          )}
-        </div>
       </div>
+      <JobLocation location={job.location} />
       <JobBadges job={job} />
-      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-        {job.description || "No description available."}
-      </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-        <div className="flex-1 min-w-0">
-          <JobLocation location={job.location} />
-        </div>
-      </div>
-      {job.hibernating && (
-        <div
-          aria-hidden
-          className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
-        />
-      )}
     </Card>
   );
 };
@@ -796,7 +706,7 @@ export function SuperChallengeDetails({
               {superChallengeTitle || "Tell us your funniest joke."}
             </h3>
           </div>
-          <div className="relative whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
+          <div className="relative whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-gray-700">
             {superChallengeDescription || "No challenge description provided."}
           </div>
         </div>
@@ -833,17 +743,10 @@ export function JobDetails({
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
-  const { isMobile } = useAppContext();
-
   return (
     <>
-      {job.hibernating && <HibernatingListingBanner job={job} />}
-      <div
-        className={cn(
-          "flex-1 overflow-y-auto space-y-5",
-          isMobile ? "px-3 py-4" : "px-8 pt-7",
-        )}
-      >
+      <div className={cn("flex-1 overflow-y-auto space-y-5")}>
+        {job.hibernating && <HibernatingListingBanner job={job} />}
         <HeaderWithActions
           job={job}
           actions={job.hibernating ? [] : actions}

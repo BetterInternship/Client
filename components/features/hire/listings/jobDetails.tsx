@@ -2,12 +2,8 @@
 
 import { JobDetails } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
-import { useAppContext } from "@/lib/ctx-app";
 import { Job } from "@/lib/db/db.types";
 import { cn, PageContainer } from "@betterinternship/components";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 
 interface JobDetailsPageProps {
@@ -15,10 +11,6 @@ interface JobDetailsPageProps {
 }
 
 const JobDetailsPage = ({ job }: JobDetailsPageProps) => {
-  const router = useRouter();
-  const { isMobile } = useAppContext();
-  const [exitingBack, setExitingBack] = useState(false);
-
   return (
     <PageContainer>
       <Card>

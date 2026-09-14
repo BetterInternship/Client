@@ -5,6 +5,10 @@ export type DiscordLinkStatusResponse = FetchResponse & {
   linked?: boolean;
 };
 
+export type DiscordAuthorizationUrlResponse = FetchResponse & {
+  authorizationUrl?: string;
+};
+
 export const DiscordService = {
   getLinkStatus() {
     return APIClient.get<DiscordLinkStatusResponse>(
@@ -30,5 +34,14 @@ export const DiscordService = {
       .r("discord", "oauth", "start")
       .p({ job_id: jobId })
       .build();
+  },
+
+  getMobileAuthorizationUrl(jobId?: string) {
+    return APIClient.get<DiscordAuthorizationUrlResponse>(
+      APIRouteBuilder("integrations")
+        .r("discord", "oauth", "start")
+        .p({ job_id: jobId, mobile: true })
+        .build(),
+    );
   },
 };

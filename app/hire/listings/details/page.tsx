@@ -4,10 +4,10 @@ import { PageContainer } from "@betterinternship/components/page-header";
 import JobHeader from "@/components/features/hire/dashboard/JobHeader";
 import JobDetailsPage from "@/components/features/hire/listings/jobDetails";
 import { Loader } from "@/components/ui/loader";
-import { JobService } from "@/lib/api/services";
-import { Job } from "@/lib/db/db.types";
+import { JobLoadError } from "@/components/features/hire/job-load-error";
+import { useJob } from "@/hooks/use-employer-api";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 
 export default function JobDetailsPageRoute() {
   return (
@@ -20,41 +20,24 @@ export default function JobDetailsPageRoute() {
 function JobDetailsPageRouteContent() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
-  const [jobData, setJobData] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { job, loading, error, notFound, updateJob, refetch } = useJob(jobId);
 
-  useEffect(() => {
-    const fetchJobData = async () => {
-      if (!jobId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await JobService.getAnyJobById(jobId);
-        if (response?.success && response.job) {
-          setJobData(response.job);
-        } else {
-          console.error("failed to load job data");
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobData();
-  }, [jobId]);
-
-  const handleJobUpdate = (updates: Partial<Job>) => {
-    setJobData((prev) => (prev ? { ...prev, ...updates } : null));
-  };
-
-  if (loading || !jobData) {
+  if (loading) {
     return (
       <PageContainer>
         <Loader>Loading listing information...</Loader>
+      </PageContainer>
+    );
+  }
+
+  if (error || notFound || !job) {
+    return (
+      <PageContainer>
+        <JobLoadError
+          error={error}
+          notFound={notFound}
+          onRetry={() => void refetch()}
+        />
       </PageContainer>
     );
   }
@@ -63,12 +46,12 @@ function JobDetailsPageRouteContent() {
     <div className="flex-1 flex justify-center">
       <div className="w-full h-full">
         <JobHeader
-          job={jobData}
-          onJobUpdate={handleJobUpdate}
+          job={job}
+          onJobUpdate={updateJob}
           backHref={`/dashboard/manage?jobId=${jobId}`}
         />
         <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
-          <JobDetailsPage job={jobData} />
+          <JobDetailsPage job={job} />
         </div>
       </div>
     </div>

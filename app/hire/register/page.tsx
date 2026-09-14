@@ -163,7 +163,13 @@ const EmployerEditor = () => {
     <>
       <AnimatePresence>
         <motion.div {...blurTransition} className="w-full">
-          <div className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              continueRegistration();
+            }}
+          >
             {missingFields.length > 0 && (
               <div
                 className={cn(
@@ -314,7 +320,7 @@ const EmployerEditor = () => {
             </div>
             <div className="flex justify-end w-full pb-2">
               <Button
-                onClick={continueRegistration}
+                type="submit"
                 size="lg"
                 className="w-full"
                 disabled={!additionalFields.terms_accepted || isContinuing}
@@ -322,7 +328,7 @@ const EmployerEditor = () => {
                 {isContinuing ? "Continuing..." : "Continue"}
               </Button>
             </div>
-          </div>
+          </form>
         </motion.div>
       </AnimatePresence>
     </>
