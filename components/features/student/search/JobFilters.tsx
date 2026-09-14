@@ -18,7 +18,7 @@ import {
   Button,
 } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
-import { FormCheckbox, FormCheckBoxGroup } from "@/components/EditForm";
+import { FormCheckbox } from "@/components/EditForm";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
@@ -351,9 +351,6 @@ function PositionPanel() {
     });
 
   return (
-    // pb-3 lives on the scrolled content (not the scroll container): bottom
-    // padding on an overflow-auto container is excluded from the scrollable
-    // overflow area, clipping the last card's border flush to the edge.
     <Accordion type="multiple" className="space-y-2 pb-3">
       {categories.map((cat) => {
         const children = getChildren(cat.value);
@@ -388,7 +385,7 @@ function PositionPanel() {
           <AccordionItem
             key={cat.value}
             value={cat.value}
-            className="border rounded-md overflow-hidden bg-white"
+            className="border last:border-b rounded-md overflow-hidden bg-white"
           >
             <AccordionTrigger className="px-3 py-2 hover:no-underline">
               <span className="flex items-center gap-2">
@@ -431,62 +428,66 @@ function PositionPanel() {
   );
 }
 
-/**
- * One labelled group of the shared form checkbox grid. Hoisted out of
- * DetailsPanel so it isn't redefined (and its subtree remounted) on every
- * render.
- */
-function DetailsGroup({
-  title,
-  keyName,
-  options,
-}: {
+const DETAILS_GROUPS: {
   title: string;
   keyName: keyof JobFilter;
   options: SubOption[];
-}) {
+}[] = [
+  {
+    title: "Internship Workload",
+    keyName: "jobWorkload",
+    options: WORKLOAD_OPTIONS,
+  },
+  { title: "Internship Mode", keyName: "jobMode", options: MODE_OPTIONS },
+  {
+    title: "Internship Allowance",
+    keyName: "jobAllowance",
+    options: ALLOWANCE_OPTIONS,
+  },
+];
+
+function DetailsPanel() {
   const { state, dispatch } = useJobFilter();
 
   return (
-    <FormCheckBoxGroup
-      label={title}
-      labelAddon={<SelectionBadge count={state[keyName].length} />}
-      hint={null}
-      showSelectedCount={false}
-      columns={2}
-      className="[&>div.grid]:gap-2! [&>div.grid>div]:gap-2! [&>div.grid>div]:p-2!"
-      values={state[keyName]}
-      setter={(values) =>
-        dispatch({
-          type: "SET_ALL",
-          payload: { [keyName]: values as string[] },
-        })
-      }
-      options={options.map((o) => ({ value: o.value, label: o.name }))}
-    />
-  );
-}
+    <Accordion type="multiple" className="space-y-2 pb-3">
+      {DETAILS_GROUPS.map((group) => {
+        const selected = new Set(state[group.keyName]);
 
-function DetailsPanel() {
-  return (
-    // pb-3 here for the same scroll-container bottom-padding reason as above.
-    <div className="space-y-4 pb-3">
-      <DetailsGroup
-        title="Internship Workload"
-        keyName="jobWorkload"
-        options={WORKLOAD_OPTIONS}
-      />
-      <DetailsGroup
-        title="Internship Mode"
-        keyName="jobMode"
-        options={MODE_OPTIONS}
-      />
-      <DetailsGroup
-        title="Internship Allowance"
-        keyName="jobAllowance"
-        options={ALLOWANCE_OPTIONS}
-      />
-    </div>
+        return (
+          <AccordionItem
+            key={group.keyName}
+            value={group.keyName}
+            className="border last:border-b rounded-md overflow-hidden bg-white"
+          >
+            <AccordionTrigger className="px-3 py-2 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <span className="font-medium text-sm">{group.title}</span>
+                <SelectionBadge count={selected.size} />
+              </span>
+            </AccordionTrigger>
+
+            <AccordionContent className="border-t px-2 py-1">
+              {group.options.map((o) => (
+                <CheckboxRow
+                  key={o.value}
+                  checked={selected.has(o.value)}
+                  onChange={(on) =>
+                    dispatch({
+                      type: "TOGGLE",
+                      key: group.keyName,
+                      value: o.value,
+                      on,
+                    })
+                  }
+                  label={o.name}
+                />
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
   );
 }
 
@@ -657,8 +658,7 @@ export function JobFilters({
                   </button>
                 </div>
 
-                {/* Scrollable content */}
-                <div className="p-3 overflow-auto flex-1">
+                <div className="px-3 pt-3 overflow-auto flex-1">
                   {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
                 </div>
 
