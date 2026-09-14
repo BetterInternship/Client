@@ -240,9 +240,7 @@ export function StudentAppHeader({
       );
     }
 
-    // Signed out: same chrome as the signed-in AppHeader (below) — sticky
-    // bar, brand block, search slot — with a "Log in" action standing in
-    // for the nav + account menu.
+    // Signed out
     if (!authenticated) {
       return (
         <header className="bg-background/70 sticky top-0 z-40 border-b py-1 backdrop-blur md:py-2">
