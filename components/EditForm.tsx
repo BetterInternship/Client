@@ -414,12 +414,12 @@ export const FormCheckbox = ({
         >
           {indeterminate ? (
             <motion.div key="checkIcon" {...blurTransition}>
-              <Minus className="text-primary opacity-75 h-4 w-4" />
+              <Minus className="text-primary h-4 w-4" />
             </motion.div>
           ) : checked ? (
             <AnimatePresence>
               <motion.div key="checkIcon" {...blurTransition}>
-                <Check className="text-primary opacity-75 h-4 w-4" />
+                <Check className="text-primary h-4 w-4" />
               </motion.div>
             </AnimatePresence>
           ) : null}
