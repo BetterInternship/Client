@@ -351,9 +351,6 @@ function PositionPanel() {
     });
 
   return (
-    // pb-3 lives on the scrolled content (not the scroll container): bottom
-    // padding on an overflow-auto container is excluded from the scrollable
-    // overflow area, clipping the last card's border flush to the edge.
     <Accordion type="multiple" className="space-y-2 pb-3">
       {categories.map((cat) => {
         const children = getChildren(cat.value);
