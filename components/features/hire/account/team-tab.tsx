@@ -32,6 +32,7 @@ import {
   useReactivateMember,
 } from "@/hooks/use-employer-api";
 import { getFullName } from "@/lib/profile";
+import { toast } from "sonner";
 
 /** Plain <select> — `@tailwindcss/forms` (tailwind.config.ts) already paints
  * every bare select with its own chevron background-image, so adding a second,
@@ -142,6 +143,19 @@ export function TeamTab() {
     }
   };
 
+  const handleResendInvite = async (member: EmployerTeamMember) => {
+    try {
+      const response = await resendInvite.mutateAsync(member.id);
+      if (!response.success) {
+        toast.error(response.message || "Could not resend invitation.");
+        return;
+      }
+      toast.success(`Invitation resent to ${member.email}.`);
+    } catch {
+      toast.error("Could not resend invitation.");
+    }
+  };
+
   const handleDeactivateClick = (member: EmployerTeamMember) => {
     if (member.is_owner) {
       setOwnerTransferTarget(member);
@@ -188,7 +202,7 @@ export function TeamTab() {
                 key={member.id}
                 member={member}
                 blockedAsLastAdmin={isLastLiveAdmin(member)}
-                onResendInvite={() => resendInvite.mutate(member.id)}
+                onResendInvite={() => void handleResendInvite(member)}
                 onChangeRole={(role) =>
                   changeRole.mutate({ userId: member.id, role })
                 }
@@ -231,7 +245,10 @@ export function TeamTab() {
             <Button variant="outline" onClick={() => setInviteOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={submitInvite} disabled={inviteMember.isPending}>
+            <Button
+              onClick={() => void submitInvite()}
+              disabled={inviteMember.isPending}
+            >
               {inviteMember.isPending ? "Sending..." : "Send invite"}
             </Button>
           </DialogFooter>
