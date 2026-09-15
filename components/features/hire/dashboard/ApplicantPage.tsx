@@ -14,6 +14,8 @@ import {
   formatOptionalTimestampDate,
 } from "@/lib/utils/date-utils";
 import {
+  Archive,
+  ArchiveRestore,
   Award,
   FileText,
   Phone,
@@ -26,6 +28,7 @@ import {
   ChevronRight,
   HelpCircle,
 } from "lucide-react";
+import { ActionButton } from "@/components/ui/action-button";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";
 import {
@@ -293,6 +296,27 @@ export function ApplicantPage({
                       </div>
                     </div>
                   </div>
+                  {onArchive && (
+                    <ActionButton
+                      icon={
+                        application.visibility === "archived"
+                          ? ArchiveRestore
+                          : Archive
+                      }
+                      label={
+                        application.visibility === "archived"
+                          ? "Unarchive"
+                          : "Archive"
+                      }
+                      enabled={
+                        application.visibility === "archived" ||
+                        application.status === 4 ||
+                        application.status === 6
+                      }
+                      disabledLabel="Accept or reject this applicant before archiving them."
+                      onClick={onArchive}
+                    />
+                  )}
                 </div>
               </div>
             </div>

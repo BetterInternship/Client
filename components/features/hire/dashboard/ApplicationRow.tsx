@@ -74,6 +74,15 @@ export function ApplicationRow({
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
 
+  // An unfinalized applicant (pending/shortlisted) can't be archived — they'd
+  // vanish from the employer's own view while the student keeps waiting, and
+  // no notification can fix that (plan D3/D4). Unarchiving is never gated.
+  const isArchived = application.visibility === "archived";
+  const isFinalized = application.status === 4 || application.status === 6;
+  const canArchive = isArchived || isFinalized;
+  const ARCHIVE_DISABLED_LABEL =
+    "Accept or reject this applicant before archiving them.";
+
   return isMobile ? (
     <div key={application.id}>
       <Card
@@ -205,6 +214,9 @@ export function ApplicationRow({
                     onAction("ARCHIVE", [application]);
                   }
                 }}
+                enabled={canArchive}
+                label="Archive"
+                disabledLabel={ARCHIVE_DISABLED_LABEL}
               />
             )}
             {application.visibility === "archived" && (
@@ -307,9 +319,11 @@ export function ApplicationRow({
                   onAction("ARCHIVE", [application]);
                 }
               }}
+              enabled={canArchive}
               label={
                 application.visibility === "archived" ? "Unarchive" : "Archive"
               }
+              disabledLabel={ARCHIVE_DISABLED_LABEL}
             />
           )}
           {application.visibility === "archived" && (

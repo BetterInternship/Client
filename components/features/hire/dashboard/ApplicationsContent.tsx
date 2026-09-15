@@ -3,6 +3,7 @@
 "use client";
 
 import { forwardRef, useImperativeHandle } from "react";
+import { useSearchParams } from "next/navigation";
 import { useApplicationSelection } from "@/hooks/use-application-selection";
 import {
   Badge,
@@ -71,8 +72,28 @@ export const ApplicationsContent = forwardRef<
 ) {
   const { isMobile } = useAppContext();
 
+  // Seeds the initial tab from ?filter=, so "Review them first" on the
+  // close-listing warning can deep-link straight to the Pending tab
+  // (plan §4.3). activeFilter still lives as component state afterwards —
+  // the URL only sets where it starts.
+  const searchParams = useSearchParams();
+  const VALID_FILTERS: ApplicationFilter[] = [
+    "all",
+    "pending",
+    "shortlisted",
+    "accepted",
+    "rejected",
+    "archived",
+  ];
+  const requestedFilter = searchParams.get("filter");
+  const initialFilter =
+    requestedFilter && (VALID_FILTERS as string[]).includes(requestedFilter)
+      ? (requestedFilter as ApplicationFilter)
+      : "all";
+
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<ApplicationFilter>("all");
+  const [activeFilter, setActiveFilter] =
+    useState<ApplicationFilter>(initialFilter);
   const sortedApplications = applications.toSorted(
     (a, b) =>
       new Date(b.applied_at ?? "").getTime() -
@@ -184,6 +205,17 @@ export const ApplicationsContent = forwardRef<
       app.status === LABEL_ID_MAP.get("rejected"),
   );
 
+  // Archiving an unfinalized applicant hides them from view while the
+  // student keeps waiting, so bulk-archive is blocked while any selected row
+  // is still pending/shortlisted (plan D3/D4/D5). Unarchiving is never
+  // gated — only the selection contents are inspected, never the checkboxes
+  // themselves.
+  const unfinalizedSelectedCount = selectedApplicationsData.filter(
+    (app) => app.status === 0 || app.status === 1,
+  ).length;
+  const bulkArchiveDisabled =
+    activeFilter !== "archived" && unfinalizedSelectedCount > 0;
+
   // separate statuses and visibility in the command bar and remove unused ones.
   const command_bar_statuses = selectedAcceptedOrRejected
     ? [""]
@@ -199,6 +231,8 @@ export const ApplicationsContent = forwardRef<
       key="archive"
       icon={activeFilter === "archived" ? ArchiveRestore : Archive}
       label={activeFilter === "archived" ? "Unarchive" : "Archive"}
+      enabled={!bulkArchiveDisabled}
+      disabledLabel={`${unfinalizedSelectedCount} of ${selectedApplications.size} selected haven't been accepted or rejected yet.`}
       onClick={() => {
         const apps = Array.from(selectedApplications)
           .map((id) => sortedApplications.find((app) => app.id === id))
