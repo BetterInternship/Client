@@ -22,7 +22,6 @@ import { TextLoader } from "@/components/ui/loader";
 import { FormService } from "@/lib/api/services";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { getClientAudit } from "@/lib/audit";
-import { useQueryClient } from "@tanstack/react-query";
 import { useStateRecord } from "@/hooks/base/useStateRecord";
 import {
   useFormFilloutProcessRunner,
@@ -131,7 +130,6 @@ export function FormSigningLayout({
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
-  const queryClient = useQueryClient();
   const signContext = useSignContext();
   const { isMobile } = useAppContext();
   const [isCompactSigningLayout, setIsCompactSigningLayout] = useState(false);
@@ -633,14 +631,16 @@ export function FormSigningLayout({
 
       modalRegistry.formSubmissionSuccess.open("manual", () => {
         // Reset/navigate back synchronously — the success modal closes the
-        // instant this callback returns, so gating the reset behind the
-        // invalidation round trip left the "confirm" step (with its
-        // Submit button) briefly exposed underneath as it closed. The
-        // synthetic pending/handled rows already cover the gap until this
-        // invalidation lands.
+        // instant this callback returns, so anything async here leaves the
+        // "confirm" step (with its Submit button) briefly exposed underneath
+        // as it closes.
+        //
+        // Deliberately no "my-forms" refetch here: the job can save its real
+        // row before it's marked done, so a refetch now can land that row
+        // next to the still-"Generating" synthetic one. The forms page
+        // refetches "my-forms" itself once the job is done.
         setCurrentStep(initialStep);
         onBack();
-        void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
       });
     } else {
       const response = await FormService.initiateForm({
@@ -665,12 +665,10 @@ export function FormSigningLayout({
       modalRegistry.formSubmissionSuccess.open(
         "esign",
         () => {
-          // See the "manual" branch above: reset/navigate back synchronously
-          // so nothing from the "confirm" step is exposed while the success
-          // modal closes.
+          // See the "manual" branch above: reset/navigate back synchronously,
+          // and leave the "my-forms" refetch to the forms page.
           setCurrentStep(initialStep);
           onBack();
-          void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
         },
         firstRecipient,
       );
@@ -685,7 +683,6 @@ export function FormSigningLayout({
     modalRegistry.formSubmissionSuccess,
     noEsign,
     onBack,
-    queryClient,
     recipientEmails,
     trackFilloutJob,
   ]);
