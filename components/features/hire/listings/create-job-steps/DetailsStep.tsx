@@ -65,7 +65,7 @@ export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
                 checked={
                   formData.internship_preferences?.require_github ?? false
                 }
-                setter={(v) =>
+                setter={(v: boolean) =>
                   setField("internship_preferences", {
                     ...formData.internship_preferences,
                     require_github: v,
@@ -96,7 +96,7 @@ export const DetailsStep = ({ formData, setField }: DetailsStepProps) => {
                 checked={
                   formData.internship_preferences?.require_portfolio ?? false
                 }
-                setter={(v) =>
+                setter={(v: boolean) =>
                   setField("internship_preferences", {
                     ...formData.internship_preferences,
                     require_portfolio: v,
