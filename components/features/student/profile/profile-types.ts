@@ -1,4 +1,4 @@
-import type { Resume } from "@/lib/db/db.types";
+import type { ResumeDTO } from "@/lib/api/services";
 
 export type ProfileSectionKey =
   | "resume"
@@ -7,7 +7,7 @@ export type ProfileSectionKey =
   | "connected-accounts";
 
 export type ProfileResumeManager = {
-  resumes: Resume[];
+  resumes: ResumeDTO[];
   defaultResume: string | null;
   loading: boolean;
   maxAllowed: number;
@@ -18,6 +18,6 @@ export type ProfileResumeManager = {
     add: () => void;
     setDefault: (resumeId: string) => Promise<boolean>;
     rename: (resumeId: string, label: string) => Promise<boolean>;
-    delete: (resume: Resume) => void | Promise<void>;
+    delete: (resume: ResumeDTO) => void | Promise<void>;
   };
 };

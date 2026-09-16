@@ -894,7 +894,7 @@ export const FormDateMultiPicker = ({
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
 interface FormMonthPickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   /** ms since epoch; will be normalized to the first day of the month */
   date?: number;
   /** setter receives ms since epoch (first day of month at local midnight) or undefined when cleared */
