@@ -85,6 +85,11 @@ export const cebuPacificProfile: CebuPacificProfile = {
   subheadline:
     "Cebu Pacific is looking for interns who can look closely at a real travel product, spot friction that matters, and turn that insight into something useful for passengers.",
   rotatingPhrases: ["for everyJuan", "for Filipino travelers", "for OFWs"],
+  heroStats: [
+    { label: "Destinations served", value: "60+ across 14 countries" },
+    { label: "Market position", value: "Leading Philippine airline" },
+    { label: "Internship format", value: "Challenge-first, no resume required" },
+  ],
 
   about: {
     eyebrow: "About Cebu Pacific",

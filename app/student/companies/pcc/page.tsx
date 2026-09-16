@@ -112,6 +112,7 @@ const SPONSOR_BRANDS = [
 const LISTING_CARDS = [
   {
     id: "core",
+    eyebrow: "Software Track",
     title: pccPrimaryListing.title,
     summary:
       "Deliver one practical improvement that helps Philippine businesses navigate a high-friction process",
@@ -157,7 +158,7 @@ const LISTING_CARDS = [
 ] as const;
 
 function getInViewMotionProps(
-  reduceMotion: boolean,
+  reduceMotion: boolean | null,
   amount: number,
 ): InViewMotionProps {
   if (reduceMotion) return {};
@@ -302,7 +303,7 @@ function HeroMainContent({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   return (
@@ -391,7 +392,7 @@ function MeaningfulWorkScrollScene({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
@@ -545,7 +546,7 @@ function HeroPanel({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   const sharedHeroBackground =
