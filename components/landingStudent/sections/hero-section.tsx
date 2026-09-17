@@ -1,66 +1,15 @@
 "use client";
 
-import { motion, Variants, useReducedMotion } from "framer-motion";
-import { useRef, useState } from "react";
-import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
-import { Button } from "@betterinternship/components";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 import { Navigation } from "@/components/landingStudent/navigation";
-import { DoodleUnderline } from "@/components/landingStudent/ui/doodle-underline";
 import MagneticButton from "@/components/ui/magnetic-button";
-
-const HIRE_URL = process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ?? "/hire";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
-};
-const fadeUpDelayed: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
-  },
-};
-
-/* ---------- Paper airplane path ---------- */
-function AirplanePath() {
-  const prefersReduce = useReducedMotion();
-  return (
-    <svg
-      className="pointer-events-none absolute -z-10 left-1/2 top-[18%] h-[120px] w-[min(90%,760px)] -translate-x-1/2 opacity-40"
-      viewBox="0 0 760 120"
-      fill="none"
-      aria-hidden="true"
-    >
-      <motion.path
-        d="M10 90 C 140 40, 300 120, 420 70 S 640 20, 750 60"
-        stroke="currentColor"
-        className="text-gray-300"
-        strokeWidth="2"
-        strokeDasharray="6 10"
-        animate={prefersReduce ? undefined : { strokeDashoffset: [0, 200] }}
-        transition={
-          prefersReduce
-            ? undefined
-            : { duration: 6, repeat: Infinity, ease: "linear" }
-        }
-      />
-      {/* tiny airplane tip */}
-      <polygon
-        points="0,0 14,6 0,12 4,6"
-        className="fill-gray-400"
-        transform="translate(742,57) rotate(10)"
-      />
-    </svg>
-  );
-}
+import { Button } from "@betterinternship/components";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 
 export function HeroSection() {
+  const router = useRouter();
+
   return (
     <div className="relative isolate w-full overflow-hidden">
       {/* texture */}
@@ -69,7 +18,7 @@ export function HeroSection() {
           width={36}
           height={36}
           squares={[60, 40]}
-          className="h-full w-full opacity-30 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
+          className="h-full w-full opacity-30 mask-[radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
           squaresClassName="border border-gray-200/10"
         />
       </div>
@@ -78,11 +27,11 @@ export function HeroSection() {
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <span
           className="absolute -top-16 -left-20 h-72 w-72 rounded-full
-          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
+          bg-linear-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
         />
         <span
           className="absolute -right-24 bottom-20 h-80 w-80 rounded-full
-          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
+          bg-linear-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
         />
       </div>
 
@@ -94,108 +43,78 @@ export function HeroSection() {
       <section
         aria-labelledby="hero-heading"
         className="
-          relative min-h-[100svh]
+          relative min-h-svh
           pt-[calc(env(safe-area-inset-top)+5rem)] [@media_(max-width:390px)]:pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:pt-6
           flex flex-col items-center justify-center text-center
           gap-8 sm:gap-6
           px-4 sm:px-6
         "
       >
-        <AirplanePath />
-
-        {/* pill */}
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="show"
-          className="
-            inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white
-            px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm
-            sm:px-3 sm:py-2 sm:text-xs
-            mt-2 sm:mt-0
-          "
-        >
-          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary sm:h-2 sm:w-2" />
-          <span>One profile. One click.</span>
-        </motion.div>
-
-        {/* heading with scribble underline */}
-        <motion.h1
-          id="hero-heading"
-          variants={fadeUp}
-          initial="hidden"
-          animate="show"
-          className="
-            relative text-5xl sm:text-7xl md:text-8xl
-            font-medium tracking-tighter leading-[1.05] text-black/80
-          "
-        >
-          Land an{" "}
-          <span className="relative inline-block">
-            internship
-            <DoodleUnderline />
+        <h1 className="flex flex-col items-center justify-center gap-2 sm:gap-4 text-7xl sm:9xl lg:text-[10rem] font-black tracking-tighter leading-none text-foreground select-none">
+          {/* Line 1: [Badge 1] A better [Badge 2] */}
+          <span className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+            <span className="inline-flex items-center justify-center h-[0.85em] px-[0.8em] rounded-[0.4em] bg-muted shrink-0">
+              <img
+                src="/illustrations/student.svg"
+                alt=""
+                className="h-full w-auto object-contain"
+              />
+            </span>
+            <span>A better</span>
+            <span className="inline-flex items-center justify-center h-[0.85em] px-[0.4em] rounded-[0.4em] bg-muted shrink-0"></span>
           </span>
-          . <br />
-          <AnimatedShinyText>10x faster.</AnimatedShinyText>
-        </motion.h1>
 
-        {/* CTAs */}
-        <div className="mt-2 w-full sm:max-w-[36rem] md:max-w-3xl">
-          <motion.div
-            variants={fadeUpDelayed}
-            initial="hidden"
-            animate="show"
-            className="flex flex-col items-center justify-center gap-6"
+          {/* Line 2: way [Badge 3] to [Badge 4] */}
+          <span className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+            <span>way</span>
+            <span className="inline-flex items-center justify-center h-[0.85em] px-[0.6em] rounded-[0.4em] bg-muted shrink-0">
+              <img
+                src="/illustrations/paper-plane.svg"
+                alt=""
+                className="h-full w-auto object-contain"
+              />
+            </span>
+            <span>to</span>
+            <span className="inline-flex items-center justify-center h-[0.85em] px-[0.8em] rounded-[0.4em] bg-muted shrink-0">
+              <img
+                src="/illustrations/laptop-user.svg"
+                alt=""
+                className="h-full w-auto object-contain"
+              />
+            </span>
+          </span>
+
+          {/* Line 3: intern. [Badge 5] */}
+          <span className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+            <span className="text-primary">intern.</span>
+            <span className="inline-flex items-center justify-center h-[0.85em] px-[0.6em] rounded-[0.4em] bg-muted shrink-0">
+              <img
+                src="/illustrations/checklist.svg"
+                alt=""
+                className="h-full w-auto object-contain"
+              />
+            </span>
+          </span>
+        </h1>
+        <div className="flex gap-2 justify-start items-start max-w-9xl text-lg font-medium">
+          <MagneticButton>
+            <Button
+              scheme="primary"
+              size="lg"
+              onClick={() => router.push("/search")}
+            >
+              <Search /> Browse jobs
+            </Button>
+          </MagneticButton>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() =>
+              router.push(`${process.env.NEXT_PUBLIC_CLIENT_HIRE_URL}/login`)
+            }
           >
-            <div className="flex w-full max-w-xl flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <MagneticButton className="w-full sm:w-auto">
-                <Link href="/search" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto rounded-[0.33em] border border-gray-300 bg-white px-8 py-4 text-lg tracking-tight text-gray-800 shadow-sm hover:bg-gray-50"
-                  >
-                    Find Internships
-                  </Button>
-                </Link>
-              </MagneticButton>
-
-              <Link href={HIRE_URL} className="w-full sm:w-auto">
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="flex w-full items-center justify-center text-lg font-medium text-gray-900 hover:bg-gray-100 sm:w-auto sm:justify-start"
-                >
-                  <ChevronRight className="mr-1" />
-                  For Employers
-                </Button>
-              </Link>
-            </div>
-
-            {/* logos */}
-            <div className="overflow-x-auto no-scrollbar mt-10">
-              <LogoCarouselBasic />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* scroll hint */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-4 hidden justify-center text-gray-400 sm:bottom-8 sm:flex"
-          aria-hidden="true"
-        >
-          <svg
-            className="h-6 w-6 animate-bounce"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+            Post a job
+          </Button>
         </div>
       </section>
     </div>
