@@ -15,15 +15,16 @@ export const isValidOptionalPhoneNumber = (phone: string): boolean => {
  * Formats a number as currency.
  */
 export const formatCurrency = (
-  value: number,
+  value: number | string,
   locale = "en-PH",
   currency = "PHP",
 ) => {
-  if (value === null || Number.isNaN(value)) return "N/A";
+  const numericValue = typeof value === "string" ? Number(value) : value;
+  if (value === null || Number.isNaN(numericValue)) return "N/A";
 
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(numericValue);
 };

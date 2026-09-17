@@ -155,7 +155,8 @@ export function useEmployerApplications() {
       return new_apps.sort(
         // @ts-ignore
         (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+          new Date(b.updated_at ?? 0).getTime() -
+          new Date(a.updated_at ?? 0).getTime(),
       );
     };
 

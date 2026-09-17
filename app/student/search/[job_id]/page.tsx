@@ -104,7 +104,7 @@ export default function JobPage() {
                     <ArrowLeft className="w-4 h-4" />
                   </Button>
                   <div className="flex flex-wrap items-center gap-3">
-                    <ShareJobButton job={job.data} />
+                    {job.data && <ShareJobButton job={job.data} />}
                     {job.data && !job.data.hibernating && (
                       <>
                         <SaveJobButton job={job.data} />

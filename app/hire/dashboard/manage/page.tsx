@@ -51,7 +51,7 @@ function ManageContent() {
             </p>
           </div>
         ) : (
-          <JobTabs selectedJob={job} onJobUpdate={updateJob} />
+          <JobTabs selectedJob={job} />
         )}
       </PageContainer>
     </>

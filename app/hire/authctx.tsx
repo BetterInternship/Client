@@ -139,8 +139,8 @@ export const AuthContextProvider = ({
       queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
     ]);
     setProxy(getFullName(response.user));
-    setUser(response.user);
-    return response.user;
+    setUser(response.user ?? null);
+    return response.user ?? null;
   };
 
   const exitProxy = async () => {
@@ -156,8 +156,8 @@ export const AuthContextProvider = ({
       queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
     ]);
     setProxy("");
-    setUser(response.user);
-    return response.user;
+    setUser(response.user ?? null);
+    return response.user ?? null;
   };
 
   const logout = async () => {
