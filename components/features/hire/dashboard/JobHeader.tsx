@@ -35,6 +35,11 @@ export default function JobHeader({
   const [togglingActive, setTogglingActive] = useState(false);
   const openNotificationsRequiredModal = useNotificationsRequiredModal();
 
+  const handleBack = () => {
+    if (backHref) return router.replace(backHref);
+    router.back();
+  };
+
   const handleToggleActive = async () => {
     if (!job.id || job.paused) return;
     setTogglingActive(true);
@@ -206,7 +211,7 @@ export default function JobHeader({
               <Button
                 size="md"
                 variant="ghost"
-                onClick={() => router.back()}
+                onClick={handleBack}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-0 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -389,7 +394,7 @@ export default function JobHeader({
               <Button
                 size="md"
                 variant="ghost"
-                onClick={() => router.push("/dashboard")}
+                onClick={handleBack}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
