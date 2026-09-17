@@ -60,7 +60,7 @@ export default function JobPage() {
 
   if (!job || (!job.data && !job.isPending)) {
     return (
-      <div className="h-screen bg-white flex justify-center py-6">
+      <div className="bg-white flex justify-center py-6">
         <div className="flex flex-col justify-start items-start gap-4">
           <Button
             size="md"
@@ -88,12 +88,12 @@ export default function JobPage() {
   return (
     <>
       {/* Desktop and Mobile Layout */}
-      <div className="flex-1 flex overflow-hidden max-h-full">
+      <div className="flex-1 flex">
         {job.isPending ? (
           <Loader>Loading job details...</Loader>
         ) : (
-          <div className="relative w-full flex flex-col h-full">
-            <div className="bg-white border-b border-gray-200 shrink-0">
+          <div className="relative w-full flex flex-col">
+            <div className="w-full bg-white border-b border-gray-200 shrink-0 fixed">
               <div className="max-w-7xl mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
                   <Button
@@ -123,7 +123,7 @@ export default function JobPage() {
             {job.data?.id && (
               <PageContainer>
                 {/* Job Header Card */}
-                <Card className="bg-white border border-gray-200 rounded-[0.33em] p-4 sm:p-6 overflow-hidden">
+                <Card className="bg-white border border-gray-200 rounded-[0.33em] p-4 sm:p-6 mt-14 overflow-hidden">
                   {/* Job Details Grid */}
                   <JobDetails
                     user={{
@@ -134,20 +134,6 @@ export default function JobPage() {
                   />
                 </Card>
               </PageContainer>
-            )}
-
-            {isMobile && job.data && !job.data.hibernating && (
-              <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-                <div className="max-w-7xl mx-auto flex gap-3">
-                  <SaveJobButton job={job.data} />
-                  <ApplyToJobButton
-                    profile={profile.data}
-                    job={job.data}
-                    onApply={handleApply}
-                    className="w-full"
-                  />
-                </div>
-              </div>
             )}
 
             {isMobile && isActionsSheetOpen && (
