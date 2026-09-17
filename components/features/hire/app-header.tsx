@@ -19,8 +19,6 @@ import {
   UserCircle,
 } from "lucide-react";
 
-const MOBILE_HIDE_ROUTES = ["/dashboard/manage"];
-
 /**
  * Hire portal header built on the shared package AppHeader.
  *
@@ -49,8 +47,6 @@ export function HireAppHeader() {
     if (proxy) await exitProxy();
     router.push("/god");
   };
-
-  if (isMobile && MOBILE_HIDE_ROUTES.includes(pathname)) return null;
 
   const nav: NavItem[] = [
     { href: "/listings/create", label: "Add listing", icon: Plus },

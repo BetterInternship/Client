@@ -8,7 +8,17 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn, Badge, Button, PageContainer } from "@betterinternship/components";
+import {
+  cn,
+  Badge,
+  Button,
+  PageContainer,
+  AnimatedCount,
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@betterinternship/components";
 import {
   formatMonth,
   formatOptionalTimestampDate,
@@ -40,15 +50,12 @@ import { useEmployerApplications } from "@/hooks/use-employer-api";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/text";
-import { useBlurTransition } from "@/components/animata/blur";
 
 interface ApplicantPageProps {
   jobId: string | undefined;
   application: EmployerApplication | undefined;
   userApplications?: EmployerApplication[] | undefined;
   statuses: DropdownMenuItem[];
-  onArchive?: () => void;
-  onDelete?: () => void;
 }
 
 export function ApplicantPage({
@@ -56,17 +63,27 @@ export function ApplicantPage({
   application,
   userApplications,
   statuses,
-  onArchive,
-  onDelete,
 }: ApplicantPageProps) {
   const user = application?.user as Partial<PublicUser>;
+
   const otherApplicants =
     useEmployerApplications().employer_applications.filter(
-      (app) =>
-        app.job_id === jobId &&
-        app.status === application?.status &&
-        app.visibility === "visible",
+      (app) => app.job_id === jobId && app.visibility === "visible",
     );
+  const currentApplicantIndex = otherApplicants.findIndex(
+    (app) => app.id === application?.id,
+  );
+
+  const previousApplicant =
+    currentApplicantIndex > 0
+      ? otherApplicants[currentApplicantIndex - 1]
+      : undefined;
+  const nextApplicant =
+    currentApplicantIndex !== -1 &&
+    currentApplicantIndex < otherApplicants.length - 1
+      ? otherApplicants[currentApplicantIndex + 1]
+      : undefined;
+
   const internshipPreferences = user?.internship_preferences;
   const challengeSubmission = application?.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
@@ -77,8 +94,6 @@ export function ApplicantPage({
   redirectIfNotLoggedIn();
 
   const { to_university_name } = useDbRefs();
-
-  const blurTransition = useBlurTransition();
 
   const {
     url: resumeURL,
@@ -134,7 +149,51 @@ export function ApplicantPage({
         job={application.job!}
         backHref={`/dashboard/manage?jobId=${jobId}`}
       />
-      <PageContainer>
+      <PageContainer className="flex flex-col gap-2">
+        {otherApplicants.length > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            {previousApplicant ? (
+              <Link
+                href={{
+                  pathname: "/dashboard/applicant",
+                  query: { applicationId: previousApplicant.id },
+                }}
+              >
+                <Button variant="outline" size="sm" className="gap-1">
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" disabled className="gap-1">
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+            )}
+            <span className="text-xs text-muted-foreground">
+              <AnimatedCount value={currentApplicantIndex + 1} /> /{" "}
+              {otherApplicants.length}
+            </span>
+            {nextApplicant ? (
+              <Link
+                href={{
+                  pathname: "/dashboard/applicant",
+                  query: { applicationId: nextApplicant.id },
+                }}
+              >
+                <Button variant="outline" size="sm" className="gap-1">
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" disabled className="gap-1">
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
         <div key={application?.id} className="flex flex-col md:flex-row">
           <div className="p-4 rounded-[0.33em] border md:w-1/2">
             {/* "header" ish portion */}
@@ -155,13 +214,17 @@ export function ApplicantPage({
                       {internshipPreferences?.internship_type === "credited" ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="bg-supportive/10 rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-supportive">
+                            <Badge
+                              type="supportive"
+                              variant="solid"
+                              className="gap-1"
+                            >
                               <Award className="w-4 h-4" />
                               <span>Credited</span>
-                            </div>
+                            </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-gray-500 text-xs">
+                            <p className="text-muted-foreground text-xs">
                               This applicant is looking for internships for
                               credit
                             </p>
@@ -170,13 +233,13 @@ export function ApplicantPage({
                       ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="bg-muted rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-muted-foreground">
+                            <Badge variant="solid" className="gap-1">
                               <HandHelping className="w-4 h-4" />
                               <span>Voluntary</span>
-                            </div>
+                            </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-gray-500 text-xs">
+                            <p className="text-muted-foreground text-xs">
                               This applicant is looking for internships
                               voluntarily
                             </p>
@@ -186,26 +249,32 @@ export function ApplicantPage({
                     </div>
                     <div
                       className={cn(
-                        "items-center gap-2 text-xs text-gray-500",
+                        "items-center gap-2 text-xs text-muted-foreground",
                         isMobile ? "flex-col" : "flex",
                       )}
                     >
-                      {/* COntact info */}
-                      <div className="flex gap-1 items-center">
-                        <Phone className="h-4 w-4" />
-                        <p className="text-gray-500 text-xs">
+                      {/* Contact info */}
+                      {application?.user?.phone_number !== null && (
+                        <Link
+                          href={`tel:${application?.user?.phone_number}`}
+                          className="text-muted-foreground text-xs underline hover:text-primary flex gap-1"
+                        >
+                          <Phone className="h-4 w-4" />
                           {application?.user?.phone_number}
-                        </p>
-                      </div>
-                      {!isMobile && (
-                        <p className="text-xs text-gray-500"> | </p>
+                        </Link>
                       )}
-                      <div className="flex gap-1">
-                        <Mail className="h-4 w-4" />
-                        <p className="text-gray-500 text-xs">
+                      {!isMobile && (
+                        <p className="text-xs text-muted-foreground"> | </p>
+                      )}
+                      {application?.user?.edu_verification_email !== null && (
+                        <Link
+                          href={`mailto:${application?.user?.edu_verification_email}`}
+                          className="text-muted-foreground text-xs underline hover:text-primary flex gap-1"
+                        >
+                          <Mail className="h-4 w-4" />
                           {application?.user?.edu_verification_email}
-                        </p>
-                      </div>
+                        </Link>
+                      )}
                     </div>
                     {/* links */}
                     <div
@@ -298,92 +367,87 @@ export function ApplicantPage({
             </div>
 
             {isMobile ? (
-              <>
+              <div className="flex flex-col gap-2">
                 {hasChallengeSubmission && (
                   <HorizontalCollapsible
                     className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
                     title="Challenge Submission"
                   >
-                    <span className="text-sm/5 whitespace-pre-wrap break-words">
+                    <span className="text-sm/5 whitespace-pre-wrap wrap-break-word">
                       {challengeSubmission}
                     </span>
                   </HorizontalCollapsible>
                 )}
-                <HorizontalCollapsible
-                  className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                  title="Applicant Information"
+                <Accordion
+                  type="multiple"
+                  className="rounded-[0.33em] border px-3"
                 >
-                  <div className="grid gap-2">
-                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                      <p className={cn("text-gray-500 text-xs")}>
-                        Program / Degree
-                      </p>
-                      <p
-                        className={cn(
-                          "font-medium text-gray-900",
-                          isMobile ? "text-xs" : "text-sm",
-                        )}
-                      >
-                        {user?.degree}
-                      </p>
-                    </div>
-                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                      <p className={cn("text-gray-500 text-xs")}>Institution</p>
-                      <p
-                        className={cn(
-                          "font-medium text-gray-900",
-                          isMobile ? "text-xs" : "text-sm",
-                        )}
-                      >
-                        {to_university_name(user?.university)}
-                      </p>
-                    </div>
-                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                      <p className={cn("text-gray-500 text-xs")}>
-                        Expected Graduation Date
-                      </p>
-                      <p
-                        className={cn(
-                          "font-medium text-gray-900",
-                          isMobile ? "text-xs" : "text-sm",
-                        )}
-                      >
-                        {formatMonth(user?.expected_graduation_date)}
-                      </p>
-                    </div>
-                  </div>
-                </HorizontalCollapsible>
+                  <AccordionItem
+                    key={application?.user?.id as string}
+                    value={application?.user?.id as string}
+                  >
+                    <AccordionTrigger className="hover:no-underline">
+                      <span>Applicant Information</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4">
+                      <div className="flex flex-col justify-between">
+                        <span className="text-muted-foreground text-xs">
+                          Education
+                        </span>
+                        <span className="font-medium">
+                          {to_university_name(user?.university)}
+                        </span>
+                        <span className="text-xs">{user?.degree}</span>
+                      </div>
+                      <div className="flex flex-col justify-between">
+                        <span className="text-muted-foreground text-xs">
+                          Expected Graduation Date
+                        </span>
+                        <span className="font-medium">
+                          {formatOptionalTimestampDate(
+                            user?.expected_graduation_date,
+                          )}
+                        </span>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
-                <HorizontalCollapsible
-                  className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                  title="Internship Requirements"
+                <Accordion
+                  type="multiple"
+                  className="rounded-[0.33em] border px-3"
                 >
-                  <div className="grid gap-2">
-                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                      <div
-                        className={cn(isMobile ? "flex justify-between" : "")}
-                      >
-                        <p className={cn("text-gray-500 text-xs")}>
+                  <AccordionItem
+                    key={application?.user?.id as string}
+                    value={application?.user?.id as string}
+                  >
+                    <AccordionTrigger className="hover:no-underline">
+                      <span>Internship Requirements</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4">
+                      <div className="flex flex-col justify-between">
+                        <span className="text-muted-foreground text-xs">
                           Expected Start Date
-                        </p>
-                        <p className="text-xs font-medium text-gray-900">
+                        </span>
+                        <span className="font-medium">
                           {formatOptionalTimestampDate(
                             internshipPreferences?.expected_start_date,
                           )}
-                        </p>
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <p className="text-xs text-gray-500">
+                      <div className="flex flex-col justify-between">
+                        <span className="text-xs text-muted-foreground">
                           Expected Duration (Hours)
-                        </p>
-                        <p className="text-xs font-medium text-gray-900">
-                          {internshipPreferences?.expected_duration_hours}
-                        </p>
+                        </span>
+                        <span className="font-medium">
+                          {internshipPreferences?.expected_duration_hours ||
+                            "No specified duration"}
+                        </span>
                       </div>
-                    </div>
-                  </div>
-                </HorizontalCollapsible>
-              </>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
             ) : (
               <>
                 {hasChallengeSubmission && (
