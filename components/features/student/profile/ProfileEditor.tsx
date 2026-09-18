@@ -518,7 +518,9 @@ export const ProfileEditor = forwardRef<
                     <FormMonthPicker
                       date={
                         formData.expected_graduation_date
-                          ? Date.parse(formData.expected_graduation_date)
+                          ? new Date(
+                              formData.expected_graduation_date,
+                            ).getTime()
                           : undefined
                       }
                       setter={(ms) =>
@@ -611,10 +613,7 @@ function EditAccordionItem({
           {hasError && <span className="h-2 w-2 rounded-full bg-destructive" />}
         </span>
       </AccordionTrigger>
-      <AccordionContent
-        className="px-4 pb-5 sm:px-5"
-        contentClassName="overflow-visible"
-      >
+      <AccordionContent className="px-4 pb-5 sm:px-5">
         {children}
       </AccordionContent>
     </AccordionItem>

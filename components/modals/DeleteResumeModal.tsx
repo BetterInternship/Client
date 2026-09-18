@@ -1,8 +1,8 @@
-import { Resume } from "@/lib/db/db.types";
+import type { ResumeDTO } from "@/lib/api/services";
 import { Button } from "@betterinternship/components";
 
 interface DeleteResumeProps {
-  resume: Resume;
+  resume: ResumeDTO;
   isProcessing: boolean;
   onConfirm: () => void;
   onCancel: () => void;

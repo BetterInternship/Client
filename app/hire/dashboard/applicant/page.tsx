@@ -67,7 +67,7 @@ function ApplicantPageContent() {
     [],
   );
 
-  const getStatuses = (applicationId: string) => {
+  const getStatuses = () => {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): DropdownMenuItem => {
@@ -76,9 +76,10 @@ function ApplicantPageContent() {
         return {
           id: status.id.toString(),
           onClick: () =>
+            userApplication &&
             triggerAction(
               config?.action || "CHANGE_STATUS",
-              [application],
+              [userApplication],
               status.id,
             ),
         };
@@ -91,7 +92,7 @@ function ApplicantPageContent() {
         <ApplicantPage
           jobId={jobId!}
           application={userApplication}
-          statuses={getStatuses(userApplication?.id || "")}
+          statuses={getStatuses()}
           userApplications={otherUserApplications}
           onArchive={() => {
             if (!userApplication) return;

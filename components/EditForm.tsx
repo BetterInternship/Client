@@ -361,7 +361,7 @@ interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> 
   checked?: boolean;
   indeterminate?: boolean;
   label?: string;
-  setter?: ((value: boolean) => void) | ((e: any, value: boolean) => void);
+  setter?: (value: boolean) => void;
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;
@@ -438,7 +438,8 @@ export const FormCheckbox = ({
   );
 };
 
-interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckBoxGroupProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onToggle"> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (values: (string | number)[]) => void;
@@ -893,7 +894,7 @@ export const FormDateMultiPicker = ({
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
 interface FormMonthPickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   /** ms since epoch; will be normalized to the first day of the month */
   date?: number;
   /** setter receives ms since epoch (first day of month at local midnight) or undefined when cleared */

@@ -156,7 +156,7 @@ export const formatTimestampDateWithoutTime = (timestamp?: number | null) => {
  * Return a formatted date string from another timestamp string without the time.
  * @param dateString Timestamp/date in string form.
  */
-export const formatDateWithoutTime = (dateString?: string | null) => {
+export const formatDateWithoutTime = (dateString?: string | Date | null) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("en-PH", {
@@ -172,7 +172,7 @@ export const formatDateWithoutTime = (dateString?: string | null) => {
  * @param dateString
  * @returns
  */
-export const formatMonth = (dateString?: string | null) => {
+export const formatMonth = (dateString?: string | Date | null) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("en-PH", {

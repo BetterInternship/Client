@@ -139,7 +139,7 @@ function padFlipperMetric(value: string) {
 }
 
 function getInViewMotionProps(
-  reduceMotion: boolean,
+  reduceMotion: boolean | null,
   amount: number,
 ): InViewMotionProps {
   if (reduceMotion) return {};
@@ -284,7 +284,7 @@ function HeroMainContent({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   return (
@@ -371,7 +371,7 @@ function HeroMainContent({
   );
 }
 
-function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
+function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean | null }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -413,7 +413,6 @@ function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
               theme="light"
               size="xlarge"
               digitWidth={88}
-              digitHeight={94}
             />
           </span>
         </div>
@@ -435,7 +434,7 @@ function MeaningfulWorkScrollScene({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
@@ -589,7 +588,7 @@ function HeroPanel({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   const sharedHeroBackground =

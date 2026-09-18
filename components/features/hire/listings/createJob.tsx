@@ -178,7 +178,7 @@ const CreateJobPage = ({
               description: challengeDescription.trim(),
             },
           })
-        : await createJob(job);
+        : await createJob?.(job);
       if (!response?.success) {
         alert(response?.error || "Could not create job");
         set_creating(false);

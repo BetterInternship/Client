@@ -5,7 +5,7 @@ import {
   useResumeUploadForm,
 } from "@/components/features/student/resume-parser/ResumeUploadForm";
 import { Button } from "@betterinternship/components";
-import { Resume } from "@/lib/db/db.types";
+import { ResumeDTO } from "@/lib/api/services";
 import { cn } from "@betterinternship/components";
 import { MONTH_NAMES } from "@/lib/utils/date-utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -55,7 +55,7 @@ export function ResumeStep({
   onShowUpload,
   onContinue,
 }: {
-  resumes: Resume[];
+  resumes: ResumeDTO[];
   resumesLoading: boolean;
   hasExistingResumes: boolean;
   atResumeLimit: boolean;
@@ -136,7 +136,7 @@ function ResumeChoiceList({
   selectedResumeId,
   onSelect,
 }: {
-  resumes: Resume[];
+  resumes: ResumeDTO[];
   selectedResumeId: string;
   onSelect: (id: string) => void;
 }) {

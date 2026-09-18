@@ -22,7 +22,8 @@ import { MissingRequirementsModal } from "./components/MissingRequirementsModal"
 import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
-import { EmployerApplication, Resume } from "@/lib/db/db.types";
+import { EmployerApplication } from "@/lib/db/db.types";
+import type { ResumeDTO } from "@/lib/api/services";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
@@ -59,7 +60,7 @@ export const useModalRegistry = () => {
           isProcessing,
           onConfirm,
         }: {
-          resume: Resume;
+          resume: ResumeDTO;
           isProcessing: boolean;
           onConfirm: () => void;
         }) =>

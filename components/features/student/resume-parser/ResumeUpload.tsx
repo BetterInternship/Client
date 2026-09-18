@@ -14,7 +14,7 @@ const ResumeUpload = ({
   accept = ".pdf,application/pdf",
   maxSizeMB = 2.5,
 }: {
-  ref: RefObject<HTMLInputElement>;
+  ref: RefObject<HTMLInputElement | null>;
   promise?: Promise<any>;
   onSelect: (file: File) => void;
   onComplete: () => void;

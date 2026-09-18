@@ -774,9 +774,9 @@ function GodEmployersPageContent() {
       try {
         let result: any;
         if (e.is_verified) {
-          result = await unverifyEmployer.mutateAsync(e.id);
+          result = await unverifyEmployer.mutateAsync(e.id ?? "");
         } else {
-          result = await verifyEmployer.mutateAsync(e.id);
+          result = await verifyEmployer.mutateAsync(e.id ?? "");
         }
         if (result?.error) {
           toast.error(`Failed: ${result.error}`);
@@ -821,7 +821,7 @@ function GodEmployersPageContent() {
               size="xs"
               onClick={(ev) => {
                 ev.stopPropagation();
-                setListingEmployer({ id: e.id, name: e.name });
+                setListingEmployer({ id: e.id ?? "", name: e.name ?? "" });
                 setListingForm(emptyListingForm);
               }}
             >

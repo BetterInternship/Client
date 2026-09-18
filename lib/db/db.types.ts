@@ -54,6 +54,10 @@ export type Employer = Partial<Selectable<CareerEmployers>> & {
   // God-only: employer_users rows for this employer, joined server-side
   // (GET /god/employers only — not a real employers column).
   team_emails?: { email: string; receives_applicant_digest: boolean }[] | null;
+  // God-only: computed via a joined subquery (Career-Server gods.service.ts) —
+  // not real employers columns either.
+  last_session?: { owner_id: string; timestamp: Date | string } | null;
+  application_count?: number | string | null;
 };
 export type User = Partial<Selectable<CareerUsers>>;
 export interface Conversation extends Selectable<CareerConversations> {
