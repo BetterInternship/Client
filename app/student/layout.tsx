@@ -81,7 +81,7 @@ export const viewport: Viewport = {
  *
  * @component
  */
-export const RootLayout = async ({
+const RootLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
