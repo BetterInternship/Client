@@ -14,13 +14,13 @@ import {
   JobType,
   JobMode,
   JobAllowance,
+  JobPayFreq,
   AppStatus,
   Industry,
   JobCategory,
   Department,
   RefDomain,
   RefsData,
-  IRefsContext,
 } from "./db.types";
 import { DB } from "@betterinternship/schema";
 import { Kysely, PostgresDialect } from "kysely";
@@ -55,31 +55,39 @@ export const getRefsData = async (): Promise<RefsData> => {
     departments,
     domains,
   ] = await Promise.all([
-    db.selectFrom("ref_colleges").selectAll().execute() as Promise<College[]>,
-    db.selectFrom("ref_universities").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_colleges").selectAll().execute() as Promise<
+      College[]
+    >,
+    db.selectFrom("career.ref_universities").selectAll().execute() as Promise<
       University[]
     >,
-    db.selectFrom("ref_job_types").selectAll().execute() as Promise<JobType[]>,
-    db.selectFrom("ref_job_modes").selectAll().execute() as Promise<JobMode[]>,
-    db.selectFrom("ref_job_allowances").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_job_types").selectAll().execute() as Promise<
+      JobType[]
+    >,
+    db.selectFrom("career.ref_job_modes").selectAll().execute() as Promise<
+      JobMode[]
+    >,
+    db.selectFrom("career.ref_job_allowances").selectAll().execute() as Promise<
       JobAllowance[]
     >,
-    db.selectFrom("ref_job_pay_freq").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_job_pay_freq").selectAll().execute() as Promise<
       JobPayFreq[]
     >,
-    db.selectFrom("ref_app_statuses").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_app_statuses").selectAll().execute() as Promise<
       AppStatus[]
     >,
-    db.selectFrom("ref_industries").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_industries").selectAll().execute() as Promise<
       Industry[]
     >,
-    db.selectFrom("ref_job_categories").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_job_categories").selectAll().execute() as Promise<
       JobCategory[]
     >,
-    db.selectFrom("ref_departments").selectAll().execute() as Promise<
+    db.selectFrom("career.ref_departments").selectAll().execute() as Promise<
       Department[]
     >,
-    db.selectFrom("ref_domains").selectAll().execute() as Promise<RefDomain[]>,
+    db.selectFrom("career.ref_domains").selectAll().execute() as Promise<
+      RefDomain[]
+    >,
   ]);
 
   return {

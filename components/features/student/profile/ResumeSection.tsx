@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { FormInput } from "@/components/EditForm";
 import { Badge, Button } from "@betterinternship/components";
-import type { Resume } from "@/lib/db/db.types";
+import type { ResumeDTO } from "@/lib/api/services";
 import {
   compareResumesByUploadedAtDesc,
   formatResumeUploadedAt,
@@ -40,7 +40,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
   );
   const atResumeLimit = resumes.length >= maxAllowed;
 
-  const startEditing = (resume: Resume) => {
+  const startEditing = (resume: ResumeDTO) => {
     if (!resume.id) {
       toast.error("Resume not found.");
       return;

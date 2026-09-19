@@ -6,8 +6,8 @@ const MAX_DERIVATION_PASSES = 3;
  * Resolves derived field values from current form values.
  * Uses a small fixed-point loop so chained derived fields can settle.
  */
-export function withDerivedFormValues(
-  formMetadata: FormMetadata<any[]> | null | undefined,
+export function withDerivedFormValues<T extends any[]>(
+  formMetadata: FormMetadata<T> | null | undefined,
   baseValues: FormValues,
 ): FormValues {
   if (!formMetadata) return baseValues;

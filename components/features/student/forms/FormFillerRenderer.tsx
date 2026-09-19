@@ -23,8 +23,8 @@ import { getSignatureImageFieldKey } from "@betterinternship/core/forms";
 const getSignatureRecipientKey = (field: { signing_party_id?: string }) =>
   field.signing_party_id || "initiator";
 
-const getCanonicalSignatureFields = (
-  signatureFields: (ClientField<any[]> | ClientPhantomField<any[]>)[],
+const getCanonicalSignatureFields = <T extends any[]>(
+  signatureFields: (ClientField<T> | ClientPhantomField<T>)[],
 ) => {
   const seenRecipientIds = new Set<string>();
   return signatureFields.filter((signatureField) => {
@@ -35,7 +35,7 @@ const getCanonicalSignatureFields = (
   });
 };
 
-const getRadioGroupId = (block: ClientBlock<any[]>) => {
+const getRadioGroupId = <T extends any[]>(block: ClientBlock<T>) => {
   const fieldSchema = block.field_schema as
     | { radio_group_id?: unknown }
     | undefined;
@@ -297,7 +297,6 @@ export function FormFillerRenderer({
             formKey={form.formName}
             blocks={deduplicatedBlocks}
             values={finalValues}
-            values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={(fieldId) => {
@@ -335,6 +334,7 @@ export function FormFillerRenderer({
               const fieldsWithMergedParams =
                 form.formMetadata.getFieldsForClientService(
                   "initiator",
+                  undefined,
                   mergedParams,
                 );
               const updatedField = fieldsWithMergedParams.find(
@@ -355,7 +355,7 @@ export function FormFillerRenderer({
               );
             }}
             fieldRefs={fieldRefs.current}
-            selectedFieldId={form.selectedPreviewId}
+            selectedFieldId={form.selectedPreviewId ?? undefined}
           />
         </div>
       </div>

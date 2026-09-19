@@ -104,7 +104,7 @@ export const JobSalary = ({
   salary,
   salary_freq,
 }: {
-  salary: number | null | undefined;
+  salary: number | string | null | undefined;
   salary_freq: number | null | undefined;
 }) => {
   const { to_job_pay_freq_name } = useDbRefs();

@@ -32,7 +32,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   const [applying, setApplying] = useState(false);
   const [challengeError, setChallengeError] = useState<string | null>(null);
   const isSuperListing = Boolean(job?.challenge);
-  const isMobile = useMobile();
+  const { isMobile } = useMobile();
 
   const needsGH = !!job?.internship_preferences?.require_github;
   const needsPF = !!job?.internship_preferences?.require_portfolio;

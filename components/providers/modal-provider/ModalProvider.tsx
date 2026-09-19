@@ -147,7 +147,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     document.body.style.right = "0";
     document.body.style.width = "100%";
     document.body.style.overscrollBehavior = "none";
-    let focusUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
+    let focusUpdateTimeout: number | null = null;
 
     const setVH = () => {
       const visualViewport = window.visualViewport;

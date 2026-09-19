@@ -133,7 +133,7 @@ export const FormRendererContextProvider = ({
     staleTime: FORM_RENDERER_STALE_TIME,
     gcTime: FORM_RENDERER_GC_TIME,
     refetchOnWindowFocus: true,
-    refetchOnMount: "stale",
+    refetchOnMount: true,
     refetchOnReconnect: true,
   });
 
@@ -232,7 +232,11 @@ export const FormRendererContextProvider = ({
       // Merge new params with existing ones (don't replace)
       const mergedParams = { ...params, ...newParams };
       setFields(
-        formMetadata.getFieldsForClientService("initiator", mergedParams),
+        formMetadata.getFieldsForClientService(
+          "initiator",
+          undefined,
+          mergedParams,
+        ),
       );
       setParams(mergedParams);
     },

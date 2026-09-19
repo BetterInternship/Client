@@ -100,7 +100,7 @@ export const EmployerService = {
   },
 
   async uploadMoaDocument(formData: FormData) {
-    return APIClient.post<FetchResponse & { moa?: any }>(
+    return APIClient.post<FetchResponse & { moa?: any; error?: string }>(
       APIRouteBuilder("employer").r("moa-document").build(),
       formData,
       "form-data",
@@ -476,25 +476,25 @@ export const FormService = {
   },
 };
 
+// Shape the resume endpoints actually put on the wire — narrower than the DB's
+// `Resume` (Selectable<CareerResumes>) type, which has a `Date`-typed `uploaded_at`
+// and requires `is_deleted`/`user_id` that the API never sends here.
+export interface ResumeDTO {
+  id: string;
+  label: string;
+  filename: string;
+  uploaded_at: string;
+}
+
 interface UploadResumeResponse {
-  resume: {
-    id: string;
-    label: string;
-    filename: string;
-    uploaded_at: string;
-  };
+  resume: ResumeDTO;
   default_resume?: string;
   success?: boolean;
   message?: string;
 }
 
 interface ResumeArrayResponse {
-  resumes: {
-    id: string;
-    label: string;
-    filename: string;
-    uploaded_at: string;
-  }[];
+  resumes: ResumeDTO[];
   default_resume: string | null;
   success?: boolean;
   message?: string;

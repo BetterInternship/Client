@@ -140,7 +140,7 @@ function HeroMainContent({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   return (
@@ -218,7 +218,11 @@ function HeroMainContent({
   );
 }
 
-function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
+function HeroWorkflowScene({
+  reduceMotion,
+}: {
+  reduceMotion: boolean | null;
+}) {
   const bgDrift = reduceMotion
     ? ""
     : "[animation:hero-bg-drift_24s_ease-in-out_infinite]";
@@ -313,7 +317,7 @@ function HeroPanel({
   reduceMotion,
   onJumpToListings,
 }: {
-  reduceMotion: boolean;
+  reduceMotion: boolean | null;
   onJumpToListings: () => void;
 }) {
   const sharedHeroBottomFade =
@@ -332,7 +336,7 @@ function HeroPanel({
             width={40}
             height={40}
             className="h-10 w-10 sm:h-12 sm:w-12"
-            priority
+            fetchPriority="high"
           />
         </Link>
         <HeroWorkflowScene reduceMotion={reduceMotion} />
