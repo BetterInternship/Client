@@ -1,6 +1,9 @@
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserPfp } from "@/components/shared/pfp";
-import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  type DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/services";
@@ -10,7 +13,6 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import {
   cn,
-  Badge,
   Button,
   PageContainer,
   AnimatedCount,
@@ -19,9 +21,11 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@betterinternship/components";
+import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import {
+  formatDateWithoutTime,
   formatMonth,
-  formatOptionalTimestampDate,
+  formatTimestampDateWithoutTime,
 } from "@/lib/utils/date-utils";
 import {
   Award,
@@ -35,8 +39,9 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
+  Archive,
 } from "lucide-react";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";
 import {
   Tooltip,
@@ -50,12 +55,14 @@ import { useEmployerApplications } from "@/hooks/use-employer-api";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/text";
+import { ActionButton } from "@/components/ui/action-button";
 
 interface ApplicantPageProps {
   jobId: string | undefined;
   application: EmployerApplication | undefined;
   userApplications?: EmployerApplication[] | undefined;
   statuses: DropdownMenuItem[];
+  onArchive: () => void;
 }
 
 export function ApplicantPage({
@@ -63,8 +70,12 @@ export function ApplicantPage({
   application,
   userApplications,
   statuses,
+  onArchive,
 }: ApplicantPageProps) {
   const user = application?.user as Partial<PublicUser>;
+  const hasSocialLinks = Boolean(
+    user?.portfolio_link || user?.github_link || user?.linkedin_link,
+  );
 
   const otherApplicants =
     useEmployerApplications().employer_applications.filter(
@@ -83,8 +94,42 @@ export function ApplicantPage({
     currentApplicantIndex < otherApplicants.length - 1
       ? otherApplicants[currentApplicantIndex + 1]
       : undefined;
-
+  const currentStatus = useMemo(
+    () => ({ id: application?.status?.toString() ?? "0" }),
+    [application?.status],
+  );
   const internshipPreferences = user?.internship_preferences;
+  const internshipTypeBadge =
+    internshipPreferences?.internship_type === "credited" ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex w-fit items-center gap-1 text-sm font-medium text-emerald-700">
+            <Award className="h-3.5 w-3.5" />
+            Credited
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs text-muted-foreground">
+            This applicant is looking for internships for credit
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    ) : (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex w-fit items-center gap-1 text-sm font-medium text-sky-700">
+            <HandHelping className="h-3.5 w-3.5" />
+            Voluntary
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="text-xs text-muted-foreground">
+            This applicant is looking for internships voluntarily
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    );
+
   const challengeSubmission = application?.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
 
@@ -150,10 +195,20 @@ export function ApplicantPage({
       <JobHeader
         job={application.job!}
         backHref={`/dashboard/manage?jobId=${jobId}`}
-      />
-      <PageContainer className="flex flex-col gap-2">
-        {otherApplicants.length > 1 && (
-          <div className="flex items-center justify-center gap-2">
+        applicantActions={
+          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+            <ActionButton
+              icon={Archive}
+              label="Archive application"
+              onClick={onArchive}
+              className="text-gray-500 enabled:data-[destructive=false]:hover:bg-gray-100 enabled:hover:text-gray-800"
+            />
+            <DropdownMenu
+              items={statuses}
+              defaultItem={currentStatus}
+              className="min-w-36"
+              withDescriptions
+            />
             {previousApplicant ? (
               <Link
                 href={{
@@ -161,15 +216,22 @@ export function ApplicantPage({
                   query: { applicationId: previousApplicant.id },
                 }}
               >
-                <Button variant="outline" size="sm" className="gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Previous applicant"
+                >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
                 </Button>
               </Link>
             ) : (
-              <Button variant="outline" size="sm" disabled className="gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                aria-label="Previous applicant"
+              >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
               </Button>
             )}
             <span className="text-xs text-muted-foreground">
@@ -183,21 +245,29 @@ export function ApplicantPage({
                   query: { applicationId: nextApplicant.id },
                 }}
               >
-                <Button variant="outline" size="sm" className="gap-1">
-                  Next
+                <Button variant="outline" size="sm" aria-label="Next applicant">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
-              <Button variant="outline" size="sm" disabled className="gap-1">
-                Next
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                aria-label="Next applicant"
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
           </div>
-        )}
-        <div key={application?.id} className="flex flex-col md:flex-row">
-          <div className="p-4 rounded-[0.33em] border md:w-1/2">
+        }
+      />
+      <PageContainer className="flex flex-col gap-2">
+        <div
+          key={application?.id}
+          className="flex flex-col overflow-hidden rounded-[0.33em] border bg-white md:flex-row"
+        >
+          <div className="p-5 md:w-[55%] md:border-r md:p-6">
             {/* "header" ish portion */}
             <div className="mb-4">
               <div className="lg:flex items-center justify-between">
@@ -209,160 +279,104 @@ export function ApplicantPage({
                     />
                   </div>
                   <div className="mx-2">
-                    <div className="flex gap-2">
-                      <h3 className={cn(isMobile ? "text-lg" : "text-xl")}>
-                        {getFullName(application?.user)}
-                      </h3>
-                      {internshipPreferences?.internship_type === "credited" ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge
-                              type="supportive"
-                              variant="solid"
-                              className="gap-1"
-                            >
-                              <Award className="w-4 h-4" />
-                              <span>Credited</span>
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-muted-foreground text-xs">
-                              This applicant is looking for internships for
-                              credit
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="solid" className="gap-1">
-                              <HandHelping className="w-4 h-4" />
-                              <span>Voluntary</span>
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-muted-foreground text-xs">
-                              This applicant is looking for internships
-                              voluntarily
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
+                    <h3 className="text-xl font-semibold">
+                      {getFullName(application?.user)}
+                    </h3>
                     <div
                       className={cn(
-                        "items-center gap-2 text-xs text-muted-foreground",
-                        isMobile ? "flex-col" : "flex",
+                        "items-center gap-2 text-sm text-muted-foreground",
+                        isMobile ? "flex flex-col items-start" : "flex",
                       )}
                     >
                       {/* Contact info */}
-                      {application?.user?.phone_number !== null && (
+                      {application?.user?.phone_number && (
                         <Link
                           href={`tel:${application?.user?.phone_number}`}
-                          className="text-muted-foreground text-xs underline hover:text-primary flex gap-1"
+                          className="flex gap-1 text-sm hover:underline hover:text-primary"
                         >
                           <Phone className="h-4 w-4" />
                           {application?.user?.phone_number}
                         </Link>
                       )}
-                      {!isMobile && (
-                        <p className="text-xs text-muted-foreground"> | </p>
-                      )}
-                      {application?.user?.edu_verification_email !== null && (
+                      {application?.user?.email && (
                         <Link
-                          href={`mailto:${application?.user?.edu_verification_email}`}
-                          className="text-muted-foreground text-xs underline hover:text-primary flex gap-1"
+                          href={`mailto:${application?.user?.email}`}
+                          className="flex gap-1 hover:underline text-primary"
                         >
-                          <Mail className="h-4 w-4" />
-                          {application?.user?.edu_verification_email}
+                          <Mail className="h-4 w-4 mt-0.5" />
+                          {application?.user?.email}
                         </Link>
                       )}
                     </div>
                     {/* links */}
-                    <div
-                      className={cn(
-                        "flex gap-4 items-center",
-                        isMobile ? "mt-2" : "mt-4",
-                      )}
-                    >
-                      <div>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            {user?.portfolio_link ? (
+                    {hasSocialLinks && (
+                      <div
+                        className={cn(
+                          "flex items-center gap-4",
+                          isMobile ? "mt-2" : "mt-4",
+                        )}
+                      >
+                        {user?.portfolio_link && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                               <a
-                                href={user?.portfolio_link}
+                                href={user.portfolio_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
                               >
                                 <BriefcaseBusiness className="h-4 w-4" />
                               </a>
-                            ) : (
-                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                                <BriefcaseBusiness className="h-4 w-4" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs text-gray-500">
+                                Applicant Portfolio
                               </p>
-                            )}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs text-gray-500">
-                              Applicant Portfolio
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
 
-                      <div>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            {user?.github_link ? (
+                        {user?.github_link && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                               <a
-                                href={user?.github_link}
+                                href={user.github_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
                               >
                                 <Github className="h-4 w-4" />
                               </a>
-                            ) : (
-                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                                <Github className="h-4 w-4" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs text-gray-500">
+                                Applicant Github
                               </p>
-                            )}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs text-gray-500">
-                              Applicant Github
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
 
-                      <div>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            {user?.linkedin_link ? (
+                        {user?.linkedin_link && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
                               <a
-                                href={user?.linkedin_link}
+                                href={user.linkedin_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
                               >
                                 <Linkedin className="h-4 w-4" />
                               </a>
-                            ) : (
-                              <p className="text-gray-300 font-medium break-all text-xs cursor-default">
-                                <Linkedin className="h-4 w-4" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs text-gray-500">
+                                Applicant Linkedin
                               </p>
-                            )}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs text-gray-500">
-                              Applicant Linkedin
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -372,7 +386,7 @@ export function ApplicantPage({
               <div className="flex flex-col gap-2">
                 {hasChallengeSubmission && (
                   <HorizontalCollapsible
-                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                    className="mt-5 flex flex-col border-t pt-5"
                     title="Challenge Submission"
                   >
                     <span className="text-sm/5 whitespace-pre-wrap wrap-break-word">
@@ -380,10 +394,7 @@ export function ApplicantPage({
                     </span>
                   </HorizontalCollapsible>
                 )}
-                <Accordion
-                  type="multiple"
-                  className="rounded-[0.33em] border px-3"
-                >
+                <Accordion type="multiple" className="border-t">
                   <AccordionItem
                     key={application?.user?.id as string}
                     value={application?.user?.id as string}
@@ -393,30 +404,44 @@ export function ApplicantPage({
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col gap-4">
                       <div className="flex flex-col justify-between">
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-sm text-muted-foreground">
                           Education
                         </span>
-                        <span className="font-medium">
+                        <span className="text-sm font-medium">
                           {to_university_name(user?.university)}
                         </span>
-                        <span className="text-xs">{user?.degree}</span>
                       </div>
                       <div className="flex flex-col justify-between">
-                        <span className="text-muted-foreground text-xs">
-                          Expected Graduation Date
+                        <span className="text-sm text-muted-foreground">
+                          Degree
                         </span>
-                        <span className="font-medium">
-                          {formatMonth(user?.expected_graduation_date)}
+                        <span className="text-sm font-medium">
+                          {user?.degree}
                         </span>
                       </div>
+                      <div className="flex flex-col justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Date Applied
+                        </span>
+                        <span className="text-sm font-medium">
+                          {formatDateWithoutTime(application.applied_at)}
+                        </span>
+                      </div>
+                      {user?.expected_graduation_date && (
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-sm text-muted-foreground">
+                            Expected Graduation Date
+                          </span>
+                          <span className="text-sm font-medium">
+                            {formatMonth(user.expected_graduation_date)}
+                          </span>
+                        </div>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
 
-                <Accordion
-                  type="multiple"
-                  className="rounded-[0.33em] border px-3"
-                >
+                <Accordion type="multiple" className="border-t">
                   <AccordionItem
                     key={application?.user?.id as string}
                     value={application?.user?.id as string}
@@ -426,23 +451,31 @@ export function ApplicantPage({
                     </AccordionTrigger>
                     <AccordionContent className="flex flex-col gap-4">
                       <div className="flex flex-col justify-between">
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-sm text-muted-foreground">
                           Expected Start Date
                         </span>
-                        <span className="font-medium">
-                          {formatOptionalTimestampDate(
+                        <span className="text-sm font-medium">
+                          {formatTimestampDateWithoutTime(
                             internshipPreferences?.expected_start_date,
                           )}
                         </span>
                       </div>
-                      <div className="flex flex-col justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          Expected Duration (Hours)
+                      {internshipPreferences?.expected_duration_hours !=
+                        null && (
+                        <div className="flex flex-col justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            Expected Duration (Hours)
+                          </span>
+                          <span className="text-sm font-medium">
+                            {internshipPreferences.expected_duration_hours}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-sm text-muted-foreground">
+                          Internship Type
                         </span>
-                        <span className="font-medium">
-                          {internshipPreferences?.expected_duration_hours ||
-                            "No specified duration"}
-                        </span>
+                        {internshipTypeBadge}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -452,7 +485,7 @@ export function ApplicantPage({
               <>
                 {hasChallengeSubmission && (
                   <HorizontalCollapsible
-                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                    className="mt-5 flex flex-col border-t pt-5"
                     title="Challenge Submission"
                   >
                     <span className="text-sm/5 whitespace-pre-wrap break-words">
@@ -460,125 +493,152 @@ export function ApplicantPage({
                     </span>
                   </HorizontalCollapsible>
                 )}
-                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
-                  {application?.user?.bio ? (
+                <div className="mt-5 border-t pt-5">
+                  {application?.user?.bio && (
                     <div>
-                      <p className="text-xs">{application?.user?.bio}</p>
-                      <Divider />
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-xs">Applicant has not added a bio.</p>
+                      <p className="text-sm text-muted-foreground">
+                        {application?.user?.bio}
+                      </p>
                       <Divider />
                     </div>
                   )}
                   <div className="items-center gap-3 mb-4 sm:mb-5">
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                    <h3 className="text-base font-semibold text-gray-900">
                       Applicant Information
                     </h3>
-                    {application?.job && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        Applying for: {application?.job?.title}
-                      </p>
-                    )}
                   </div>
 
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <div>
-                      <p className={cn("text-gray-500 text-xs")}>Education</p>
-                      <p
-                        className={cn(
-                          "font-medium text-gray-900",
-                          isMobile ? "text-xs" : "text-sm",
-                        )}
-                      >
+                      <p className="text-sm text-gray-500">Education</p>
+                      <p className="text-sm font-medium text-gray-900">
                         {to_university_name(user?.university)}
                       </p>
-                      <p className="text-xs text-gray-500">{user?.degree}</p>
                     </div>
                     <div>
-                      <p className={cn("text-gray-500 text-xs")}>
-                        Expected Graduation Date
-                      </p>
-                      <p
-                        className={cn(
-                          "font-medium text-gray-900",
-                          isMobile ? "text-xs" : "text-sm",
-                        )}
-                      >
-                        {formatMonth(user?.expected_graduation_date)}
+                      <p className="text-sm text-gray-500">Degree</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {user?.degree}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Date Applied</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatDateWithoutTime(application.applied_at)}
+                      </p>
+                    </div>
+                    {user?.expected_graduation_date && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="text-sm text-gray-500">
+                          Expected Graduation Date
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {formatMonth(user.expected_graduation_date)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <Divider />
                   <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                    <h3 className="text-base font-semibold text-gray-900">
                       Internship Requirements
                     </h3>
                   </div>
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                      <p
-                        className={cn(
-                          "text-gray-500",
-                          isMobile ? "text-sm" : "text-xs",
-                        )}
-                      >
+                    <div>
+                      <p className="text-sm text-gray-500">
                         Expected Start Date
                       </p>
                       <p className="text-sm font-medium text-gray-900">
-                        {formatOptionalTimestampDate(
+                        {formatTimestampDateWithoutTime(
                           internshipPreferences?.expected_start_date,
                         )}
                       </p>
                     </div>
+                    {internshipPreferences?.expected_duration_hours != null && (
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Expected Duration (Hours)
+                        </p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {internshipPreferences.expected_duration_hours}
+                        </p>
+                      </div>
+                    )}
                     <div>
-                      <p className="text-xs text-gray-500">
-                        Expected Duration (Hours)
-                      </p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {internshipPreferences?.expected_duration_hours}
-                      </p>
+                      <p className="text-sm text-gray-500">Internship Type</p>
+                      {internshipTypeBadge}
                     </div>
                   </div>
                 </div>
 
                 {/* other roles *note: will make this look better */}
-                <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                <div className="mt-5 flex flex-col border-t pt-5">
                   <div className="flex items-center gap-3 mb-4 sm:mb-5">
                     {application?.job ? (
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                      <h3 className="text-base font-semibold text-gray-900">
                         Other Applied Roles
                       </h3>
                     ) : (
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                      <h3 className="text-base font-semibold text-gray-900">
                         Applied Roles
                       </h3>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {userApplications?.length !== 0 ? (
-                      userApplications?.map((a) => (
-                        <Badge>
-                          <p className="inline-flex items-center text-gray-500 text-xs">
-                            {a.job?.title}
-                          </p>
-                        </Badge>
-                      ))
+                  <div className="flex flex-col gap-2">
+                    {(userApplications?.length ?? 0) > 0 ? (
+                      userApplications?.map((a) => {
+                        if (!a.id) return null;
+
+                        const status =
+                          DB_STATUS_MAP[Number(a.status ?? 0)]?.key ??
+                          "pending";
+                        const statusConfig = UI_STATUS_MAP.get(status);
+                        const StatusIcon = statusConfig?.icon;
+                        const statusClasses: Record<string, string> = {
+                          pending: "bg-amber-50 text-amber-700",
+                          shortlisted: "bg-blue-50 text-blue-700",
+                          accepted: "bg-emerald-50 text-emerald-700",
+                          rejected: "bg-rose-50 text-rose-700",
+                          archived: "bg-gray-100 text-gray-600",
+                        };
+
+                        return (
+                          <Link
+                            key={a.id}
+                            href={{
+                              pathname: "/dashboard/applicant",
+                              query: { applicationId: a.id },
+                            }}
+                            className="group flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-gray-50"
+                          >
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800 group-hover:text-primary">
+                              {a.job?.title ?? "Untitled role"}
+                            </span>
+                            <span className="flex shrink-0 items-center gap-3">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium capitalize",
+                                  statusClasses[status],
+                                )}
+                              >
+                                {StatusIcon && (
+                                  <StatusIcon className="h-3 w-3" />
+                                )}
+                                {status}
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 group-hover:text-primary">
+                                View application
+                                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                              </span>
+                            </span>
+                          </Link>
+                        );
+                      })
                     ) : (
-                      <>
-                        {application?.job ? (
-                          <p className="text-gray-500 text-sm">
-                            {" "}
-                            No applied roles
-                          </p>
-                        ) : (
-                          <p className="text-gray-500 text-sm">
-                            {" "}
-                            No other applied roles
-                          </p>
-                        )}
-                      </>
+                      <p className="text-sm text-gray-500">
+                        No other applied roles
+                      </p>
                     )}
                   </div>
                 </div>
@@ -588,12 +648,7 @@ export function ApplicantPage({
 
           {/* resume */}
           {application?.resume_id ? (
-            <div
-              className={cn(
-                "h-full flex flex-col justify-center items-center",
-                isMobile ? "mt-4 w-full" : "",
-              )}
-            >
+            <div className="flex h-full min-w-0 w-full flex-col items-center justify-center overflow-hidden md:w-[45%]">
               <PDFPreview url={resumeURL} />
             </div>
           ) : (

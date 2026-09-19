@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@betterinternship/components";
 import { Toggle } from "@/components/ui/toggle";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
-import { formatDateWithoutTime } from "@/lib/utils";
 import { cn } from "@betterinternship/components";
 import { ArrowLeft, Edit, Info, Trash2, Users } from "lucide-react";
 import Link from "next/link";
@@ -23,10 +22,12 @@ export default function JobHeader({
   job,
   onJobUpdate,
   backHref,
+  applicantActions,
 }: {
   job: Job;
   onJobUpdate?: (updates: Partial<Job>) => void;
   backHref?: string;
+  applicantActions?: ReactNode;
 }) {
   const router = useRouter();
   const { ownedJobs, update_job, delete_job, unpause_job } = useOwnedJobs();
@@ -203,7 +204,7 @@ export default function JobHeader({
   );
 
   return (
-    <div className="sticky top-0 z-30 border-b border-gray-200 bg-white">
+    <div className="sticky top-0 z-30 bg-white">
       <div className="mx-auto max-w-7xl px-6 py-3">
         {isMobile ? (
           <div className="flex flex-col gap-3">
@@ -275,118 +276,117 @@ export default function JobHeader({
                 </TooltipContent>
               </Tooltip>
             </div>
-            <div className="min-w-0">
+            <div className="flex min-w-0 items-center">
               <h3 className="text-lg font-semibold leading-tight whitespace-normal break-words [overflow-wrap:anywhere]">
                 {job?.title}
               </h3>
-              <span className="text-xs text-gray-500">
-                Created {formatDateWithoutTime(job?.created_at)}
-              </span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                href={{
-                  pathname: "/dashboard/manage",
-                  query: { jobId: job.id },
-                }}
-                className="block"
-              >
-                <Button
-                  variant={
-                    pathname === "/dashboard/manage" ? "ghost" : "outline"
-                  }
-                  size="sm"
-                  disabled={saving}
-                  className={cn(
-                    "w-full justify-center gap-1",
-                    pathname === "/dashboard/manage"
-                      ? "hover:bg-primary/10 bg-primary/10 text-primary"
-                      : "hover:bg-primary/5",
-                  )}
-                >
-                  <Users size={16} />
-                  <span>Applicants</span>
-                </Button>
-              </Link>
-              <Link
-                href={{
-                  pathname: "/listings/details",
-                  query: { jobId: job.id },
-                }}
-                className="block"
-              >
-                <Button
-                  variant={
-                    pathname === "/listings/details" ? "ghost" : "outline"
-                  }
-                  size="sm"
-                  disabled={saving}
-                  className={cn(
-                    "w-full justify-center gap-1",
-                    pathname === "/listings/details"
-                      ? "hover:bg-primary/10 bg-primary/10 text-primary"
-                      : "hover:bg-primary/5",
-                  )}
-                >
-                  <Info size={16} />
-                  <span>Preview</span>
-                </Button>
-              </Link>
-              {job.paused ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="pointer-events-none opacity-50">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-center gap-1 hover:bg-primary/5"
-                      >
-                        <Edit size={16} />
-                        <span>Edit</span>
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Re-activate the listing first
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
+            {applicantActions ?? (
+              <div className="grid grid-cols-2 gap-2">
                 <Link
                   href={{
-                    pathname: "/listings/edit",
+                    pathname: "/dashboard/manage",
                     query: { jobId: job.id },
                   }}
                   className="block"
                 >
                   <Button
                     variant={
-                      pathname === "/listings/edit" ? "ghost" : "outline"
+                      pathname === "/dashboard/manage" ? "ghost" : "outline"
                     }
                     size="sm"
                     disabled={saving}
                     className={cn(
                       "w-full justify-center gap-1",
-                      pathname === "/listings/edit"
+                      pathname === "/dashboard/manage"
                         ? "hover:bg-primary/10 bg-primary/10 text-primary"
                         : "hover:bg-primary/5",
                     )}
                   >
-                    <Edit size={16} />
-                    <span>Edit</span>
+                    <Users size={16} />
+                    <span>Applicants</span>
                   </Button>
                 </Link>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={saving}
-                className="w-full justify-center hover:bg-destructive/10 hover:text-destructive gap-1"
-                onClick={handleDelete}
-              >
-                <Trash2 size={16} />
-                <span>Delete</span>
-              </Button>
-            </div>
+                <Link
+                  href={{
+                    pathname: "/listings/details",
+                    query: { jobId: job.id },
+                  }}
+                  className="block"
+                >
+                  <Button
+                    variant={
+                      pathname === "/listings/details" ? "ghost" : "outline"
+                    }
+                    size="sm"
+                    disabled={saving}
+                    className={cn(
+                      "w-full justify-center gap-1",
+                      pathname === "/listings/details"
+                        ? "hover:bg-primary/10 bg-primary/10 text-primary"
+                        : "hover:bg-primary/5",
+                    )}
+                  >
+                    <Info size={16} />
+                    <span>Preview</span>
+                  </Button>
+                </Link>
+                {job.paused ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="pointer-events-none opacity-50">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-center gap-1 hover:bg-primary/5"
+                        >
+                          <Edit size={16} />
+                          <span>Edit</span>
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Re-activate the listing first
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Link
+                    href={{
+                      pathname: "/listings/edit",
+                      query: { jobId: job.id },
+                    }}
+                    className="block"
+                  >
+                    <Button
+                      variant={
+                        pathname === "/listings/edit" ? "ghost" : "outline"
+                      }
+                      size="sm"
+                      disabled={saving}
+                      className={cn(
+                        "w-full justify-center gap-1",
+                        pathname === "/listings/edit"
+                          ? "hover:bg-primary/10 bg-primary/10 text-primary"
+                          : "hover:bg-primary/5",
+                      )}
+                    >
+                      <Edit size={16} />
+                      <span>Edit</span>
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={saving}
+                  className="w-full justify-center hover:bg-destructive/10 hover:text-destructive gap-1"
+                  onClick={handleDelete}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between gap-4">
@@ -399,13 +399,10 @@ export default function JobHeader({
               >
                 <ArrowLeft className="w-4 h-4" />
               </Button>
-              <div className="flex flex-col min-w-0">
+              <div className="flex min-w-0 items-center self-stretch">
                 <h3 className="text-lg font-semibold leading-tight truncate">
                   {job?.title}
                 </h3>
-                <span className="text-xs text-gray-500">
-                  Created {formatDateWithoutTime(job?.created_at)}
-                </span>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -466,7 +463,9 @@ export default function JobHeader({
                 </TooltipContent>
               </Tooltip>
             </div>
-            <div className="flex gap-1 flex-wrap">{desktopActionButtons}</div>
+            <div className="flex flex-wrap gap-1">
+              {applicantActions ?? desktopActionButtons}
+            </div>
           </div>
         )}
       </div>

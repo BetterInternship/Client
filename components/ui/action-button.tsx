@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { cn } from "@betterinternship/components";
 
 export const ActionButton = ({
   icon: Icon,
@@ -8,6 +9,7 @@ export const ActionButton = ({
   destructive = false,
   size = 20,
   notification = false,
+  className,
 }: {
   icon: LucideIcon;
   label?: string;
@@ -16,24 +18,18 @@ export const ActionButton = ({
   destructive?: boolean;
   size?: number;
   notification?: boolean;
+  className?: string;
 }) => {
   return (
     <>
       <button
         data-destructive={destructive}
         disabled={!enabled}
-        className="
-          group
-          relative
-          flex justify-center items-center p-2 transition rounded-[0.33em]
-          enabled:data-[destructive=true]:hover:text-red-600
-          enabled:data-[destructive=true]:hover:bg-destructive/25
-          enabled:data-[destructive=false]:hover:bg-primary/25
-
-          disabled:text-gray-500
-          disabled:cursor-not-allowed
-          disabled:hover:bg-transparent
-        "
+        aria-label={label}
+        className={cn(
+          "group relative flex items-center justify-center rounded-[0.33em] p-2 transition enabled:data-[destructive=true]:hover:bg-destructive/25 enabled:data-[destructive=true]:hover:text-red-600 enabled:data-[destructive=false]:hover:bg-primary/25 disabled:cursor-not-allowed disabled:text-gray-500 disabled:hover:bg-transparent",
+          className,
+        )}
         onClick={onClick}
       >
         {notification && (

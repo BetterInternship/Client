@@ -26,7 +26,8 @@ function ApplicantPageContent() {
     (a) => applicationId === a.id,
   );
   const otherUserApplications = applications?.employer_applications.filter(
-    (a) => a.user_id === userApplication?.user_id,
+    (a) =>
+      a.user_id === userApplication?.user_id && a.id !== userApplication?.id,
   );
   const jobId = userApplication?.job_id;
   const userId = userApplication?.user_id;
@@ -68,8 +69,11 @@ function ApplicantPageContent() {
   );
 
   const getStatuses = () => {
+    const statusOrder = [0, 1, 4, 6];
+
     return unique_app_statuses
-      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
+      .filter((status) => status.id !== 7 && status.id !== 5)
+      .sort((a, b) => statusOrder.indexOf(a.id) - statusOrder.indexOf(b.id))
       .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
 
@@ -94,6 +98,9 @@ function ApplicantPageContent() {
           application={userApplication}
           statuses={getStatuses()}
           userApplications={otherUserApplications}
+          onArchive={() =>
+            userApplication && triggerAction("ARCHIVE", [userApplication])
+          }
         />
       </div>
     </div>
