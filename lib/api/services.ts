@@ -251,6 +251,10 @@ interface ResourceHashResponse {
   hash?: string;
 }
 
+interface SignedFileUrlResponse extends FetchResponse {
+  url?: string;
+}
+
 export const AuthService = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
@@ -565,8 +569,8 @@ export const UserService = {
   },
 
   async getMyResumeURL(resumeId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
+    return APIClient.get<SignedFileUrlResponse>(
+      APIRouteBuilder("users").r("me", "resume", resumeId, "url").build(),
     );
   },
 
@@ -591,8 +595,8 @@ export const UserService = {
   },
 
   async getUserResumeURL(userId: string, resumeId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume", resumeId).build(),
+    return APIClient.get<SignedFileUrlResponse>(
+      APIRouteBuilder("users").r(userId, "resume", resumeId, "url").build(),
     );
   },
 

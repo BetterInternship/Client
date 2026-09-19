@@ -110,7 +110,9 @@ export function ApplicantPage({
     ),
     route: useMemo(
       () =>
-        application ? `/users/${user?.id}/resume/${application.resume_id}` : "",
+        application
+          ? `/users/${application.user_id}/resume/${application.resume_id}`
+          : "",
       [application?.user_id, application?.resume_id],
     ),
   });

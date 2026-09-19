@@ -58,7 +58,7 @@ export function useGodEmployers(params: {
   search?: string;
   is_verified?: string;
   sort_by?: string;
-  sort_dir?: 'asc' | 'desc';
+  sort_dir?: "asc" | "desc";
 }) {
   return useQuery({
     // -v2: team_emails' shape changed (comma-joined string -> {email,
@@ -280,6 +280,12 @@ export function useGodMoaUploads(params: {
           .build(),
       ),
   });
+}
+
+export function getGodMoaDocumentUrl(moaId: string) {
+  return APIClient.get<{ success?: boolean; url?: string; error?: string }>(
+    APIRouteBuilder("god").r("moa-documents", moaId, "url").build(),
+  );
 }
 
 export function useApproveMoaUpload() {

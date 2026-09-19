@@ -14,29 +14,33 @@ import {
   useApproveMoaUpload,
   useRejectMoaUpload,
   useGodUniversities,
+  getGodMoaDocumentUrl,
   MoaUpload,
 } from "@/lib/api/god.api";
 import { Paginator } from "@/components/ui/paginator";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 const PAGE_SIZE = 20;
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function ModalShell({
   open,
   onClose,
   title,
   children,
+  className,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-      <div className="bg-white rounded-[0.33em] border w-full max-w-xl mx-4 max-h-[90vh] overflow-auto">
+      <div
+        className={`bg-white rounded-[0.33em] border w-full mx-4 max-h-[90vh] overflow-auto ${className ?? "max-w-xl"}`}
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="text-lg font-semibold">{title}</h2>
           <button
@@ -84,6 +88,7 @@ function GodMoaUploadsPageContent() {
   const total = data?.total ?? 0;
 
   const [approveTarget, setApproveTarget] = useState<MoaUpload | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedUniversity, setSelectedUniversity] = useState("");
   const defaultExpiry = useMemo(() => {
     const d = new Date();
@@ -128,11 +133,20 @@ function GodMoaUploadsPageContent() {
     }
   };
 
-  const rows = uploads.map((u: MoaUpload) => {
-    const fileUrl = u.document_link
-      ? `${API_BASE_URL}/god/moa-documents/${u.id}/file`
-      : null;
+  const handlePreview = async (moaId: string) => {
+    try {
+      const result = await getGodMoaDocumentUrl(moaId);
+      if (!result.success || !result.url) {
+        toast.error(result.error ?? "Failed to load MOA document.");
+        return;
+      }
+      setPreviewUrl(result.url);
+    } catch {
+      toast.error("Failed to load MOA document.");
+    }
+  };
 
+  const rows = uploads.map((u: MoaUpload) => {
     return (
       <RowCard
         key={u.id}
@@ -146,13 +160,13 @@ function GodMoaUploadsPageContent() {
         }
         leftActions={
           <>
-            {fileUrl && (
+            {u.document_link && (
               <Button
                 scheme="primary"
                 size="xs"
                 onClick={(ev) => {
                   ev.stopPropagation();
-                  window.open(fileUrl, "_blank");
+                  void handlePreview(u.id);
                 }}
               >
                 View PDF
@@ -249,6 +263,15 @@ function GodMoaUploadsPageContent() {
           />
         </div>
       </ListShell>
+
+      <ModalShell
+        open={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+        title="MOA Preview"
+        className="max-w-6xl"
+      >
+        {previewUrl && <PDFPreview url={previewUrl} />}
+      </ModalShell>
 
       <ModalShell
         open={!!approveTarget}

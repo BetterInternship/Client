@@ -57,7 +57,7 @@ export const useFile = ({
    */
   const synchronize = useCallback(
     async (...args: any[]) => {
-      const { success, empty, hash } = await fetcher(...args);
+      const { success, empty, hash, url } = await fetcher(...args);
 
       // Something went wrong
       if (!success) {
@@ -68,6 +68,12 @@ export const useFile = ({
 
       // File has not been uploaded by host / source
       if (empty) {
+        setLoading(false);
+        return;
+      }
+
+      if (url) {
+        setURL(url);
         setLoading(false);
         return;
       }

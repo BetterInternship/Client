@@ -1,74 +1,70 @@
-import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
+import {
+  BasePdfViewer,
+  usePdfDocumentFromUrl,
+  usePdfPageRenderer,
+} from "@betterinternship/core/pdf-viewer";
 import { useAppContext } from "@/lib/ctx-app";
 import { useEffect, useState } from "react";
 
+function PdfPage({
+  pdf,
+  pageNumber,
+  scale,
+}: {
+  pdf: Parameters<typeof usePdfPageRenderer>[0];
+  pageNumber: number;
+  scale: number;
+}) {
+  const { canvasRef } = usePdfPageRenderer(pdf, pageNumber, scale);
+  return <canvas ref={canvasRef} className="block bg-white shadow-sm" />;
+}
+
 export const PDFPreview = ({ url }: { url: string }) => {
   const { isMobile } = useAppContext();
-  const [documentUrl, setDocumentUrl] = useState("");
-  const [loadError, setLoadError] = useState(false);
+  const { pdfDoc, pageCount, isLoading, error } = usePdfDocumentFromUrl(url);
+  const [scale, setScale] = useState(isMobile ? 0.5 : 0.9);
+  const [visiblePage, setVisiblePage] = useState(1);
 
   useEffect(() => {
-    if (!url) return;
+    setScale(isMobile ? 0.5 : 0.9);
+  }, [isMobile]);
 
-    const controller = new AbortController();
-    let objectUrl: string | undefined;
-
-    const loadPdf = async () => {
-      setDocumentUrl("");
-      setLoadError(false);
-
-      try {
-        const response = await fetch(url, {
-          credentials: "include",
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error("Could not load resume");
-
-        const blob = await response.blob();
-        if (controller.signal.aborted) return;
-
-        objectUrl = URL.createObjectURL(blob);
-        setDocumentUrl(objectUrl);
-      } catch {
-        if (!controller.signal.aborted) setLoadError(true);
-      }
-    };
-
-    void loadPdf();
-
-    return () => {
-      controller.abort();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
+  useEffect(() => {
+    setVisiblePage(1);
   }, [url]);
 
   return (
-    <div className="px-6 pb-6 min-h-[600px]">
+    <div className="h-[75vh] min-h-[600px] max-h-[800px] px-6 pb-6">
       {url ? (
-        documentUrl ? (
-          <FormFillPdfViewer
-            documentUrl={documentUrl}
-            blocks={[]}
-            values={{}}
-            scale={isMobile ? 0.5 : 0.9}
-            showToolbar={false}
-          />
-        ) : loadError ? (
+        error ? (
           <div className="flex min-h-48 max-w-[600px] flex-col items-center justify-center gap-3 rounded-sm border border-gray-200 bg-white p-6 text-center">
-            <p className="text-sm text-gray-600">Could not load the resume.</p>
+            <p className="text-sm text-gray-600">{error}</p>
             <a
               className="text-sm text-primary underline"
               href={url}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open resume in a new tab
+              Open document in a new tab
             </a>
           </div>
-        ) : (
+        ) : isLoading || !pdfDoc ? (
           <div className="flex min-h-48 items-center justify-center text-sm text-gray-500">
-            Loading resume...
+            Loading document...
           </div>
+        ) : (
+          <BasePdfViewer
+            pdfDoc={pdfDoc}
+            pageCount={pageCount}
+            scale={scale}
+            onScaleChange={setScale}
+            visiblePage={visiblePage}
+            onVisiblePageChange={setVisiblePage}
+            showToolbar={false}
+            renderPage={(pageNumber) => (
+              <PdfPage pdf={pdfDoc} pageNumber={pageNumber} scale={scale} />
+            )}
+          />
         )
       ) : (
         <div className="relative flex flex-col items-center bg-white rounded-sm pb-8 w-fit h-fit p-8">
