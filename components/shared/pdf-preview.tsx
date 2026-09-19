@@ -4,7 +4,7 @@ import {
   usePdfPageRenderer,
 } from "@betterinternship/core/pdf-viewer";
 import { useAppContext } from "@/lib/ctx-app";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function PdfPage({
   pdf,
@@ -24,17 +24,47 @@ export const PDFPreview = ({ url }: { url: string }) => {
   const { pdfDoc, pageCount, isLoading, error } = usePdfDocumentFromUrl(url);
   const [scale, setScale] = useState(isMobile ? 0.5 : 0.9);
   const [visiblePage, setVisiblePage] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setScale(isMobile ? 0.5 : 0.9);
-  }, [isMobile]);
+    if (!pdfDoc || !containerRef.current) return;
+
+    let cancelled = false;
+    const fitToWidth = async () => {
+      try {
+        const page = await pdfDoc.getPage(1);
+        if (cancelled || !containerRef.current) return;
+
+        const pageWidth = page.getViewport({ scale: 1 }).width;
+        const availableWidth = containerRef.current.clientWidth - 32;
+        const preferredScale = isMobile ? 0.5 : 0.9;
+        setScale(
+          Math.max(0.2, Math.min(preferredScale, availableWidth / pageWidth)),
+        );
+      } catch {
+        // The document may be destroyed while switching previews.
+      }
+    };
+
+    void fitToWidth();
+    const observer = new ResizeObserver(() => void fitToWidth());
+    observer.observe(containerRef.current);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
+  }, [isMobile, pdfDoc]);
 
   useEffect(() => {
     setVisiblePage(1);
   }, [url]);
 
   return (
-    <div className="h-[75vh] min-h-[600px] max-h-[800px] px-6 pb-6">
+    <div
+      ref={containerRef}
+      className="h-[75vh] min-h-[600px] max-h-[800px] w-full min-w-0 overflow-hidden"
+    >
       {url ? (
         error ? (
           <div className="flex min-h-48 max-w-[600px] flex-col items-center justify-center gap-3 rounded-sm border border-gray-200 bg-white p-6 text-center">
