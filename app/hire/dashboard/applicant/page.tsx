@@ -94,18 +94,6 @@ function ApplicantPageContent() {
           application={userApplication}
           statuses={getStatuses()}
           userApplications={otherUserApplications}
-          onArchive={() => {
-            if (!userApplication) return;
-            if (userApplication.visibility === "archived") {
-              triggerAction("UNARCHIVE", [userApplication]);
-            } else {
-              triggerAction("ARCHIVE", [userApplication]);
-            }
-          }}
-          onDelete={() => {
-            if (!userApplication) return;
-            if (userApplication) triggerAction("DELETE", [userApplication]);
-          }}
         />
       </div>
     </div>

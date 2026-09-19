@@ -406,9 +406,7 @@ export function ApplicantPage({
                           Expected Graduation Date
                         </span>
                         <span className="font-medium">
-                          {formatOptionalTimestampDate(
-                            user?.expected_graduation_date,
-                          )}
+                          {formatMonth(user?.expected_graduation_date)}
                         </span>
                       </div>
                     </AccordionContent>
