@@ -3,9 +3,7 @@ import path from "node:path";
 import { ImageResponse } from "next/og";
 import { getSuperListingOgConfig, isSuperListingSlug } from "../../og-config";
 
-export const contentType = "image/png";
-
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };
