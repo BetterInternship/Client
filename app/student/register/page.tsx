@@ -26,7 +26,7 @@ export interface FormInputs {
   degree?: string;
 }
 
-export function RegisterPageContent() {
+function RegisterPageContent() {
   const refs = useDbRefs();
   const auth = useAuthContext();
   const router = useRouter();
