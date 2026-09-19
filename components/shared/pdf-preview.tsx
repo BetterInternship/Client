@@ -60,7 +60,7 @@ export const PDFPreview = ({ url }: { url: string }) => {
             onScaleChange={setScale}
             visiblePage={visiblePage}
             onVisiblePageChange={setVisiblePage}
-            showToolbar={false}
+            showToolbar
             renderPage={(pageNumber) => (
               <PdfPage pdf={pdfDoc} pageNumber={pageNumber} scale={scale} />
             )}
