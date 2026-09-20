@@ -431,38 +431,6 @@ export const useModalRegistry = () => {
         close: () => close("preview-form-pdf"),
       },
 
-      formTemplateDetails: {
-        open: ({
-          title,
-          content,
-          onClose,
-          onRequestClose,
-          showCloseButton,
-          closeOnBackdropClick,
-          closeOnEscapeKey,
-          mobileFullscreen,
-        }: {
-          title?: ReactNode;
-          content: ReactNode;
-          onClose?: () => void;
-          onRequestClose?: () => void;
-          showCloseButton?: boolean;
-          closeOnBackdropClick?: boolean;
-          closeOnEscapeKey?: boolean;
-          mobileFullscreen?: boolean;
-        }) =>
-          open("form-template-details", SlideUpModalLayout, content, {
-            title,
-            onClose,
-            onRequestClose,
-            showCloseButton,
-            closeOnBackdropClick,
-            closeOnEscapeKey,
-            mobileFullscreen,
-          }),
-        close: () => close("form-template-details"),
-      },
-
       centeredDetails: {
         open: ({
           title,
