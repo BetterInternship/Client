@@ -802,10 +802,6 @@ interface EmployerApplicationsResponse extends FetchResponse {
   applications: EmployerApplication[];
 }
 
-interface UserApplicationResponse extends FetchResponse {
-  application: UserApplication;
-}
-
 interface CreateApplicationResponse extends FetchResponse {
   application: UserApplication;
 }
@@ -835,35 +831,9 @@ export const ApplicationService = {
     );
   },
 
-  async getApplicationById(id: string): Promise<UserApplicationResponse> {
-    return APIClient.get<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-    );
-  },
-
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
       APIRouteBuilder("employer").r("applications").build(),
-    );
-  },
-
-  async updateApplication(
-    id: string,
-    data: {
-      githubLink?: string;
-      portfolioLink?: string;
-      resumeFilename?: string;
-    },
-  ) {
-    return APIClient.put<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-      data,
-    );
-  },
-
-  async withdrawApplication(id: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("applications").r(id).build(),
     );
   },
 
