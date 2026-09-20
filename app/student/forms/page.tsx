@@ -77,19 +77,6 @@ export default function FormsPage() {
     router,
   ]);
 
-  // Query 1: Check for updates (cheap query - just a timestamp)
-  // TODO: Enable this later for smart cache invalidation
-  // const { data: updateInfo } = useQuery({
-  //   queryKey: ["form-templates-last-updated"],
-  //   queryFn: () => FormService.getFormTemplatesLastUpdated(),
-  // });
-
-  // console.log("Form templates last updated info:", updateInfo);
-
-  // Query 2: Fetch full form data only if version changes
-  // The queryKey includes the version, so React Query treats it as a new query when version changes
-  // When re-enabling the smart update check, add updateInfo?.version back to queryKey
-  // and change enabled to: enabled: !!updateInfo
   const { data: { formTemplates, formGroupDescription } = {}, isLoading } =
     useQuery({
       queryKey: ["my-form-templates"],
@@ -98,7 +85,6 @@ export default function FormsPage() {
       staleTime: FORM_TEMPLATES_STALE_TIME,
       gcTime: FORM_TEMPLATES_GC_TIME,
       refetchOnWindowFocus: true, // Refetch when user switches back to tab
-      // enabled: !!updateInfo, // Only fetch after we have update info
     });
 
   // ? I think I can abstract this somehow in the future
