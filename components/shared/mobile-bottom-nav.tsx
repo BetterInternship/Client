@@ -86,31 +86,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const profile = useProfileData();
   const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
-  // Not logged in: show minimal nav with Home and Sign In
-  if (!isAuthenticated()) {
-    return (
-      <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
-        {/* Search Button */}
-        <NavButton
-          icon={<Home className="w-6 h-6" />}
-          label="Home"
-          isActive={pathname === "/search"}
-          onClick={() => router.push("/search")}
-        />
-
-        {/* Sign In Button */}
-        <NavButton
-          icon={<LogIn className="w-6 h-6" />}
-          label="Log In"
-          isActive={false}
-          variant="accent"
-          onClick={() =>
-            router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
-          }
-        />
-      </div>
-    );
-  }
+  // don't display bottom nav when signed out.
+  if (!isAuthenticated()) return null;
 
   // Logged in: show full navigation
   return (
