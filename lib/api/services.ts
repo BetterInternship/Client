@@ -269,26 +269,6 @@ export const AuthService = {
     );
   },
 
-  async login(email: string, password: string = "") {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("login").build(),
-      {
-        email,
-        password,
-      },
-    );
-  },
-
-  async verify(userId: string, key: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("verify-email").build(),
-      {
-        user_id: userId,
-        key,
-      },
-    );
-  },
-
   async requestActivation(email: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate").build(),
