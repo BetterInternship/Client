@@ -6,7 +6,6 @@ import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
 import { SuperListingClosedModal } from "./components/SuperListingClosedModal";
-import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
 import {
   DefaultModalLayout,
   SlideUpModalLayout,
@@ -412,35 +411,6 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("success"),
-      },
-
-      // Mass apply job selector (God mode)
-      massApplyJobSelector: {
-        open: ({
-          selectedStudentIds,
-          onClose,
-          panelClassName,
-        }: {
-          selectedStudentIds: Set<string>;
-          onClose: () => void;
-          panelClassName?: string;
-        }) =>
-          open(
-            "mass-apply-job-selector",
-            DefaultModalLayout,
-            <MassApplyJobsSelector
-              selectedStudentIds={selectedStudentIds}
-              onClose={() => {
-                onClose();
-                close("mass-apply-job-selector");
-              }}
-            />,
-            {
-              title: " ",
-              panelClassName,
-            },
-          ),
-        close: () => close("mass-apply-job-selector"),
       },
 
       previewFormPdf: {
