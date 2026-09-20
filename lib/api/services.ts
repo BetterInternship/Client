@@ -1,6 +1,5 @@
 import { FormTemplate } from "../db/forms-db.types";
 import {
-  Conversation,
   CreateJobChallengeListingPayload,
   UpdateJobChallengeListingPayload,
   Employer,
@@ -21,10 +20,6 @@ import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
-}
-
-interface IomLinkRequestResponse extends FetchResponse {
-  url: string;
 }
 
 interface MoaUniversitiesResponse extends FetchResponse {
@@ -104,13 +99,6 @@ export const EmployerService = {
       APIRouteBuilder("employer").r("moa-document").build(),
       formData,
       "form-data",
-    );
-  },
-
-  async requestIomLink(tin: string) {
-    return APIClient.post<IomLinkRequestResponse>(
-      APIRouteBuilder("employer").r("iom-link", "request").build(),
-      { tin },
     );
   },
 
@@ -270,26 +258,6 @@ export const AuthService = {
     );
   },
 
-  async login(email: string, password: string = "") {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("login").build(),
-      {
-        email,
-        password,
-      },
-    );
-  },
-
-  async verify(userId: string, key: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("verify-email").build(),
-      {
-        user_id: userId,
-        key,
-      },
-    );
-  },
-
   async requestActivation(email: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate").build(),
@@ -417,13 +385,6 @@ export const FormService = {
       formTemplates: FormTemplate[];
     }>(APIRouteBuilder("users").r("me/form-templates").build());
     return response;
-  },
-
-  async getFormTemplatesLastUpdated() {
-    return APIClient.get<{
-      lastUpdatedAt: string;
-      version: number;
-    }>(APIRouteBuilder("services").r("me/latest-form-check").build());
   },
 
   async getMyGeneratedForms() {
@@ -814,43 +775,6 @@ export const JobService = {
   },
 };
 
-interface ConversationResponse extends FetchResponse {
-  conversation?: Conversation;
-}
-
-export const EmployerConversationService = {
-  async sendToUser(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-user").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
-    );
-  },
-
-  async createConversation(userId: string) {
-    return APIClient.post<ConversationResponse>(
-      APIRouteBuilder("conversations").r("create").build(),
-      { user_id: userId },
-    );
-  },
-};
-
-export const UserConversationService = {
-  async sendToEmployer(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-employer").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
-    );
-  },
-};
-
 // Application Services
 interface UserApplicationsResponse extends FetchResponse {
   applications: UserApplication[];
@@ -858,10 +782,6 @@ interface UserApplicationsResponse extends FetchResponse {
 
 interface EmployerApplicationsResponse extends FetchResponse {
   applications: EmployerApplication[];
-}
-
-interface UserApplicationResponse extends FetchResponse {
-  application: UserApplication;
 }
 
 interface CreateApplicationResponse extends FetchResponse {
@@ -893,35 +813,9 @@ export const ApplicationService = {
     );
   },
 
-  async getApplicationById(id: string): Promise<UserApplicationResponse> {
-    return APIClient.get<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-    );
-  },
-
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
       APIRouteBuilder("employer").r("applications").build(),
-    );
-  },
-
-  async updateApplication(
-    id: string,
-    data: {
-      githubLink?: string;
-      portfolioLink?: string;
-      resumeFilename?: string;
-    },
-  ) {
-    return APIClient.put<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-      data,
-    );
-  },
-
-  async withdrawApplication(id: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("applications").r(id).build(),
     );
   },
 

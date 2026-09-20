@@ -194,49 +194,6 @@ export function useImportCsv() {
   });
 }
 
-export const StudentGodAPI = {
-  impersonate: async (studentId: string, reason?: string) =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god")
-        .r("students", studentId, "impersonations")
-        .build(),
-      reason ? { reason } : {},
-    ),
-  stop: async () =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god").r("impersonations", "stop").build(),
-      {},
-    ),
-  massApply: async (dto: { jobId: string; studentIds: string[] }) =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god").r("mass-apply").build(),
-      dto,
-    ),
-};
-
-export function useStudentImpersonation() {
-  const impersonate = useMutation({
-    mutationFn: ({
-      studentId,
-      reason,
-    }: {
-      studentId: string;
-      reason?: string;
-    }) => StudentGodAPI.impersonate(studentId, reason),
-  });
-  const stop = useMutation({
-    mutationFn: () => StudentGodAPI.stop(),
-  });
-  return { impersonate, stop };
-}
-
-export function useMassApply() {
-  return useMutation({
-    mutationFn: (dto: { jobId: string; studentIds: string[] }) =>
-      StudentGodAPI.massApply(dto),
-  });
-}
-
 // ── MOA document verification ───────────────────────────────────────────
 
 export interface MoaUpload {
