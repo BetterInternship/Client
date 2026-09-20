@@ -13,7 +13,6 @@ import {
   CareerRefDepartments,
   CareerUsers,
   CareerEmployers,
-  CareerConversations,
   CareerEmployerUsers,
   CareerJobs,
   CareerApplications,
@@ -60,12 +59,6 @@ export type Employer = Partial<Selectable<CareerEmployers>> & {
   application_count?: number | string | null;
 };
 export type User = Partial<Selectable<CareerUsers>>;
-export interface Conversation extends Selectable<CareerConversations> {
-  employers?: Partial<Employer>;
-  employer?: Partial<Employer>;
-  users?: Partial<PublicUser>;
-  user?: Partial<PublicUser>;
-}
 export type PrivateEmployerUser = Selectable<CareerEmployerUsers>;
 export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 

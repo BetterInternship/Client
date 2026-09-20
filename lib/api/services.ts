@@ -1,6 +1,5 @@
 import { FormTemplate } from "../db/forms-db.types";
 import {
-  Conversation,
   CreateJobChallengeListingPayload,
   UpdateJobChallengeListingPayload,
   Employer,
@@ -810,43 +809,6 @@ export const JobService = {
   async mintShareLink(jobId: string) {
     return APIClient.post<ShareLinkResponse>(
       APIRouteBuilder("jobs").r(jobId, "share-link").build(),
-    );
-  },
-};
-
-interface ConversationResponse extends FetchResponse {
-  conversation?: Conversation;
-}
-
-export const EmployerConversationService = {
-  async sendToUser(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-user").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
-    );
-  },
-
-  async createConversation(userId: string) {
-    return APIClient.post<ConversationResponse>(
-      APIRouteBuilder("conversations").r("create").build(),
-      { user_id: userId },
-    );
-  },
-};
-
-export const UserConversationService = {
-  async sendToEmployer(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-employer").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
     );
   },
 };

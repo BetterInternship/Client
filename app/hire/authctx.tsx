@@ -111,9 +111,6 @@ export const AuthContextProvider = ({
 
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
-      queryClient.invalidateQueries({
-        queryKey: ["my-employer-conversations"],
-      }),
       queryClient.invalidateQueries({ queryKey: ["me"] }),
       queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
     ]);
