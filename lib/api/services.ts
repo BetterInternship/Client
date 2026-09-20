@@ -22,10 +22,6 @@ interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
 }
 
-interface IomLinkRequestResponse extends FetchResponse {
-  url: string;
-}
-
 interface MoaUniversitiesResponse extends FetchResponse {
   universityIds: string[];
 }
@@ -103,13 +99,6 @@ export const EmployerService = {
       APIRouteBuilder("employer").r("moa-document").build(),
       formData,
       "form-data",
-    );
-  },
-
-  async requestIomLink(tin: string) {
-    return APIClient.post<IomLinkRequestResponse>(
-      APIRouteBuilder("employer").r("iom-link", "request").build(),
-      { tin },
     );
   },
 
