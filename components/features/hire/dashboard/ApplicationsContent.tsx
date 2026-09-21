@@ -83,7 +83,12 @@ export const ApplicationsContent = forwardRef<
 
   if (!app_statuses) return null;
 
-  const bulkStatusItems = app_statuses
+  const statusOrder = [0, 1, 4, 6, 7, 5];
+  const orderedStatuses = app_statuses.toSorted(
+    (a, b) => statusOrder.indexOf(a.id) - statusOrder.indexOf(b.id),
+  );
+
+  const bulkStatusItems = orderedStatuses
     .map((status): DropdownMenuItem => {
       // look up config for db id
       const config = DB_STATUS_MAP[status.id];
@@ -109,8 +114,8 @@ export const ApplicationsContent = forwardRef<
 
   // get statuses specifically for the rows. these use different action items.
   const getRowStatuses = (application: EmployerApplication) => {
-    return app_statuses
-      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
+    return orderedStatuses
+      .filter((status) => status.id !== 7 && status.id !== 5)
       .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
 

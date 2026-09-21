@@ -1,6 +1,5 @@
 import { FormTemplate } from "../db/forms-db.types";
 import {
-  Conversation,
   CreateJobChallengeListingPayload,
   UpdateJobChallengeListingPayload,
   Employer,
@@ -21,10 +20,6 @@ import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
-}
-
-interface IomLinkRequestResponse extends FetchResponse {
-  url: string;
 }
 
 interface MoaUniversitiesResponse extends FetchResponse {
@@ -100,17 +95,10 @@ export const EmployerService = {
   },
 
   async uploadMoaDocument(formData: FormData) {
-    return APIClient.post<FetchResponse & { moa?: any }>(
+    return APIClient.post<FetchResponse & { moa?: any; error?: string }>(
       APIRouteBuilder("employer").r("moa-document").build(),
       formData,
       "form-data",
-    );
-  },
-
-  async requestIomLink(tin: string) {
-    return APIClient.post<IomLinkRequestResponse>(
-      APIRouteBuilder("employer").r("iom-link", "request").build(),
-      { tin },
     );
   },
 
@@ -251,6 +239,10 @@ interface ResourceHashResponse {
   hash?: string;
 }
 
+interface SignedFileUrlResponse extends FetchResponse {
+  url?: string;
+}
+
 export const AuthService = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
@@ -263,26 +255,6 @@ export const AuthService = {
   async registerStatus() {
     return APIClient.get<ResourceHashResponse>(
       APIRouteBuilder("auth").r("register", "status").build(),
-    );
-  },
-
-  async login(email: string, password: string = "") {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("login").build(),
-      {
-        email,
-        password,
-      },
-    );
-  },
-
-  async verify(userId: string, key: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("verify-email").build(),
-      {
-        user_id: userId,
-        key,
-      },
     );
   },
 
@@ -381,14 +353,12 @@ export const FormService = {
     values: Record<string, string>;
     audit: any;
   }) {
-    return APIClient.post<{
-      formProcessId: string;
-      isPending?: string;
-      documentId?: string;
-      documentUrl?: string;
-      success?: boolean;
-      message?: string;
-    }>(APIRouteBuilder("users").r("me/initiate-form").build(), data);
+    // Docs-Server now queues this (docs-signing RabbitMQ migration plan §6.2)
+    // and returns `{ success, jobId }` — poll it via `getMqJob` below.
+    return APIClient.post<MqJobQueuedResponse>(
+      APIRouteBuilder("users").r("me/initiate-form").build(),
+      data,
+    );
   },
 
   async filloutForm(data: {
@@ -415,13 +385,6 @@ export const FormService = {
       formTemplates: FormTemplate[];
     }>(APIRouteBuilder("users").r("me/form-templates").build());
     return response;
-  },
-
-  async getFormTemplatesLastUpdated() {
-    return APIClient.get<{
-      lastUpdatedAt: string;
-      version: number;
-    }>(APIRouteBuilder("services").r("me/latest-form-check").build());
   },
 
   async getMyGeneratedForms() {
@@ -478,25 +441,25 @@ export const FormService = {
   },
 };
 
+// Shape the resume endpoints actually put on the wire — narrower than the DB's
+// `Resume` (Selectable<CareerResumes>) type, which has a `Date`-typed `uploaded_at`
+// and requires `is_deleted`/`user_id` that the API never sends here.
+export interface ResumeDTO {
+  id: string;
+  label: string;
+  filename: string;
+  uploaded_at: string;
+}
+
 interface UploadResumeResponse {
-  resume: {
-    id: string;
-    label: string;
-    filename: string;
-    uploaded_at: string;
-  };
+  resume: ResumeDTO;
   default_resume?: string;
   success?: boolean;
   message?: string;
 }
 
 interface ResumeArrayResponse {
-  resumes: {
-    id: string;
-    label: string;
-    filename: string;
-    uploaded_at: string;
-  }[];
+  resumes: ResumeDTO[];
   default_resume: string | null;
   success?: boolean;
   message?: string;
@@ -567,8 +530,8 @@ export const UserService = {
   },
 
   async getMyResumeURL(resumeId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
+    return APIClient.get<SignedFileUrlResponse>(
+      APIRouteBuilder("users").r("me", "resume", resumeId, "url").build(),
     );
   },
 
@@ -593,8 +556,8 @@ export const UserService = {
   },
 
   async getUserResumeURL(userId: string, resumeId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume", resumeId).build(),
+    return APIClient.get<SignedFileUrlResponse>(
+      APIRouteBuilder("users").r(userId, "resume", resumeId, "url").build(),
     );
   },
 
@@ -812,43 +775,6 @@ export const JobService = {
   },
 };
 
-interface ConversationResponse extends FetchResponse {
-  conversation?: Conversation;
-}
-
-export const EmployerConversationService = {
-  async sendToUser(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-user").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
-    );
-  },
-
-  async createConversation(userId: string) {
-    return APIClient.post<ConversationResponse>(
-      APIRouteBuilder("conversations").r("create").build(),
-      { user_id: userId },
-    );
-  },
-};
-
-export const UserConversationService = {
-  async sendToEmployer(conversationId: string, message: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return APIClient.post<any>(
-      APIRouteBuilder("conversations").r("send-to-employer").build(),
-      {
-        conversation_id: conversationId,
-        message,
-      },
-    );
-  },
-};
-
 // Application Services
 interface UserApplicationsResponse extends FetchResponse {
   applications: UserApplication[];
@@ -856,10 +782,6 @@ interface UserApplicationsResponse extends FetchResponse {
 
 interface EmployerApplicationsResponse extends FetchResponse {
   applications: EmployerApplication[];
-}
-
-interface UserApplicationResponse extends FetchResponse {
-  application: UserApplication;
 }
 
 interface CreateApplicationResponse extends FetchResponse {
@@ -891,35 +813,9 @@ export const ApplicationService = {
     );
   },
 
-  async getApplicationById(id: string): Promise<UserApplicationResponse> {
-    return APIClient.get<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-    );
-  },
-
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
       APIRouteBuilder("employer").r("applications").build(),
-    );
-  },
-
-  async updateApplication(
-    id: string,
-    data: {
-      githubLink?: string;
-      portfolioLink?: string;
-      resumeFilename?: string;
-    },
-  ) {
-    return APIClient.put<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build(),
-      data,
-    );
-  },
-
-  async withdrawApplication(id: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("applications").r(id).build(),
     );
   },
 

@@ -4,8 +4,8 @@ import { Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
-import { PublicUser, Resume } from "@/lib/db/db.types";
-import { UserService } from "@/lib/api/services";
+import { PublicUser } from "@/lib/db/db.types";
+import { UserService, ResumeDTO } from "@/lib/api/services";
 import { Button, PageContainer } from "@betterinternship/components";
 import { useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
@@ -144,7 +144,7 @@ export default function ProfilePage() {
     }
   };
 
-  const onDeleteResume = (resume: Resume) => {
+  const onDeleteResume = (resume: ResumeDTO) => {
     if (!resume.id) {
       toast.error("Resume not found.");
       return;

@@ -622,6 +622,7 @@ export function AutocompleteTreeMulti({
   placeholder,
   className,
   label,
+  labelAddon,
   tooltip,
   mobileDropdownMode = "sheet",
 }: {
@@ -632,6 +633,7 @@ export function AutocompleteTreeMulti({
   placeholder?: string;
   className?: string;
   label?: React.ReactNode;
+  labelAddon?: React.ReactNode;
   tooltip?: string;
   mobileDropdownMode?: MobileDropdownMode;
 }) {
@@ -824,7 +826,12 @@ export function AutocompleteTreeMulti({
       }}
     >
       {label ? (
-        <LabelWithTooltip label={label} required={required} tooltip={tooltip} />
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          labelAddon={labelAddon}
+        />
       ) : null}
 
       {/* input + chips (same look/feel as AutocompleteMulti) */}

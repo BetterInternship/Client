@@ -22,9 +22,11 @@ import { TextLoader } from "@/components/ui/loader";
 import { FormService } from "@/lib/api/services";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { getClientAudit } from "@/lib/audit";
-import { useQueryClient } from "@tanstack/react-query";
 import { useStateRecord } from "@/hooks/base/useStateRecord";
-import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
+import {
+  useFormFilloutProcessRunner,
+  useTrackFilloutJob,
+} from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { withDerivedFormValues } from "@/lib/derived-form-values";
 import { expandRepeatedPreviewBlocks } from "@/lib/repeated-pdf-fields";
@@ -128,7 +130,6 @@ export function FormSigningLayout({
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
-  const queryClient = useQueryClient();
   const signContext = useSignContext();
   const { isMobile } = useAppContext();
   const [isCompactSigningLayout, setIsCompactSigningLayout] = useState(false);
@@ -189,6 +190,7 @@ export function FormSigningLayout({
   }, []);
 
   const formFilloutProcess = useFormFilloutProcessRunner();
+  const trackFilloutJob = useTrackFilloutJob();
   const fromMe = useMemo(
     () =>
       recipients.some(
@@ -628,12 +630,17 @@ export function FormSigningLayout({
       }
 
       modalRegistry.formSubmissionSuccess.open("manual", () => {
-        void queryClient
-          .invalidateQueries({ queryKey: ["my-forms"] })
-          .then(() => {
-            setCurrentStep(initialStep);
-            onBack();
-          });
+        // Reset/navigate back synchronously — the success modal closes the
+        // instant this callback returns, so anything async here leaves the
+        // "confirm" step (with its Submit button) briefly exposed underneath
+        // as it closes.
+        //
+        // Deliberately no "my-forms" refetch here: the job can save its real
+        // row before it's marked done, so a refetch now can land that row
+        // next to the still-"Generating" synthetic one. The forms page
+        // refetches "my-forms" itself once the job is done.
+        setCurrentStep(initialStep);
+        onBack();
       });
     } else {
       const response = await FormService.initiateForm({
@@ -643,17 +650,23 @@ export function FormSigningLayout({
         audit: getClientAudit(),
       });
 
-      if (!response.success) {
+      if (!response.success || !response.jobId) {
         setNextLoading(false);
         alert("Something went wrong, please try again.");
         console.error(response.message);
         return;
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+      // 202 { jobId } now — the render, the new form process and the
+      // advance-to-first-signatory all happen async (plan §6.2, §8.2).
+      // Track it via the same synthetic-pending-row machinery fillout uses:
+      // `initiateForm` also produces a form process that doesn't exist yet.
+      trackFilloutJob(response.jobId, form.formLabel, new Date().toISOString());
       modalRegistry.formSubmissionSuccess.open(
         "esign",
         () => {
+          // See the "manual" branch above: reset/navigate back synchronously,
+          // and leave the "my-forms" refetch to the forms page.
           setCurrentStep(initialStep);
           onBack();
         },
@@ -670,8 +683,8 @@ export function FormSigningLayout({
     modalRegistry.formSubmissionSuccess,
     noEsign,
     onBack,
-    queryClient,
     recipientEmails,
+    trackFilloutJob,
   ]);
 
   // Clean up when switching form

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import miroIconRaw from "./miro-icon.svg";
 
 const miroIcon = miroIconRaw as { src: string };
@@ -634,7 +635,7 @@ function RemoteCursorsDemo() {
         const point = cursor.path[pathIndex];
         setPositions((prev) => {
           const newPos = [...prev];
-          newPos[idx] = { x: point.x, y: point.y };
+          newPos[idx] = point;
           return newPos;
         });
 

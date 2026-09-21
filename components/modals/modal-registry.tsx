@@ -6,7 +6,6 @@ import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
 import { SuperListingClosedModal } from "./components/SuperListingClosedModal";
-import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
 import {
   DefaultModalLayout,
   SlideUpModalLayout,
@@ -22,7 +21,8 @@ import { MissingRequirementsModal } from "./components/MissingRequirementsModal"
 import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
-import { EmployerApplication, Resume } from "@/lib/db/db.types";
+import { EmployerApplication } from "@/lib/db/db.types";
+import type { ResumeDTO } from "@/lib/api/services";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
@@ -59,7 +59,7 @@ export const useModalRegistry = () => {
           isProcessing,
           onConfirm,
         }: {
-          resume: Resume;
+          resume: ResumeDTO;
           isProcessing: boolean;
           onConfirm: () => void;
         }) =>
@@ -413,35 +413,6 @@ export const useModalRegistry = () => {
         close: () => close("success"),
       },
 
-      // Mass apply job selector (God mode)
-      massApplyJobSelector: {
-        open: ({
-          selectedStudentIds,
-          onClose,
-          panelClassName,
-        }: {
-          selectedStudentIds: Set<string>;
-          onClose: () => void;
-          panelClassName?: string;
-        }) =>
-          open(
-            "mass-apply-job-selector",
-            DefaultModalLayout,
-            <MassApplyJobsSelector
-              selectedStudentIds={selectedStudentIds}
-              onClose={() => {
-                onClose();
-                close("mass-apply-job-selector");
-              }}
-            />,
-            {
-              title: " ",
-              panelClassName,
-            },
-          ),
-        close: () => close("mass-apply-job-selector"),
-      },
-
       previewFormPdf: {
         open: ({ documentUrl }: { documentUrl: string }) =>
           open(
@@ -458,38 +429,6 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("preview-form-pdf"),
-      },
-
-      formTemplateDetails: {
-        open: ({
-          title,
-          content,
-          onClose,
-          onRequestClose,
-          showCloseButton,
-          closeOnBackdropClick,
-          closeOnEscapeKey,
-          mobileFullscreen,
-        }: {
-          title?: ReactNode;
-          content: ReactNode;
-          onClose?: () => void;
-          onRequestClose?: () => void;
-          showCloseButton?: boolean;
-          closeOnBackdropClick?: boolean;
-          closeOnEscapeKey?: boolean;
-          mobileFullscreen?: boolean;
-        }) =>
-          open("form-template-details", SlideUpModalLayout, content, {
-            title,
-            onClose,
-            onRequestClose,
-            showCloseButton,
-            closeOnBackdropClick,
-            closeOnEscapeKey,
-            mobileFullscreen,
-          }),
-        close: () => close("form-template-details"),
       },
 
       centeredDetails: {

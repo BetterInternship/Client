@@ -10,13 +10,14 @@ import {
   formatDateWithoutTime,
   formatTimestampDateWithoutTime,
 } from "@/lib/utils/date-utils";
-import { ApplicationAction, DB_STATUS_MAP } from "@/lib/consts/application";
+import { ApplicationAction } from "@/lib/consts/application";
 import {
   Archive,
   ArchiveRestore,
+  Award,
   Calendar,
-  ContactRound,
   GraduationCap,
+  HandHelping,
   School,
   Trash2,
 } from "lucide-react";
@@ -26,7 +27,6 @@ import {
   DropdownMenu,
   type DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import StatusBadge from "@/components/ui/status-badge";
 import { TableCell, TableRow } from "@betterinternship/components";
 
 interface ApplicationRowProps {
@@ -66,11 +66,23 @@ export function ApplicationRow({
     {}) as InternshipPreferences;
 
   const currentStatusId = application.status?.toString() ?? "0";
-  const filterKey = DB_STATUS_MAP[application.status || 0]?.key || "pending";
-
   const defaultStatus: DropdownMenuItem = {
     id: currentStatusId,
   };
+  const internshipType =
+    preferences.internship_type === "credited" ? (
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700">
+        <Award className="h-3.5 w-3.5" />
+        Credited
+      </span>
+    ) : preferences.internship_type === "voluntary" ? (
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-sky-700">
+        <HandHelping className="h-3.5 w-3.5" />
+        Voluntary
+      </span>
+    ) : (
+      <span className="text-sm text-gray-500">Not specified</span>
+    );
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
 
@@ -98,7 +110,11 @@ export function ApplicationRow({
             </h4>
           </div>
           {isSuperListing && (
-            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+            <DropdownMenu
+              items={statuses}
+              defaultItem={defaultStatus}
+              withDescriptions
+            />
           )}
         </div>
         {isSuperListing ? (
@@ -128,10 +144,7 @@ export function ApplicationRow({
               <GraduationCap size={16} />
               <span className="text-sm">{application.user?.degree}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ContactRound size={16} />
-              <span className="text-sm">{preferences.internship_type}</span>
-            </div>
+            <div>{internshipType}</div>
             <div className="flex items-center gap-2">
               <Calendar size={16} />
               <span className="text-sm">
@@ -144,14 +157,11 @@ export function ApplicationRow({
         )}
         {!isSuperListing && (
           <div className="flex items-center justify-end gap-2 pt-2">
-            {filterKey !== "accepted" && filterKey !== "rejected" ? (
-              <DropdownMenu items={statuses} defaultItem={defaultStatus} />
-            ) : (
-              <StatusBadge
-                className="w-32 py-2"
-                statusId={application.status || 0}
-              />
-            )}
+            <DropdownMenu
+              items={statuses}
+              defaultItem={defaultStatus}
+              withDescriptions
+            />
           </div>
         )}
       </Card>
@@ -182,21 +192,20 @@ export function ApplicationRow({
           {application.applied_at?.toLocaleDateString()}
         </TableCell>
         <TableCell className="px-4 py-2 w-40">
-          {filterKey !== "accepted" && filterKey !== "rejected" ? (
-            <DropdownMenu
-              className="w-full"
-              items={statuses}
-              defaultItem={defaultStatus}
-            />
-          ) : (
-            <StatusBadge statusId={application.status || 0} />
-          )}
+          <DropdownMenu
+            className="w-full"
+            items={statuses}
+            defaultItem={defaultStatus}
+            withDescriptions
+          />
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2 pr-2 flex-row justify-end">
             {application.visibility === "visible" && (
               <ActionButton
                 icon={Archive}
+                label="Archive"
+                className="text-gray-500 enabled:data-[destructive=false]:hover:bg-gray-100 enabled:hover:text-gray-800"
                 onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   if (application.visibility === "archived") {
@@ -272,7 +281,7 @@ export function ApplicationRow({
         </div>
       </TableCell>
       <TableCell className="px-4 py-2 not-last:border-t">
-        {preferences.internship_type}
+        {internshipType}
       </TableCell>
       <TableCell className="px-4 py-2 border-t">
         {formatTimestampDateWithoutTime(preferences.expected_start_date)}
@@ -282,15 +291,12 @@ export function ApplicationRow({
         {formatDateWithoutTime(application.applied_at)}
       </TableCell>
       <TableCell className="px-4 py-2 w-40 not-last:border-t">
-        {filterKey !== "accepted" && filterKey !== "rejected" ? (
-          <DropdownMenu
-            className="w-full"
-            items={statuses}
-            defaultItem={defaultStatus}
-          />
-        ) : (
-          <StatusBadge statusId={application.status || 0} className="py-1.5" />
-        )}
+        <DropdownMenu
+          className="w-full"
+          items={statuses}
+          defaultItem={defaultStatus}
+          withDescriptions
+        />
       </TableCell>
       <TableCell className="border-t">
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
@@ -310,6 +316,7 @@ export function ApplicationRow({
               label={
                 application.visibility === "archived" ? "Unarchive" : "Archive"
               }
+              className="text-gray-500 enabled:data-[destructive=false]:hover:bg-gray-100 enabled:hover:text-gray-800"
             />
           )}
           {application.visibility === "archived" && (

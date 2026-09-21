@@ -35,13 +35,30 @@ export interface WeeklyStatsResponse extends FetchResponse {
   }[];
 }
 
+export interface EmployerLoginMetrics {
+  total_employers: number;
+  logged_in_this_week: number;
+  logged_in_this_week_percent: number;
+  previously_logged_in: number;
+  returning_this_week: number;
+  returning_this_week_percent: number;
+  first_time_logins_this_week: number;
+  never_logged_in: number;
+  never_logged_in_percent: number;
+  cached_at: string;
+}
+
+export interface EmployerLoginMetricsResponse extends FetchResponse {
+  stats: EmployerLoginMetrics;
+}
+
 export function useGodEmployers(params: {
   page: number;
   limit: number;
   search?: string;
   is_verified?: string;
   sort_by?: string;
-  sort_dir?: 'asc' | 'desc';
+  sort_dir?: "asc" | "desc";
 }) {
   return useQuery({
     // -v2: team_emails' shape changed (comma-joined string -> {email,
@@ -97,6 +114,16 @@ export function useWeeklyStats(weeks?: number) {
           .build(),
       ),
     staleTime: 0,
+  });
+}
+
+export function useEmployerLoginMetrics() {
+  return useQuery({
+    queryKey: ["god-employer-login-metrics"],
+    queryFn: () =>
+      APIClient.get<EmployerLoginMetricsResponse>(
+        APIRouteBuilder("god").r("stats", "employer-logins").build(),
+      ),
   });
 }
 
@@ -167,49 +194,6 @@ export function useImportCsv() {
   });
 }
 
-export const StudentGodAPI = {
-  impersonate: async (studentId: string, reason?: string) =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god")
-        .r("students", studentId, "impersonations")
-        .build(),
-      reason ? { reason } : {},
-    ),
-  stop: async () =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god").r("impersonations", "stop").build(),
-      {},
-    ),
-  massApply: async (dto: { jobId: string; studentIds: string[] }) =>
-    APIClient.post<FetchResponse>(
-      APIRouteBuilder("student-god").r("mass-apply").build(),
-      dto,
-    ),
-};
-
-export function useStudentImpersonation() {
-  const impersonate = useMutation({
-    mutationFn: ({
-      studentId,
-      reason,
-    }: {
-      studentId: string;
-      reason?: string;
-    }) => StudentGodAPI.impersonate(studentId, reason),
-  });
-  const stop = useMutation({
-    mutationFn: () => StudentGodAPI.stop(),
-  });
-  return { impersonate, stop };
-}
-
-export function useMassApply() {
-  return useMutation({
-    mutationFn: (dto: { jobId: string; studentIds: string[] }) =>
-      StudentGodAPI.massApply(dto),
-  });
-}
-
 // ── MOA document verification ───────────────────────────────────────────
 
 export interface MoaUpload {
@@ -253,6 +237,12 @@ export function useGodMoaUploads(params: {
           .build(),
       ),
   });
+}
+
+export function getGodMoaDocumentUrl(moaId: string) {
+  return APIClient.get<{ success?: boolean; url?: string; error?: string }>(
+    APIRouteBuilder("god").r("moa-documents", moaId, "url").build(),
+  );
 }
 
 export function useApproveMoaUpload() {

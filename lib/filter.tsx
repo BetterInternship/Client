@@ -41,7 +41,7 @@ export const useFilter = <T extends Filters>(
       });
       return { ...initialFilters, ...urlFilters } as T;
     }
-    return { ...initialFilters } as T;
+    return { ...initialFilters } as unknown as T;
   });
 
   // Sets an individual filter

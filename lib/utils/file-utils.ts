@@ -1,5 +1,16 @@
-import { ImageOutputMap, ImageSize } from "@/types";
 import Resizer from "react-image-file-resizer";
+
+type ImageOutputMap = {
+  file: File;
+  base64: string;
+  buffer: Buffer;
+};
+
+type ImageSize = {
+  width: number;
+  height: number;
+};
+
 export function truncateFileName(name: string, limit: number = 10): string {
   const dotIndex = name.lastIndexOf(".");
   if (dotIndex === -1) {

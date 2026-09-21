@@ -2,9 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 
-export const contentType = "image/png";
-
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };
