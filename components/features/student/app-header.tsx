@@ -171,9 +171,12 @@ export function StudentAppHeader({
     pathname.startsWith("/super-listing/") ||
     pathname.startsWith("/student/super-listing/");
 
+  const isListingRoute = pathname.startsWith("/search/");
+
   if (
     navigationHidden ||
     isSuperListingRoute ||
+    isListingRoute ||
     !routeExcluded(HIDE_ON_ROUTES)
   ) {
     return null;
