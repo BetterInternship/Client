@@ -3,3 +3,5 @@ dist
 build
 .next
 *.min.js
+# copied verbatim from Career-Server/spec/spec.json
+lib/api/generated/spec.json

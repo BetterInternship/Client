@@ -44,7 +44,7 @@ const redirectToMaintenance = () => {
   window.location.assign(`/maintenance?from=${encodeURIComponent(returnPath)}`);
 };
 
-const redirectIfMaintenanceMode = () => {
+export const redirectIfMaintenanceMode = () => {
   if (!IS_MAINTENANCE_MODE) return false;
 
   redirectToMaintenance();
