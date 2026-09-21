@@ -15,6 +15,12 @@ import {
   EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
+import {
+  applicationsControllerCreate,
+  applicationsControllerGetOwn,
+  applicationsControllerMarkViewed,
+  applicationsControllerUpdate,
+} from "./generated/endpoints/applications/applications";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
@@ -789,16 +795,19 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
+  // GET /applications reads no query parameters, so the paging and status
+  // filters this used to accept were never applied and are no longer sent.
   async getApplications(
-    params: {
+    _params: {
       page?: number;
       limit?: number;
       status?: string;
     } = {},
   ) {
-    return APIClient.get<UserApplicationsResponse>(
-      APIRouteBuilder("applications").p(params).build(),
-    );
+    // The generated model types dates as the strings they are on the wire;
+    // UserApplication (db.types) types them as Date. The facade keeps its old
+    // return type until callers move to the generated models.
+    return applicationsControllerGetOwn() as unknown as Promise<UserApplicationsResponse>;
   },
 
   async createApplication(data: {
@@ -807,10 +816,10 @@ export const ApplicationService = {
     challenge_submission?: string;
     source?: "mass";
   }) {
-    return APIClient.post<CreateApplicationResponse>(
-      APIRouteBuilder("applications").r("create").build(),
+    // Same Date-vs-string difference as getApplications above.
+    return applicationsControllerCreate(
       data,
-    );
+    ) as unknown as Promise<CreateApplicationResponse>;
   },
 
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
@@ -822,17 +831,12 @@ export const ApplicationService = {
   async reviewApplication(
     id: string,
     review_options: { review?: string; notes?: string; status?: number },
-  ) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("applications").r(id, "review").build(),
-      review_options,
-    );
+  ): Promise<FetchResponse> {
+    return applicationsControllerUpdate(id, review_options);
   },
 
-  async markApplicationViewed(id: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("applications").r(id, "view").build(),
-    );
+  async markApplicationViewed(id: string): Promise<FetchResponse> {
+    return applicationsControllerMarkViewed(id);
   },
 };
 
