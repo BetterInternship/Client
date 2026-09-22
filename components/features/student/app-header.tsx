@@ -320,7 +320,7 @@ export function StudentAppHeader({
     <>
       <div
         className={cn(
-          "relative z-[100]",
+          "sticky top-0 z-100",
           desktopHeaderHidden &&
             "max-h-0 -translate-y-2 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-out",
         )}
