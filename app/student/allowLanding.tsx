@@ -18,17 +18,15 @@ export default function AllowLanding({
     isStudentLanding || pathname.startsWith("/companies/") || isChallengePage;
 
   if (hideSharedHeader) {
-    return (
-      <div className="min-h-full bg-gray-50 flex flex-col">{children}</div>
-    );
+    return <div className="flex min-h-0 grow flex-col bg-gray-50">{children}</div>;
   }
 
   return (
-    <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
+    <>
       <Suspense>
         <StudentAppHeader />
       </Suspense>
-      <div className="flex-grow overflow-auto flex flex-col">{children}</div>
-    </div>
+      <div className="flex min-h-0 grow flex-col">{children}</div>
+    </>
   );
 }
