@@ -26,6 +26,7 @@ import type { ResumeDTO } from "@/lib/api/services";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import CloseListingModal from "./CloseListingModal";
+import DiscardEditModal from "./DiscardEditModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
 import { AddResumeModal } from "../features/student/profile/AddResumeModal";
@@ -181,6 +182,41 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("close-listing"),
+      },
+      // Confirms leaving the create/edit listing form with unsaved changes.
+      discardEdit: {
+        open: ({
+          onConfirm,
+          title,
+          message,
+          confirmLabel,
+        }: {
+          onConfirm: () => void;
+          title?: string;
+          message?: string;
+          confirmLabel?: string;
+        }) =>
+          open(
+            "discard-edit",
+            DefaultModalLayout,
+            <DiscardEditModal
+              onConfirm={() => {
+                onConfirm();
+                close("discard-edit");
+              }}
+              onCancel={() => close("discard-edit")}
+              title={title}
+              message={message}
+              confirmLabel={confirmLabel}
+            />,
+            {
+              title: "Discard changes?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("discard-edit"),
       },
       // modal for sharing a job listing's short link
       // (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D12).

@@ -50,7 +50,7 @@ function JobDetailsPageRouteContent() {
           onJobUpdate={updateJob}
           backHref={`/dashboard/manage?jobId=${jobId}`}
         />
-        <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
+        <div className="flex-1 overflow-auto px-2 sm:px-8">
           <JobDetailsPage job={job} />
         </div>
       </div>

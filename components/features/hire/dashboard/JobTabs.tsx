@@ -86,7 +86,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     router.push(`/dashboard/applicant?applicationId=${application.id}`);
   };
 
-  if (isLoading || !isAuthenticated()) return null;
+  if (isLoading || !isAuthenticated() || !selectedJob) return null;
 
   return (
     <>
@@ -106,6 +106,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
               onApplicationClick={handleApplicationClick}
               setSelectedApplication={setSelectedApplication}
               onAction={triggerAction}
+              job={selectedJob}
             />
           </div>
         </div>
