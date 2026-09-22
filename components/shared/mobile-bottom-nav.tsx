@@ -91,7 +91,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   // Logged in: show full navigation
   return (
-    <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
+    <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16 md:hidden">
       {/* Search Button */}
       <NavButton
         icon={<Home className="w-6 h-6" />}
