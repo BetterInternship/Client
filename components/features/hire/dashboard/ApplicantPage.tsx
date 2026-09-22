@@ -263,10 +263,10 @@ export function ApplicantPage({
           </div>
         }
       />
-      <PageContainer className="flex flex-col gap-2">
+      <PageContainer className="flex flex-col gap-2 py-0">
         <div
           key={application?.id}
-          className="flex flex-col overflow-hidden rounded-[0.33em] border bg-white md:flex-row"
+          className="flex flex-col overflow-hidden rounded-[0.33em] border md:flex-row"
         >
           <div className="p-5 md:w-[55%] md:border-r md:p-6">
             {/* "header" ish portion */}
