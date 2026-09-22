@@ -2,8 +2,14 @@
 
 import React, { useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, X } from "lucide-react";
-import { Button, PageContainer, Card } from "@betterinternship/components";
+import { ArrowLeft, TriangleAlert, X } from "lucide-react";
+import {
+  Button,
+  PageContainer,
+  Card,
+  PageHeader,
+  StatusNotice,
+} from "@betterinternship/components";
 import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useModalRef } from "@/hooks/use-modal";
 import { useMobile } from "@/hooks/use-mobile";
@@ -60,26 +66,25 @@ export default function JobPage() {
 
   if (!job || (!job.data && !job.isPending)) {
     return (
-      <div className="bg-white flex justify-center py-6">
-        <div className="flex flex-col justify-start items-start gap-4">
-          <Button
-            size="md"
-            variant="ghost"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          <Card>
-            <div className="text-left max-w-prose">
-              <p className="font-bold mb-1">Job does not exist.</p>
-              <p className="text-gray-700 text-xs">
-                If you are coming from a valid link, it is possible that the job
-                was deleted by the employer.
-              </p>
-            </div>
-          </Card>
+      <div className="h-full flex justify-center px-2">
+        <div className="flex flex-col justify-center">
+          <StatusNotice
+            icon={TriangleAlert}
+            title="Job does not exist."
+            description="If you are coming from a valid link, it is possible that the job was deleted by the employer."
+            action={
+              <Button
+                size="md"
+                variant="link"
+                onClick={() => router.back()}
+                className="flex items-center gap-2 px-3 py-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            }
+            variant="destructive"
+          />
         </div>
       </div>
     );
