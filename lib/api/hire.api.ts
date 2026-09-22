@@ -10,6 +10,12 @@
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { Employer, EmployerSelf } from "../db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
+import {
+  godsControllerSignInAs,
+  godsControllerExitProxy,
+  godsControllerVerifyEmployer,
+  godsControllerUnverifyEmployer,
+} from "./generated/endpoints/gods/gods";
 
 interface EmployerResponse extends FetchResponse {
   success: boolean;
@@ -65,16 +71,12 @@ export const EmployerAuthService = {
   },
 
   async loginAsEmployer(employer_id: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "proxy").build(),
-    );
+    return godsControllerSignInAs(employer_id) as unknown as Promise<AuthResponse>;
   },
 
   // Undoes loginAsEmployer — restores the acting god's own account.
   async exitProxy() {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("god").r("exit-proxy").build(),
-    );
+    return godsControllerExitProxy() as unknown as Promise<AuthResponse>;
   },
 
   async logout() {
@@ -93,14 +95,14 @@ export const EmployerAuthService = {
   },
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "verify").build(),
-    );
+    return godsControllerVerifyEmployer(
+      employer_id,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async unverifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "unverify").build(),
-    );
+    return godsControllerUnverifyEmployer(
+      employer_id,
+    ) as unknown as Promise<EmployerResponse>;
   },
 };

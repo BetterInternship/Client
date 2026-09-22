@@ -7,16 +7,29 @@
  */
 import type {
   ApproveMoaDto,
-  BaseResponse,
+  CreateEmployerResponse,
   CreateListingDto,
+  CreateListingResponse,
+  EmployerLoginMetricsResponse,
+  EmployerRecordResponse,
+  EmployerUserSelfResponse,
   GenerateMagicLinkDto,
   GodsControllerGetApplicationStatsParams,
   GodsControllerGetEmployersParams,
-  GodsControllerGetMoaDocumentFileParams,
   GodsControllerGetMoaDocumentsParams,
+  ImportCsvDto,
+  ImportCsvResponse,
+  MagicLinkResponse,
+  MoaDocumentUrlResponse,
+  MoaResponse,
+  MoaUniversitiesResponse,
+  PaginatedEmployersResponse,
+  PaginatedMoaDocumentsResponse,
   RegisterAndListDto,
+  RegisterAndListResponse,
   RegisterThroughGodDto,
   SetEmployerIomLinkDto,
+  WeeklyApplicationStatsResponse,
 } from "../../models";
 
 import { careerFetch } from "../../../career-fetch";
@@ -28,13 +41,16 @@ export const getGodsControllerCreateEmployerUrl = () => {
 export const godsControllerCreateEmployer = async (
   registerThroughGodDto: RegisterThroughGodDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerCreateEmployerUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(registerThroughGodDto),
-  });
+): Promise<CreateEmployerResponse> => {
+  return careerFetch<CreateEmployerResponse>(
+    getGodsControllerCreateEmployerUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(registerThroughGodDto),
+    },
+  );
 };
 
 export const getGodsControllerGenerateMagicLinkUrl = () => {
@@ -44,13 +60,16 @@ export const getGodsControllerGenerateMagicLinkUrl = () => {
 export const godsControllerGenerateMagicLink = async (
   generateMagicLinkDto: GenerateMagicLinkDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerGenerateMagicLinkUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(generateMagicLinkDto),
-  });
+): Promise<MagicLinkResponse> => {
+  return careerFetch<MagicLinkResponse>(
+    getGodsControllerGenerateMagicLinkUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(generateMagicLinkDto),
+    },
+  );
 };
 
 export const getGodsControllerGetEmployersUrl = (
@@ -74,11 +93,14 @@ export const getGodsControllerGetEmployersUrl = (
 export const godsControllerGetEmployers = async (
   params: GodsControllerGetEmployersParams,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerGetEmployersUrl(params), {
-    ...options,
-    method: "GET",
-  });
+): Promise<PaginatedEmployersResponse> => {
+  return careerFetch<PaginatedEmployersResponse>(
+    getGodsControllerGetEmployersUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getGodsControllerGetApplicationStatsUrl = (
@@ -102,8 +124,8 @@ export const getGodsControllerGetApplicationStatsUrl = (
 export const godsControllerGetApplicationStats = async (
   params?: GodsControllerGetApplicationStatsParams,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<WeeklyApplicationStatsResponse> => {
+  return careerFetch<WeeklyApplicationStatsResponse>(
     getGodsControllerGetApplicationStatsUrl(params),
     {
       ...options,
@@ -118,8 +140,8 @@ export const getGodsControllerGetEmployerLoginStatsUrl = () => {
 
 export const godsControllerGetEmployerLoginStats = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<EmployerLoginMetricsResponse> => {
+  return careerFetch<EmployerLoginMetricsResponse>(
     getGodsControllerGetEmployerLoginStatsUrl(),
     {
       ...options,
@@ -135,13 +157,16 @@ export const getGodsControllerRegisterAndListUrl = () => {
 export const godsControllerRegisterAndList = async (
   registerAndListDto: RegisterAndListDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerRegisterAndListUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(registerAndListDto),
-  });
+): Promise<RegisterAndListResponse> => {
+  return careerFetch<RegisterAndListResponse>(
+    getGodsControllerRegisterAndListUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(registerAndListDto),
+    },
+  );
 };
 
 export const getGodsControllerImportCsvUrl = () => {
@@ -149,11 +174,14 @@ export const getGodsControllerImportCsvUrl = () => {
 };
 
 export const godsControllerImportCsv = async (
+  importCsvDto: ImportCsvDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerImportCsvUrl(), {
+): Promise<ImportCsvResponse> => {
+  return careerFetch<ImportCsvResponse>(getGodsControllerImportCsvUrl(), {
     ...options,
     method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(importCsvDto),
   });
 };
 
@@ -164,11 +192,14 @@ export const getGodsControllerSignInAsUrl = (id: string) => {
 export const godsControllerSignInAs = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerSignInAsUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerUserSelfResponse> => {
+  return careerFetch<EmployerUserSelfResponse>(
+    getGodsControllerSignInAsUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerExitProxyUrl = () => {
@@ -177,11 +208,14 @@ export const getGodsControllerExitProxyUrl = () => {
 
 export const godsControllerExitProxy = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerExitProxyUrl(), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerUserSelfResponse> => {
+  return careerFetch<EmployerUserSelfResponse>(
+    getGodsControllerExitProxyUrl(),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerVerifyEmployerUrl = (id: string) => {
@@ -191,11 +225,14 @@ export const getGodsControllerVerifyEmployerUrl = (id: string) => {
 export const godsControllerVerifyEmployer = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerVerifyEmployerUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerRecordResponse> => {
+  return careerFetch<EmployerRecordResponse>(
+    getGodsControllerVerifyEmployerUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerUnverifyEmployerUrl = (id: string) => {
@@ -205,11 +242,14 @@ export const getGodsControllerUnverifyEmployerUrl = (id: string) => {
 export const godsControllerUnverifyEmployer = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerUnverifyEmployerUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerRecordResponse> => {
+  return careerFetch<EmployerRecordResponse>(
+    getGodsControllerUnverifyEmployerUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerDeactivateEmployerUrl = (id: string) => {
@@ -219,11 +259,14 @@ export const getGodsControllerDeactivateEmployerUrl = (id: string) => {
 export const godsControllerDeactivateEmployer = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerDeactivateEmployerUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerRecordResponse> => {
+  return careerFetch<EmployerRecordResponse>(
+    getGodsControllerDeactivateEmployerUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerReactivateEmployerUrl = (id: string) => {
@@ -233,11 +276,14 @@ export const getGodsControllerReactivateEmployerUrl = (id: string) => {
 export const godsControllerReactivateEmployer = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerReactivateEmployerUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerRecordResponse> => {
+  return careerFetch<EmployerRecordResponse>(
+    getGodsControllerReactivateEmployerUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getGodsControllerSetEmployerIomLinkUrl = (id: string) => {
@@ -248,13 +294,16 @@ export const godsControllerSetEmployerIomLink = async (
   id: string,
   setEmployerIomLinkDto: SetEmployerIomLinkDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerSetEmployerIomLinkUrl(id), {
-    ...options,
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(setEmployerIomLinkDto),
-  });
+): Promise<EmployerRecordResponse> => {
+  return careerFetch<EmployerRecordResponse>(
+    getGodsControllerSetEmployerIomLinkUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(setEmployerIomLinkDto),
+    },
+  );
 };
 
 export const getGodsControllerCreateListingUrl = (id: string) => {
@@ -265,13 +314,16 @@ export const godsControllerCreateListing = async (
   id: string,
   createListingDto: CreateListingDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerCreateListingUrl(id), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createListingDto),
-  });
+): Promise<CreateListingResponse> => {
+  return careerFetch<CreateListingResponse>(
+    getGodsControllerCreateListingUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createListingDto),
+    },
+  );
 };
 
 export const getGodsControllerGetMoaDocumentsUrl = (
@@ -295,8 +347,8 @@ export const getGodsControllerGetMoaDocumentsUrl = (
 export const godsControllerGetMoaDocuments = async (
   params?: GodsControllerGetMoaDocumentsParams,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<PaginatedMoaDocumentsResponse> => {
+  return careerFetch<PaginatedMoaDocumentsResponse>(
     getGodsControllerGetMoaDocumentsUrl(params),
     {
       ...options,
@@ -313,8 +365,8 @@ export const godsControllerApproveMoaDocument = async (
   moaId: string,
   approveMoaDto: ApproveMoaDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<MoaResponse> => {
+  return careerFetch<MoaResponse>(
     getGodsControllerApproveMoaDocumentUrl(moaId),
     {
       ...options,
@@ -332,45 +384,12 @@ export const getGodsControllerRejectMoaDocumentUrl = (moaId: string) => {
 export const godsControllerRejectMoaDocument = async (
   moaId: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<MoaResponse> => {
+  return careerFetch<MoaResponse>(
     getGodsControllerRejectMoaDocumentUrl(moaId),
     {
       ...options,
       method: "POST",
-    },
-  );
-};
-
-export const getGodsControllerGetMoaDocumentFileUrl = (
-  moaId: string,
-  params: GodsControllerGetMoaDocumentFileParams,
-) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? "null" : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/api/god/moa-documents/${moaId}/file?${stringifiedParams}`
-    : `/api/god/moa-documents/${moaId}/file`;
-};
-
-export const godsControllerGetMoaDocumentFile = async (
-  moaId: string,
-  params: GodsControllerGetMoaDocumentFileParams,
-  options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(
-    getGodsControllerGetMoaDocumentFileUrl(moaId, params),
-    {
-      ...options,
-      method: "GET",
     },
   );
 };
@@ -382,8 +401,8 @@ export const getGodsControllerGetMoaDocumentUrlUrl = (moaId: string) => {
 export const godsControllerGetMoaDocumentUrl = async (
   moaId: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<MoaDocumentUrlResponse> => {
+  return careerFetch<MoaDocumentUrlResponse>(
     getGodsControllerGetMoaDocumentUrlUrl(moaId),
     {
       ...options,
@@ -398,9 +417,12 @@ export const getGodsControllerGetMoaUniversitiesUrl = () => {
 
 export const godsControllerGetMoaUniversities = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getGodsControllerGetMoaUniversitiesUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<MoaUniversitiesResponse> => {
+  return careerFetch<MoaUniversitiesResponse>(
+    getGodsControllerGetMoaUniversitiesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };

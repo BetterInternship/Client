@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 
-export type GodsControllerGetMoaDocumentFileParams = {
-  hash: string;
-};
+export interface GodUniversityRecord {
+  id: string;
+  name: string;
+}

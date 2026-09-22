@@ -1,8 +1,21 @@
 import { Employer } from "@/lib/db/db.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
+import {
+  godsControllerCreateListing,
+  godsControllerGetApplicationStats,
+  godsControllerGetEmployerLoginStats,
+  godsControllerGetEmployers,
+  godsControllerGetMoaDocuments,
+  godsControllerGetMoaDocumentUrl,
+  godsControllerGetMoaUniversities,
+  godsControllerImportCsv,
+  godsControllerApproveMoaDocument,
+  godsControllerRejectMoaDocument,
+  godsControllerRegisterAndList,
+  godsControllerCreateEmployer,
+} from "./generated/endpoints/gods/gods";
 
 export interface ListingData {
   title: string;
@@ -66,20 +79,18 @@ export function useGodEmployers(params: {
     // (tanstack-provider.tsx), so the key must change too or old sessions
     // keep serving the stale string shape and crash TeamEmailsList's .map.
     queryKey: ["god-employers-v2", params],
+    // The generated model types dates as the strings they are on the wire;
+    // Employer (db.types) types them as Date. The facade keeps its old
+    // return type until callers move to the generated models.
     queryFn: () =>
-      APIClient.get<PaginatedEmployersResponse>(
-        APIRouteBuilder("god")
-          .r("employers")
-          .p({
-            page: params.page,
-            limit: params.limit,
-            search: params.search,
-            is_verified: params.is_verified,
-            sort_by: params.sort_by,
-            sort_dir: params.sort_dir,
-          })
-          .build(),
-      ),
+      godsControllerGetEmployers({
+        page: params.page,
+        limit: params.limit,
+        search: params.search,
+        is_verified: params.is_verified,
+        sort_by: params.sort_by,
+        sort_dir: params.sort_dir,
+      }) as unknown as Promise<PaginatedEmployersResponse>,
   });
 }
 
@@ -107,12 +118,9 @@ export function useWeeklyStats(weeks?: number) {
   return useQuery({
     queryKey: ["god-stats", weeks],
     queryFn: () =>
-      APIClient.get<WeeklyStatsResponse>(
-        APIRouteBuilder("god")
-          .r("stats", "applications")
-          .p(weeks ? { weeks } : {})
-          .build(),
-      ),
+      godsControllerGetApplicationStats(
+        weeks ? { weeks: String(weeks) } : undefined,
+      ) as unknown as Promise<WeeklyStatsResponse>,
     staleTime: 0,
   });
 }
@@ -121,9 +129,7 @@ export function useEmployerLoginMetrics() {
   return useQuery({
     queryKey: ["god-employer-login-metrics"],
     queryFn: () =>
-      APIClient.get<EmployerLoginMetricsResponse>(
-        APIRouteBuilder("god").r("stats", "employer-logins").build(),
-      ),
+      godsControllerGetEmployerLoginStats() as unknown as Promise<EmployerLoginMetricsResponse>,
   });
 }
 
@@ -137,10 +143,10 @@ export function useCreateListing() {
       employerId: string;
       data: ListingData;
     }) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("employers", employerId, "listings").build(),
+      godsControllerCreateListing(
+        employerId,
         data,
-      ),
+      ) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
@@ -151,10 +157,7 @@ export function useRegisterEmployer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { name: string; user_email: string }) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("register").build(),
-        data,
-      ),
+      godsControllerCreateEmployer(data) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
@@ -170,10 +173,9 @@ export function useRegisterAndList() {
         email: string;
       } & ListingData,
     ) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("employers", "create-and-list").build(),
+      godsControllerRegisterAndList(
         data,
-      ),
+      ) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
@@ -184,10 +186,7 @@ export function useImportCsv() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (rows: Record<string, string>[]) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("employers", "import-csv").build(),
-        { rows },
-      ),
+      godsControllerImportCsv({ rows }) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-employers-v2"] });
     },
@@ -226,23 +225,20 @@ export function useGodMoaUploads(params: {
   return useQuery({
     queryKey: ["god-moa-uploads", params],
     queryFn: () =>
-      APIClient.get<PaginatedMoaUploadsResponse>(
-        APIRouteBuilder("god")
-          .r("moa-documents")
-          .p({
-            page: params.page,
-            limit: params.limit,
-            status: params.status,
-          })
-          .build(),
-      ),
+      godsControllerGetMoaDocuments({
+        page: String(params.page),
+        limit: String(params.limit),
+        status: params.status,
+      }) as unknown as Promise<PaginatedMoaUploadsResponse>,
   });
 }
 
 export function getGodMoaDocumentUrl(moaId: string) {
-  return APIClient.get<{ success?: boolean; url?: string; error?: string }>(
-    APIRouteBuilder("god").r("moa-documents", moaId, "url").build(),
-  );
+  return godsControllerGetMoaDocumentUrl(moaId) as unknown as Promise<{
+    success?: boolean;
+    url?: string;
+    error?: string;
+  }>;
 }
 
 export function useApproveMoaUpload() {
@@ -257,10 +253,10 @@ export function useApproveMoaUpload() {
       universityId: string;
       expiresAt?: string;
     }) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("moa-documents", moaId, "approve").build(),
-        { university_id: universityId, expires_at: expiresAt },
-      ),
+      godsControllerApproveMoaDocument(moaId, {
+        university_id: universityId,
+        expires_at: expiresAt,
+      }) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-moa-uploads"] });
     },
@@ -271,10 +267,9 @@ export function useRejectMoaUpload() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (moaId: string) =>
-      APIClient.post<FetchResponse>(
-        APIRouteBuilder("god").r("moa-documents", moaId, "reject").build(),
-        {},
-      ),
+      godsControllerRejectMoaDocument(
+        moaId,
+      ) as unknown as Promise<FetchResponse>,
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-moa-uploads"] });
     },
@@ -285,8 +280,8 @@ export function useGodUniversities() {
   return useQuery({
     queryKey: ["god-universities"],
     queryFn: () =>
-      APIClient.get<{ universities: University[] }>(
-        APIRouteBuilder("god").r("moa-universities").build(),
-      ),
+      godsControllerGetMoaUniversities() as unknown as Promise<{
+        universities: University[];
+      }>,
   });
 }
