@@ -8,9 +8,19 @@
 import type {
   AutoLinkIomDto,
   BaseResponse,
+  EmployerApplicationsResponse,
+  EmployerListResponse,
+  EmployerPublicPicResponse,
+  EmployerSelfResponse,
+  EmployerUpdateResponse,
   EmployersControllerFindLogoParams,
-  EmployersControllerGetMoaDocumentParams,
   EmployersControllerLogoParams,
+  EmployersControllerUpdateLogoBody,
+  EmployersControllerUploadMoaDocumentBody,
+  FileHashResponse,
+  IomLinkUrlResponse,
+  MoaResponse,
+  MoaUniversitiesResponse,
   UpdateEmployerDto,
 } from "../../models";
 
@@ -22,8 +32,8 @@ export const getEmployersControllerSelfUrl = () => {
 
 export const employersControllerSelf = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerSelfUrl(), {
+): Promise<EmployerSelfResponse> => {
+  return careerFetch<EmployerSelfResponse>(getEmployersControllerSelfUrl(), {
     ...options,
     method: "GET",
   });
@@ -36,13 +46,16 @@ export const getEmployersControllerUpdateSelfUrl = () => {
 export const employersControllerUpdateSelf = async (
   updateEmployerDto: UpdateEmployerDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerUpdateSelfUrl(), {
-    ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateEmployerDto),
-  });
+): Promise<EmployerUpdateResponse> => {
+  return careerFetch<EmployerUpdateResponse>(
+    getEmployersControllerUpdateSelfUrl(),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateEmployerDto),
+    },
+  );
 };
 
 export const getEmployersControllerLogoUrl = (
@@ -66,8 +79,8 @@ export const getEmployersControllerLogoUrl = (
 export const employersControllerLogo = async (
   params: EmployersControllerLogoParams,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getEmployersControllerLogoUrl(params), {
+): Promise<FileHashResponse> => {
+  return careerFetch<FileHashResponse>(getEmployersControllerLogoUrl(params), {
     ...options,
     method: "GET",
   });
@@ -78,11 +91,18 @@ export const getEmployersControllerUpdateLogoUrl = () => {
 };
 
 export const employersControllerUpdateLogo = async (
+  employersControllerUpdateLogoBody: EmployersControllerUpdateLogoBody,
   options?: RequestInit,
 ): Promise<BaseResponse> => {
+  const formData = new FormData();
+  if (employersControllerUpdateLogoBody.logo !== undefined) {
+    formData.append(`logo`, employersControllerUpdateLogoBody.logo);
+  }
+
   return careerFetch<BaseResponse>(getEmployersControllerUpdateLogoUrl(), {
     ...options,
     method: "PUT",
+    body: formData,
   });
 };
 
@@ -92,11 +112,14 @@ export const getEmployersControllerMoaUniversitiesUrl = () => {
 
 export const employersControllerMoaUniversities = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerMoaUniversitiesUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<MoaUniversitiesResponse> => {
+  return careerFetch<MoaUniversitiesResponse>(
+    getEmployersControllerMoaUniversitiesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getEmployersControllerUploadMoaDocumentUrl = () => {
@@ -104,46 +127,20 @@ export const getEmployersControllerUploadMoaDocumentUrl = () => {
 };
 
 export const employersControllerUploadMoaDocument = async (
+  employersControllerUploadMoaDocumentBody: EmployersControllerUploadMoaDocumentBody,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<MoaResponse> => {
+  const formData = new FormData();
+  if (employersControllerUploadMoaDocumentBody.file !== undefined) {
+    formData.append(`file`, employersControllerUploadMoaDocumentBody.file);
+  }
+
+  return careerFetch<MoaResponse>(
     getEmployersControllerUploadMoaDocumentUrl(),
     {
       ...options,
       method: "POST",
-    },
-  );
-};
-
-export const getEmployersControllerGetMoaDocumentUrl = (
-  moaId: string,
-  params: EmployersControllerGetMoaDocumentParams,
-) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? "null" : value.toString());
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0
-    ? `/api/employer/moa-document/${moaId}?${stringifiedParams}`
-    : `/api/employer/moa-document/${moaId}`;
-};
-
-export const employersControllerGetMoaDocument = async (
-  moaId: string,
-  params: EmployersControllerGetMoaDocumentParams,
-  options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(
-    getEmployersControllerGetMoaDocumentUrl(moaId, params),
-    {
-      ...options,
-      method: "GET",
+      body: formData,
     },
   );
 };
@@ -154,11 +151,14 @@ export const getEmployersControllerStartIomLoginUrl = () => {
 
 export const employersControllerStartIomLogin = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerStartIomLoginUrl(), {
-    ...options,
-    method: "POST",
-  });
+): Promise<IomLinkUrlResponse> => {
+  return careerFetch<IomLinkUrlResponse>(
+    getEmployersControllerStartIomLoginUrl(),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getEmployersControllerStartIomRegistrationUrl = () => {
@@ -167,8 +167,8 @@ export const getEmployersControllerStartIomRegistrationUrl = () => {
 
 export const employersControllerStartIomRegistration = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<IomLinkUrlResponse> => {
+  return careerFetch<IomLinkUrlResponse>(
     getEmployersControllerStartIomRegistrationUrl(),
     {
       ...options,
@@ -202,11 +202,14 @@ export const getEmployersControllerApplicantsUrl = () => {
 
 export const employersControllerApplicants = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerApplicantsUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<EmployerApplicationsResponse> => {
+  return careerFetch<EmployerApplicationsResponse>(
+    getEmployersControllerApplicantsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getEmployersControllerFindEmployerListUrl = () => {
@@ -215,8 +218,8 @@ export const getEmployersControllerFindEmployerListUrl = () => {
 
 export const employersControllerFindEmployerList = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<EmployerListResponse> => {
+  return careerFetch<EmployerListResponse>(
     getEmployersControllerFindEmployerListUrl(),
     {
       ...options,
@@ -248,11 +251,14 @@ export const employersControllerFindLogo = async (
   id: string,
   params: EmployersControllerFindLogoParams,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getEmployersControllerFindLogoUrl(id, params), {
-    ...options,
-    method: "GET",
-  });
+): Promise<FileHashResponse> => {
+  return careerFetch<FileHashResponse>(
+    getEmployersControllerFindLogoUrl(id, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getEmployersControllerFindEmployerUrl = (id: string) => {
@@ -262,9 +268,12 @@ export const getEmployersControllerFindEmployerUrl = (id: string) => {
 export const employersControllerFindEmployer = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployersControllerFindEmployerUrl(id), {
-    ...options,
-    method: "GET",
-  });
+): Promise<EmployerPublicPicResponse> => {
+  return careerFetch<EmployerPublicPicResponse>(
+    getEmployersControllerFindEmployerUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };

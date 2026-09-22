@@ -5,7 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { JobRecord } from "./jobRecord";
 
-export type EmployersControllerGetMoaDocumentParams = {
-  hash: string;
-};
+/**
+ * @nullable
+ */
+export type EmployerApplicationRecordJob = JobRecord | null;

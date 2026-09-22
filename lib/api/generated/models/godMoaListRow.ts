@@ -8,10 +8,6 @@
 
 export interface GodMoaListRow {
   /** @nullable */
-  employer_name: string | null;
-  /** @nullable */
-  university_name: string | null;
-  /** @nullable */
   document_link: string | null;
   employer_id: string;
   expires_at: string;
@@ -21,4 +17,8 @@ export interface GodMoaListRow {
   status: string | null;
   /** @nullable */
   university_id: string | null;
+  /** @nullable */
+  employer_name: string | null;
+  /** @nullable */
+  university_name: string | null;
 }

@@ -40,6 +40,30 @@ import {
   jobsControllerUnpauseAll,
   jobsControllerUpdate,
 } from "./generated/endpoints/jobs/jobs";
+import {
+  employersControllerAutoLinkIomAccount,
+  employersControllerFindLogo,
+  employersControllerMoaUniversities,
+  employersControllerSelf,
+  employersControllerStartIomLogin,
+  employersControllerStartIomRegistration,
+  employersControllerUpdateSelf,
+  getEmployersControllerUpdateLogoUrl,
+  getEmployersControllerUploadMoaDocumentUrl,
+} from "./generated/endpoints/employer/employer";
+import { careerFetch } from "./career-fetch";
+import {
+  employerUsersControllerChangeRole,
+  employerUsersControllerDeactivate,
+  employerUsersControllerGetMe,
+  employerUsersControllerInvite,
+  employerUsersControllerListTeam,
+  employerUsersControllerReactivate,
+  employerUsersControllerResendInvite,
+  employerUsersControllerUpdateMe,
+  employerUsersControllerUpdateMemberNotifications,
+  employerUsersControllerUpdateMyNotifications,
+} from "./generated/endpoints/employer-users/employer-users";
 import type {
   CreateJobChallengeListingDto,
   CreateJobDto,
@@ -85,65 +109,61 @@ export interface MqJobResponse {
 
 export const EmployerService = {
   async getMyProfile() {
-    return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build(),
-    );
+    return employersControllerSelf() as unknown as Promise<EmployerResponse>;
   },
 
   async getEmployerPfpURL(employerId: string) {
-    return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r(employerId, "pic").build(),
-    );
+    return employersControllerFindLogo(
+      employerId,
+      {} as unknown as import("./generated/models").EmployersControllerFindLogoParams,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async updateMyProfile(data: Partial<Employer>) {
-    return APIClient.put<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build(),
-      data,
-    );
+    return employersControllerUpdateSelf(
+      data as unknown as import("./generated/models").UpdateEmployerDto,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async updateMyPfp(file: Blob | null) {
-    return APIClient.put<ResourceHashResponse>(
-      APIRouteBuilder("employer").r("me", "pic").build(),
-      file,
-      "form-data",
+    // The old FetchClient sent whatever was passed as the raw body in
+    // "form-data" mode, unwrapped — including when a caller cast a FormData
+    // past this Blob|null signature (company-tab.tsx, via @ts-ignore). The
+    // generated employersControllerUpdateLogo always wraps its argument in a
+    // *new* FormData under a "logo" field, which isn't the same wire body, so
+    // this bypasses it and calls the mutator directly to keep the body as-is.
+    return careerFetch<ResourceHashResponse>(
+      getEmployersControllerUpdateLogoUrl(),
+      { method: "PUT", body: file ?? undefined },
     );
   },
 
   async getMoaUniversities() {
-    return APIClient.get<MoaUniversitiesResponse>(
-      APIRouteBuilder("employer").r("moa-universities").build(),
-    );
+    return employersControllerMoaUniversities() as unknown as Promise<MoaUniversitiesResponse>;
   },
 
   async startIomLogin() {
-    return APIClient.post<IomStartResponse>(
-      APIRouteBuilder("employer").r("iom-link", "start-login").build(),
-      {},
-    );
+    return employersControllerStartIomLogin() as unknown as Promise<IomStartResponse>;
   },
 
   async uploadMoaDocument(formData: FormData) {
-    return APIClient.post<FetchResponse & { moa?: any; error?: string }>(
-      APIRouteBuilder("employer").r("moa-document").build(),
-      formData,
-      "form-data",
+    // Same pass-through reasoning as updateMyPfp above: the caller's whole
+    // FormData (which may carry extra fields beyond "file") goes out as-is,
+    // rather than through the generated wrapper's single-field reshape.
+    return careerFetch<FetchResponse & { moa?: any; error?: string }>(
+      getEmployersControllerUploadMoaDocumentUrl(),
+      { method: "POST", body: formData },
     );
   },
 
   async startIomRegistration() {
-    return APIClient.post<IomStartResponse>(
-      APIRouteBuilder("employer").r("iom-link", "start-registration").build(),
-      {},
-    );
+    return employersControllerStartIomRegistration() as unknown as Promise<IomStartResponse>;
   },
 
   async autoLinkIomAccount(token: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer").r("iom-link", "auto-link").build(),
-      { token },
-    );
+    return employersControllerAutoLinkIomAccount({
+      token,
+    }) as unknown as Promise<FetchResponse>;
   },
 };
 
@@ -179,9 +199,7 @@ export const EmployerUserService = {
   // ── Self-service ────────────────────────────────────────────────────
 
   async getMe() {
-    return APIClient.get<EmployerSelfResponse>(
-      APIRouteBuilder("employer-users").r("me").build(),
-    );
+    return employerUsersControllerGetMe() as unknown as Promise<EmployerSelfResponse>;
   },
 
   async updateMe(data: {
@@ -189,70 +207,65 @@ export const EmployerUserService = {
     middle_name?: string | null;
     last_name?: string | null;
   }) {
-    return APIClient.put<EmployerSelfResponse>(
-      APIRouteBuilder("employer-users").r("me").build(),
+    return employerUsersControllerUpdateMe(
       data,
-    );
+    ) as unknown as Promise<EmployerSelfResponse>;
   },
 
   async updateMyNotifications(
     receives_applicant_digest: boolean,
     close_active_listings?: boolean,
   ) {
-    return APIClient.patch<UpdateNotificationsResponse>(
-      APIRouteBuilder("employer-users").r("me", "notifications").build(),
-      { receives_applicant_digest, close_active_listings },
-    );
+    return employerUsersControllerUpdateMyNotifications({
+      receives_applicant_digest,
+      close_active_listings,
+    }) as unknown as Promise<UpdateNotificationsResponse>;
   },
 
   // ── Team management (ADMIN) ────────────────────────────────────────
 
   async getTeam() {
-    return APIClient.get<EmployerTeamResponse>(
-      APIRouteBuilder("employer-users").build(),
-    );
+    return employerUsersControllerListTeam() as unknown as Promise<EmployerTeamResponse>;
   },
 
   async invite(email: string, role: EmployerUserRole) {
-    return APIClient.post<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r("invite").build(),
-      { email, role },
-    );
+    return employerUsersControllerInvite({
+      email,
+      role: role as unknown as import("./generated/models").InviteEmployerUserDtoRole,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async resendInvite(userId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer-users").r(userId, "resend-invite").build(),
-    );
+    return employerUsersControllerResendInvite(
+      userId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async changeRole(userId: string, role: EmployerUserRole) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId).build(),
-      { role },
-    );
+    return employerUsersControllerChangeRole(userId, {
+      role: role as unknown as import("./generated/models").UpdateEmployerUserRoleDtoRole,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async deactivateMember(userId: string) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "deactivate").build(),
-    );
+    return employerUsersControllerDeactivate(
+      userId,
+    ) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async reactivateMember(userId: string) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "reactivate").build(),
-    );
+    return employerUsersControllerReactivate(
+      userId,
+    ) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async updateMemberNotifications(
     userId: string,
     receives_applicant_digest: boolean,
   ) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "notifications").build(),
-      { receives_applicant_digest },
-    );
+    return employerUsersControllerUpdateMemberNotifications(userId, {
+      receives_applicant_digest,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 };
 

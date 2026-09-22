@@ -7,9 +7,15 @@
  */
 import type {
   BaseResponse,
+  EmployerTeamMemberResponse,
+  EmployerTeamResponse,
+  EmployerUserMeResponse,
+  EmployerUserUpdateSelfResponse,
   InviteEmployerUserDto,
   UpdateEmployerUserRoleDto,
+  UpdateMemberNotificationsResponse,
   UpdateNotificationsDto,
+  UpdateOwnNotificationsResponse,
   UpdateSelfDto,
 } from "../../models";
 
@@ -21,11 +27,14 @@ export const getEmployerUsersControllerGetMeUrl = () => {
 
 export const employerUsersControllerGetMe = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployerUsersControllerGetMeUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<EmployerUserMeResponse> => {
+  return careerFetch<EmployerUserMeResponse>(
+    getEmployerUsersControllerGetMeUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getEmployerUsersControllerUpdateMeUrl = () => {
@@ -35,13 +44,16 @@ export const getEmployerUsersControllerUpdateMeUrl = () => {
 export const employerUsersControllerUpdateMe = async (
   updateSelfDto: UpdateSelfDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployerUsersControllerUpdateMeUrl(), {
-    ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateSelfDto),
-  });
+): Promise<EmployerUserUpdateSelfResponse> => {
+  return careerFetch<EmployerUserUpdateSelfResponse>(
+    getEmployerUsersControllerUpdateMeUrl(),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateSelfDto),
+    },
+  );
 };
 
 export const getEmployerUsersControllerUpdateMyNotificationsUrl = () => {
@@ -51,8 +63,8 @@ export const getEmployerUsersControllerUpdateMyNotificationsUrl = () => {
 export const employerUsersControllerUpdateMyNotifications = async (
   updateNotificationsDto: UpdateNotificationsDto,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(
+): Promise<UpdateOwnNotificationsResponse> => {
+  return careerFetch<UpdateOwnNotificationsResponse>(
     getEmployerUsersControllerUpdateMyNotificationsUrl(),
     {
       ...options,
@@ -69,11 +81,14 @@ export const getEmployerUsersControllerListTeamUrl = () => {
 
 export const employerUsersControllerListTeam = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployerUsersControllerListTeamUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<EmployerTeamResponse> => {
+  return careerFetch<EmployerTeamResponse>(
+    getEmployerUsersControllerListTeamUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getEmployerUsersControllerInviteUrl = () => {
@@ -83,13 +98,16 @@ export const getEmployerUsersControllerInviteUrl = () => {
 export const employerUsersControllerInvite = async (
   inviteEmployerUserDto: InviteEmployerUserDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getEmployerUsersControllerInviteUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(inviteEmployerUserDto),
-  });
+): Promise<EmployerTeamMemberResponse> => {
+  return careerFetch<EmployerTeamMemberResponse>(
+    getEmployerUsersControllerInviteUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(inviteEmployerUserDto),
+    },
+  );
 };
 
 export const getEmployerUsersControllerResendInviteUrl = (id: string) => {
@@ -117,8 +135,8 @@ export const employerUsersControllerChangeRole = async (
   id: string,
   updateEmployerUserRoleDto: UpdateEmployerUserRoleDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<EmployerTeamMemberResponse> => {
+  return careerFetch<EmployerTeamMemberResponse>(
     getEmployerUsersControllerChangeRoleUrl(id),
     {
       ...options,
@@ -136,8 +154,8 @@ export const getEmployerUsersControllerDeactivateUrl = (id: string) => {
 export const employerUsersControllerDeactivate = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<EmployerTeamMemberResponse> => {
+  return careerFetch<EmployerTeamMemberResponse>(
     getEmployerUsersControllerDeactivateUrl(id),
     {
       ...options,
@@ -153,8 +171,8 @@ export const getEmployerUsersControllerReactivateUrl = (id: string) => {
 export const employerUsersControllerReactivate = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<EmployerTeamMemberResponse> => {
+  return careerFetch<EmployerTeamMemberResponse>(
     getEmployerUsersControllerReactivateUrl(id),
     {
       ...options,
@@ -173,8 +191,8 @@ export const employerUsersControllerUpdateMemberNotifications = async (
   id: string,
   updateNotificationsDto: UpdateNotificationsDto,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(
+): Promise<UpdateMemberNotificationsResponse> => {
+  return careerFetch<UpdateMemberNotificationsResponse>(
     getEmployerUsersControllerUpdateMemberNotificationsUrl(id),
     {
       ...options,
