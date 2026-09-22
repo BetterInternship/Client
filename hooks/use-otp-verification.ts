@@ -74,6 +74,8 @@ export function useOtpVerification({
   useEffect(() => {
     if (email !== prevEmailRef.current) {
       setError("");
+      setIsCoolingDown(false);
+      setCountdown(0);
       prevEmailRef.current = email;
     }
   }, [email]);
@@ -224,6 +226,7 @@ export function useOtpVerification({
       value: otp,
     },
     resetOtp,
+    startCooldown,
     requestOtp,
     sending,
   };

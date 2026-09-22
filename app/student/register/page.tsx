@@ -67,13 +67,15 @@ function RegisterPageContent() {
   // skip main register page if the user is already registered.
   useEffect(() => {
     if (step === 1 && auth.isAuthenticated()) {
+      if (submitting) return;
+
       if (skipOtpStep) {
         finishRegistration();
       } else {
         setStep(2);
       }
     }
-  }, [step, auth, router, skipOtpStep]);
+  }, [step, auth, router, skipOtpStep, submitting]);
 
   // Direct visits to /register (no OAuth pass, so no reg cookie) can never
   // register — treat them as if they clicked the sign-in button instead.
@@ -121,7 +123,6 @@ function RegisterPageContent() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const regForm = useForm<FormInputs>({
@@ -141,7 +142,7 @@ function RegisterPageContent() {
    */
   const handleSubmit = (values: FormInputs) => {
     setSubmitting(true);
-    const shouldSkipOtp = skipOtpStep || isNoUniversity(values.university);
+    const shouldSkipOtpForUniversity = isNoUniversity(values.university);
 
     // Check for missing fields
     if (!values.first_name?.trim()) {
@@ -188,7 +189,9 @@ function RegisterPageContent() {
 
         setSubmitting(false);
 
-        if (shouldSkipOtp) {
+        const autoVerified = Boolean(response?.user?.edu_verification_email);
+
+        if (shouldSkipOtpForUniversity || autoVerified) {
           finishRegistration();
           return;
         }

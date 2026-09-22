@@ -14,6 +14,8 @@ import { useAuthContext } from "../../authctx";
 import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 
 type RegistrationProfile = Record<string, unknown>;
+const OTP_SENT_AT_KEY = "hire-registration-otp-sent-at";
+const OTP_COOLDOWN_SECONDS = 60;
 
 export default function VerifyHireRegistrationPage() {
   const router = useRouter();
@@ -48,6 +50,7 @@ export default function VerifyHireRegistrationPage() {
 
   const completeActivation = async () => {
     sessionStorage.removeItem("hire-registration-email");
+    sessionStorage.removeItem(OTP_SENT_AT_KEY);
     await refreshAuthentication();
     router.replace("/dashboard");
   };
@@ -61,6 +64,7 @@ export default function VerifyHireRegistrationPage() {
     otpInputProps,
     requestOtp,
     sending,
+    startCooldown,
   } = useOtpVerification({
     email: email.trim().toLowerCase(),
     requestOtpAction: (address) =>
@@ -74,6 +78,19 @@ export default function VerifyHireRegistrationPage() {
       onSuccess: () => void completeActivation(),
     },
   });
+
+  useEffect(() => {
+    if (!hasSentCode) return;
+
+    const sentAt = Number(sessionStorage.getItem(OTP_SENT_AT_KEY));
+    if (!Number.isFinite(sentAt)) return;
+
+    const remaining = Math.ceil(
+      (sentAt + OTP_COOLDOWN_SECONDS * 1000 - Date.now()) / 1000,
+    );
+    if (remaining > 0) startCooldown(remaining);
+    else sessionStorage.removeItem(OTP_SENT_AT_KEY);
+  }, [hasSentCode, startCooldown]);
 
   const submitCode = async () => {
     const result = await activateOtp(otpInputProps.value, {
@@ -117,6 +134,7 @@ export default function VerifyHireRegistrationPage() {
 
         sessionStorage.removeItem("hire-registration-profile");
         sessionStorage.setItem("hire-registration-email", normalizedEmail);
+        sessionStorage.setItem(OTP_SENT_AT_KEY, String(Date.now()));
         setAccountCreated(true);
         setHasSentCode(true);
       } catch {
@@ -131,6 +149,7 @@ export default function VerifyHireRegistrationPage() {
       failureMessage: "Couldn't send verification code. Try again.",
     });
     if (result?.success) {
+      sessionStorage.setItem(OTP_SENT_AT_KEY, String(Date.now()));
       sessionStorage.setItem("hire-registration-email", normalizedEmail);
       setHasSentCode(true);
     }
@@ -173,6 +192,7 @@ export default function VerifyHireRegistrationPage() {
           setter={(value) => {
             setEmail(value);
             setHasSentCode(false);
+            sessionStorage.removeItem(OTP_SENT_AT_KEY);
             setRegistrationError("");
           }}
           maxLength={80}
