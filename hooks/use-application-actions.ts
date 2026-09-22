@@ -3,6 +3,7 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { toast } from "sonner";
 import { useModalRegistry } from "@/components/modals/modal-registry";
 import { ApplicationAction } from "@/lib/consts/application";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 /**
  * Hook to modify application state.
@@ -11,7 +12,7 @@ import { ApplicationAction } from "@/lib/consts/application";
  * @returns Function to trigger different application actions.
  */
 export function useApplicationActions(
-  review: (app_id: string, options: any) => Promise<any>,
+  review: (app_id: string, options: any) => Promise<FetchResponse>,
   onSuccess?: () => void,
 ) {
   const modalRegistry = useModalRegistry();
@@ -117,11 +118,25 @@ export function useApplicationActions(
       }
 
       // execute all updates.
-      await Promise.all(
+      const results = await Promise.all(
         applicationAction.applicants.map((app) =>
           review(app.id ?? "", updatePayload),
         ),
       );
+
+      // The API client resolves (rather than throws) on a success:false body
+      // so a rejection can carry a `code` — see ARCH-001 in
+      // PENDING_ARCHITECTURAL_FIXES.md. A rejection here means the button's
+      // own conditioning was bypassed or went stale (e.g. another tab
+      // finalized the applicant first), so it must be surfaced rather than
+      // silently treated as a success.
+      const failed = results.find((result) => result?.success === false);
+      if (failed) {
+        toast.error(
+          failed.message || "Could not update one or more applications.",
+        );
+        return;
+      }
 
       toast.success(toastMessage);
 

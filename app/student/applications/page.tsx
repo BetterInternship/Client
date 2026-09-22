@@ -426,9 +426,17 @@ const ApplicationCard = ({
     challengeTitleFromJoin.trim().length > 0;
   const isUnavailable = !job?.is_active || job?.is_deleted;
   const canOpenListing = !!job?.id && !isUnavailable;
-  const statusLabel = to_app_status_name(application.status) ?? "Pending";
-  let statusBadgeType: "destructive" | "supportive" | "warning" = "warning";
-  if (statusLabel === "Rejected") statusBadgeType = "destructive";
+  // A still-pending application whose listing has since closed reads as
+  // "Pending" forever otherwise — no stored state needed, since is_active/
+  // is_deleted already ride along on application.job (plan D7).
+  const isClosedWhilePending = application.status === 0 && isUnavailable;
+  const statusLabel = isClosedWhilePending
+    ? "Listing closed"
+    : (to_app_status_name(application.status) ?? "Pending");
+  let statusBadgeType: "default" | "destructive" | "supportive" | "warning" =
+    "warning";
+  if (isClosedWhilePending) statusBadgeType = "default";
+  else if (statusLabel === "Rejected") statusBadgeType = "destructive";
   else if (statusLabel === "Accepted" || statusLabel === "Hired")
     statusBadgeType = "supportive";
   else statusBadgeType = "warning";

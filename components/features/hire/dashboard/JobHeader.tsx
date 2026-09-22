@@ -1,7 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { Button } from "@betterinternship/components";
 import { Toggle } from "@/components/ui/toggle";
-import { useOwnedJobs } from "@/hooks/use-employer-api";
+import {
+  useEmployerApplications,
+  useOwnedJobs,
+} from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 import { cn } from "@betterinternship/components";
 import { ArrowLeft, Edit, Info, Trash2, Users } from "lucide-react";
@@ -36,13 +39,24 @@ export default function JobHeader({
   const [togglingActive, setTogglingActive] = useState(false);
   const openNotificationsRequiredModal = useNotificationsRequiredModal();
 
+  // Counts feed the close-listing warning (plan §4.3) — already loaded here,
+  // no new endpoint needed.
+  const { employer_applications } = useEmployerApplications();
+  const jobApplications = employer_applications.filter(
+    (app) => app.job_id === job.id && app.visibility === "visible",
+  );
+  const pendingCount = jobApplications.filter((app) => app.status === 0).length;
+  const shortlistedCount = jobApplications.filter(
+    (app) => app.status === 1,
+  ).length;
+
   const handleBack = () => {
     if (backHref) return router.replace(backHref);
     router.back();
   };
 
-  const handleToggleActive = async () => {
-    if (!job.id || job.paused) return;
+  const performToggleActive = async () => {
+    if (!job.id) return;
     setTogglingActive(true);
     try {
       const updates = { is_active: !job.is_active };
@@ -58,6 +72,32 @@ export default function JobHeader({
     } finally {
       setTogglingActive(false);
     }
+  };
+
+  const handleToggleActive = async () => {
+    if (!job.id || job.paused) return;
+
+    // Closing (active -> inactive) with unanswered applicants gets a warning
+    // first — not a gate, and reopening never shows it (plan §4.3/D3).
+    if (job.is_active && pendingCount > 0) {
+      modalRegistry.closeListing.open({
+        jobTitle: job.title ?? "this listing",
+        pendingCount,
+        shortlistedCount,
+        isProcessing: togglingActive,
+        onConfirm: () => {
+          modalRegistry.closeListing.close();
+          void performToggleActive();
+        },
+        onReviewFirst: () => {
+          modalRegistry.closeListing.close();
+          router.push(`/dashboard/manage?jobId=${job.id}&filter=pending`);
+        },
+      });
+      return;
+    }
+
+    await performToggleActive();
   };
 
   const handleReEnable = async () => {
@@ -89,6 +129,10 @@ export default function JobHeader({
   const handleDelete = () => {
     modalRegistry.deleteListing.open({
       job,
+      // Deleting an already-inactive listing is not a transition and
+      // notifies no one (D10), so the harder copy only names a count while
+      // the listing is still active.
+      pendingApplicantCount: job.is_active ? pendingCount : 0,
       isProcessing: saving,
       onConfirm: () => {
         if (job.id) {

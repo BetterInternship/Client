@@ -147,6 +147,11 @@ export function DigestOptoutModalContent({
         </div>
       </ScrollArea>
 
+      <p className="text-xs text-gray-500">
+        Pending applicants on the listings you close will be notified that the
+        listing has closed.
+      </p>
+
       <div className="mt-3 flex flex-col gap-1">
         <Button
           variant="outline"

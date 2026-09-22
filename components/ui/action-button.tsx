@@ -1,9 +1,9 @@
 import { LucideIcon } from "lucide-react";
-import { cn } from "@betterinternship/components";
 
 export const ActionButton = ({
   icon: Icon,
-  label = "Button",
+  label,
+  disabledLabel,
   onClick,
   enabled = true,
   destructive = false,
@@ -13,6 +13,8 @@ export const ActionButton = ({
 }: {
   icon: LucideIcon;
   label?: string;
+  /** Tooltip shown while disabled; falls back to `label` when omitted. */
+  disabledLabel?: string;
   onClick: (e: any) => void;
   enabled?: boolean;
   destructive?: boolean;
@@ -25,11 +27,18 @@ export const ActionButton = ({
       <button
         data-destructive={destructive}
         disabled={!enabled}
-        aria-label={label}
-        className={cn(
-          "group relative flex items-center justify-center rounded-[0.33em] p-2 transition enabled:data-[destructive=true]:hover:bg-destructive/25 enabled:data-[destructive=true]:hover:text-red-600 enabled:data-[destructive=false]:hover:bg-primary/25 disabled:cursor-not-allowed disabled:text-gray-500 disabled:hover:bg-transparent",
-          className,
-        )}
+        className="
+          group
+          relative
+          flex justify-center items-center p-2 transition rounded-[0.33em]
+          enabled:data-[destructive=true]:hover:text-red-600
+          enabled:data-[destructive=true]:hover:bg-destructive/25
+          enabled:data-[destructive=false]:hover:bg-primary/25
+
+          disabled:text-gray-500
+          disabled:cursor-not-allowed
+          disabled:hover:bg-transparent
+        "
         onClick={onClick}
       >
         {notification && (
