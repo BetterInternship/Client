@@ -16,10 +16,10 @@ export default function AllowLanding({
   const hideHeader = isStudentLanding || isAuthRoute;
 
   return (
-    <div className="h-svh flex flex-col overflow-y-auto">
+    <>
       <Suspense>{!hideHeader && <HireAppHeader />}</Suspense>
-      <div className="grow overflow-auto flex flex-col ">{children}</div>
+      <div className="flex min-h-0 grow flex-col">{children}</div>
       {!isStudentLanding && <Footer />}
-    </div>
+    </>
   );
 }
