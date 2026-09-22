@@ -7,7 +7,6 @@ import {
   Button,
   PageContainer,
   Card,
-  PageHeader,
   StatusNotice,
 } from "@betterinternship/components";
 import { useProfileData, useJobData } from "@/lib/api/student.data.api";
