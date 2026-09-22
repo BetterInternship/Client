@@ -169,7 +169,7 @@ function MyJobsPageInner() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="sticky top-0 z-10 mb-8 flex w-full bg-white">
+        <TabsList className="sticky top-16 md:top-20 z-10 mb-8 flex w-full bg-white">
           <TabsTrigger value="applications" className={tabTriggerClassName}>
             Applications
             <span className="ml-1 max-[374px]:hidden text-muted-foreground">

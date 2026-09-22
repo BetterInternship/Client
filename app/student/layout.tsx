@@ -119,14 +119,12 @@ const HTMLContent = ({
                   <AppMQJobsProvider>
                     <FilloutJobsProvider>
                       <ModalProvider>
-                        <AllowLanding>
-                          <div className="h-screen bg-background overflow-hidden flex flex-col">
-                            <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
-                              {children}
-                            </div>
-                            <MobileNavWrapper />
+                        <div className="h-screen bg-background overflow-hidden flex flex-col">
+                          <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                            <AllowLanding>{children}</AllowLanding>
                           </div>
-                        </AllowLanding>
+                          <MobileNavWrapper />
+                        </div>
                       </ModalProvider>
                     </FilloutJobsProvider>
                   </AppMQJobsProvider>

@@ -426,7 +426,7 @@ export default function JobHeader({
   );
 
   return (
-    <div className="sticky top-0 z-30 bg-white">
+    <div className="sticky top-16 md:top-20 z-30 bg-white/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
         {isMobile ? (
           <div className="flex flex-col gap-3">

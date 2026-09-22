@@ -122,9 +122,10 @@ export function SearchResultsDesktop({
       </div>
 
       {/* Right: Details */}
-      <div className="w-2/3 flex flex-col overflow-hidden p-6">
+      <div className="w-2/3 flex flex-col overflow-hidden">
         {selectedJob?.id ? (
           <JobDetails
+            className="p-6"
             user={{
               github_link: profileData?.github_link ?? null,
               portfolio_link: profileData?.portfolio_link ?? null,

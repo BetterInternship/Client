@@ -724,6 +724,7 @@ export function JobDetails({
   user,
   actions = [],
   applyDisabledText = "Complete required items to apply.",
+  className,
 }: {
   job: Job;
   user?: {
@@ -732,6 +733,7 @@ export function JobDetails({
   };
   actions?: React.ReactNode[];
   applyDisabledText?: string;
+  className?: string;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -745,7 +747,7 @@ export function JobDetails({
 
   return (
     <>
-      <div className={cn("flex-1 overflow-y-auto space-y-5")}>
+      <div className={cn("flex-1 overflow-y-auto space-y-5", className)}>
         {job.hibernating && <HibernatingListingBanner job={job} />}
         <HeaderWithActions
           job={job}
