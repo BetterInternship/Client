@@ -10,8 +10,17 @@ import type {
   CreateJobChallengeListingDto,
   CreateJobDto,
   DeactivateBulkJobsDto,
+  DeactivateBulkResponse,
+  JobResponse,
+  JobSearchResponse,
   JobsControllerSearchParams,
+  OwnedJobsResponse,
+  PublicJobResponse,
+  PublicJobsResponse,
+  SavedJobsResponse,
+  ShareLinkResponse,
   UpdateJobDto,
+  WaitlistedResponse,
 } from "../../models";
 
 import { careerFetch } from "../../../career-fetch";
@@ -22,8 +31,8 @@ export const getJobsControllerFindAllListedUrl = () => {
 
 export const jobsControllerFindAllListed = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerFindAllListedUrl(), {
+): Promise<PublicJobsResponse> => {
+  return careerFetch<PublicJobsResponse>(getJobsControllerFindAllListedUrl(), {
     ...options,
     method: "GET",
   });
@@ -35,8 +44,8 @@ export const getJobsControllerGetSavedUrl = () => {
 
 export const jobsControllerGetSaved = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerGetSavedUrl(), {
+): Promise<SavedJobsResponse> => {
+  return careerFetch<SavedJobsResponse>(getJobsControllerGetSavedUrl(), {
     ...options,
     method: "GET",
   });
@@ -48,8 +57,8 @@ export const getJobsControllerGetOwnedUrl = () => {
 
 export const jobsControllerGetOwned = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerGetOwnedUrl(), {
+): Promise<OwnedJobsResponse> => {
+  return careerFetch<OwnedJobsResponse>(getJobsControllerGetOwnedUrl(), {
     ...options,
     method: "GET",
   });
@@ -61,8 +70,8 @@ export const getJobsControllerGetWaitlistedUrl = () => {
 
 export const jobsControllerGetWaitlisted = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerGetWaitlistedUrl(), {
+): Promise<WaitlistedResponse> => {
+  return careerFetch<WaitlistedResponse>(getJobsControllerGetWaitlistedUrl(), {
     ...options,
     method: "GET",
   });
@@ -89,8 +98,8 @@ export const getJobsControllerSearchUrl = (
 export const jobsControllerSearch = async (
   params?: JobsControllerSearchParams,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerSearchUrl(params), {
+): Promise<JobSearchResponse> => {
+  return careerFetch<JobSearchResponse>(getJobsControllerSearchUrl(params), {
     ...options,
     method: "GET",
   });
@@ -103,8 +112,8 @@ export const getJobsControllerCreateUrl = () => {
 export const jobsControllerCreate = async (
   createJobDto: CreateJobDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerCreateUrl(), {
+): Promise<JobResponse> => {
+  return careerFetch<JobResponse>(getJobsControllerCreateUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -119,8 +128,8 @@ export const getJobsControllerCreateSuperUrl = () => {
 export const jobsControllerCreateSuper = async (
   createJobChallengeListingDto: CreateJobChallengeListingDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerCreateSuperUrl(), {
+): Promise<JobResponse> => {
+  return careerFetch<JobResponse>(getJobsControllerCreateSuperUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -135,8 +144,8 @@ export const getJobsControllerFindOneActiveUrl = (id: string) => {
 export const jobsControllerFindOneActive = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerFindOneActiveUrl(id), {
+): Promise<PublicJobResponse> => {
+  return careerFetch<PublicJobResponse>(getJobsControllerFindOneActiveUrl(id), {
     ...options,
     method: "GET",
   });
@@ -150,8 +159,8 @@ export const jobsControllerUpdate = async (
   id: string,
   updateJobDto: UpdateJobDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerUpdateUrl(id), {
+): Promise<JobResponse> => {
+  return careerFetch<JobResponse>(getJobsControllerUpdateUrl(id), {
     ...options,
     method: "PUT",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -180,8 +189,8 @@ export const getJobsControllerFindOneUrl = (id: string) => {
 export const jobsControllerFindOne = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerFindOneUrl(id), {
+): Promise<JobResponse> => {
+  return careerFetch<JobResponse>(getJobsControllerFindOneUrl(id), {
     ...options,
     method: "GET",
   });
@@ -207,13 +216,16 @@ export const getJobsControllerDeactivateBulkUrl = () => {
 export const jobsControllerDeactivateBulk = async (
   deactivateBulkJobsDto: DeactivateBulkJobsDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerDeactivateBulkUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(deactivateBulkJobsDto),
-  });
+): Promise<DeactivateBulkResponse> => {
+  return careerFetch<DeactivateBulkResponse>(
+    getJobsControllerDeactivateBulkUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(deactivateBulkJobsDto),
+    },
+  );
 };
 
 export const getJobsControllerUnpauseUrl = (id: string) => {
@@ -265,8 +277,8 @@ export const getJobsControllerShareLinkUrl = (id: string) => {
 export const jobsControllerShareLink = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getJobsControllerShareLinkUrl(id), {
+): Promise<ShareLinkResponse> => {
+  return careerFetch<ShareLinkResponse>(getJobsControllerShareLinkUrl(id), {
     ...options,
     method: "POST",
   });

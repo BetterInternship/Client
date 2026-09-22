@@ -21,6 +21,30 @@ import {
   applicationsControllerMarkViewed,
   applicationsControllerUpdate,
 } from "./generated/endpoints/applications/applications";
+import {
+  jobsControllerCreate,
+  jobsControllerCreateSuper,
+  jobsControllerDeactivateBulk,
+  jobsControllerDelete,
+  jobsControllerFindAllListed,
+  jobsControllerFindOne,
+  jobsControllerFindOneActive,
+  jobsControllerGetOwned,
+  jobsControllerGetSaved,
+  jobsControllerGetWaitlisted,
+  jobsControllerJoinWaitlist,
+  jobsControllerLeaveWaitlist,
+  jobsControllerSearch,
+  jobsControllerShareLink,
+  jobsControllerUnpause,
+  jobsControllerUnpauseAll,
+  jobsControllerUpdate,
+} from "./generated/endpoints/jobs/jobs";
+import type {
+  CreateJobChallengeListingDto,
+  CreateJobDto,
+  UpdateJobDto,
+} from "./generated/models";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
@@ -659,125 +683,111 @@ export interface ShareLinkResponse extends FetchResponse {
 
 export const JobService = {
   async getAllJobs() {
-    return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
+    return jobsControllerFindAllListed() as unknown as Promise<JobsResponse>;
   },
 
   async searchJobs(params: JobSearchParams = {}) {
     const join = (values?: string[]) =>
       values?.length ? values.join(",") : undefined;
 
-    return APIClient.get<JobSearchResponse>(
-      APIRouteBuilder("jobs")
-        .r("search")
-        .p({
-          page: params.page,
-          limit: params.limit,
-          search: params.search,
-          mode: join(params.mode),
-          workload: join(params.workload),
-          position: join(params.position),
-          allowance: join(params.allowance),
-          moa: join(params.moa),
-          university: params.university,
-        })
-        .build(),
-    );
+    return jobsControllerSearch({
+      page: params.page,
+      limit: params.limit,
+      // The old APIRouteBuilder dropped empty-string params entirely; the
+      // generated URL builder only drops undefined, so an empty search is
+      // normalized here to keep that same query string.
+      search: params.search || undefined,
+      mode: join(params.mode),
+      workload: join(params.workload),
+      position: join(params.position),
+      allowance: join(params.allowance),
+      moa: join(params.moa),
+      university: params.university || undefined,
+    }) as unknown as Promise<JobSearchResponse>;
   },
 
   // !! this only fetches an *active* job.
   async getJobById(jobId: string) {
-    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r(jobId).build());
+    return jobsControllerFindOneActive(
+      jobId,
+    ) as unknown as Promise<JobResponse>;
   },
 
   // sorry for confusing name
   // the one above existed prior and i don't want to break anything that depends on it
   // this one gets a single job, whether it is active or not.
   async getAnyJobById(jobId: string) {
-    return APIClient.get<JobResponse>(
-      APIRouteBuilder("jobs").r("owned").r(jobId).build(),
-    );
+    return jobsControllerFindOne(jobId) as unknown as Promise<JobResponse>;
   },
 
   async getSavedJobs() {
-    return APIClient.get<SavedJobsResponse>(
-      APIRouteBuilder("jobs").r("saved").build(),
-    );
+    return jobsControllerGetSaved() as unknown as Promise<SavedJobsResponse>;
   },
 
   async getOwnedJobs() {
-    return APIClient.get<OwnedJobsResponse>(
-      APIRouteBuilder("jobs").r("owned").build(),
-    );
+    return jobsControllerGetOwned() as unknown as Promise<OwnedJobsResponse>;
   },
 
   async createJob(job: Partial<Job>) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("create").build(),
-      job,
-    );
+    // The generated DTO requires the core listing fields; the old facade
+    // accepted any partial job object, same as the rest of this batch's
+    // request-side casts (see the batch's plan notes on Date-vs-string too).
+    return jobsControllerCreate(
+      job as unknown as CreateJobDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async createSuperJob(job: CreateJobChallengeListingPayload) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("create-super").build(),
-      job,
-    );
+    return jobsControllerCreateSuper(
+      job as unknown as CreateJobChallengeListingDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async updateJob(jobId: string, job: UpdateJobChallengeListingPayload) {
-    return APIClient.put<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build(),
-      job,
-    );
+    return jobsControllerUpdate(
+      jobId,
+      job as unknown as UpdateJobDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async deleteJob(jobId: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build(),
-    );
+    return jobsControllerDelete(jobId) as unknown as Promise<FetchResponse>;
   },
 
   async unpauseJob(jobId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).r("unpause").build(),
-    );
+    return jobsControllerUnpause(jobId) as unknown as Promise<FetchResponse>;
   },
 
   async unpauseAllJobs() {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("unpause-all").build(),
-    );
+    return jobsControllerUnpauseAll() as unknown as Promise<FetchResponse>;
   },
 
   async deactivateBulk(jobIds: string[]) {
-    return APIClient.post<DeactivateBulkResponse>(
-      APIRouteBuilder("jobs").r("deactivate-bulk").build(),
-      { job_ids: jobIds },
-    );
+    return jobsControllerDeactivateBulk({
+      job_ids: jobIds,
+    }) as unknown as Promise<DeactivateBulkResponse>;
   },
 
   async joinWaitlist(jobId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
-    );
+    return jobsControllerJoinWaitlist(
+      jobId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async leaveWaitlist(jobId: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
-    );
+    return jobsControllerLeaveWaitlist(
+      jobId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async getWaitlistedJobs() {
-    return APIClient.get<WaitlistedJobsResponse>(
-      APIRouteBuilder("jobs").r("waitlisted").build(),
-    );
+    return jobsControllerGetWaitlisted() as unknown as Promise<WaitlistedJobsResponse>;
   },
 
   async mintShareLink(jobId: string) {
-    return APIClient.post<ShareLinkResponse>(
-      APIRouteBuilder("jobs").r(jobId, "share-link").build(),
-    );
+    return jobsControllerShareLink(
+      jobId,
+    ) as unknown as Promise<ShareLinkResponse>;
   },
 };
 
