@@ -41,7 +41,6 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
-  Archive,
 } from "lucide-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";

@@ -224,7 +224,6 @@ export function ApplicationRow({
                   }
                 }}
                 enabled={canArchive}
-                label="Archive"
                 disabledLabel={ARCHIVE_DISABLED_LABEL}
               />
             )}
