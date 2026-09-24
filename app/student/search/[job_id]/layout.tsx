@@ -50,6 +50,8 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: `/search/${job_id}` },
+    ...(job.is_unlisted ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title, description, images: [image], type: "website" },
     twitter: {
       card: "summary_large_image",
