@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
 import { Loader } from "@/components/ui/loader";
@@ -79,21 +80,26 @@ export function SearchResultsDesktop({
                           />
                         </div>
                       )}
-
-                      <div
+                      {/* seo optimization */}
+                      <Link
+                        href={`/search/${job.id}`}
+                        prefetch={false}
                         className={cn(
-                          "transition-all duration-300",
+                          "block transition-all duration-300",
                           isSelected(job.id) &&
-                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em] shadow-sm",
+                            "ring-1 ring-primary ring-offset-2 rounded-[0.4em] shadow-sm",
                         )}
-                        onClick={() => onJobCardClick(job)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onJobCardClick(job);
+                        }}
                       >
                         <JobCard
                           job={job}
                           selected={selectedJob?.id === job.id}
                           on_click={() => onJobCardClick(job)}
                         />
-                      </div>
+                      </Link>
                     </div>
                   ))}
                 </div>
