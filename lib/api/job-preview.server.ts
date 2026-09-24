@@ -11,6 +11,7 @@ export interface JobPreviewData {
     job_setup_ids?: number[];
     job_commitment_ids?: number[];
   } | null;
+  is_unlisted?: boolean | null;
 }
 
 /**
