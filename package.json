@@ -8,7 +8,8 @@
     "stage": "npm run build && git push origin develop",
     "publish": "npm run build && git push origin develop",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@betterinternship/components": "^2.9.5",
@@ -99,6 +100,7 @@
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
+    "patch-package": "^8.0.1",
     "postcss": "^8.5.15",
     "prettier": "^3.4.2",
     "tailwindcss": "^4",
