@@ -6,8 +6,6 @@ import type { NextRequest } from "next/server";
 const NOINDEX_HOSTS = new Set([
   "dev.betterinternship.com",
   "hire.dev.betterinternship.com",
-  "admin.iom.betterinternship.com",
-  "dev.admin.iom.betterinternship.com",
 ]);
 
 export function middleware(request: NextRequest) {
