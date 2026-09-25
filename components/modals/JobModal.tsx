@@ -48,7 +48,9 @@ export const JobModal = ({
   const needsPortfolio = !!job?.internship_preferences?.require_portfolio;
 
   return (
-    <ModalComponent ref={ref}>
+    // JobModal draws its own back/actions bar, so the wrapper's × row would
+    // stack a second header on top of it.
+    <ModalComponent ref={ref} showCloseButton={false}>
       <div className="relative flex h-[100svh] max-h-[100svh] max-w-[100svw] flex-col bg-white">
         {/* Top bar with back + actions */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
