@@ -1,16 +1,20 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ReactMarkdown from "react-markdown";
+
 /**
- * job.description is Markdown (rendered via react-markdown — see
- * MarkdownBlock in components/shared/jobs.tsx), not HTML, so a chat preview
- * needs the syntax stripped or it shows raw `#`/`*`/`[]` markup.
+ * Convert markdown to HTML using ReactMarkdown to render.
  */
-const stripMarkdown = (text: string): string =>
-  text
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_~-]+/g, " ")
+export function markdownToHtml(text: string): string {
+  return renderToStaticMarkup(React.createElement(ReactMarkdown, null, text));
+}
+
+/*
+ * Flatten markdown to plain text.
+ */
+export function markdownToPlainText(text: string): string {
+  return markdownToHtml(text)
+    .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-
-export { stripMarkdown };
+}

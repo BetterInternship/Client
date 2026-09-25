@@ -1,20 +1,10 @@
 import { Job, RefsData } from "@/lib/db/db.types";
 import { createRefHelpers } from "@/lib/db/ref-lookup";
-import { stripMarkdown } from "@/lib/utils/markdown-utils";
+import { markdownToHtml } from "@/lib/utils/markdown-utils";
 
 interface RefOption {
   id: number;
   name: string;
-}
-
-/*
- * Escapes HTML characters in a string.
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }
 
 /*
@@ -97,13 +87,7 @@ export function buildJobListingSchema(
     ),
   );
 
-  const description = job.description
-    ? stripMarkdown(job.description)
-        .split(/\n{2,}/)
-        .filter(Boolean)
-        .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
-        .join("")
-    : "";
+  const description = job.description ? markdownToHtml(job.description) : "";
 
   // form schema based on https://schema.org/JobPosting
   const schema: Record<string, unknown> = {
@@ -143,7 +127,11 @@ export function buildJobListingSchema(
   }
 
   if (job.end_date && !job.is_year_round) {
-    schema.validThrough = toIsoDate(job.end_date);
+    const endDateMs = Number(job.end_date) * 1000;
+
+    if (!Number.isNaN(endDateMs)) {
+      schema.validThrough = new Date(endDateMs).toISOString();
+    }
   }
 
   if (job.salary) {

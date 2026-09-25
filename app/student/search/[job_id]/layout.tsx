@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { fetchJobPreview } from "@/lib/api/job-preview.server";
-import { stripMarkdown } from "@/lib/utils/markdown-utils";
+import { markdownToPlainText } from "@/lib/utils/markdown-utils";
 
 /**
  * Server-side metadata for a job page — the crawler-visible reason a `/l/`
@@ -29,7 +29,7 @@ export async function generateMetadata({
 
   const title = `${job.title} at ${job.employer?.name ?? "BetterInternship"}`;
   const description = job.description
-    ? stripMarkdown(job.description).slice(0, 160)
+    ? markdownToPlainText(job.description).slice(0, 160)
     : undefined;
   const image = `/search/og/${job_id}`;
 
