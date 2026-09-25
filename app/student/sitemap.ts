@@ -46,12 +46,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/companies/anteriore`,
+      url: `${baseUrl}/super-listing/anteriore`,
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/companies/fff`,
+      url: `${baseUrl}/super-listing/fff`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/super-listing/pcc`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/super-listing/sofi-ai`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/super-listing/sofi-ai-marketing`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/super-listing/miro`,
       changeFrequency: "monthly",
       priority: 0.6,
     },
