@@ -38,6 +38,13 @@ export function JobPageView({
   initialJob: Job;
 }) {
   const router = useRouter();
+
+  // check if user has in-app history to go back to, otherwise go to search page.
+  const handleBack = useCallback(() => {
+    const hasInAppHistory = (window.history.state?.idx ?? 0) > 0;
+    if (hasInAppHistory) router.back();
+    else router.push("/search");
+  }, [router]);
   const job = useJobData(jobId, { initialData: initialJob });
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
   const { isMobile } = useMobile();
@@ -82,7 +89,7 @@ export function JobPageView({
               <Button
                 size="md"
                 variant="link"
-                onClick={() => router.back()}
+                onClick={handleBack}
                 className="flex items-center gap-2 px-3 py-2"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -109,7 +116,7 @@ export function JobPageView({
                 <div className="flex items-center justify-between">
                   <Button
                     variant="ghost"
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
