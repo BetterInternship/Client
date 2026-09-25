@@ -28,3 +28,7 @@ CLAUDE.md
 AGENTS.md
 .claude/
 .claudeignore
+
+# Postman files
+.postman/
+postman/
