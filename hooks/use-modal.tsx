@@ -252,12 +252,14 @@ const ModalTemplate = (
   {
     content,
     onClose,
+    showCloseButton,
   }: {
     content?: React.ReactNode;
     onClose?: () => void;
+    showCloseButton?: boolean;
   },
 ) => {
-  const { open, close, Modal } = useModal(name, { onClose });
+  const { open, close, Modal } = useModal(name, { onClose, showCloseButton });
   return forwardRef<
     ModalHandle,
     {
@@ -281,12 +283,17 @@ export const ModalComponent = ({
   children,
   ref,
   className,
+  showCloseButton,
 }: {
   children?: React.ReactNode;
   ref?: Ref<ModalHandle | null>;
   className?: string;
+  showCloseButton?: boolean;
 }) => {
-  const M = ModalTemplate("IncompleteProfileModal", { content: children });
+  const M = ModalTemplate("IncompleteProfileModal", {
+    content: children,
+    showCloseButton,
+  });
   return <M ref={ref} className={className} />;
 };
 
