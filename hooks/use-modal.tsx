@@ -106,7 +106,10 @@ export const useModal = (
       return () => {
         console.debug(`[useModal:${name}] close -> unlock body (mobile)`);
         document.body.style.overflow = originalOverflow;
-        document.documentElement.style.removeProperty("--vh");
+        // --vh is deliberately left set: it is shared with ModalProvider, and
+        // removing it here collapses any modal still open underneath back to
+        // 100vh (taller than the visible area on iOS). Every modal re-sets it
+        // on open, so a stale value is never read.
         window.removeEventListener("resize", setVH);
         window.removeEventListener("orientationchange", setVH);
       };
