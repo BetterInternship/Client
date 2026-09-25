@@ -66,11 +66,12 @@ export function SearchResultsMobile({
                       prefetch={false}
                       className="block"
                       onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
                         e.preventDefault();
                         onJobCardClick(job);
                       }}
                     >
-                      <JobCard job={job} on_click={() => onJobCardClick(job)} />
+                      <JobCard job={job} />
                     </Link>
                   </div>
                 ))}

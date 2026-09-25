@@ -90,6 +90,7 @@ export function SearchResultsDesktop({
                             "ring-1 ring-primary ring-offset-2 rounded-[0.4em] shadow-sm",
                         )}
                         onClick={(e) => {
+                          if (e.metaKey || e.ctrlKey || e.shiftKey) return;
                           e.preventDefault();
                           onJobCardClick(job);
                         }}
@@ -97,7 +98,6 @@ export function SearchResultsDesktop({
                         <JobCard
                           job={job}
                           selected={selectedJob?.id === job.id}
-                          on_click={() => onJobCardClick(job)}
                         />
                       </Link>
                     </div>
