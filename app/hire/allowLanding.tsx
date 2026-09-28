@@ -19,7 +19,11 @@ export default function AllowLanding({
     <>
       <Suspense>{!hideHeader && <HireAppHeader />}</Suspense>
       <div className="flex min-h-0 grow flex-col">{children}</div>
-      {!isStudentLanding && <Footer />}
+      {!isStudentLanding && (
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+      )}
     </>
   );
 }
