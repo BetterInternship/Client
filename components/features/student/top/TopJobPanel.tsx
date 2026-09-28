@@ -26,6 +26,7 @@ export function TopJobPanel({
   onNext,
   onClose,
   onApply,
+  disabled,
 }: {
   job: Job;
   profile: PublicUser | null;
@@ -35,6 +36,7 @@ export function TopJobPanel({
   onNext: () => void;
   onClose: () => void;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
+  disabled?: boolean;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -100,13 +102,14 @@ export function TopJobPanel({
           portfolio_link: profile?.portfolio_link ?? null,
         }}
         actions={[
-          <ShareJobButton job={job} key="share" />,
-          <SaveJobButton job={job} key="save" />,
+          <ShareJobButton job={job} key="share" disabled={disabled} />,
+          <SaveJobButton job={job} key="save" disabled={disabled} />,
           <ApplyToJobButton
             profile={profile}
             job={job}
             onApply={onApply}
             key="apply"
+            disabled={disabled}
           />,
         ]}
       />

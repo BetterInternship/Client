@@ -6,7 +6,13 @@ import { Job } from "@/lib/db/db.types";
 import { cn } from "@betterinternship/components";
 import { useJobActions } from "@/lib/api/student.actions.api";
 
-export const SaveJobButton = ({ job }: { job: Job }) => {
+export const SaveJobButton = ({
+  job,
+  disabled,
+}: {
+  job: Job;
+  disabled?: boolean;
+}) => {
   const jobs = useJobStatus();
   const auth = useAuthContext();
   const jobActions = useJobActions();
@@ -22,9 +28,10 @@ export const SaveJobButton = ({ job }: { job: Job }) => {
   return (
     <Button
       variant="outline"
-      onClick={() => handleSave()}
+      onClick={() => !disabled && handleSave()}
       size={"md"}
       className="!p-4"
+      disabled={disabled}
       scheme={jobs.isJobSaved(job.id ?? "") ? "destructive" : "default"}
     >
       <Heart

@@ -32,6 +32,7 @@ export const JobModal = ({
   user,
   onPrev,
   onNext,
+  disabled,
 }: {
   job: Job;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
@@ -46,6 +47,7 @@ export const JobModal = ({
   // header exactly as it was for them.
   onPrev?: { disabled: boolean; onClick: () => void };
   onNext?: { disabled: boolean; onClick: () => void };
+  disabled?: boolean;
 }) => {
   const profile = useProfileData();
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
@@ -182,12 +184,13 @@ export const JobModal = ({
         {!job.hibernating && (
           <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
             <div className="flex gap-3">
-              <SaveJobButton job={job} />
+              <SaveJobButton job={job} disabled={disabled} />
               <ApplyToJobButton
                 profile={profile.data}
                 job={job}
                 onApply={onApply}
                 className="w-full"
+                disabled={disabled}
               />
             </div>
           </div>
@@ -223,6 +226,7 @@ export const JobModal = ({
                   job={job}
                   className="w-full justify-start"
                   onOpen={() => setIsActionsSheetOpen(false)}
+                  disabled={disabled}
                 />
               )}
             </div>

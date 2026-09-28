@@ -17,11 +17,13 @@ export const ApplyToJobButton = ({
   job,
   onApply,
   className,
+  disabled,
 }: {
   profile: PublicUser | null;
   job: Job;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
   className?: string;
+  disabled?: boolean;
 }) => {
   const auth = useAuthContext();
   const modalRegistry = useModalRegistry();
@@ -32,7 +34,9 @@ export const ApplyToJobButton = ({
   // A hibernating listing can't be applied to — the CTA becomes a job alert
   // toggle instead, everywhere ApplyToJobButton is rendered.
   if (job.hibernating) {
-    return <ListingAlertButton job={job} className={className} />;
+    return (
+      <ListingAlertButton job={job} className={className} disabled={disabled} />
+    );
   }
 
   /**
@@ -69,10 +73,10 @@ export const ApplyToJobButton = ({
 
   return (
     <Button
-      disabled={applied}
+      disabled={disabled || applied}
       scheme={applied ? "supportive" : "primary"}
       size={"md"}
-      onClick={() => !applied && handleApply()}
+      onClick={() => !disabled && !applied && handleApply()}
       className={cn(
         className,
         isSuperListing &&

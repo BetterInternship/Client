@@ -28,6 +28,7 @@ export function TopJobCard({
   isSelected,
   onToggleSelect,
   onApply,
+  disabled,
 }: {
   job: Job;
   profile: PublicUser | null;
@@ -36,6 +37,7 @@ export function TopJobCard({
   isSelected: boolean;
   onToggleSelect: (job: Job) => void;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
+  disabled?: boolean;
 }) {
   const waitlists = useWaitlistsData();
   const onAlert = waitlists.isWaitlisted(job.id);
@@ -97,7 +99,12 @@ export function TopJobCard({
             setter={() => onToggleSelect(job)}
           />
         </div>
-        <ApplyToJobButton profile={profile} job={job} onApply={onApply} />
+        <ApplyToJobButton
+          profile={profile}
+          job={job}
+          onApply={onApply}
+          disabled={disabled}
+        />
       </div>
     </Card>
   );

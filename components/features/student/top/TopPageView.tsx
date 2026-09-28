@@ -29,9 +29,11 @@ import type { PublicTopPage } from "@/lib/api/top-page.server";
 export function TopPageView({
   page,
   initialJobs,
+  disabled,
 }: {
   page: PublicTopPage;
   initialJobs: Job[];
+  disabled?: boolean;
 }) {
   const { isMobile } = useMobile();
   const profile = useProfileData();
@@ -120,7 +122,7 @@ export function TopPageView({
         }}
         onUnselectPage={() => unselectAllOnPage(jobs)}
         onSelectPage={() => selectAllOnPage(jobs)}
-        onApply={openMassApply}
+        onApply={disabled ? () => {} : openMassApply}
         onToggleSelect={toggleSelect}
       />
 
@@ -155,6 +157,7 @@ export function TopPageView({
               isSelected={isSelected(job.id)}
               onToggleSelect={toggleSelect}
               onApply={({ resumeId }) => applyToJob(job, resumeId)}
+              disabled={disabled}
             />
           ))}
         </div>
@@ -170,6 +173,7 @@ export function TopPageView({
           onNext={() => goTo(openIndex + 1)}
           onClose={handleClose}
           onApply={({ resumeId }) => applyToJob(openJob, resumeId)}
+          disabled={disabled}
         />
       )}
 
@@ -186,6 +190,7 @@ export function TopPageView({
             disabled: openIndex >= jobs.length - 1,
             onClick: () => goTo(openIndex + 1),
           }}
+          disabled={disabled}
         />
       )}
 
