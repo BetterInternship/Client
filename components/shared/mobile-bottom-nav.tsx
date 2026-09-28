@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Home, Newspaper, BookA, User, Settings, LogOut } from "lucide-react";
 import {
@@ -76,60 +76,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const pathname = usePathname();
   const { logout, isAuthenticated } = useAuthContext();
   const profile = useProfileData();
-  const authenticated = isAuthenticated();
-  const [editing, setEditing] = useState(false);
   const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
-  useEffect(() => {
-    if (!authenticated) return;
-    let blurTimer: number | undefined;
-
-    const updateEditing = () => {
-      const element = document.activeElement;
-      setEditing(
-        element instanceof HTMLElement &&
-          (element.isContentEditable ||
-            (element instanceof HTMLInputElement &&
-              ![
-                "button",
-                "checkbox",
-                "file",
-                "hidden",
-                "radio",
-                "reset",
-                "submit",
-              ].includes(element.type)) ||
-            element instanceof HTMLTextAreaElement),
-      );
-    };
-
-    const handleFocusOut = () => {
-      window.clearTimeout(blurTimer);
-      blurTimer = window.setTimeout(updateEditing, 0);
-    };
-
-    updateEditing();
-    document.addEventListener("focusin", updateEditing);
-    document.addEventListener("focusout", handleFocusOut);
-
-    return () => {
-      document.removeEventListener("focusin", updateEditing);
-      document.removeEventListener("focusout", handleFocusOut);
-      window.clearTimeout(blurTimer);
-    };
-  }, [authenticated]);
-
   // don't display bottom nav when signed out.
-  if (!authenticated) return null;
+  if (!isAuthenticated()) return null;
 
   // Logged in: show full navigation
   return (
-    <div
-      className={cn(
-        "shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden",
-        editing && "invisible",
-      )}
-    >
+    <div className="shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden">
       <div className="flex h-16 items-center justify-around">
         {/* Search Button */}
         <NavButton
