@@ -2,20 +2,25 @@ import { LucideIcon } from "lucide-react";
 
 export const ActionButton = ({
   icon: Icon,
-  label = "Button",
+  label,
+  disabledLabel,
   onClick,
   enabled = true,
   destructive = false,
   size = 20,
   notification = false,
+  className,
 }: {
   icon: LucideIcon;
   label?: string;
+  /** Tooltip shown while disabled; falls back to `label` when omitted. */
+  disabledLabel?: string;
   onClick: (e: any) => void;
   enabled?: boolean;
   destructive?: boolean;
   size?: number;
   notification?: boolean;
+  className?: string;
 }) => {
   return (
     <>

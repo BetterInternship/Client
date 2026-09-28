@@ -2,7 +2,6 @@
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { useProfile } from "@/hooks/use-employer-api";
-import { useMobile } from "@/hooks/use-mobile";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -25,7 +24,6 @@ import {
  * @component
  */
 export function HireAppHeader() {
-  const { isMobile } = useMobile();
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const { god, proxy, exitProxy, user, logout } = useAuthContext();
@@ -57,14 +55,14 @@ export function HireAppHeader() {
   const isGodActive = pathname.startsWith("/god");
 
   const adminButton = god ? (
-    isMobile ? (
+    <>
       <button
         type="button"
         onClick={() => {
           void handleGodClick();
         }}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border border-transparent px-3 py-2 text-sm transition-colors hover:border-gray-200 hover:bg-gray-50",
+          "flex w-full items-center justify-between rounded-[0.33em] border border-transparent px-3 py-2 text-sm transition-colors hover:border-gray-200 hover:bg-gray-50 md:hidden",
           isGodActive ? "text-primary" : "text-gray-700",
         )}
       >
@@ -74,11 +72,10 @@ export function HireAppHeader() {
         </div>
         <ChevronRight className="h-4 w-4 text-gray-300" />
       </button>
-    ) : (
       <Button
         variant="ghost"
         className={cn(
-          "relative h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive!",
+          "relative hidden h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive! md:flex",
           isGodActive
             ? "text-primary"
             : "opacity-80 hover:bg-gray-100 hover:opacity-100",
@@ -90,7 +87,7 @@ export function HireAppHeader() {
         <ShieldCheck className="h-6! w-6!" strokeWidth={1.7} />
         <span className="text-xs">Administrator</span>
       </Button>
-    )
+    </>
   ) : undefined;
 
   return (

@@ -14,10 +14,6 @@ interface IAuthContext {
   ) => Promise<
     ({ user: Partial<PublicUser>; message?: string } & FetchResponse) | null
   >;
-  verify: (
-    userId: string,
-    key: string,
-  ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
   refreshAuthentication: () => Promise<Partial<PublicUser> | null>;
@@ -74,29 +70,12 @@ export const AuthContextProvider = ({
       await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
       await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
-      await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
       await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
       await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
     }
 
-    return response;
-  };
-
-  const verify = async (userId: string, key: string) => {
-    const response = await AuthService.verify(userId, key);
-    if (!response.success) return null;
-    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
-    setIsAuthenticated(true);
     return response;
   };
 
@@ -126,7 +105,6 @@ export const AuthContextProvider = ({
     <AuthContext.Provider
       value={{
         register,
-        verify,
         logout,
         refreshAuthentication,
         isAuthenticated: () => isAuthenticated,

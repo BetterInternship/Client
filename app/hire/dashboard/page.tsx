@@ -21,6 +21,7 @@ import {
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Button } from "@betterinternship/components";
 import { Pause, Plus } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented banner
 import { IomPartnershipCta } from "@/components/features/hire/iom-partnership-cta";
 
 const NORMAL_LISTING_CREATE_PATH = "/listings/create";
@@ -76,6 +77,7 @@ function MagicLinkContinuation({
 }
 
 function DashboardContent() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented banner
   const { isAuthenticated, redirectIfNotLoggedIn, user } = useAuthContext();
   const router = useRouter();
   const profile = useProfile();
@@ -108,12 +110,14 @@ function DashboardContent() {
 
   return (
     <PageContainer className="flex flex-col gap-2">
+      {/* MOA partnership banner temporarily disabled.
       {profile.data && (
         <IomPartnershipCta
           profile={profile.data}
           recruiterEmail={user?.email}
         />
       )}
+      */}
       <PageHeader
         title="Job listings"
         description={`${activeJobs.length} active listings, ${inactiveJobs.length} inactive listings`}

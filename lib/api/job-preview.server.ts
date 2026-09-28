@@ -1,4 +1,5 @@
 import "server-only";
+import { Job } from "../db/db.types";
 
 export interface JobPreviewData {
   title?: string | null;
@@ -11,6 +12,7 @@ export interface JobPreviewData {
     job_setup_ids?: number[];
     job_commitment_ids?: number[];
   } | null;
+  is_unlisted?: boolean | null;
 }
 
 /**
@@ -40,4 +42,18 @@ export async function fetchJobPreview(
   } catch {
     return null;
   }
+}
+
+// fetch full job data for a given job ID
+export async function fetchJobFull(jobId: string): Promise<Job | null> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, {
+    next: { revalidate: 300 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch job with ID ${jobId}: ${res.status}`);
+  }
+
+  const data = (await res.json()) as { job?: Job | null };
+  return data?.job ?? null;
 }

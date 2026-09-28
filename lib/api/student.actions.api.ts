@@ -34,11 +34,6 @@ export const useApplicationActions = () => {
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
     }),
-    withdraw: useMutation({
-      mutationFn: (id: string) => ApplicationService.withdrawApplication(id),
-      onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
-    }),
   };
 
   return actions;

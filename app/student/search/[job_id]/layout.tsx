@@ -1,20 +1,6 @@
 import type { Metadata } from "next";
 import { fetchJobPreview } from "@/lib/api/job-preview.server";
-
-/**
- * job.description is Markdown (rendered via react-markdown — see
- * MarkdownBlock in components/shared/jobs.tsx), not HTML, so a chat preview
- * needs the syntax stripped or it shows raw `#`/`*`/`[]` markup.
- */
-const stripMarkdown = (text: string): string =>
-  text
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_~-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+import { markdownToPlainText } from "@/lib/utils/markdown-utils";
 
 /**
  * Server-side metadata for a job page — the crawler-visible reason a `/l/`
@@ -43,13 +29,15 @@ export async function generateMetadata({
 
   const title = `${job.title} at ${job.employer?.name ?? "BetterInternship"}`;
   const description = job.description
-    ? stripMarkdown(job.description).slice(0, 160)
+    ? markdownToPlainText(job.description).slice(0, 160)
     : undefined;
   const image = `/search/og/${job_id}`;
 
   return {
     title,
     description,
+    alternates: { canonical: `/search/${job_id}` },
+    ...(job.is_unlisted ? { robots: { index: false, follow: true } } : {}),
     openGraph: { title, description, images: [image], type: "website" },
     twitter: {
       card: "summary_large_image",

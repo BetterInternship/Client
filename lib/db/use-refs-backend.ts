@@ -8,6 +8,8 @@
  */
 
 import "server-only";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import {
   College,
   University,
@@ -41,7 +43,7 @@ const db = new Kysely<DB>({
 /**
  * Fetches all refs tables on the server and returns serializable data for clients.
  */
-export const getRefsData = async (): Promise<RefsData> => {
+const getRefsDataUncached = async (): Promise<RefsData> => {
   const [
     colleges,
     universities,
@@ -104,3 +106,11 @@ export const getRefsData = async (): Promise<RefsData> => {
     domains,
   };
 };
+
+// cache refs data for one hour and catch repeat calls to reduce db calls.
+export const getRefsData = cache(
+  unstable_cache(getRefsDataUncached, ["refs-data"], {
+    revalidate: 3600,
+    tags: ["refs-data"],
+  }),
+);

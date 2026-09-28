@@ -3,9 +3,11 @@
 "use client";
 
 import { forwardRef, useImperativeHandle } from "react";
+import { useSearchParams } from "next/navigation";
 import { useApplicationSelection } from "@/hooks/use-application-selection";
 import {
   Badge,
+  StatusNotice,
   Table,
   TableBody,
   TableCell,
@@ -13,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@betterinternship/components";
-import { EmployerApplication } from "@/lib/db/db.types";
+import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -24,6 +26,7 @@ import {
   ArchiveRestore,
   Calendar,
   ContactRound,
+  Ghost,
   GraduationCap,
   ListCheck,
   Trash2,
@@ -41,6 +44,7 @@ import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
 import { FormCheckbox } from "@/components/EditForm";
 import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ActionButton } from "@/components/ui/action-button";
+import { ShareJobButton } from "../../student/job/share-job-button";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -53,6 +57,7 @@ interface ApplicationsContentProps {
     apps: EmployerApplication[],
     status?: number,
   ) => void;
+  job: Job;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -66,13 +71,34 @@ export const ApplicationsContent = forwardRef<
     onApplicationClick,
     setSelectedApplication,
     onAction,
+    job,
   },
   ref,
 ) {
   const { isMobile } = useAppContext();
 
+  // Seeds the initial tab from ?filter=, so "Review them first" on the
+  // close-listing warning can deep-link straight to the Pending tab
+  // (plan §4.3). activeFilter still lives as component state afterwards —
+  // the URL only sets where it starts.
+  const searchParams = useSearchParams();
+  const VALID_FILTERS: ApplicationFilter[] = [
+    "all",
+    "pending",
+    "shortlisted",
+    "accepted",
+    "rejected",
+    "archived",
+  ];
+  const requestedFilter = searchParams.get("filter");
+  const initialFilter =
+    requestedFilter && (VALID_FILTERS as string[]).includes(requestedFilter)
+      ? (requestedFilter as ApplicationFilter)
+      : "all";
+
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<ApplicationFilter>("all");
+  const [activeFilter, setActiveFilter] =
+    useState<ApplicationFilter>(initialFilter);
   const sortedApplications = applications.toSorted(
     (a, b) =>
       new Date(b.applied_at ?? "").getTime() -
@@ -83,7 +109,12 @@ export const ApplicationsContent = forwardRef<
 
   if (!app_statuses) return null;
 
-  const bulkStatusItems = app_statuses
+  const statusOrder = [0, 1, 4, 6, 7, 5];
+  const orderedStatuses = app_statuses.toSorted(
+    (a, b) => statusOrder.indexOf(a.id) - statusOrder.indexOf(b.id),
+  );
+
+  const bulkStatusItems = orderedStatuses
     .map((status): DropdownMenuItem => {
       // look up config for db id
       const config = DB_STATUS_MAP[status.id];
@@ -109,8 +140,8 @@ export const ApplicationsContent = forwardRef<
 
   // get statuses specifically for the rows. these use different action items.
   const getRowStatuses = (application: EmployerApplication) => {
-    return app_statuses
-      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
+    return orderedStatuses
+      .filter((status) => status.id !== 7 && status.id !== 5)
       .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
 
@@ -184,6 +215,17 @@ export const ApplicationsContent = forwardRef<
       app.status === LABEL_ID_MAP.get("rejected"),
   );
 
+  // Archiving an unfinalized applicant hides them from view while the
+  // student keeps waiting, so bulk-archive is blocked while any selected row
+  // is still pending/shortlisted (plan D3/D4/D5). Unarchiving is never
+  // gated — only the selection contents are inspected, never the checkboxes
+  // themselves.
+  const unfinalizedSelectedCount = selectedApplicationsData.filter(
+    (app) => app.status === 0 || app.status === 1,
+  ).length;
+  const bulkArchiveDisabled =
+    activeFilter !== "archived" && unfinalizedSelectedCount > 0;
+
   // separate statuses and visibility in the command bar and remove unused ones.
   const command_bar_statuses = selectedAcceptedOrRejected
     ? [""]
@@ -199,6 +241,8 @@ export const ApplicationsContent = forwardRef<
       key="archive"
       icon={activeFilter === "archived" ? ArchiveRestore : Archive}
       label={activeFilter === "archived" ? "Unarchive" : "Archive"}
+      enabled={!bulkArchiveDisabled}
+      disabledLabel={`${unfinalizedSelectedCount} of ${selectedApplications.size} selected haven't been accepted or rejected yet.`}
       onClick={() => {
         const apps = Array.from(selectedApplications)
           .map((id) => sortedApplications.find((app) => app.id === id))
@@ -324,7 +368,12 @@ export const ApplicationsContent = forwardRef<
           ))
         ) : (
           <div className="p-2">
-            <Badge>No applications under this category.</Badge>
+            <StatusNotice
+              icon={Ghost}
+              title="No applicants under this category yet."
+              description="Share your job listing to attract applicants."
+              action={<ShareJobButton job={job} />}
+            />
           </div>
         )}
       </div>
@@ -358,108 +407,109 @@ export const ApplicationsContent = forwardRef<
           </div>
         </div>
       ) : (
-        <Table className="table-auto border-separate border-spacing-0 border border-gray-200 bg-white rounded-[0.33em] overflow-hidden">
-          <TableHeader className="bg-gray-50">
-            <TableRow className="hover:bg-transparent text-left">
-              <TableHead className="h-auto p-4" onClick={toggleSelectAll}>
-                <FormCheckbox
-                  checked={allVisibleSelected}
-                  indeterminate={someVisibleSelected}
-                  setter={toggleSelectAll}
-                  disabled={visibleApplications.length === 0}
-                />
-              </TableHead>
-              <TableHead className="h-auto p-4">
-                <div className="flex items-center gap-2">
-                  <User2 size={16} />
-                  <span>Applicant</span>
-                </div>
-              </TableHead>
-              {isSuperListing ? (
-                <>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>Date applied</span>
-                    </div>
-                  </TableHead>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <ListCheck size={16} />
-                      <span>Status</span>
-                    </div>
-                  </TableHead>
-                </>
-              ) : (
-                <>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap size={16} />
-                      <span>Education</span>
-                    </div>
-                  </TableHead>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <ContactRound size={16} />
-                      <span>Crediting</span>
-                    </div>
-                  </TableHead>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>Expected start date</span>
-                    </div>
-                  </TableHead>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>Date applied</span>
-                    </div>
-                  </TableHead>
-                  <TableHead className="h-auto p-4">
-                    <div className="flex items-center gap-2">
-                      <ListCheck size={16} />
-                      <span>Status</span>
-                    </div>
-                  </TableHead>
-                </>
-              )}
-              <TableHead className="h-auto p-4"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {visibleApplications.length ? (
-              visibleApplications.map((application, index) => (
-                <ApplicationRow
-                  key={application.id}
-                  index={index}
-                  application={application}
-                  isSuperListing={isSuperListing}
-                  onView={(v) => {
-                    if (selectedApplications.size === 0) {
-                      onApplicationClick(application);
-                    } else {
-                      toggleSelect(application.id!, v);
-                    }
-                  }}
-                  setSelectedApplication={setSelectedApplication}
-                  checkboxSelected={selectedApplications.has(application.id!)}
-                  onToggleSelect={(v) => toggleSelect(application.id!, v)}
-                  onAction={onAction}
-                  statuses={getRowStatuses(application)}
-                />
-              ))
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell>
-                  <Badge className="m-2">
-                    No applications under this category.
-                  </Badge>
-                </TableCell>
+        <>
+          <Table className="border-separate border-spacing-0 border border-gray-200 rounded-[0.33em] overflow-hidden">
+            <TableHeader className="bg-gray-50">
+              <TableRow className="hover:bg-transparent text-left">
+                <TableHead className="h-auto p-4" onClick={toggleSelectAll}>
+                  <FormCheckbox
+                    checked={allVisibleSelected}
+                    indeterminate={someVisibleSelected}
+                    setter={toggleSelectAll}
+                    disabled={visibleApplications.length === 0}
+                  />
+                </TableHead>
+                <TableHead className="h-auto p-4">
+                  <div className="flex items-center gap-2">
+                    <User2 size={16} />
+                    <span>Applicant</span>
+                  </div>
+                </TableHead>
+                {isSuperListing ? (
+                  <>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} />
+                        <span>Date applied</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <ListCheck size={16} />
+                        <span>Status</span>
+                      </div>
+                    </TableHead>
+                  </>
+                ) : (
+                  <>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap size={16} />
+                        <span>Education</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <ContactRound size={16} />
+                        <span>Crediting</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} />
+                        <span>Expected start date</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} />
+                        <span>Date applied</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="h-auto p-4">
+                      <div className="flex items-center gap-2">
+                        <ListCheck size={16} />
+                        <span>Status</span>
+                      </div>
+                    </TableHead>
+                  </>
+                )}
+                <TableHead className="h-auto p-4"></TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {visibleApplications.length > 0 &&
+                visibleApplications.map((application, index) => (
+                  <ApplicationRow
+                    key={application.id}
+                    index={index}
+                    application={application}
+                    isSuperListing={isSuperListing}
+                    onView={(v) => {
+                      if (selectedApplications.size === 0) {
+                        onApplicationClick(application);
+                      } else {
+                        toggleSelect(application.id!, v);
+                      }
+                    }}
+                    setSelectedApplication={setSelectedApplication}
+                    checkboxSelected={selectedApplications.has(application.id!)}
+                    onToggleSelect={(v) => toggleSelect(application.id!, v)}
+                    onAction={onAction}
+                    statuses={getRowStatuses(application)}
+                  />
+                ))}
+            </TableBody>
+          </Table>
+          {visibleApplications.length === 0 && (
+            <StatusNotice
+              icon={Ghost}
+              title="No applicants under this category yet."
+              description="Share your job listing to attract applicants."
+              action={<ShareJobButton job={job} />}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -6,9 +6,7 @@ import { getRefsData } from "@/lib/db/use-refs-backend";
 import { createRefHelpers } from "@/lib/db/ref-lookup";
 import { JobAllowance, JobMode, JobPayFreq, JobType } from "@/lib/db/db.types";
 
-export const contentType = "image/png";
-
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };

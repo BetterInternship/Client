@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
 import { Loader } from "@/components/ui/loader";
@@ -43,11 +44,7 @@ export function SearchResultsMobile({
             {jobsPage.length ? (
               <div className="space-y-4">
                 {jobsPage.map((job) => (
-                  <div
-                    key={job.id}
-                    className="relative group"
-                    onClick={() => onJobCardClick(job)}
-                  >
+                  <div key={job.id} className="relative group">
                     {!job.challenge && !job.hibernating && (
                       <div
                         className={cn("absolute right-4 top-5 z-10 p-1")}
@@ -63,7 +60,19 @@ export function SearchResultsMobile({
                       </div>
                     )}
 
-                    <JobCard job={job} on_click={() => onJobCardClick(job)} />
+                    {/* seo optimization */}
+                    <Link
+                      href={`/search/${job.id}`}
+                      prefetch={false}
+                      className="block"
+                      onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+                        e.preventDefault();
+                        onJobCardClick(job);
+                      }}
+                    >
+                      <JobCard job={job} />
+                    </Link>
                   </div>
                 ))}
               </div>

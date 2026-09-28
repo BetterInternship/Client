@@ -44,6 +44,7 @@ const imageOrigins = [
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdnjs.cloudflare.com https://*.posthog.com;
+  worker-src 'self' blob: https://cdnjs.cloudflare.com;
   frame-src 'self' http://localhost:* ${connectOrigins};
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: http://localhost:* ${imageOrigins};
@@ -61,7 +62,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [
@@ -142,7 +143,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms|robots\\.txt)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });

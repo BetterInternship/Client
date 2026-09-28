@@ -19,11 +19,9 @@ export function HireAuthShell({
   title: string;
 }) {
   return (
-    <div className="h-full min-h-0 w-full overflow-hidden bg-white">
-      <div className="grid h-full min-h-0 w-full grid-cols-1 lg:grid-cols-5">
-        <aside className="relative hidden min-h-0 overflow-x-hidden overflow-y-auto bg-gray-900 lg:col-span-3 lg:block">
-          <Image src="/bg2.png" alt="" fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-white/10" />
+    <div className="min-h-full w-full overflow-visible bg-white lg:h-full lg:min-h-0 lg:overflow-hidden">
+      <div className="grid min-h-full w-full grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-5">
+        <aside className="hidden min-h-0 overflow-x-hidden overflow-y-auto bg-white lg:col-span-3 lg:block">
           <div className="relative flex h-full flex-col justify-between p-8 xl:p-12">
             <div className="flex items-center gap-2 text-gray-900">
               <div className="rounded-full shadow-md">
@@ -38,7 +36,7 @@ export function HireAuthShell({
             </div>
 
             <div className="mx-auto w-full max-w-2xl">
-              <div className="rotate-[-1.25deg] rounded-[0.33em] border border-white/70 bg-white/95 p-9 shadow-2xl shadow-black/30 backdrop-blur-sm">
+              <div className="rotate-[-1.25deg] rounded-[0.33em] border border-gray-200 bg-white p-9 shadow-2xl shadow-black/30">
                 <div className="flex items-start justify-between gap-5 border-b border-gray-200 pb-5">
                   <div>
                     <p className="text-2xl font-semibold text-gray-900">
@@ -98,7 +96,7 @@ export function HireAuthShell({
           </div>
         </aside>
 
-        <main className="flex w-full items-center border-gray-300 bg-white px-5 py-10 lg:col-span-2 lg:min-h-screen lg:border-l lg:px-8 xl:px-12">
+        <main className="flex w-full items-start border-gray-300 bg-white px-5 py-10 lg:col-span-2 lg:min-h-screen lg:items-center lg:border-l lg:px-8 xl:px-12">
           <div className={cn("mx-auto w-full max-w-md", className)}>
             <div className="mb-8 flex items-center gap-2">
               <Image

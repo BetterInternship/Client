@@ -1,6 +1,11 @@
 "use client";
 
-import { useEmployerLoginMetrics, useWeeklyStats } from "@/lib/api/god.api";
+import {
+  useEmployerLoginMetrics,
+  useRefreshEmployerLoginMetrics,
+  useWeeklyStats,
+} from "@/lib/api/god.api";
+import { RefreshCw } from "lucide-react";
 import { useMemo } from "react";
 
 function WeeklyChart({ data }: { data: { week_start: string; applications: number }[] }) {
@@ -57,7 +62,9 @@ function WeeklyChart({ data }: { data: { week_start: string; applications: numbe
 
 export default function GodStatsPage() {
   const { data, isFetching } = useWeeklyStats();
-  const { data: loginMetricsData } = useEmployerLoginMetrics();
+  const { data: loginMetricsData, isLoading: isLoginMetricsLoading } =
+    useEmployerLoginMetrics();
+  const refreshLoginMetrics = useRefreshEmployerLoginMetrics();
 
   const stats = data?.stats ?? [];
   const tableStats = useMemo(() => [...stats].reverse(), [stats]);
@@ -69,38 +76,66 @@ export default function GodStatsPage() {
         Weekly Application Stats
       </h1>
 
-      {loginMetrics && (
-        <section className="mb-6">
-          <h2 className="text-sm font-medium text-slate-600 mb-3">
+      <section className="mb-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-medium text-slate-600">
             Employer Login Stats
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              label="Logged In This Week"
-              value={`${loginMetrics.logged_in_this_week_percent}%`}
-              detail={`${loginMetrics.logged_in_this_week} of ${loginMetrics.total_employers} employers`}
+          <button
+            type="button"
+            onClick={() => refreshLoginMetrics.mutate()}
+            disabled={refreshLoginMetrics.isPending}
+            className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw
+              size={14}
+              className={refreshLoginMetrics.isPending ? "animate-spin" : ""}
             />
-            <MetricCard
-              label="Employers Returning"
-              value={`${loginMetrics.returning_this_week_percent}%`}
-              detail={`${loginMetrics.returning_this_week} of ${loginMetrics.previously_logged_in} previously active`}
-            />
-            <MetricCard
-              label="First-Time Logins"
-              value={loginMetrics.first_time_logins_this_week}
-              detail="This week"
-            />
-            <MetricCard
-              label="Never Logged In"
-              value={`${loginMetrics.never_logged_in_percent}%`}
-              detail={`${loginMetrics.never_logged_in} employers`}
-            />
-          </div>
-          <p className="mt-2 text-xs text-slate-400">
-            Updated nightly: {new Date(loginMetrics.cached_at).toLocaleString()}
+            {refreshLoginMetrics.isPending ? "Refreshing…" : "Refresh stats"}
+          </button>
+        </div>
+        {loginMetrics ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard
+                label="Logged In This Week"
+                value={`${loginMetrics.logged_in_this_week_percent}%`}
+                detail={`${loginMetrics.logged_in_this_week} of ${loginMetrics.total_employers} employers`}
+              />
+              <MetricCard
+                label="Employers Returning"
+                value={`${loginMetrics.returning_this_week_percent}%`}
+                detail={`${loginMetrics.returning_this_week} of ${loginMetrics.previously_logged_in} previously active`}
+              />
+              <MetricCard
+                label="First-Time Logins"
+                value={loginMetrics.first_time_logins_this_week}
+                detail="This week"
+              />
+              <MetricCard
+                label="Never Logged In"
+                value={`${loginMetrics.never_logged_in_percent}%`}
+                detail={`${loginMetrics.never_logged_in} employers`}
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              Updated: {new Date(loginMetrics.cached_at).toLocaleString()}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-slate-500">
+            {isLoginMetricsLoading
+              ? "Loading employer login stats..."
+              : "Employer login stats are unavailable."}
           </p>
-        </section>
-      )}
+        )}
+        {(refreshLoginMetrics.isError ||
+          refreshLoginMetrics.data?.success === false) && (
+          <p role="alert" className="mt-1 text-xs text-red-600">
+            Could not refresh employer login stats.
+          </p>
+        )}
+      </section>
 
       {isFetching && !stats.length && (
         <p className="text-sm text-slate-500">Loading...</p>

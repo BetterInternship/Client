@@ -14,29 +14,8 @@ import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppMQJobsProvider } from "@/components/providers/mq-jobs-provider";
 import { FilloutJobsProvider } from "@/hooks/forms/filloutFormProcess";
+import { baseUrl } from "@/lib/site-url";
 
-const baseUrl = (() => {
-  const isProduction = process.env.NODE_ENV === "production";
-  const fallbackBaseUrl = isProduction
-    ? "https://www.betterinternship.com"
-    : "https://dev.betterinternship.com";
-  const rawConfiguredUrl = process.env.NEXT_PUBLIC_CLIENT_URL?.trim();
-  const configuredUrl = rawConfiguredUrl
-    ? /^https?:\/\//i.test(rawConfiguredUrl)
-      ? rawConfiguredUrl
-      : `https://${rawConfiguredUrl}`
-    : undefined;
-
-  // Prevent localhost OG/Twitter URLs so metadata always points to shareable domains.
-  if (
-    configuredUrl &&
-    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(configuredUrl)
-  ) {
-    return fallbackBaseUrl;
-  }
-
-  return configuredUrl || fallbackBaseUrl;
-})().replace(/\/$/, "");
 const ogImage = `${baseUrl}/og.png`;
 
 export const metadata: Metadata = {
@@ -81,7 +60,7 @@ export const viewport: Viewport = {
  *
  * @component
  */
-export const RootLayout = async ({
+const RootLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -119,14 +98,12 @@ const HTMLContent = ({
                   <AppMQJobsProvider>
                     <FilloutJobsProvider>
                       <ModalProvider>
-                        <AllowLanding>
-                          <div className="h-screen bg-background overflow-hidden flex flex-col">
-                            <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
-                              {children}
-                            </div>
-                            <MobileNavWrapper />
+                        <div className="fixed inset-x-0 top-0 flex h-[100svh] flex-col overflow-hidden bg-background md:relative md:h-[100dvh]">
+                          <div className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col">
+                            <AllowLanding>{children}</AllowLanding>
                           </div>
-                        </AllowLanding>
+                          <MobileNavWrapper />
+                        </div>
                       </ModalProvider>
                     </FilloutJobsProvider>
                   </AppMQJobsProvider>

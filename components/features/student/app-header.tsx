@@ -171,9 +171,12 @@ export function StudentAppHeader({
     pathname.startsWith("/super-listing/") ||
     pathname.startsWith("/student/super-listing/");
 
+  const isListingRoute = pathname.startsWith("/search/");
+
   if (
     navigationHidden ||
     isSuperListingRoute ||
+    isListingRoute ||
     !routeExcluded(HIDE_ON_ROUTES)
   ) {
     return null;
@@ -317,7 +320,7 @@ export function StudentAppHeader({
     <>
       <div
         className={cn(
-          "relative z-[100]",
+          "sticky top-0 z-100",
           desktopHeaderHidden &&
             "max-h-0 -translate-y-2 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-out",
         )}
