@@ -29,7 +29,6 @@ import {
 } from "@/lib/utils/date-utils";
 import {
   Archive,
-  ArchiveRestore,
   Award,
   FileText,
   Phone,
@@ -379,27 +378,6 @@ export function ApplicantPage({
                       </div>
                     )}
                   </div>
-                  {onArchive && (
-                    <ActionButton
-                      icon={
-                        application.visibility === "archived"
-                          ? ArchiveRestore
-                          : Archive
-                      }
-                      label={
-                        application.visibility === "archived"
-                          ? "Unarchive"
-                          : "Archive"
-                      }
-                      enabled={
-                        application.visibility === "archived" ||
-                        application.status === 4 ||
-                        application.status === 6
-                      }
-                      disabledLabel="Accept or reject this applicant before archiving them."
-                      onClick={onArchive}
-                    />
-                  )}
                 </div>
               </div>
             </div>
