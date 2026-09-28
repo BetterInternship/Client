@@ -17,6 +17,8 @@ interface ApplicationActionModalProps {
   type: ApplicationAction;
   applicants: EmployerApplication[];
   isProcessing: boolean;
+  acceptanceMessage: string;
+  onAcceptanceMessageChange: (message: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -162,6 +164,8 @@ export default function ApplicationActionModal({
   type,
   applicants,
   isProcessing,
+  acceptanceMessage,
+  onAcceptanceMessageChange,
   onConfirm,
   onCancel,
 }: ApplicationActionModalProps) {
@@ -180,6 +184,28 @@ export default function ApplicationActionModal({
         <h4>{config.title}</h4>
       </div>
       <span>{config.description}</span>
+
+      {type === "ACCEPT" && (
+        <div className="flex flex-col gap-2">
+          <label htmlFor="acceptance-message" className="text-sm font-medium">
+            Message to the applicant{" "}
+            <span className="font-normal">(optional)</span>
+          </label>
+          <textarea
+            id="acceptance-message"
+            value={acceptanceMessage}
+            onChange={(event) => onAcceptanceMessageChange(event.target.value)}
+            placeholder="Add a personal note to the acceptance email..."
+            maxLength={2000}
+            rows={4}
+            disabled={isProcessing}
+            className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <p className="text-xs text-muted-foreground">
+            The applicant can reply directly to your email address.
+          </p>
+        </div>
+      )}
 
       {/* list applicants if mass action is performed. */}
       {isMassAction && type === "CHANGE_STATUS" && (

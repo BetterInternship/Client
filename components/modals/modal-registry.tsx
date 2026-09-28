@@ -249,12 +249,18 @@ export const useModalRegistry = () => {
           type,
           applicants,
           isProcessing,
+          acceptanceMessage,
+          onAcceptanceMessageChange,
           onConfirm,
+          onCancel,
         }: {
           type: ApplicationAction;
           applicants: EmployerApplication[];
           isProcessing: boolean;
+          acceptanceMessage: string;
+          onAcceptanceMessageChange: (message: string) => void;
           onConfirm: () => void;
+          onCancel: () => void;
         }) =>
           open(
             "application-action",
@@ -263,8 +269,10 @@ export const useModalRegistry = () => {
               type={type}
               applicants={applicants}
               isProcessing={isProcessing}
+              acceptanceMessage={acceptanceMessage}
+              onAcceptanceMessageChange={onAcceptanceMessageChange}
               onConfirm={onConfirm}
-              onCancel={() => close("application-action")}
+              onCancel={onCancel}
             />,
             {
               title: `Change application status`,
