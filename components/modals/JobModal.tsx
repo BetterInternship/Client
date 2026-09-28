@@ -4,6 +4,8 @@ import { RefObject, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   EllipsisVertical,
   X,
   MapPin,
@@ -28,6 +30,8 @@ export const JobModal = ({
   applySuccessModalRef,
   ref,
   user,
+  onPrev,
+  onNext,
 }: {
   job: Job;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
@@ -37,6 +41,11 @@ export const JobModal = ({
     github_link?: string | null;
     portfolio_link?: string | null;
   };
+  // The Top pages' mobile sheet (plan §5.2) walks the visible cards in page
+  // order; omitted entirely by every other caller, which keeps this modal's
+  // header exactly as it was for them.
+  onPrev?: { disabled: boolean; onClick: () => void };
+  onNext?: { disabled: boolean; onClick: () => void };
 }) => {
   const profile = useProfileData();
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
@@ -64,15 +73,41 @@ export const JobModal = ({
             >
               <ArrowLeft className="h-5 w-5 text-gray-500" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-              aria-label="More actions"
-              onClick={() => setIsActionsSheetOpen(true)}
-            >
-              <EllipsisVertical className="h-5 w-5 text-gray-500" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {(onPrev || onNext) && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={onPrev?.disabled ?? true}
+                    onClick={onPrev?.onClick}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                    aria-label="Previous listing"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-gray-500" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={onNext?.disabled ?? true}
+                    onClick={onNext?.onClick}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                    aria-label="Next listing"
+                  >
+                    <ChevronRight className="h-5 w-5 text-gray-500" />
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                aria-label="More actions"
+                onClick={() => setIsActionsSheetOpen(true)}
+              >
+                <EllipsisVertical className="h-5 w-5 text-gray-500" />
+              </Button>
+            </div>
           </div>
         </div>
 
