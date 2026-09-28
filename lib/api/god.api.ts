@@ -1,4 +1,4 @@
-import { Employer } from "@/lib/db/db.types";
+import { Employer, Job } from "@/lib/db/db.types";
 import {
   keepPreviousData,
   useMutation,
@@ -488,5 +488,28 @@ export function useTopPageCandidates(params: {
           .build(),
       ),
     placeholderData: keepPreviousData,
+  });
+}
+
+export interface TopPagePreviewJobsResponse extends FetchResponse {
+  jobs: Job[];
+}
+
+/**
+ * Backs the editor's "Preview" button: shapes whatever job_ids it currently
+ * has staged (possibly unsaved) the same way the public page shapes its own
+ * members, rather than reading back whatever was last saved.
+ */
+export function useTopPagePreviewJobs(jobIds: string[]) {
+  return useQuery({
+    queryKey: ["god-top-page-preview-jobs", jobIds],
+    queryFn: () =>
+      APIClient.get<TopPagePreviewJobsResponse>(
+        APIRouteBuilder("god")
+          .r("top-pages", "preview-jobs")
+          .p({ job_ids: jobIds.join(",") })
+          .build(),
+      ),
+    enabled: jobIds.length > 0,
   });
 }

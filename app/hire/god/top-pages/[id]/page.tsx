@@ -5,8 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Reorder } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, ExternalLink, GripVertical, X } from "lucide-react";
-import { Badge, Button, Input, cn } from "@betterinternship/components";
+import {
+  ArrowLeft,
+  Copy,
+  ExternalLink,
+  Eye,
+  GripVertical,
+  X,
+} from "lucide-react";
+import { Badge, Button, Input } from "@betterinternship/components";
 import {
   useGodTopPage,
   useSaveTopPage,
@@ -21,7 +28,6 @@ import {
   topHeading,
   DEFAULT_TOP_PAGE_ACCENT,
 } from "@/lib/utils/top-page-heading";
-import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { pickForeground } from "@/lib/utils/contrast";
 import { Loader } from "@/components/ui/loader";
 import { baseUrl } from "@/lib/site-url";
@@ -217,11 +223,28 @@ export default function TopPageEditorPage() {
   const visibleCount = members.filter((m) =>
     VISIBLE_STATES.includes(m.state),
   ).length;
-  const heading = topHeading(visibleCount, name.trim() || data.page.name);
-  const week = currentManilaWeek();
+  const currentPageName = data.page.name;
+  const heading = topHeading(visibleCount, name.trim() || currentPageName);
   const accent = accentHex ?? DEFAULT_TOP_PAGE_ACCENT;
   const foreground = pickForeground(accent);
   const publicUrl = `${baseUrl}/top/${data.page.slug}`;
+
+  const handlePreview = () => {
+    try {
+      sessionStorage.setItem(
+        `top-page-preview:${id}`,
+        JSON.stringify({
+          name: name.trim() || currentPageName,
+          accent_hex: accentHex,
+          job_ids: members.map((m) => m.job_id),
+        }),
+      );
+    } catch {
+      // sessionStorage can throw in a locked-down browser context — the
+      // preview tab just falls back to the last saved version instead.
+    }
+    window.open(`/top-pages-preview/${id}`, "_blank");
+  };
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
@@ -235,6 +258,10 @@ export default function TopPageEditorPage() {
           Back to Top Pages
         </Button>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handlePreview}>
+            <Eye className="h-4 w-4" />
+            Preview
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -420,14 +447,6 @@ export default function TopPageEditorPage() {
         atCap={members.length >= MAX_MEMBERS}
         existingIds={members.map((m) => m.job_id)}
       />
-
-      <TopPagePreview
-        heading={heading}
-        weekLabel={week.label}
-        accent={accent}
-        foreground={foreground}
-        members={members}
-      />
     </div>
   );
 }
@@ -534,80 +553,6 @@ function TopPageCandidatePicker({
         >
           Next
         </Button>
-      </div>
-    </div>
-  );
-}
-
-/**
- * A read-only stand-in for the public page (plan §6's "renders TopPageView
- * from the staged data"). Deliberately NOT the real TopPageView: that
- * component's Apply button assumes a logged-in student session, which this
- * god/hire context never has — wiring it in live would send the god through
- * the student Google OAuth flow the moment they clicked a sample Apply
- * button. This shows the same heading/date range/accent/order/state instead,
- * with static, disabled controls.
- */
-function TopPagePreview({
-  heading,
-  weekLabel,
-  accent,
-  foreground,
-  members,
-}: {
-  heading: string;
-  weekLabel: string;
-  accent: string;
-  foreground: string;
-  members: StagedMember[];
-}) {
-  const visible = members.filter((m) => VISIBLE_STATES.includes(m.state));
-
-  return (
-    <div className="rounded-md border bg-white p-4">
-      <h3 className="mb-3 text-sm font-semibold">Preview</h3>
-      <div className="rounded-md border bg-slate-50 p-6">
-        <h1 className="text-2xl font-semibold text-gray-900">{heading}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{weekLabel}</p>
-
-        {visible.length === 0 ? (
-          <p className="mt-6 text-sm text-muted-foreground">
-            No featured internships right now.
-          </p>
-        ) : (
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {visible.map((member) => (
-              <div
-                key={member.job_id}
-                className="rounded-[0.33em] border bg-white p-4"
-              >
-                <div className="truncate text-sm font-semibold text-gray-900">
-                  {member.title}
-                </div>
-                <div className="truncate text-xs text-muted-foreground">
-                  {member.employer_name ?? "Unknown"}
-                </div>
-                {member.state === "hibernating" && (
-                  <Badge
-                    variant="solid"
-                    type="warning"
-                    className="mt-2 w-fit text-xs"
-                  >
-                    Just missed
-                  </Badge>
-                )}
-                <div
-                  className={cn(
-                    "mt-3 inline-flex rounded-[0.33em] px-3 py-1.5 text-xs font-medium",
-                  )}
-                  style={{ backgroundColor: accent, color: foreground }}
-                >
-                  Apply
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

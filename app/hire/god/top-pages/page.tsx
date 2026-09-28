@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Button, Input } from "@betterinternship/components";
+import { Badge, Button, Input } from "@betterinternship/components";
 import {
   ListShell,
   RowCard,
@@ -33,7 +33,12 @@ function TopPageRow({
       subtitle={`/top/${page.slug}`}
       metas={
         <>
-          <Meta>{page.is_published ? "Published" : "Draft"}</Meta>
+          <Badge
+            variant="solid"
+            type={page.is_published ? "supportive" : "default"}
+          >
+            {page.is_published ? "Published" : "Unpublished"}
+          </Badge>
           <Meta>
             {page.member_count} member{page.member_count === 1 ? "" : "s"}
             {page.hidden_count ? ` (${page.hidden_count} hidden)` : ""}
@@ -63,11 +68,7 @@ export default function TopPagesListPage() {
     enabled: debouncedName.trim().length > 0,
   });
 
-  const [showUnpublished, setShowUnpublished] = useState(false);
-
   const pages = data?.pages ?? [];
-  const published = pages.filter((p) => p.is_published);
-  const unpublished = pages.filter((p) => !p.is_published);
 
   const handleCreate = async () => {
     const name = newName.trim();
@@ -89,6 +90,7 @@ export default function TopPagesListPage() {
 
   return (
     <ListShell
+      fullWidth
       toolbar={
         <div className="flex flex-wrap items-center gap-3">
           <ListSummary
@@ -130,35 +132,13 @@ export default function TopPagesListPage() {
       ) : pages.length === 0 ? (
         <li className="px-4 py-6 text-sm text-slate-500">No Top pages yet.</li>
       ) : (
-        <>
-          {published.map((page) => (
-            <TopPageRow
-              key={page.id}
-              page={page}
-              onClick={() => router.push(`/god/top-pages/${page.id}`)}
-            />
-          ))}
-          {unpublished.length > 0 && (
-            <li className="px-4 py-2">
-              <button
-                type="button"
-                className="cursor-pointer text-xs font-medium text-slate-500 hover:text-slate-700"
-                onClick={() => setShowUnpublished((v) => !v)}
-              >
-                {showUnpublished ? "Hide" : "Show"} unpublished (
-                {unpublished.length})
-              </button>
-            </li>
-          )}
-          {showUnpublished &&
-            unpublished.map((page) => (
-              <TopPageRow
-                key={page.id}
-                page={page}
-                onClick={() => router.push(`/god/top-pages/${page.id}`)}
-              />
-            ))}
-        </>
+        pages.map((page) => (
+          <TopPageRow
+            key={page.id}
+            page={page}
+            onClick={() => router.push(`/god/top-pages/${page.id}`)}
+          />
+        ))
       )}
     </ListShell>
   );
