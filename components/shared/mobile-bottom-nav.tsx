@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Home,
@@ -84,14 +84,65 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const pathname = usePathname();
   const { logout, isAuthenticated } = useAuthContext();
   const profile = useProfileData();
+  const authenticated = isAuthenticated();
+  const navRef = useRef<HTMLDivElement>(null);
   const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
+  useEffect(() => {
+    if (!authenticated) return;
+
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const viewport = window.visualViewport;
+    let focusTimer: number | undefined;
+
+    const updatePosition = () => {
+      nav.style.transform = "";
+      if (window.innerWidth >= 768) return;
+
+      const visibleBottom = viewport
+        ? viewport.offsetTop + viewport.height
+        : window.innerHeight;
+      const overlap = nav.getBoundingClientRect().bottom - visibleBottom;
+      nav.style.transform = overlap > 1 ? `translateY(-${overlap}px)` : "";
+    };
+
+    const handleFocusChange = () => {
+      window.requestAnimationFrame(updatePosition);
+      window.clearTimeout(focusTimer);
+      focusTimer = window.setTimeout(updatePosition, 350);
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("orientationchange", handleFocusChange);
+    viewport?.addEventListener("resize", updatePosition);
+    viewport?.addEventListener("scroll", updatePosition);
+    document.addEventListener("focusin", handleFocusChange);
+    document.addEventListener("focusout", handleFocusChange);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("orientationchange", handleFocusChange);
+      viewport?.removeEventListener("resize", updatePosition);
+      viewport?.removeEventListener("scroll", updatePosition);
+      document.removeEventListener("focusin", handleFocusChange);
+      document.removeEventListener("focusout", handleFocusChange);
+      window.clearTimeout(focusTimer);
+      nav.style.transform = "";
+    };
+  }, [authenticated]);
+
   // don't display bottom nav when signed out.
-  if (!isAuthenticated()) return null;
+  if (!authenticated) return null;
 
   // Logged in: show full navigation
   return (
-    <div className="shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden">
+    <div
+      ref={navRef}
+      className="shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden"
+    >
       <div className="flex h-16 items-center justify-around">
         {/* Search Button */}
         <NavButton
