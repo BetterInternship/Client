@@ -127,6 +127,21 @@ export function useEmployerLoginMetrics() {
   });
 }
 
+export function useRefreshEmployerLoginMetrics() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      APIClient.post<EmployerLoginMetricsResponse>(
+        APIRouteBuilder("god").r("stats", "employer-logins", "refresh").build(),
+      ),
+    onSuccess: (response) => {
+      if (response.success && response.stats) {
+        queryClient.setQueryData(["god-employer-login-metrics"], response);
+      }
+    },
+  });
+}
+
 export function useCreateListing() {
   const queryClient = useQueryClient();
   return useMutation({
