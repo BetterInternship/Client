@@ -98,10 +98,7 @@ const HTMLContent = ({
                   <AppMQJobsProvider>
                     <FilloutJobsProvider>
                       <ModalProvider>
-                        <div
-                          className="h-screen bg-background overflow-hidden flex flex-col"
-                          style={{ height: "100dvh" }}
-                        >
+                        <div className="flex h-[100svh] flex-col overflow-hidden bg-background md:h-[100dvh]">
                           <div className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col">
                             <AllowLanding>{children}</AllowLanding>
                           </div>

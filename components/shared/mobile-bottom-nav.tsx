@@ -1,16 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  Home,
-  Newspaper,
-  BookA,
-  User,
-  Settings,
-  LogOut,
-  LogIn,
-} from "lucide-react";
+import { Home, Newspaper, BookA, User, Settings, LogOut } from "lucide-react";
 import {
   cn,
   Popover,
@@ -85,52 +77,45 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const { logout, isAuthenticated } = useAuthContext();
   const profile = useProfileData();
   const authenticated = isAuthenticated();
-  const navRef = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
   const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
   useEffect(() => {
     if (!authenticated) return;
+    let blurTimer: number | undefined;
 
-    const nav = navRef.current;
-    if (!nav) return;
-
-    const viewport = window.visualViewport;
-    let focusTimer: number | undefined;
-
-    const updatePosition = () => {
-      nav.style.transform = "";
-      if (window.innerWidth >= 768) return;
-
-      const visibleBottom = viewport
-        ? viewport.offsetTop + viewport.height
-        : window.innerHeight;
-      const overlap = nav.getBoundingClientRect().bottom - visibleBottom;
-      nav.style.transform = overlap > 1 ? `translateY(-${overlap}px)` : "";
+    const updateEditing = () => {
+      const element = document.activeElement;
+      setEditing(
+        element instanceof HTMLElement &&
+          (element.isContentEditable ||
+            (element instanceof HTMLInputElement &&
+              ![
+                "button",
+                "checkbox",
+                "file",
+                "hidden",
+                "radio",
+                "reset",
+                "submit",
+              ].includes(element.type)) ||
+            element instanceof HTMLTextAreaElement),
+      );
     };
 
-    const handleFocusChange = () => {
-      window.requestAnimationFrame(updatePosition);
-      window.clearTimeout(focusTimer);
-      focusTimer = window.setTimeout(updatePosition, 350);
+    const handleFocusOut = () => {
+      window.clearTimeout(blurTimer);
+      blurTimer = window.setTimeout(updateEditing, 0);
     };
 
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("orientationchange", handleFocusChange);
-    viewport?.addEventListener("resize", updatePosition);
-    viewport?.addEventListener("scroll", updatePosition);
-    document.addEventListener("focusin", handleFocusChange);
-    document.addEventListener("focusout", handleFocusChange);
+    updateEditing();
+    document.addEventListener("focusin", updateEditing);
+    document.addEventListener("focusout", handleFocusOut);
 
     return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("orientationchange", handleFocusChange);
-      viewport?.removeEventListener("resize", updatePosition);
-      viewport?.removeEventListener("scroll", updatePosition);
-      document.removeEventListener("focusin", handleFocusChange);
-      document.removeEventListener("focusout", handleFocusChange);
-      window.clearTimeout(focusTimer);
-      nav.style.transform = "";
+      document.removeEventListener("focusin", updateEditing);
+      document.removeEventListener("focusout", handleFocusOut);
+      window.clearTimeout(blurTimer);
     };
   }, [authenticated]);
 
@@ -140,8 +125,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   // Logged in: show full navigation
   return (
     <div
-      ref={navRef}
-      className="shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden"
+      className={cn(
+        "shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden",
+        editing && "invisible",
+      )}
     >
       <div className="flex h-16 items-center justify-around">
         {/* Search Button */}
