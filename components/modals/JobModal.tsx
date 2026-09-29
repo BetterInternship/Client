@@ -2,6 +2,7 @@
 
 import { RefObject, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -23,6 +24,15 @@ import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
 import type { ApplyPayload } from "./components/ApplyModal";
+
+// Direction-aware slide for the modal's inner content only, mirroring
+// TopJobPanel's desktop behaviour — mobile prev/next swaps the content, the
+// sheet itself never re-animates.
+const contentVariants = {
+  enter: (direction: number) => ({ x: direction > 0 ? 32 : -32, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction: number) => ({ x: direction > 0 ? -32 : 32, opacity: 0 }),
+};
 
 export const JobModal = ({
   job,
@@ -51,6 +61,7 @@ export const JobModal = ({
 }) => {
   const profile = useProfileData();
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
+  const [direction, setDirection] = useState(1);
 
   const isSuperListing = Boolean(job?.challenge);
   const hasGithub = !!user?.github_link?.trim();
@@ -82,7 +93,10 @@ export const JobModal = ({
                     variant="ghost"
                     size="sm"
                     disabled={onPrev?.disabled ?? true}
-                    onClick={onPrev?.onClick}
+                    onClick={() => {
+                      setDirection(-1);
+                      onPrev?.onClick();
+                    }}
                     className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
                     aria-label="Previous listing"
                   >
@@ -92,7 +106,10 @@ export const JobModal = ({
                     variant="ghost"
                     size="sm"
                     disabled={onNext?.disabled ?? true}
-                    onClick={onNext?.onClick}
+                    onClick={() => {
+                      setDirection(1);
+                      onNext?.onClick();
+                    }}
                     className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
                     aria-label="Next listing"
                   >
@@ -114,68 +131,78 @@ export const JobModal = ({
         </div>
 
         {/* Scrollable content — mirrors desktop layout */}
-        <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain max-w-[100svw]">
           {job && (
-            <>
-              {job.hibernating && <HibernatingListingBanner job={job} />}
-              <div
-                className={cn(
-                  "px-4 py-4 space-y-5",
-                  job.hibernating
-                    ? "pb-[calc(env(safe-area-inset-bottom)+24px)]"
-                    : "pb-[calc(env(safe-area-inset-bottom)+96px)]",
-                )}
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={job.id}
+                custom={direction}
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.18, ease: "easeInOut" }}
               >
-                {/* Header (compact; no actions on mobile) */}
-                <HeaderCompact job={job} />
+                {job.hibernating && <HibernatingListingBanner job={job} />}
+                <div
+                  className={cn(
+                    "px-4 py-4 space-y-5",
+                    job.hibernating
+                      ? "pb-[calc(env(safe-area-inset-bottom)+24px)]"
+                      : "pb-[calc(env(safe-area-inset-bottom)+96px)]",
+                  )}
+                >
+                  {/* Header (compact; no actions on mobile) */}
+                  <HeaderCompact job={job} />
 
-                {/* Requirement chips + notice (like desktop) */}
-                {!job.hibernating && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {needsGithub && (
-                      <ReqPill ok={hasGithub} label="GitHub linked" />
-                    )}
-                    {needsPortfolio && (
-                      <ReqPill ok={hasPortfolio} label="Portfolio linked" />
-                    )}
-                  </div>
-                )}
-
-                {/* Job Details (grid) */}
-                <Section title="Job Details">
-                  <JobDetailsSummary job={job} />
-                </Section>
-                {isSuperListing && <SuperChallengeDetails job={job} mobile />}
-
-                <Divider />
-
-                {/* Role overview */}
-                <Section title="Role overview">
-                  <MarkdownBlock text={job.description} />
-                </Section>
-
-                {(job.requirements || needsGithub || needsPortfolio) && (
-                  <Divider />
-                )}
-
-                {/* Requirements */}
-                {(job.requirements || needsGithub || needsPortfolio) && (
-                  <Section title="Requirements">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {needsGithub && (
-                          <ReqPill ok={hasGithub} label="GitHub profile" />
-                        )}
-                        {needsPortfolio && (
-                          <ReqPill ok={hasPortfolio} label="Portfolio link" />
-                        )}
-                      </div>
-                      <MarkdownBlock text={job.requirements} />
+                  {/* Requirement chips + notice (like desktop) */}
+                  {!job.hibernating && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {needsGithub && (
+                        <ReqPill ok={hasGithub} label="GitHub linked" />
+                      )}
+                      {needsPortfolio && (
+                        <ReqPill ok={hasPortfolio} label="Portfolio linked" />
+                      )}
                     </div>
+                  )}
+
+                  {/* Job Details (grid) */}
+                  <Section title="Job Details">
+                    <JobDetailsSummary job={job} />
                   </Section>
-                )}
-              </div>
-            </>
+                  {isSuperListing && <SuperChallengeDetails job={job} mobile />}
+
+                  <Divider />
+
+                  {/* Role overview */}
+                  <Section title="Role overview">
+                    <MarkdownBlock text={job.description} />
+                  </Section>
+
+                  {(job.requirements || needsGithub || needsPortfolio) && (
+                    <Divider />
+                  )}
+
+                  {/* Requirements */}
+                  {(job.requirements || needsGithub || needsPortfolio) && (
+                    <Section title="Requirements">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {needsGithub && (
+                            <ReqPill ok={hasGithub} label="GitHub profile" />
+                          )}
+                          {needsPortfolio && (
+                            <ReqPill ok={hasPortfolio} label="Portfolio link" />
+                          )}
+                        </div>
+                        <MarkdownBlock text={job.requirements} />
+                      </div>
+                    </Section>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
 
