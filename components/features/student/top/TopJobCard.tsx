@@ -4,7 +4,12 @@ import Link from "next/link";
 import { Clock, HeartCrack } from "lucide-react";
 import { Badge, Card, cn } from "@betterinternship/components";
 import { Job, PublicUser } from "@/lib/db/db.types";
-import { JobBadges, JobHead, JobLocation } from "@/components/shared/jobs";
+import {
+  CreditedBadge,
+  JobBadges,
+  JobHead,
+  JobLocation,
+} from "@/components/shared/jobs";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { FormCheckbox } from "@/components/EditForm";
 import { useWaitlistsData } from "@/lib/api/student.data.api";
@@ -107,6 +112,7 @@ export function TopJobCard({
       </Link>
 
       <JobLocation location={job.location} />
+      <CreditedBadge job={job} />
       <JobBadges job={job} excludes={["moa"]} />
       {age && <p className="text-xs text-muted-foreground">{age}</p>}
 

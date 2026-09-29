@@ -205,6 +205,20 @@ export const EmployerMOA = ({
   );
 };
 
+// Listing-level attribute (set by the employer, ListingInternshipPreferences)
+// — not to be confused with a student's own credited/voluntary preference.
+export const CreditedBadge = ({ job }: { job: Job }) => {
+  if (!job.internship_preferences?.internship_types?.includes("credited")) {
+    return null;
+  }
+
+  return (
+    <Badge variant="solid" type="supportive" className="w-fit">
+      Credited
+    </Badge>
+  );
+};
+
 function SuperListingHeader({
   title,
   employer,
@@ -725,6 +739,7 @@ export function JobDetails({
   actions = [],
   applyDisabledText = "Complete required items to apply.",
   className,
+  showCredited,
 }: {
   job: Job;
   user?: {
@@ -734,6 +749,7 @@ export function JobDetails({
   actions?: React.ReactNode[];
   applyDisabledText?: string;
   className?: string;
+  showCredited?: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -754,6 +770,7 @@ export function JobDetails({
           actions={job.hibernating ? [] : actions}
           disabled={missingRequired}
         />
+        {showCredited && <CreditedBadge job={job} />}
 
         <Section title="Job Details">
           <JobDetailsSummary job={job} />

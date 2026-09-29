@@ -18,7 +18,11 @@ import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { JobDetailsSummary, SuperChallengeDetails } from "../shared/jobs";
+import {
+  CreditedBadge,
+  JobDetailsSummary,
+  SuperChallengeDetails,
+} from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
@@ -154,6 +158,7 @@ export const JobModal = ({
                 >
                   {/* Header (compact; no actions on mobile) */}
                   <HeaderCompact job={job} />
+                  <CreditedBadge job={job} />
 
                   {/* Requirement chips + notice (like desktop) */}
                   {!job.hibernating && (

@@ -133,6 +133,7 @@ export function TopJobPanel({
             <JobDetails
               className="p-6"
               job={job}
+              showCredited
               user={{
                 github_link: profile?.github_link ?? null,
                 portfolio_link: profile?.portfolio_link ?? null,
