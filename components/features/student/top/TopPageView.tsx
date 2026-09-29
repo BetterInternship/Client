@@ -17,6 +17,7 @@ import { JobModal } from "@/components/modals/JobModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { TopJobCard } from "./TopJobCard";
 import { TopJobPanel } from "./TopJobPanel";
+import { ShowMoaButton } from "./ShowMoaButton";
 import { topHeading } from "@/lib/utils/top-page-heading";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { pickForeground } from "@/lib/utils/contrast";
@@ -53,7 +54,11 @@ export function TopPageView({
     openMassApply,
   } = useMassApplySelection(page.id);
 
-  const jobs = initialJobs;
+  // Null = no filter; the Top page's own curated set is always the base —
+  // "Show companies with MOA" narrows it down, never replaces it with a
+  // wider /search result (see ShowMoaButton).
+  const [moaFilteredJobs, setMoaFilteredJobs] = useState<Job[] | null>(null);
+  const jobs = moaFilteredJobs ?? initialJobs;
 
   const [openJobId, setOpenJobId] = useState<string | null>(null);
   const openIndex = jobs.findIndex((job) => job.id === openJobId);
@@ -178,15 +183,40 @@ export function TopPageView({
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-4 flex justify-start">
+          <ShowMoaButton
+            pageJobs={initialJobs}
+            onFilterChange={setMoaFilteredJobs}
+          />
+        </div>
+
         {jobs.length === 0 ? (
           <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
-            <p>No featured internships right now.</p>
-            <Link
-              href="/search"
-              className="mt-2 inline-block text-primary underline"
-            >
-              Browse all listings
-            </Link>
+            {moaFilteredJobs !== null ? (
+              <>
+                <p>
+                  None of this week&apos;s internships have an MOA with your
+                  university yet.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMoaFilteredJobs(null)}
+                  className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
+                >
+                  Clear filter
+                </button>
+              </>
+            ) : (
+              <>
+                <p>No featured internships right now.</p>
+                <Link
+                  href="/search"
+                  className="mt-2 inline-block text-primary underline"
+                >
+                  Browse all listings
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div

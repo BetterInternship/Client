@@ -36,6 +36,7 @@ import { IomPartnershipModalContent } from "../features/hire/iom-partnership-mod
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
 import { MoaUploadModal } from "./MoaUploadModal";
+import { InviteUniversityModal } from "./components/InviteUniversityModal";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -689,6 +690,24 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("moa-upload"),
+      },
+
+      // Fire-and-forget "invite my university" (Top pages' "Show companies
+      // with MOA" button) — no backend record, see InviteUniversityModal.
+      inviteUniversity: {
+        open: ({ universityName }: { universityName: string }) =>
+          open(
+            "invite-university",
+            DefaultModalLayout,
+            <InviteUniversityModal universityName={universityName} />,
+            {
+              title: `Invite ${universityName}`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("invite-university"),
       },
 
       closeAll: () => close(),
