@@ -81,6 +81,17 @@ export function TopPageView({
 
   const handleClose = useCallback(() => setOpenJobId(null), []);
 
+  // /search's checkbox flips select mode on itself the same way (see
+  // SearchResultsDesktop/Mobile) — toggleSelect alone never does, so without
+  // this the SearchCommandBar CTA never appears.
+  const handleToggleSelect = useCallback(
+    (job: Job) => {
+      if (!selectMode) setSelectMode(true);
+      toggleSelect(job);
+    },
+    [selectMode, setSelectMode, toggleSelect],
+  );
+
   // Bound to a specific job at each ApplyToJobButton/panel call site — every
   // apply made from this page is attributed to it (D20).
   const applyToJob = useCallback(
@@ -189,7 +200,7 @@ export function TopPageView({
                 selected={job.id === openJobId}
                 onOpen={() => handleOpen(job)}
                 isSelected={isSelected(job.id)}
-                onToggleSelect={toggleSelect}
+                onToggleSelect={handleToggleSelect}
                 onApply={({ resumeId }) => applyToJob(job, resumeId)}
                 disabled={disabled}
               />

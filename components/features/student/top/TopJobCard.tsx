@@ -58,6 +58,22 @@ export function TopJobCard({
         animationFillMode: "backwards",
       }}
     >
+      {/* FormCheckbox doesn't forward a `disabled` prop to its underlying
+          Radix checkbox, so a hibernating card's box is disabled visually
+          and functionally via this wrapper instead — clicking it can never
+          reach onToggleSelect (which itself skips hibernating jobs too).
+          top-6/right-6 line up with the Card's own px-6/py-6 padding, since
+          an absolutely-positioned child offsets from the padding edge rather
+          than the content edge those values imply for normal-flow siblings. */}
+      <div
+        className={cn(
+          "absolute right-6 top-6 z-10",
+          job.hibernating && "pointer-events-none opacity-40",
+        )}
+      >
+        <FormCheckbox checked={isSelected} setter={() => onToggleSelect(job)} />
+      </div>
+
       {job.hibernating && (
         <Badge
           variant="solid"
@@ -76,7 +92,7 @@ export function TopJobCard({
       <Link
         href={`/search/${job.id}`}
         prefetch={false}
-        className="static after:absolute after:inset-0 after:content-['']"
+        className="static pr-8 after:absolute after:inset-0 after:content-['']"
         onClick={(e) => {
           if (e.metaKey || e.ctrlKey || e.shiftKey) return;
           e.preventDefault();
@@ -94,19 +110,7 @@ export function TopJobCard({
       <JobBadges job={job} excludes={["moa"]} />
       {age && <p className="text-xs text-muted-foreground">{age}</p>}
 
-      <div className="relative z-10 mt-auto flex items-center justify-between gap-2 pt-1">
-        {/* FormCheckbox doesn't forward a `disabled` prop to its underlying
-            Radix checkbox, so a hibernating card's box is disabled visually
-            and functionally via this wrapper instead — clicking it can never
-            reach onToggleSelect (which itself skips hibernating jobs too). */}
-        <div
-          className={cn(job.hibernating && "pointer-events-none opacity-40")}
-        >
-          <FormCheckbox
-            checked={isSelected}
-            setter={() => onToggleSelect(job)}
-          />
-        </div>
+      <div className="relative z-10 mt-auto flex items-center justify-end gap-2 pt-1">
         <ApplyToJobButton
           profile={profile}
           job={job}
