@@ -140,7 +140,10 @@ export function TopPageView({
   const week = currentManilaWeek();
 
   return (
-    <div style={accentStyle}>
+    <div
+      style={accentStyle}
+      className="min-h-screen w-full shrink-0 bg-gray-50"
+    >
       <SearchCommandBar
         visible={selectMode}
         selected={selectedJobsList}
