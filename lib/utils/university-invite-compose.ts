@@ -53,11 +53,12 @@ export function buildUniversityInviteSubject(universityName: string): string {
   return `${universityName} — internship partnership opportunity`;
 }
 
-export function buildUniversityInviteBody(universityName: string): string {
+export function buildUniversityInviteBody(): string {
   return [
     "Hello,",
-    `I'm a student using BetterInternship (betterinternship.com) to look for internships, and I'd love for ${universityName} to offer credited internships to students through the platform.`,
-    "Universities can get started here:\nhttps://uni.betterinternship.com",
+    "I'm looking for credited internships through BetterInternship, and they seem to be offering a way for universities to partner with companies online.",
+    "I want to see which companies currently have a MOA with the university. They'd love to help us do that, and are willing to partner us with a few different companies through: https://uni.betterinternship.com.",
+    "Please check them out. I've included them in this email so you can talk to them directly.",
     "Thank you!",
   ].join("\n\n");
 }
