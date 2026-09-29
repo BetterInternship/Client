@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { Badge, Button, Input } from "@betterinternship/components";
+import { Meta } from "@/components/features/hire/god/ui";
 import {
   useGodTopPage,
   useSaveTopPage,
@@ -49,6 +50,7 @@ interface StagedMember {
   title: string;
   employer_name: string | null;
   state: TopPageMemberState;
+  last_activated_at?: string;
 }
 
 export default function TopPageEditorPage() {
@@ -79,6 +81,7 @@ export default function TopPageEditorPage() {
         title: m.title,
         employer_name: m.employer_name,
         state: m.state,
+        last_activated_at: m.last_activated_at,
       })),
     );
     setUpdatedAt(data.page.updated_at);
@@ -96,6 +99,7 @@ export default function TopPageEditorPage() {
         title: m.title,
         employer_name: m.employer_name,
         state: m.state,
+        last_activated_at: m.last_activated_at,
       })),
     );
     setUpdatedAt(data.page.updated_at);
@@ -150,6 +154,7 @@ export default function TopPageEditorPage() {
         title: candidate.title,
         employer_name: candidate.employer_name,
         state: "live",
+        last_activated_at: candidate.last_activated_at,
       },
     ]);
   };
@@ -205,6 +210,7 @@ export default function TopPageEditorPage() {
           title: m.title,
           employer_name: m.employer_name,
           state: m.state,
+          last_activated_at: m.last_activated_at,
         })),
       );
       setUpdatedAt(page.updated_at);
@@ -258,6 +264,11 @@ export default function TopPageEditorPage() {
           Back to Top Pages
         </Button>
         <div className="flex items-center gap-2">
+          {isDirty && (
+            <Badge variant="solid" type="destructive">
+              Pending changes
+            </Badge>
+          )}
           <Button variant="outline" size="sm" onClick={handlePreview}>
             <Eye className="h-4 w-4" />
             Preview
@@ -414,8 +425,18 @@ export default function TopPageEditorPage() {
                   <div className="truncate text-sm font-medium text-slate-800">
                     {member.title}
                   </div>
-                  <div className="truncate text-xs text-slate-500">
-                    {member.employer_name ?? "Unknown"}
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <span className="truncate text-xs text-slate-500">
+                      {member.employer_name ?? "Unknown"}
+                    </span>
+                    {member.last_activated_at && (
+                      <Meta>
+                        active{" "}
+                        {new Date(
+                          member.last_activated_at,
+                        ).toLocaleDateString()}
+                      </Meta>
+                    )}
                   </div>
                 </div>
                 {member.state !== "live" && (
@@ -518,8 +539,14 @@ function TopPageCandidatePicker({
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">{c.title}</div>
-                  <div className="truncate text-xs text-slate-500">
-                    {c.employer_name ?? "Unknown"}
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <span className="truncate text-xs text-slate-500">
+                      {c.employer_name ?? "Unknown"}
+                    </span>
+                    <Meta>
+                      active{" "}
+                      {new Date(c.last_activated_at).toLocaleDateString()}
+                    </Meta>
                   </div>
                 </div>
                 <Button
