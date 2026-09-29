@@ -14,8 +14,12 @@ export default function AllowLanding({
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");
+  const isTopPage = pathname.startsWith("/top/");
   const hideSharedHeader =
-    isStudentLanding || pathname.startsWith("/companies/") || isChallengePage;
+    isStudentLanding ||
+    pathname.startsWith("/companies/") ||
+    isChallengePage ||
+    isTopPage;
 
   if (hideSharedHeader) {
     return <div className="flex min-h-0 grow flex-col bg-gray-50">{children}</div>;

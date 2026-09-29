@@ -22,6 +22,7 @@ import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
  */
 export function TopJobCard({
   job,
+  index,
   profile,
   selected,
   onOpen,
@@ -31,6 +32,7 @@ export function TopJobCard({
   disabled,
 }: {
   job: Job;
+  index?: number;
   profile: PublicUser | null;
   selected: boolean;
   onOpen: () => void;
@@ -46,9 +48,15 @@ export function TopJobCard({
   return (
     <Card
       className={cn(
-        "relative isolate flex flex-col gap-3 overflow-hidden px-6 py-6",
-        selected ? "ring-1 ring-primary ring-offset-1" : "hover:shadow-sm",
+        "relative isolate flex flex-col gap-3 overflow-hidden px-6 py-6 transition-all duration-200 motion-safe:animate-fade-in",
+        selected
+          ? "ring-1 ring-primary ring-offset-1"
+          : "hover:-translate-y-0.5 hover:shadow-[0_20px_50px_-28px_rgba(15,23,42,0.45)]",
       )}
+      style={{
+        animationDelay: `${Math.min(index ?? 0, 8) * 45}ms`,
+        animationFillMode: "backwards",
+      }}
     >
       {job.hibernating && (
         <Badge
