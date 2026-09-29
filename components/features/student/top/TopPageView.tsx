@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { useReducedMotion } from "framer-motion";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useMobile } from "@/hooks/use-mobile";
@@ -148,7 +148,7 @@ export function TopPageView({
           page. Client's shared route wrapper (AllowLanding) hides the site's
           own top nav specifically for /top/* so this banner is the only
           "header" on the page. */}
-      <header className="w-full bg-[url('/top-banner.png')] bg-cover bg-right bg-no-repeat py-14 sm:py-20">
+      <header className="w-full border-b border-gray-300 bg-[url('/top-banner.png')] bg-cover bg-right bg-no-repeat py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-semibold text-gray-900 sm:text-4xl">
             {heading}
@@ -197,19 +197,22 @@ export function TopPageView({
           </div>
         )}
 
-        {!isMobile && openJob && (
-          <TopJobPanel
-            job={openJob}
-            profile={profile.data}
-            hasPrev={openIndex > 0}
-            hasNext={openIndex < jobs.length - 1}
-            onPrev={() => goTo(openIndex - 1)}
-            onNext={() => goTo(openIndex + 1)}
-            onClose={handleClose}
-            onApply={({ resumeId }) => applyToJob(openJob, resumeId)}
-            disabled={disabled}
-          />
-        )}
+        <AnimatePresence>
+          {!isMobile && openJob && (
+            <TopJobPanel
+              key="top-job-panel"
+              job={openJob}
+              profile={profile.data}
+              hasPrev={openIndex > 0}
+              hasNext={openIndex < jobs.length - 1}
+              onPrev={() => goTo(openIndex - 1)}
+              onNext={() => goTo(openIndex + 1)}
+              onClose={handleClose}
+              onApply={({ resumeId }) => applyToJob(openJob, resumeId)}
+              disabled={disabled}
+            />
+          )}
+        </AnimatePresence>
 
         {isMobile && openJob && (
           <JobModal

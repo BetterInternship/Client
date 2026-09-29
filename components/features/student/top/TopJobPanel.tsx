@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { Job, PublicUser } from "@/lib/db/db.types";
@@ -9,6 +10,14 @@ import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+
+// Direction-aware slide for the panel's inner content only — the panel
+// itself never re-animates when switching listings (see component body).
+const contentVariants = {
+  enter: (direction: number) => ({ x: direction > 0 ? 32 : -32, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction: number) => ({ x: direction > 0 ? -32 : 32, opacity: 0 }),
+};
 
 /**
  * Desktop-only overlay panel (plan D15): slides over the page without the
@@ -39,6 +48,7 @@ export function TopJobPanel({
   disabled?: boolean;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -52,12 +62,26 @@ export function TopJobPanel({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
+  const handlePrev = () => {
+    setDirection(-1);
+    onPrev();
+  };
+
+  const handleNext = () => {
+    setDirection(1);
+    onNext();
+  };
+
   return (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
       aria-label={job.title ?? "Listing details"}
-      className="fixed inset-y-0 right-0 z-[100] flex w-full max-w-xl flex-col border-l bg-white shadow-xl"
+      className="fixed inset-y-0 right-0 z-[100] flex w-full max-w-2xl flex-col border-l bg-white shadow-xl"
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
     >
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-1">
@@ -65,7 +89,7 @@ export function TopJobPanel({
             variant="ghost"
             size="sm"
             disabled={!hasPrev}
-            onClick={onPrev}
+            onClick={handlePrev}
             aria-label="Previous listing"
             className="h-8 w-8 p-0"
           >
@@ -75,7 +99,7 @@ export function TopJobPanel({
             variant="ghost"
             size="sm"
             disabled={!hasNext}
-            onClick={onNext}
+            onClick={handleNext}
             aria-label="Next listing"
             className="h-8 w-8 p-0"
           >
@@ -94,25 +118,40 @@ export function TopJobPanel({
         </Button>
       </div>
 
-      <JobDetails
-        className="p-6"
-        job={job}
-        user={{
-          github_link: profile?.github_link ?? null,
-          portfolio_link: profile?.portfolio_link ?? null,
-        }}
-        actions={[
-          <ShareJobButton job={job} key="share" disabled={disabled} />,
-          <SaveJobButton job={job} key="save" disabled={disabled} />,
-          <ApplyToJobButton
-            profile={profile}
-            job={job}
-            onApply={onApply}
-            key="apply"
-            disabled={disabled}
-          />,
-        ]}
-      />
-    </div>
+      <div className="flex-1 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={job.id}
+            custom={direction}
+            variants={contentVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.18, ease: "easeInOut" }}
+            className="flex h-full flex-col"
+          >
+            <JobDetails
+              className="p-6"
+              job={job}
+              user={{
+                github_link: profile?.github_link ?? null,
+                portfolio_link: profile?.portfolio_link ?? null,
+              }}
+              actions={[
+                <ShareJobButton job={job} key="share" disabled={disabled} />,
+                <SaveJobButton job={job} key="save" disabled={disabled} />,
+                <ApplyToJobButton
+                  profile={profile}
+                  job={job}
+                  onApply={onApply}
+                  key="apply"
+                  disabled={disabled}
+                />,
+              ]}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
