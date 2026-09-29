@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import { Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, cn } from "@betterinternship/components";
-import {
-  DropdownGroup,
-  GroupableRadioDropdown,
-} from "@/components/ui/dropdown";
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useJobListingsPage } from "@/lib/api/student.data.api";
+import { useJobListingsPage, useProfileData } from "@/lib/api/student.data.api";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
+import {
+  isNoUniversity,
+  sortUniversityOptions,
+  universityAcronyms,
+} from "@/lib/student-forms-access";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Job } from "@/lib/db/db.types";
 
@@ -43,10 +45,13 @@ function MoaFilterQuery({
  * "Show companies with MOA" (plan discussed 2026-09-29). Logged-in students
  * get an in-place filter over this Top page's own listings (has_moa is
  * per-student, so it can't be baked into the anonymous/cached initialJobs
- * snapshot — see fetchTopPage). Logged-out students pick their university
- * first: today only NU-Fairview has an IOM account
- * (ref_universities.iom_university_id), so almost every pick lands on the
- * invite branch — expected, not a bug, given current IOM coverage.
+ * snapshot — see fetchTopPage) — unless their OWN university has no IOM
+ * account yet, in which case a click prompts them to invite it, same as the
+ * logged-out branch below. Logged-out students pick their university first,
+ * via the same autocomplete the register page uses: today only NU-Fairview
+ * has an IOM account (ref_universities.iom_university_id), so almost every
+ * pick lands on the invite branch — expected, not a bug, given current IOM
+ * coverage.
  */
 export function ShowMoaButton({
   pageJobs,
@@ -57,11 +62,15 @@ export function ShowMoaButton({
 }) {
   const auth = useAuthContext();
   const authenticated = auth.isAuthenticated();
+  const profile = useProfileData();
   const { universities, get_university } = useDbRefs();
   const modalRegistry = useModalRegistry();
 
   const [active, setActive] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [pickedUniversityId, setPickedUniversityId] = useState<string | null>(
+    null,
+  );
 
   const handleResult = (
     jobIds: Set<string>,
@@ -86,11 +95,27 @@ export function ShowMoaButton({
       onFilterChange(null);
       return;
     }
+
+    // Most students' own universities won't have an IOM account either
+    // (today, only NU-Fairview does) — send them down the same invite branch
+    // logged-out pickers use instead of silently filtering to zero results.
+    const studentUniversity = get_university(profile.data?.university);
+    if (
+      studentUniversity &&
+      !isNoUniversity(studentUniversity.id) &&
+      !studentUniversity.iom_university_id
+    ) {
+      modalRegistry.inviteUniversity.open({
+        universityName: studentUniversity.name,
+      });
+      return;
+    }
+
     setActive(true);
   };
 
-  const handlePickUniversity = (universityId: string | number) => {
-    const university = get_university(String(universityId));
+  const handlePickUniversity = (universityId: string) => {
+    const university = get_university(universityId);
     if (!university) return;
 
     // Don't try to reconcile the picked university against the profile the
@@ -108,16 +133,24 @@ export function ShowMoaButton({
   };
 
   if (!authenticated) {
+    const universityOptions = sortUniversityOptions(universities).map((u) => ({
+      id: u.id,
+      name: u.name,
+      keywords: universityAcronyms(u.name),
+    }));
+
     return (
-      <DropdownGroup>
-        <GroupableRadioDropdown
-          name="show-moa-university-picker"
-          fallback="Show companies with MOA"
-          options={universities.map((u) => ({ id: u.id, name: u.name }))}
-          onChange={handlePickUniversity}
-          className="max-w-xs"
-        />
-      </DropdownGroup>
+      <Autocomplete
+        placeholder="Show companies with MOA"
+        options={universityOptions}
+        value={pickedUniversityId}
+        setter={(val) => {
+          setPickedUniversityId(val ?? null);
+          if (val) handlePickUniversity(val);
+        }}
+        preserveOptionOrder
+        className="max-w-xs"
+      />
     );
   }
 
