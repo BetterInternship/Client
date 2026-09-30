@@ -100,7 +100,7 @@ export function DigestOptoutModalContent({
   };
 
   return (
-    <div className="flex flex-col gap-3 pt-4">
+    <div className="flex flex-col gap-5 pt-4">
       <p className="text-sm text-gray-600">
         You&apos;re the only person at {companyName} receiving emails.
         <br />
