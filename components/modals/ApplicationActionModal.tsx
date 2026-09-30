@@ -1,16 +1,5 @@
 import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
-import {
-  Archive,
-  ArchiveRestore,
-  Check,
-  FileQuestion,
-  List,
-  Star,
-  Trash2,
-  X,
-} from "lucide-react";
-import { HeaderIcon } from "../ui/text";
 import { Button } from "@betterinternship/components";
 
 interface ApplicationActionModalProps {
@@ -47,10 +36,6 @@ const getUIConfig = (
   const config: Record<
     ApplicationAction,
     {
-      icon: React.ComponentType<{
-        className: string;
-      }>;
-      color: string;
       title: string;
       description: string;
       buttonLabel: string;
@@ -58,8 +43,6 @@ const getUIConfig = (
     }
   > = {
     ACCEPT: {
-      icon: Check,
-      color: "bg-text-supportive",
       title: isMassAction
         ? `Accept ${numApplicants} applicants?`
         : `Accept ${name}?`,
@@ -70,8 +53,6 @@ const getUIConfig = (
       buttonScheme: "primary",
     },
     REJECT: {
-      icon: X,
-      color: "bg-text-destructive",
       title: isMassAction
         ? `Reject ${numApplicants} applicants?`
         : `Reject ${name}?`,
@@ -82,8 +63,6 @@ const getUIConfig = (
       buttonScheme: "destructive",
     },
     SHORTLIST: {
-      icon: Star,
-      color: "bg-text-primary",
       title: isMassAction
         ? `Shortlist ${numApplicants} applicants?`
         : `Shortlist ${name}?`,
@@ -94,8 +73,6 @@ const getUIConfig = (
       buttonScheme: "primary",
     },
     ARCHIVE: {
-      icon: Archive,
-      color: "bg-text-muted",
       title: isMassAction
         ? `Archive ${numApplicants} applicants?`
         : `Archive ${name}?`,
@@ -106,8 +83,6 @@ const getUIConfig = (
       buttonScheme: "primary",
     },
     UNARCHIVE: {
-      icon: ArchiveRestore,
-      color: "bg-text-muted",
       title: isMassAction
         ? `Unarchive ${numApplicants} applicants?`
         : `Unarchive ${name}?`,
@@ -118,8 +93,6 @@ const getUIConfig = (
       buttonScheme: "primary",
     },
     DELETE: {
-      icon: Trash2,
-      color: "bg-text-destructive",
       title: isMassAction
         ? `Delete ${numApplicants} applicants?`
         : `Delete ${name}?`,
@@ -130,8 +103,6 @@ const getUIConfig = (
       buttonScheme: "destructive",
     },
     CHANGE_STATUS: {
-      icon: List,
-      color: "bg-text-muted",
       title: `Change status for ${numApplicants} applicant${isMassAction ? "" : "s"}?`,
       description:
         "This will immediately update the status for all selected applicants.",
@@ -139,8 +110,6 @@ const getUIConfig = (
       buttonScheme: "primary",
     },
     NONE: {
-      icon: FileQuestion,
-      color: "bg-text-muted",
       title: "Unknown error",
       description: "An unknown error has occurred.",
       buttonLabel: "Continue",
@@ -149,6 +118,19 @@ const getUIConfig = (
   };
 
   return config[type];
+};
+
+export const getApplicationActionModalTitle = (
+  type: ApplicationAction,
+  applicants: EmployerApplication[],
+) => {
+  const config = getUIConfig(
+    type,
+    getApplicantName(applicants[0]),
+    applicants.length,
+  );
+
+  return config.title;
 };
 
 /**
@@ -178,11 +160,7 @@ export default function ApplicationActionModal({
   const config = getUIConfig(type, name, applicants.length);
 
   return (
-    <div className="flex flex-col gap-3 h-full w-full">
-      <div className="flex items-center gap-3 pt-4">
-        <HeaderIcon icon={config.icon} />
-        <h4>{config.title}</h4>
-      </div>
+    <div className="flex flex-col gap-5 h-full w-full">
       <span>{config.description}</span>
 
       {type === "ACCEPT" && (
