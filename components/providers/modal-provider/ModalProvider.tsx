@@ -192,7 +192,10 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
       document.body.style.right = originalRight;
       document.body.style.width = originalWidth;
       document.body.style.overscrollBehavior = originalOverscrollBehavior;
-      document.documentElement.style.removeProperty("--vh");
+      // --vh is deliberately left set: it is shared with the old useModal
+      // modals, and removing it collapses one still open underneath back to
+      // 100vh (taller than the visible area on iOS). Every modal re-sets it
+      // on open, so a stale value is never read.
       document.documentElement.style.removeProperty("--modal-viewport-top");
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);

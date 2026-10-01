@@ -94,13 +94,11 @@ const HTMLContent = ({
               </Head>
               <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                 <ModalProvider>
-                  <AllowLanding>
-                    <div className="h-screen overflow-hidden flex flex-col">
-                      <div className="grow max-h-svh max-w-svw overflow-auto flex flex-col scroll-smooth">
-                        {children}
-                      </div>
+                  <div className="h-screen overflow-hidden flex flex-col">
+                    <div className="grow max-h-svh max-w-svw overflow-auto flex flex-col scroll-smooth">
+                      <AllowLanding>{children}</AllowLanding>
                     </div>
-                  </AllowLanding>
+                  </div>
                 </ModalProvider>
                 <SonnerToaster />
               </body>

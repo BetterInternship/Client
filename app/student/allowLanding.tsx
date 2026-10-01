@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import StudentAppHeader from "@/components/features/student/app-header";
+import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
 
 export default function AllowLanding({
@@ -19,16 +20,26 @@ export default function AllowLanding({
 
   if (hideSharedHeader) {
     return (
-      <div className="min-h-full bg-gray-50 flex flex-col">{children}</div>
+      <div className="flex min-h-0 grow flex-col bg-gray-50">
+        {children}
+        {!isStudentLanding && (
+          <div className="mt-auto hidden md:block">
+            <Footer />
+          </div>
+        )}
+      </div>
     );
   }
 
   return (
-    <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
+    <>
       <Suspense>
         <StudentAppHeader />
       </Suspense>
-      <div className="flex-grow overflow-auto flex flex-col">{children}</div>
-    </div>
+      <div className="flex min-h-0 grow flex-col">{children}</div>
+      <div className="mt-auto hidden md:block">
+        <Footer />
+      </div>
+    </>
   );
 }

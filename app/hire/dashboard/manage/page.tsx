@@ -39,7 +39,7 @@ function ManageContent() {
   return (
     <>
       <JobHeader job={job} onJobUpdate={updateJob} backHref="/dashboard" />
-      <PageContainer>
+      <PageContainer className="py-0">
         {profile.data?.is_verified === false ? (
           <div className="flex flex-col items-center justify-center text-center gap-2 py-24 text-gray-500">
             <Clock className="w-8 h-8 mb-2" />

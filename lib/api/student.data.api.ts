@@ -10,6 +10,7 @@ import {
   PublicUser,
   JobWaitlist,
   ListingInternshipPreferences,
+  Job,
 } from "@/lib/db/db.types";
 
 /**
@@ -118,8 +119,12 @@ export function useJobStatus() {
  * @param options.enabled Set false to defer the fetch (e.g. a ?jobId= deep
  * link that resolves via the current listing page first, and only falls
  * back to this fetch-by-id when the job isn't on that page).
+ * @param options.initialData Job object to pre-populate cache with
  */
-export function useJobData(jobId: string, options: { enabled?: boolean } = {}) {
+export function useJobData(
+  jobId: string,
+  options: { enabled?: boolean; initialData?: Job } = {},
+) {
   const applications = useApplicationsData();
   const applied = !!useMemo(
     () => applications.data.find((application) => application.job_id === jobId),
@@ -129,6 +134,12 @@ export function useJobData(jobId: string, options: { enabled?: boolean } = {}) {
     queryKey: ["jobs", jobId],
     queryFn: async () => await JobService.getJobById(jobId),
     enabled: options.enabled,
+    ...(options.initialData
+      ? {
+          initialData: { success: true, job: options.initialData },
+          initialDataUpdatedAt: 0,
+        }
+      : {}),
   });
 
   return { isPending, data: data?.job ?? null, applied, error };

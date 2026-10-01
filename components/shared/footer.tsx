@@ -25,7 +25,7 @@ export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
       : links;
 
   return (
-    <footer className="py-1 px-5">
+    <footer className="fixed bottom-0 left-0 z-40 bg-white w-full py-1 px-5 border-t border-t-gray-200">
       <div className="mx-auto">
         <div className="flex gap-2 justify-end md:flex-row md:items-center md:justify-between">
           <p className="text-xs text-muted-foreground text-center md:text-left hidden md:block">

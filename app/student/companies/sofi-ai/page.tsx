@@ -740,16 +740,6 @@ function MediaSpotlight() {
 function FeaturedInternship() {
   const featuredListings = [
     {
-      href: "/super-listing/sofi-ai",
-      title: "UI/UX Intern",
-      closed: true,
-      icon: (
-        <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
-          &lt;/&gt;
-        </span>
-      ),
-    },
-    {
       href: "/super-listing/sofi-ai-marketing",
       title: "Marketing Intern",
       closed: true,

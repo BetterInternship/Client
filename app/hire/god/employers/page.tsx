@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { BellOff } from "lucide-react";
 import { Button, Badge, Input } from "@betterinternship/components";
 import {
   ListShell,
@@ -166,6 +167,12 @@ function TeamEmailsList({
           >
             {m.email}
           </span>
+          {!m.receives_applicant_digest && (
+            <BellOff
+              className="ml-1 inline-block size-3 text-destructive"
+              aria-label="Does not receive applicant digests"
+            />
+          )}
         </span>
       ))}
     </span>

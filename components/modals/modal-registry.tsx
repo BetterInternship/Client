@@ -25,6 +25,8 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import type { ResumeDTO } from "@/lib/api/services";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
+import CloseListingModal from "./CloseListingModal";
+import DiscardEditModal from "./DiscardEditModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
 import { AddResumeModal } from "../features/student/profile/AddResumeModal";
@@ -115,10 +117,12 @@ export const useModalRegistry = () => {
           job,
           isProcessing,
           onConfirm,
+          pendingApplicantCount,
         }: {
           job: Job;
           isProcessing: boolean;
           onConfirm: () => void;
+          pendingApplicantCount?: number;
         }) =>
           open(
             "delete-listing",
@@ -128,6 +132,7 @@ export const useModalRegistry = () => {
               isProcessing={isProcessing}
               onConfirm={onConfirm}
               onCancel={() => close("delete-listing")}
+              pendingApplicantCount={pendingApplicantCount}
             />,
             {
               title: `Delete ${job.title}`,
@@ -137,6 +142,81 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("delete-listing"),
+      },
+      // Warns before closing a listing leaves pending applicants unanswered
+      // (Docs/plans/APPLICANT_STATUS_FINALIZATION_PLAN.md §4.3). Not a gate —
+      // "Close listing" always proceeds.
+      closeListing: {
+        open: ({
+          jobTitle,
+          pendingCount,
+          shortlistedCount,
+          isProcessing,
+          onConfirm,
+          onReviewFirst,
+        }: {
+          jobTitle: string;
+          pendingCount: number;
+          shortlistedCount: number;
+          isProcessing: boolean;
+          onConfirm: () => void;
+          onReviewFirst: () => void;
+        }) =>
+          open(
+            "close-listing",
+            DefaultModalLayout,
+            <CloseListingModal
+              jobTitle={jobTitle}
+              pendingCount={pendingCount}
+              shortlistedCount={shortlistedCount}
+              isProcessing={isProcessing}
+              onConfirm={onConfirm}
+              onReviewFirst={onReviewFirst}
+              onCancel={() => close("close-listing")}
+            />,
+            {
+              title: `Close ${jobTitle}`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("close-listing"),
+      },
+      // Confirms leaving the create/edit listing form with unsaved changes.
+      discardEdit: {
+        open: ({
+          onConfirm,
+          title,
+          message,
+          confirmLabel,
+        }: {
+          onConfirm: () => void;
+          title?: string;
+          message?: string;
+          confirmLabel?: string;
+        }) =>
+          open(
+            "discard-edit",
+            DefaultModalLayout,
+            <DiscardEditModal
+              onConfirm={() => {
+                onConfirm();
+                close("discard-edit");
+              }}
+              onCancel={() => close("discard-edit")}
+              title={title}
+              message={message}
+              confirmLabel={confirmLabel}
+            />,
+            {
+              title: "Discard changes?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("discard-edit"),
       },
       // modal for sharing a job listing's short link
       // (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D12).

@@ -7,6 +7,7 @@ import {
 } from "@/components/EditForm";
 import { Card, PageHeader } from "@betterinternship/components";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
 import { Input, Label, Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
 import { useMobile } from "@/hooks/use-mobile";
@@ -15,9 +16,12 @@ import { useModalRegistry } from "@/components/modals/modal-registry";
 import { usePostHog } from "@posthog/react";
 import { Job } from "@/lib/db/db.types";
 import { SetupStepIllustration } from "./illustrations/SetupStepIllustration";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
 import { FileUp, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained from the commented MOA panel
 import Link from "next/link";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
 import { AnimatePresence, motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
 import { useProfile } from "@/hooks/use-employer-api";
@@ -67,6 +71,7 @@ export const SetupStep = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
   const handleUploadClick = () => {
     posthog.capture("hire_moa_upload_started", {
       source: "create_listing_setup_inline",
@@ -81,6 +86,7 @@ export const SetupStep = ({
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
   const blurTransition = useBlurTransition();
 
   // connect to iom site
@@ -100,6 +106,7 @@ export const SetupStep = ({
     return "http://moa.localhost:4100";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- retained with the commented MOA panel
   const activate = () => {
     if (linked) openIomLogin();
     else openSetup();
@@ -166,7 +173,7 @@ export const SetupStep = ({
             }
           />
 
-          {/* Inline credited benefits - nudge, not gate */}
+          {/* MOA component temporarily disabled.
           <div className="space-y-2">
             <AnimatePresence>
               {isCreditedSelected && (
@@ -234,6 +241,7 @@ export const SetupStep = ({
               )}
             </AnimatePresence>
           </div>
+          */}
         </div>
 
         {/* Work Load */}

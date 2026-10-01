@@ -12,7 +12,6 @@ import { useFormData } from "@/lib/form-data";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
-import { TriangleAlert } from "lucide-react";
 import { cn } from "@betterinternship/components";
 import { BasicStep } from "./create-job-steps/BasicStep";
 import { SetupStep } from "./create-job-steps/SetupStep";
@@ -249,20 +248,10 @@ const CreateJobPage = ({
                 <Button
                   variant="outline"
                   onClick={() =>
-                    registry.warning.open({
-                      icon: TriangleAlert,
-                      iconColor: "text-primary",
-                      title: "Are you sure you want to cancel?",
-                      message: "All unsaved changes will be lost.",
-                      primaryAction: {
-                        label: "Continue Editing",
-                        onClick: () => {},
-                      },
-                      secondaryAction: {
-                        label: "Discard Listing",
-                        onClick: () => router.push("/dashboard"),
-                      },
-                      panelClassName: "sm:max-w-md",
+                    registry.discardEdit.open({
+                      title: "Discard this listing?",
+                      confirmLabel: "Discard listing",
+                      onConfirm: () => router.push("/dashboard"),
                     })
                   }
                   disabled={creating}
@@ -298,20 +287,10 @@ const CreateJobPage = ({
             <Button
               variant="outline"
               onClick={() =>
-                registry.warning.open({
-                  icon: TriangleAlert,
-                  iconColor: "text-primary",
-                  title: "Are you sure you want to cancel?",
-                  message: "All unsaved changes will be lost.",
-                  primaryAction: {
-                    label: "Continue Editing",
-                    onClick: () => {},
-                  },
-                  secondaryAction: {
-                    label: "Discard Listing",
-                    onClick: () => router.push("/dashboard"),
-                  },
-                  panelClassName: "sm:max-w-md",
+                registry.discardEdit.open({
+                  title: "Discard this listing?",
+                  confirmLabel: "Discard listing",
+                  onConfirm: () => router.push("/dashboard"),
                 })
               }
               disabled={creating}

@@ -2,15 +2,7 @@
 
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  Home,
-  Newspaper,
-  BookA,
-  User,
-  Settings,
-  LogOut,
-  LogIn,
-} from "lucide-react";
+import { Home, Newspaper, BookA, User, Settings, LogOut } from "lucide-react";
 import {
   cn,
   Popover,
@@ -91,75 +83,78 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   // Logged in: show full navigation
   return (
-    <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
-      {/* Search Button */}
-      <NavButton
-        icon={<Home className="w-6 h-6" />}
-        label="Home"
-        isActive={pathname === "/search"}
-        onClick={() => router.push("/search")}
-      />
-
-      {showFormsTab && (
+    <div className="shrink-0 border-t border-gray-200 bg-white shadow-lg md:hidden">
+      <div className="flex h-16 items-center justify-around">
+        {/* Search Button */}
         <NavButton
-          icon={<Newspaper className="w-6 h-6" />}
-          label="Forms"
-          isActive={pathname === "/forms"}
-          onClick={() => router.push("/forms")}
+          icon={<Home className="w-6 h-6" />}
+          label="Home"
+          isActive={pathname === "/search"}
+          onClick={() => router.push("/search")}
         />
-      )}
 
-      {/* My Jobs Button */}
-      <NavButton
-        icon={<BookA className="w-6 h-6" />}
-        label="My Jobs"
-        isActive={
-          pathname?.startsWith("/applications") ||
-          pathname?.startsWith("/saved")
-        }
-        onClick={() => router.push("/applications")}
-      />
+        {showFormsTab && (
+          <NavButton
+            icon={<Newspaper className="w-6 h-6" />}
+            label="Forms"
+            isActive={pathname === "/forms"}
+            onClick={() => router.push("/forms")}
+          />
+        )}
 
-      {/* Account Button with Popover Menu */}
-      <NavButton
-        icon={<User className="w-6 h-6" />}
-        label="Account"
-        isActive={pathname === "/profile"}
-      >
-        <PopoverContent
-          className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
-          side="top"
-          sideOffset={8}
-          style={{ zIndex: 9999 }}
+        {/* My Jobs Button */}
+        <NavButton
+          icon={<BookA className="w-6 h-6" />}
+          label="My Jobs"
+          isActive={
+            pathname?.startsWith("/applications") ||
+            pathname?.startsWith("/saved")
+          }
+          onClick={() => router.push("/applications")}
+        />
+
+        {/* Account Button with Popover Menu */}
+        <NavButton
+          icon={<User className="w-6 h-6" />}
+          label="Account"
+          isActive={pathname === "/profile"}
         >
-          <div className="flex flex-col gap-0">
-            <button
-              onClick={() => {
-                router.push(`/profile`);
-              }}
-              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
-            >
-              <div className="flex items-center">
-                <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span>Profile</span>
-              </div>
-            </button>
-            <div className="h-px bg-gray-200 my-1 mx-2" />
-            <button
-              onClick={() => {
-                void logout();
-                router.push("/");
-              }}
-              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
-            >
-              <div className="flex items-center">
-                <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
-                <span className="text-red-500">Sign Out</span>
-              </div>
-            </button>
-          </div>
-        </PopoverContent>
-      </NavButton>
+          <PopoverContent
+            className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
+            side="top"
+            sideOffset={8}
+            style={{ zIndex: 9999 }}
+          >
+            <div className="flex flex-col gap-0">
+              <button
+                onClick={() => {
+                  router.push(`/profile`);
+                }}
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+              >
+                <div className="flex items-center">
+                  <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+                  <span>Profile</span>
+                </div>
+              </button>
+              <div className="h-px bg-gray-200 my-1 mx-2" />
+              <button
+                onClick={() => {
+                  void logout();
+                  router.push("/");
+                }}
+                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+              >
+                <div className="flex items-center">
+                  <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
+                  <span className="text-red-500">Sign Out</span>
+                </div>
+              </button>
+            </div>
+          </PopoverContent>
+        </NavButton>
+      </div>
+      <div aria-hidden="true" className="h-[env(safe-area-inset-bottom)]" />
     </div>
   );
 };

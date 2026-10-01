@@ -1,5 +1,6 @@
 import { Employer } from "@/lib/db/db.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
 import {
@@ -130,6 +131,21 @@ export function useEmployerLoginMetrics() {
     queryKey: ["god-employer-login-metrics"],
     queryFn: () =>
       godsControllerGetEmployerLoginStats() as unknown as Promise<EmployerLoginMetricsResponse>,
+  });
+}
+
+export function useRefreshEmployerLoginMetrics() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      APIClient.post<EmployerLoginMetricsResponse>(
+        APIRouteBuilder("god").r("stats", "employer-logins", "refresh").build(),
+      ),
+    onSuccess: (response) => {
+      if (response.success && response.stats) {
+        queryClient.setQueryData(["god-employer-login-metrics"], response);
+      }
+    },
   });
 }
 
