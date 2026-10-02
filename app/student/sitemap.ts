@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { baseUrl } from "@/lib/site-url";
-import { fetchPublishedTopPages } from "@/lib/api/top-page.server";
+import { fetchTopSitemap } from "@/lib/api/top-page.server";
 
 export const revalidate = 3600;
 
@@ -28,9 +28,9 @@ async function fetchSitemapJobs(): Promise<SitemapJob[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [jobs, topPages] = await Promise.all([
+  const [jobs, topUniversities] = await Promise.all([
     fetchSitemapJobs(),
-    fetchPublishedTopPages(),
+    fetchTopSitemap(),
   ]);
 
   const jobEntries: MetadataRoute.Sitemap = jobs.map((job) => ({
@@ -41,15 +41,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Plan D21/D22: no /top index page, so these entries are the only
-  // sitemap-driven discovery path for a Top page (search engines otherwise
-  // find it only via a shared link).
-  const topPageEntries: MetadataRoute.Sitemap = topPages.map((page) => ({
-    url: `${baseUrl}/top/${page.slug}`,
-    lastModified: page.updated_at,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  // Nothing else on the site links to a Top page yet, so these entries are
+  // the only way search engines discover them (besides shared links): each
+  // live university's landing page, and each of its category pages. A
+  // category with nothing to show this week is left out — its page sets
+  // noindex for the same reason.
+  const topPageEntries: MetadataRoute.Sitemap = topUniversities.flatMap(
+    (university) => [
+      {
+        url: `${baseUrl}/${university.slug}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      ...university.pages
+        .filter((page) => page.listing_count > 0)
+        .map((page) => ({
+          url: `${baseUrl}/${university.slug}/top/${page.slug}`,
+          lastModified: page.updated_at,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        })),
+    ],
+  );
 
   const staticEntries: MetadataRoute.Sitemap = [
     { url: baseUrl, changeFrequency: "daily", priority: 1.0 },

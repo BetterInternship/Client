@@ -359,10 +359,11 @@ export interface GodTopPageDetail {
   id: string;
   name: string;
   slug: string;
-  accent_hex: string | null;
   is_published: boolean;
   updated_at: string;
   members: TopPageMember[];
+  /** How many universities this page is ticked for in the university grid. */
+  university_count: number;
 }
 
 export interface SlugOwner {
@@ -411,7 +412,6 @@ export function useCreateTopPage() {
 
 export interface SaveTopPagePayload {
   name: string;
-  accent_hex?: string | null;
   is_published: boolean;
   job_ids: string[];
   updated_at: string;
@@ -429,6 +429,74 @@ export function useSaveTopPage(id: string) {
       if (response.success && response.page) {
         queryClient.setQueryData(["god-top-page", id], response);
         queryClient.invalidateQueries({ queryKey: ["god-top-pages"] });
+        // The grid shows each page's name and published state as a column.
+        void queryClient.invalidateQueries({
+          queryKey: ["god-top-universities"],
+        });
+      }
+    },
+  });
+}
+
+// ── Top pages: the university grid (TOP_PAGES_UNIVERSITY_PLAN.md D15) ──────
+
+export interface GodTopUniversityRow {
+  id: string;
+  name: string;
+  /** The university's part of the URL — built from its name by the server. */
+  slug: string;
+  accent_hex: string | null;
+  has_partner_account: boolean;
+  /** No usable URL name, or the same one as another university. */
+  slug_clash: boolean;
+  page_ids: string[];
+}
+
+export interface GodTopGridPage {
+  id: string;
+  name: string;
+  slug: string;
+  is_published: boolean;
+}
+
+export interface GodTopUniversityGridResponse extends FetchResponse {
+  universities?: GodTopUniversityRow[];
+  pages?: GodTopGridPage[];
+}
+
+export function useGodTopUniversityGrid() {
+  return useQuery({
+    queryKey: ["god-top-universities"],
+    queryFn: () =>
+      APIClient.get<GodTopUniversityGridResponse>(
+        APIRouteBuilder("god").r("top-pages", "universities").build(),
+      ),
+    // Always refetch on open: this is an editor, and a stale grid would
+    // quietly overwrite another admin's ticks on Save.
+    staleTime: 0,
+  });
+}
+
+export interface SaveTopUniversityRow {
+  id: string;
+  accent_hex: string | null;
+  /** Replaces the university's ticks — not merged into them. */
+  page_ids: string[];
+}
+
+export function useSaveTopUniversityGrid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (universities: SaveTopUniversityRow[]) =>
+      APIClient.put<GodTopUniversityGridResponse>(
+        APIRouteBuilder("god").r("top-pages", "universities").build(),
+        { universities },
+      ),
+    onSuccess: (response) => {
+      if (response.success && response.universities) {
+        queryClient.setQueryData(["god-top-universities"], response);
+        // Each page's editor shows how many universities it is ticked for.
+        void queryClient.invalidateQueries({ queryKey: ["god-top-page"] });
       }
     },
   });

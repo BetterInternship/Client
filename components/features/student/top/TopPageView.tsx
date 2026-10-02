@@ -23,14 +23,17 @@ import { TopJobCard } from "./TopJobCard";
 import { TopJobPanel } from "./TopJobPanel";
 import { ShowMoaButton } from "./ShowMoaButton";
 import { TopPageWeekWatcher } from "./TopPageWeekWatcher";
-import { DEFAULT_TOP_PAGE_ACCENT } from "@/lib/utils/top-page-heading";
+import { topUniversityLine } from "@/lib/utils/top-page-heading";
 import { TopHeroArtwork, TopPageBackdrop } from "./TopArtwork";
 import { TopDiscordCTA } from "./TopDiscordCTA";
 import { TopPageNavbar } from "./TopPageNavbar";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
-import { pickForeground } from "@/lib/utils/contrast";
-import { topAccentTextColor } from "@/lib/utils/top-page-presentation";
-import type { PublicTopPage } from "@/lib/api/top-page.server";
+import { topAccentStyle } from "@/lib/utils/top-page-presentation";
+import type {
+  PublicTopPage,
+  PublicTopUniversity,
+  TopPageLink,
+} from "@/lib/api/top-page.server";
 import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
 import motionStyles from "./top-motion.module.css";
@@ -46,11 +49,22 @@ import emptyArtwork from "@/public/student/error.png";
  */
 export function TopPageView({
   page,
+  university,
+  siblings = [],
   initialJobs,
   weekKey,
   disabled,
 }: {
   page: PublicTopPage;
+  /**
+   * The university whose link this is (/<university>/top/<slug>) — named in
+   * the heading, the source of the page's colour, and what the logged-out
+   * partner control is about. Absent only in the god preview, which shows a
+   * category on its own.
+   */
+  university?: PublicTopUniversity;
+  /** The same university's other live categories, linked under the grid. */
+  siblings?: TopPageLink[];
   initialJobs: Job[];
   /**
    * The server's current week ("YYYY-MM-DD" Sunday, Manila). Only the public
@@ -66,7 +80,7 @@ export function TopPageView({
   const modalRegistry = useModalRegistry();
   const universityName = get_university(profile.data?.university)?.name;
   const applicationActions = useApplicationActions();
-  const bulkApply = useMassApplySelection(page.id);
+  const bulkApply = useMassApplySelection(page.id, university?.id);
   const prefersReducedMotion = useReducedMotion();
   const [moaActive, setMoaActive] = useState(false);
 
@@ -132,6 +146,7 @@ export function TopPageView({
         job_id: job.id ?? "",
         resume_id: resumeId,
         top_page_id: page.id,
+        top_page_university_id: university?.id,
       });
       if (response.message) {
         toast.error(response.message);
@@ -148,31 +163,23 @@ export function TopPageView({
           spread: 75,
           startVelocity: 32,
           origin: { y: 0.65 },
-          colors: page.accent_hex ? [page.accent_hex, "#ffffff"] : undefined,
+          colors: university?.accent_hex
+            ? [university.accent_hex, "#ffffff"]
+            : undefined,
         });
       }
     },
     [
       applicationActions.create,
       page.id,
-      page.accent_hex,
+      university?.id,
+      university?.accent_hex,
       applySuccessModalRef,
       prefersReducedMotion,
     ],
   );
 
-  const accent = page.accent_hex ?? DEFAULT_TOP_PAGE_ACCENT;
-  const accentStyle = accent
-    ? ({
-        "--primary": accent,
-        "--primary-foreground": pickForeground(accent),
-        "--color-primary": accent,
-        "--color-primary-foreground": pickForeground(accent),
-        "--color-muted-foreground": "#626fa5",
-        "--top-accent-text": topAccentTextColor(accent),
-        "--top-panel-width": "min(46vw, 42rem)",
-      } as React.CSSProperties)
-    : undefined;
+  const accentStyle = topAccentStyle(university?.accent_hex);
   const week = currentManilaWeek();
 
   return (
@@ -195,9 +202,17 @@ export function TopPageView({
               <span className="text-[var(--top-accent-text)]">{page.name}</span>
               <br className="hidden sm:block" /> Internship
               {initialJobs.length === 1 ? "" : "s"} This Week
+              {/* Inside the <h1> on purpose: the university's name is part
+                  of what the page is about, not a caption beside it. */}
+              {university && (
+                <span className="mt-3 block text-xl font-semibold leading-snug tracking-normal text-[#526078] max-sm:mt-2 max-sm:text-lg sm:text-2xl">
+                  {topUniversityLine(university.name)}
+                </span>
+              )}
             </h1>
             <div className="mt-8 max-sm:mt-6">
               <ShowMoaButton
+                university={university}
                 pageJobs={initialJobs}
                 onFilterChange={setMoaFilteredJobs}
                 active={moaActive}
@@ -221,6 +236,7 @@ export function TopPageView({
           <Suspense fallback={null}>
             <TopPageWeekWatcher
               page={page}
+              university={university}
               weekKey={weekKey}
               jobCount={initialJobs.length}
             />
@@ -378,6 +394,31 @@ export function TopPageView({
         <ApplySuccessModal job={lastAppliedJob} ref={applySuccessModalRef} />
       </div>
       <div className="relative mx-auto max-w-[1240px] px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+        {university && (
+          <nav
+            aria-label={`More internships for ${university.name} students`}
+            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+          >
+            <span className="font-semibold text-[#101033]">
+              More for {university.name}:
+            </span>
+            {siblings.map((sibling) => (
+              <Link
+                key={sibling.slug}
+                href={`/${university.slug}/top/${sibling.slug}`}
+                className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
+              >
+                {sibling.name} Internships
+              </Link>
+            ))}
+            <Link
+              href={`/${university.slug}`}
+              className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
+            >
+              All categories
+            </Link>
+          </nav>
+        )}
         <TopDiscordCTA />
       </div>
       <SearchCommandBar

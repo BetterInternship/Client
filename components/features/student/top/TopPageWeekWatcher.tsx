@@ -19,19 +19,23 @@ function weekEndKey(weekKey: string) {
 /**
  * Owns everything on a Top page that depends on `?week=`
  * (Docs/plans/TOP_PAGES_WEEK_PARAM_PLAN.md): the old-QR banner and the
- * `top_page_viewed` event. It reads the param in the browser on purpose —
- * reading `searchParams` in the server page would make the route dynamic and
- * throw away its 60s `revalidate`. `weekKey` is the server's current week, so
- * a student's wrong device clock can't flip a fresh QR to "old".
+ * `top_page_viewed` event. It reads the param in the browser on purpose, so
+ * the server page never touches `searchParams` on its normal path and stays
+ * eligible for static caching (it is rendered per request today — see the
+ * page's own note). `weekKey` is the server's current week, so a student's
+ * wrong device clock can't flip a fresh QR to "old".
  *
  * Must be rendered inside a <Suspense> (useSearchParams on a cached route).
  */
 export function TopPageWeekWatcher({
   page,
+  university,
   weekKey,
   jobCount,
 }: {
   page: { id: string; slug: string };
+  /** The university whose link was opened (/<university>/top/<slug>). */
+  university?: { id: string; slug: string };
   weekKey: string;
   jobCount: number;
 }) {
@@ -53,12 +57,24 @@ export function TopPageWeekWatcher({
     posthog.capture("top_page_viewed", {
       top_page_id: page.id,
       top_page_slug: page.slug,
+      university_id: university?.id ?? null,
+      university_slug: university?.slug ?? null,
       week_param: rawWeek ? rawWeek.slice(0, WEEK_PARAM_MAX_LENGTH) : null,
       week_status: status,
       current_week: weekKey,
       listing_count: jobCount,
     });
-  }, [posthog, page.id, page.slug, rawWeek, status, weekKey, jobCount]);
+  }, [
+    posthog,
+    page.id,
+    page.slug,
+    university?.id,
+    university?.slug,
+    rawWeek,
+    status,
+    weekKey,
+    jobCount,
+  ]);
 
   if (status !== "stale") return null;
 

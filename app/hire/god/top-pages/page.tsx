@@ -30,7 +30,7 @@ function TopPageRow({
     <RowCard
       onClick={onClick}
       title={page.name}
-      subtitle={`/top/${page.slug}`}
+      subtitle={`/<university>/top/${page.slug}`}
       metas={
         <>
           <Badge
@@ -120,10 +120,20 @@ export default function TopPagesListPage() {
           {debouncedName.trim() && preview.data && (
             <span className="text-xs text-slate-500">
               {preview.data.available
-                ? `→ /top/${preview.data.slug}`
-                : `"/top/${preview.data.slug}" is taken by "${preview.data.owner?.name ?? "another page"}"`}
+                ? `→ /<university>/top/${preview.data.slug}`
+                : `"${preview.data.slug}" is taken by "${preview.data.owner?.name ?? "another page"}"`}
             </span>
           )}
+          {/* A page is only live at the universities it is ticked for —
+              that, each university's colour and its links live in the grid. */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            onClick={() => router.push("/god/top-pages/universities")}
+          >
+            Universities
+          </Button>
         </div>
       }
     >

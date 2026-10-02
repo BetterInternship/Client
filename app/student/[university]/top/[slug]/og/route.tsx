@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
-import { fetchTopPage } from "@/lib/api/top-page.server";
+import { fetchTopUniversityPage } from "@/lib/api/top-page.server";
 import {
   topHeading,
+  topUniversityLine,
   DEFAULT_TOP_PAGE_ACCENT,
 } from "@/lib/utils/top-page-heading";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
@@ -10,25 +11,26 @@ import { pickForeground } from "@/lib/utils/contrast";
 const size = { width: 1200, height: 630 };
 
 /**
- * Generated OG image for a Top page (plan D21): heading, date range, first 3
- * company names, in the page's accent colour. Falls back to the static
- * /og.png on any failure — not found, unpublished, or a fetch error — same
- * contract as the per-job OG route. Cached 60s (not the job route's 86400):
- * the whole point of this feature is that the line-up rotates weekly.
+ * Generated OG image for a university's category page: heading, university,
+ * date range, first 3 company names, on the university's colour. Falls back
+ * to the static /og.png on any failure — not found, not live, or a fetch
+ * error — same contract as the per-job OG route. Cached 60s (not the job
+ * route's 86400): the whole point of this feature is that the line-up
+ * rotates weekly.
  */
 export async function GET(
   request: Request,
-  context: { params: Promise<{ slug: string }> },
+  context: { params: Promise<{ university: string; slug: string }> },
 ) {
-  const { slug } = await context.params;
+  const { university, slug } = await context.params;
   const fallback = () =>
     Response.redirect(new URL("/og.png", request.url).toString(), 307);
 
   try {
-    const result = await fetchTopPage(slug);
+    const result = await fetchTopUniversityPage(university, slug);
     if (result.status !== "ok") return fallback();
 
-    const accent = result.page.accent_hex ?? DEFAULT_TOP_PAGE_ACCENT;
+    const accent = result.university.accent_hex ?? DEFAULT_TOP_PAGE_ACCENT;
     const foreground = pickForeground(accent);
     const heading = topHeading(result.jobs.length, result.page.name);
     const week = currentManilaWeek();
@@ -79,6 +81,16 @@ export async function GET(
           }}
         >
           {heading}
+        </div>
+        <div
+          style={{
+            marginTop: 16,
+            fontSize: 32,
+            fontWeight: 600,
+            opacity: 0.95,
+          }}
+        >
+          {topUniversityLine(result.university.name)}
         </div>
         <div style={{ marginTop: 24, fontSize: 28, opacity: 0.9 }}>
           {week.label}

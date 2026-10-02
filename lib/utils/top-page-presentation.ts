@@ -1,4 +1,7 @@
+import type { CSSProperties } from "react";
 import type { Job } from "@/lib/db/db.types";
+import { pickForeground } from "@/lib/utils/contrast";
+import { DEFAULT_TOP_PAGE_ACCENT } from "@/lib/utils/top-page-heading";
 
 /** Preserve curation order and annotate only verified university matches. */
 export function filterTopMoaJobs(jobs: Job[], matchedIds: Set<string>): Job[] {
@@ -26,4 +29,25 @@ export function topAccentTextColor(hex: string): string {
     for (let i = 0; i < rgb.length; i++) rgb[i] = Math.floor(rgb[i] * 0.95);
   }
   return `#${rgb.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * The CSS variables every Top page surface (category page, university
+ * landing page) sets on its root, from the university's colour. This is the
+ * one place the colour is "exposed" to components
+ * (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md D6): anything under that root can
+ * read `--primary` / `--color-primary` (and their `-foreground` pair) or
+ * `--top-accent-text` (the same hue, darkened enough to read on white).
+ */
+export function topAccentStyle(accentHex?: string | null): CSSProperties {
+  const accent = accentHex ?? DEFAULT_TOP_PAGE_ACCENT;
+  return {
+    "--primary": accent,
+    "--primary-foreground": pickForeground(accent),
+    "--color-primary": accent,
+    "--color-primary-foreground": pickForeground(accent),
+    "--color-muted-foreground": "#626fa5",
+    "--top-accent-text": topAccentTextColor(accent),
+    "--top-panel-width": "min(46vw, 42rem)",
+  } as CSSProperties;
 }
