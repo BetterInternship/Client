@@ -378,7 +378,17 @@ export function TopPageView({
         <ApplySuccessModal job={lastAppliedJob} ref={applySuccessModalRef} />
       </div>
       <div className="relative mx-auto max-w-[1240px] px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-        <TopDiscordCTA />
+        <div
+          className={motionStyles.ctaColumn}
+          data-panel-open={panelOpen}
+          style={{
+            width: panelOpen
+              ? "min(100%, calc(100% - var(--top-panel-width) + max(0px, calc((100vw - 1240px) / 2))))"
+              : "100%",
+          }}
+        >
+          <TopDiscordCTA compact={panelOpen} />
+        </div>
       </div>
       <SearchCommandBar
         visible={!disabled && bulkApply.selectMode}
