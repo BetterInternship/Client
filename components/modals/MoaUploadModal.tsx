@@ -66,8 +66,8 @@ export const MoaUploadModal = ({ onDone, onCancel }: MoaUploadModalProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="mt-4">
+    <div className="space-y-5">
+      <div>
         Upload your Memorandum of Agreement (MOA) as a single PDF. We will
         review your document before approval.
       </div>

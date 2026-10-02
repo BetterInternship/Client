@@ -12,11 +12,16 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
+  const isTopPage =
+    pathname.startsWith("/top/") || pathname.startsWith("/student/top/");
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");
   const hideSharedHeader =
-    isStudentLanding || pathname.startsWith("/companies/") || isChallengePage;
+    isStudentLanding ||
+    pathname.startsWith("/companies/") ||
+    isChallengePage ||
+    isTopPage;
 
   if (hideSharedHeader) {
     return (

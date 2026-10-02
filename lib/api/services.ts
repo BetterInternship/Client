@@ -806,6 +806,9 @@ export const ApplicationService = {
     resume_id: string;
     challenge_submission?: string;
     source?: "mass";
+    // Attribution for an apply made from a Top page (plan D20). Hand-written
+    // facade call for now — see CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+    top_page_id?: string;
   }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
@@ -821,7 +824,12 @@ export const ApplicationService = {
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number },
+    review_options: {
+      review?: string;
+      notes?: string;
+      status?: number;
+      acceptance_message?: string;
+    },
   ) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("applications").r(id, "review").build(),

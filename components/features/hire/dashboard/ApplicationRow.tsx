@@ -214,7 +214,7 @@ export function ApplicationRow({
               <ActionButton
                 icon={Archive}
                 label="Archive"
-                className="text-gray-500 enabled:data-[destructive=false]:hover:bg-gray-100 enabled:hover:text-gray-800"
+                className="text-gray-500"
                 onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   if (application.visibility === "archived") {
@@ -328,6 +328,7 @@ export function ApplicationRow({
               label={
                 application.visibility === "archived" ? "Unarchive" : "Archive"
               }
+              className="text-gray-500"
             />
           )}
           {application.visibility === "archived" && (

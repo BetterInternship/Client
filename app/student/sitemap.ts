@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { baseUrl } from "@/lib/site-url";
+import { fetchPublishedTopPages } from "@/lib/api/top-page.server";
 
 export const revalidate = 3600;
 
@@ -27,7 +28,10 @@ async function fetchSitemapJobs(): Promise<SitemapJob[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const jobs = await fetchSitemapJobs();
+  const [jobs, topPages] = await Promise.all([
+    fetchSitemapJobs(),
+    fetchPublishedTopPages(),
+  ]);
 
   const jobEntries: MetadataRoute.Sitemap = jobs.map((job) => ({
     url: `${baseUrl}/search/${job.id}`,
@@ -35,6 +39,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       job.last_activated_at ?? job.updated_at ?? job.created_at ?? undefined,
     changeFrequency: "weekly",
     priority: 0.8,
+  }));
+
+  // Plan D21/D22: no /top index page, so these entries are the only
+  // sitemap-driven discovery path for a Top page (search engines otherwise
+  // find it only via a shared link).
+  const topPageEntries: MetadataRoute.Sitemap = topPages.map((page) => ({
+    url: `${baseUrl}/top/${page.slug}`,
+    lastModified: page.updated_at,
+    changeFrequency: "weekly",
+    priority: 0.7,
   }));
 
   const staticEntries: MetadataRoute.Sitemap = [
@@ -79,5 +93,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  return [...staticEntries, ...jobEntries];
+  return [...staticEntries, ...jobEntries, ...topPageEntries];
 }
