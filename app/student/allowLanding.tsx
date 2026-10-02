@@ -11,10 +11,11 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
+  const isTopPage =
+    pathname.startsWith("/top/") || pathname.startsWith("/student/top/");
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");
-  const isTopPage = pathname.startsWith("/top/");
   const hideSharedHeader =
     isStudentLanding ||
     pathname.startsWith("/companies/") ||
@@ -22,7 +23,9 @@ export default function AllowLanding({
     isTopPage;
 
   if (hideSharedHeader) {
-    return <div className="flex min-h-0 grow flex-col bg-gray-50">{children}</div>;
+    return (
+      <div className="flex min-h-0 grow flex-col bg-gray-50">{children}</div>
+    );
   }
 
   return (

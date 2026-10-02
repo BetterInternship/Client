@@ -1,0 +1,29 @@
+.action {
+  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.action:active:not(:disabled):not([aria-disabled="true"]):not(
+    [aria-busy="true"]
+  ) {
+  transform: scale(0.98);
+  transition-duration: 100ms;
+}
+
+.arrow {
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover .arrow {
+    transform: translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action:active:not(:disabled):not([aria-disabled="true"]):not(
+      [aria-busy="true"]
+    ),
+  .action:hover .arrow {
+    transform: none;
+  }
+}

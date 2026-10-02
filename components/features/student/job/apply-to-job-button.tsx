@@ -2,7 +2,7 @@ import { useJobStatus } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
-import { CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -18,12 +18,14 @@ export const ApplyToJobButton = ({
   onApply,
   className,
   disabled,
+  presentation,
 }: {
   profile: PublicUser | null;
   job: Job;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
   className?: string;
   disabled?: boolean;
+  presentation?: "curated";
 }) => {
   const auth = useAuthContext();
   const modalRegistry = useModalRegistry();
@@ -80,12 +82,16 @@ export const ApplyToJobButton = ({
       className={cn(
         className,
         isSuperListing &&
+          presentation !== "curated" &&
           !applied &&
           "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-amber-400/50 shadow-[0_4px_14px_rgba(245,158,11,0.3)] font-bold",
       )}
     >
       {applied && <CheckCircle className="w-4 h-4" />}
       {applied ? "Applied" : "Apply"}
+      {presentation === "curated" && !applied && (
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      )}
     </Button>
   );
 };

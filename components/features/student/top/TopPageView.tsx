@@ -1,34 +1,39 @@
 "use client";
 
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
-import { cn } from "@betterinternship/components";
+import { Badge, cn } from "@betterinternship/components";
+import { CalendarDays } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
 import { useMobile } from "@/hooks/use-mobile";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
-import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
 import { useModalRef } from "@/hooks/use-modal";
-import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
 import { JobModal } from "@/components/modals/JobModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { TopJobCard } from "./TopJobCard";
 import { TopJobPanel } from "./TopJobPanel";
 import { ShowMoaButton } from "./ShowMoaButton";
 import { TopPageWeekWatcher } from "./TopPageWeekWatcher";
-import { topHeading } from "@/lib/utils/top-page-heading";
+import { DEFAULT_TOP_PAGE_ACCENT } from "@/lib/utils/top-page-heading";
+import { TopHeroArtwork, TopPageBackdrop } from "./TopArtwork";
+import { TopDiscordCTA } from "./TopDiscordCTA";
+import { TopPageNavbar } from "./TopPageNavbar";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { pickForeground } from "@/lib/utils/contrast";
+import { topAccentTextColor } from "@/lib/utils/top-page-presentation";
 import type { PublicTopPage } from "@/lib/api/top-page.server";
+import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
+import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
 
 /**
  * The public Top page (plan §5.2). Server-rendered once per request (up to
  * the 60s revalidate window) — `initialJobs` is that snapshot; this
- * component never refetches it client-side, only the interaction state
- * (selection, the open panel) is client-owned.
+ * component never refetches it client-side. The university filter and open
+ * detail panel are client-owned interaction state.
  */
 export function TopPageView({
   page,
@@ -49,24 +54,27 @@ export function TopPageView({
   const { isMobile } = useMobile();
   const profile = useProfileData();
   const applicationActions = useApplicationActions();
+  const bulkApply = useMassApplySelection(page.id);
   const prefersReducedMotion = useReducedMotion();
-  const {
-    selectMode,
-    setSelectMode,
-    selectedJobsList,
-    toggleSelect,
-    isSelected,
-    clearSelection,
-    selectAllOnPage,
-    unselectAllOnPage,
-    openMassApply,
-  } = useMassApplySelection(page.id);
+  const [moaActive, setMoaActive] = useState(false);
 
   // Null = no filter; the Top page's own curated set is always the base —
   // "Show companies with MOA" narrows it down, never replaces it with a
   // wider /search result (see ShowMoaButton).
   const [moaFilteredJobs, setMoaFilteredJobs] = useState<Job[] | null>(null);
   const jobs = moaFilteredJobs ?? initialJobs;
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const previousJobs = useRef(jobs);
+  useEffect(() => {
+    const changed = previousJobs.current !== jobs;
+    previousJobs.current = jobs;
+    if (!changed || prefersReducedMotion) return;
+    const animation = resultsRef.current?.animate(
+      [{ opacity: 0.65 }, { opacity: 1 }],
+      { duration: 160, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+    );
+    return () => animation?.cancel();
+  }, [jobs, prefersReducedMotion]);
 
   const [openJobId, setOpenJobId] = useState<string | null>(null);
   const openIndex = jobs.findIndex((job) => job.id === openJobId);
@@ -93,17 +101,6 @@ export function TopPageView({
   );
 
   const handleClose = useCallback(() => setOpenJobId(null), []);
-
-  // /search's checkbox flips select mode on itself the same way (see
-  // SearchResultsDesktop/Mobile) — toggleSelect alone never does, so without
-  // this the SearchCommandBar CTA never appears.
-  const handleToggleSelect = useCallback(
-    (job: Job) => {
-      if (!selectMode) setSelectMode(true);
-      toggleSelect(job);
-    },
-    [selectMode, setSelectMode, toggleSelect],
-  );
 
   // Bound to a specific job at each ApplyToJobButton/panel call site — every
   // apply made from this page is attributed to it (D20).
@@ -142,55 +139,68 @@ export function TopPageView({
     ],
   );
 
-  const accent = page.accent_hex;
+  const accent = page.accent_hex ?? DEFAULT_TOP_PAGE_ACCENT;
   const accentStyle = accent
     ? ({
         "--primary": accent,
         "--primary-foreground": pickForeground(accent),
+        "--color-primary": accent,
+        "--color-primary-foreground": pickForeground(accent),
+        "--color-muted-foreground": "#626fa5",
+        "--top-accent-text": topAccentTextColor(accent),
       } as React.CSSProperties)
     : undefined;
-  const heading = topHeading(jobs.length, page.name);
   const week = currentManilaWeek();
 
   return (
     <div
       style={accentStyle}
-      className="min-h-screen w-full shrink-0 bg-gray-50"
+      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff]"
     >
-      <SearchCommandBar
-        visible={selectMode}
-        selected={selectedJobsList}
-        selectedCount={selectedJobsList.length}
-        onCancel={() => {
-          setSelectMode(false);
-          clearSelection();
-        }}
-        onUnselectPage={() => unselectAllOnPage(jobs)}
-        onSelectPage={() => selectAllOnPage(jobs)}
-        onApply={disabled ? () => {} : openMassApply}
-        onToggleSelect={toggleSelect}
-      />
-
-      {/* Full-bleed, non-sticky banner — scrolls away with the rest of the
-          page. Client's shared route wrapper (AllowLanding) hides the site's
-          own top nav specifically for /top/* so this banner is the only
-          "header" on the page. */}
-      <header className="w-full border-b border-gray-300 bg-[url('/top-banner.png')] bg-cover bg-right bg-no-repeat py-14 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-semibold text-gray-900 sm:text-4xl">
-            {heading}
-          </h1>
-          <p className="mt-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <span className="relative inline-flex h-2 w-2" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
-            </span>
-            {week.label}
-          </p>
+      <TopPageBackdrop />
+      <TopPageNavbar disabled={disabled} />
+      <header className="relative mx-auto max-w-[1240px] px-4 pt-9 sm:px-6 lg:px-8 lg:pt-7">
+        <div className="relative grid items-center gap-4 lg:min-h-[300px] lg:grid-cols-[1.2fr_1fr] lg:gap-0">
+          <div className="relative z-10 lg:py-5">
+            <Badge
+              variant="outline"
+              type="default"
+              className="mb-5 w-fit gap-2.5 border-[#dde6ef] bg-white px-3 py-2 text-[13px] font-medium leading-none text-[#526078] shadow-[0_1px_2px_rgba(31,61,98,0.04)]"
+            >
+              <CalendarDays
+                className="h-4 w-4 shrink-0 text-[var(--top-accent-text)]"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+              <span className="tabular-nums">{week.label}</span>
+            </Badge>
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] sm:text-5xl lg:text-[52px]">
+              Top {initialJobs.length}{" "}
+              <span className="text-[var(--top-accent-text)]">{page.name}</span>
+              <br className="hidden sm:block" /> Internship
+              {initialJobs.length === 1 ? "" : "s"} This Week
+            </h1>
+            <div className="mt-8">
+              <ShowMoaButton
+                pageJobs={initialJobs}
+                onFilterChange={setMoaFilteredJobs}
+                active={moaActive}
+                onActiveChange={setMoaActive}
+              />
+            </div>
+          </div>
+          <div className="relative mx-auto w-full max-w-[460px] -translate-y-4 lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
+            <TopHeroArtwork />
+          </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div
+        className={cn(
+          "relative mx-auto max-w-[1240px] px-4 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8 lg:pt-6",
+          bulkApply.selectMode && "pb-32 sm:pb-32",
+        )}
+      >
         {weekKey && (
           <Suspense fallback={null}>
             <TopPageWeekWatcher
@@ -201,63 +211,61 @@ export function TopPageView({
           </Suspense>
         )}
 
-        <div className="mb-4 flex justify-start">
-          <ShowMoaButton
-            pageJobs={initialJobs}
-            onFilterChange={setMoaFilteredJobs}
-          />
+        <div ref={resultsRef}>
+          {jobs.length === 0 ? (
+            <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
+              {moaFilteredJobs !== null ? (
+                <>
+                  <p>
+                    None of this week&apos;s internships have an MOA with your
+                    university yet.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMoaFilteredJobs(null);
+                      setMoaActive(false);
+                    }}
+                    className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
+                  >
+                    Clear filter
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>No featured internships right now.</p>
+                  <Link
+                    href="/search"
+                    className="mt-2 inline-block text-primary underline"
+                  >
+                    Browse all listings
+                  </Link>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 items-stretch gap-4 md:auto-rows-fr md:grid-cols-2 lg:gap-5">
+              {jobs.map((job) => (
+                <TopJobCard
+                  key={job.id}
+                  job={job}
+                  profile={profile.data}
+                  selected={job.id === openJobId}
+                  onOpen={() => handleOpen(job)}
+                  onApply={({ resumeId }) => applyToJob(job, resumeId)}
+                  disabled={disabled}
+                  bulkSelected={bulkApply.isSelected(job.id)}
+                  onToggleSelect={() => {
+                    if (disabled) return;
+                    bulkApply.setSelectMode(true);
+                    bulkApply.toggleSelect(job);
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
-
-        {jobs.length === 0 ? (
-          <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
-            {moaFilteredJobs !== null ? (
-              <>
-                <p>
-                  None of this week&apos;s internships have an MOA with your
-                  university yet.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setMoaFilteredJobs(null)}
-                  className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
-                >
-                  Clear filter
-                </button>
-              </>
-            ) : (
-              <>
-                <p>No featured internships right now.</p>
-                <Link
-                  href="/search"
-                  className="mt-2 inline-block text-primary underline"
-                >
-                  Browse all listings
-                </Link>
-              </>
-            )}
-          </div>
-        ) : (
-          <div
-            className={cn(
-              "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3",
-            )}
-          >
-            {jobs.map((job, index) => (
-              <TopJobCard
-                key={job.id}
-                job={job}
-                index={index}
-                profile={profile.data}
-                selected={job.id === openJobId}
-                onOpen={() => handleOpen(job)}
-                isSelected={isSelected(job.id)}
-                onToggleSelect={handleToggleSelect}
-                onApply={({ resumeId }) => applyToJob(job, resumeId)}
-                disabled={disabled}
-              />
-            ))}
-          </div>
-        )}
+        <TopDiscordCTA />
 
         <AnimatePresence>
           {!isMobile && openJob && (
@@ -295,6 +303,20 @@ export function TopPageView({
 
         <ApplySuccessModal job={lastAppliedJob} ref={applySuccessModalRef} />
       </div>
+      <SearchCommandBar
+        visible={!disabled && bulkApply.selectMode}
+        selected={bulkApply.selectedJobsList}
+        selectedCount={bulkApply.selectedJobsList.length}
+        presentation="curated"
+        onCancel={() => {
+          bulkApply.setSelectMode(false);
+          bulkApply.clearSelection();
+        }}
+        onUnselectPage={() => bulkApply.unselectAllOnPage(jobs)}
+        onSelectPage={() => bulkApply.selectAllOnPage(jobs)}
+        onApply={bulkApply.openMassApply}
+        onToggleSelect={bulkApply.toggleSelect}
+      />
     </div>
   );
 }

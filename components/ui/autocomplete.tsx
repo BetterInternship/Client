@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "@betterinternship/components";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@betterinternship/components";
-import { PlusCircleIcon, X } from "lucide-react";
+import { ChevronDown, PlusCircleIcon, Search, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
 import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
@@ -34,6 +34,7 @@ function AutocompleteBase<ID extends number | string>({
   preserveOptionOrder = false,
   emptyText = "...",
   mobileDropdownMode = "sheet",
+  inputIcons = false,
   ...props
 }: {
   required?: boolean;
@@ -49,6 +50,7 @@ function AutocompleteBase<ID extends number | string>({
   preserveOptionOrder?: boolean;
   emptyText?: string;
   mobileDropdownMode?: MobileDropdownMode;
+  inputIcons?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -260,6 +262,23 @@ function AutocompleteBase<ID extends number | string>({
     if (e.key === "Escape") setIsOpen(false);
   };
 
+  const decorateSingleInput = (input: React.ReactNode) =>
+    inputIcons ? (
+      <div className="relative min-w-0 flex-1">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+        {input}
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+      </div>
+    ) : (
+      input
+    );
+
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
@@ -351,57 +370,60 @@ function AutocompleteBase<ID extends number | string>({
         </div>
       ) : (
         // ---------- SINGLE: regular input ----------
-        <Input
-          id={inputId}
-          value={singleDisplay || query}
-          className="border-gray-300"
-          placeholder={placeholder}
-          readOnly={suppressMobileKeyboard}
-          onChange={(e) => {
-            const nextQuery = e.target.value;
+        decorateSingleInput(
+          <Input
+            id={inputId}
+            value={singleDisplay || query}
+            className={cn("border-gray-300", inputIcons && "px-10")}
+            placeholder={placeholder}
+            readOnly={suppressMobileKeyboard}
+            onChange={(e) => {
+              const nextQuery = e.target.value;
 
-            if ((value?.length ?? 0) > 0) {
-              setter([]);
-            }
-
-            const exact = findExactOption(nextQuery);
-            // Only auto-fill on an exact NAME match; keyword/acronym matches
-            // (e.g. "dlsu") require an explicit Enter, blur, or click.
-            if (
-              exact &&
-              exact.name.trim().toLowerCase() === nextQuery.trim().toLowerCase()
-            ) {
-              setter([exact.id]);
-              setQuery("");
-            } else {
-              setQuery(nextQuery);
-            }
-
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          onClick={(e) => {
-            setIsOpen(true);
-            if (suppressMobileKeyboard) {
-              e.currentTarget.blur();
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && resolveQuerySelection(query, true)) {
-              setIsOpen(false);
-              e.preventDefault();
-            }
-          }}
-          onBlur={() => {
-            // slight delay to let dropdown option clicks register first
-            setTimeout(() => {
-              if (Date.now() - lastSelectionRef.current < 250) {
-                return;
+              if ((value?.length ?? 0) > 0) {
+                setter([]);
               }
-              resolveQuerySelection(query, false);
-            }, 150);
-          }}
-        />
+
+              const exact = findExactOption(nextQuery);
+              // Only auto-fill on an exact NAME match; keyword/acronym matches
+              // (e.g. "dlsu") require an explicit Enter, blur, or click.
+              if (
+                exact &&
+                exact.name.trim().toLowerCase() ===
+                  nextQuery.trim().toLowerCase()
+              ) {
+                setter([exact.id]);
+                setQuery("");
+              } else {
+                setQuery(nextQuery);
+              }
+
+              setIsOpen(true);
+            }}
+            onFocus={() => setIsOpen(true)}
+            onClick={(e) => {
+              setIsOpen(true);
+              if (suppressMobileKeyboard) {
+                e.currentTarget.blur();
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && resolveQuerySelection(query, true)) {
+                setIsOpen(false);
+                e.preventDefault();
+              }
+            }}
+            onBlur={() => {
+              // slight delay to let dropdown option clicks register first
+              setTimeout(() => {
+                if (Date.now() - lastSelectionRef.current < 250) {
+                  return;
+                }
+                resolveQuerySelection(query, false);
+              }, 150);
+            }}
+          />,
+        )
       )}
 
       {isOpen && (
@@ -528,6 +550,7 @@ export const Autocomplete = <ID extends number | string>({
   preserveOptionOrder = false,
   emptyText,
   mobileDropdownMode,
+  inputIcons,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -541,6 +564,7 @@ export const Autocomplete = <ID extends number | string>({
   preserveOptionOrder?: boolean;
   emptyText?: string;
   mobileDropdownMode?: MobileDropdownMode;
+  inputIcons?: boolean;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -556,6 +580,7 @@ export const Autocomplete = <ID extends number | string>({
       preserveOptionOrder={preserveOptionOrder}
       emptyText={emptyText}
       mobileDropdownMode={mobileDropdownMode}
+      inputIcons={inputIcons}
       {...props}
     />
   );

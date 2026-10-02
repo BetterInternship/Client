@@ -29,6 +29,7 @@ export const JobHead = ({
   employer,
   size = "",
   wrap = false,
+  headingAs = "h1",
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
@@ -37,10 +38,12 @@ export const JobHead = ({
   // when a badge sits beside the title and could otherwise overlap it
   // (see JobCard's hibernating badge).
   wrap?: boolean;
+  headingAs?: "h1" | "h2";
 }) => {
+  const Heading = headingAs;
   return (
     <div className="flex-1 min-w-0 text-wrap">
-      <h1
+      <Heading
         className={cn(
           "text-" + size + "xl",
           "font-semibold leading-tight transition-colors line-clamp-2 wrap-break-word",
@@ -48,7 +51,7 @@ export const JobHead = ({
         )}
       >
         {title}
-      </h1>
+      </Heading>
       <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1">
         <p className="text-sm text-muted-foreground font-medium">
           {employer ?? "Unknown"}

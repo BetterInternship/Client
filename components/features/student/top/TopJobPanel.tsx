@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { Job, PublicUser } from "@/lib/db/db.types";
@@ -14,9 +14,15 @@ import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 // Direction-aware slide for the panel's inner content only — the panel
 // itself never re-animates when switching listings (see component body).
 const contentVariants = {
-  enter: (direction: number) => ({ x: direction > 0 ? 32 : -32, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (direction: number) => ({ x: direction > 0 ? -32 : 32, opacity: 0 }),
+  enter: ({ direction, reduce }: { direction: number; reduce: boolean }) => ({
+    transform: `translateX(${reduce ? 0 : direction > 0 ? 32 : -32}px)`,
+    opacity: 0,
+  }),
+  center: { transform: "translateX(0)", opacity: 1 },
+  exit: ({ direction, reduce }: { direction: number; reduce: boolean }) => ({
+    transform: `translateX(${reduce ? 0 : direction > 0 ? -32 : 32}px)`,
+    opacity: 0,
+  }),
 };
 
 /**
@@ -49,6 +55,8 @@ export function TopJobPanel({
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [direction, setDirection] = useState(1);
+  const reduce = !!useReducedMotion();
+  const contentMotion = { direction, reduce };
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -78,10 +86,16 @@ export function TopJobPanel({
       aria-modal="true"
       aria-label={job.title ?? "Listing details"}
       className="fixed inset-y-0 right-0 z-[100] flex w-full max-w-2xl flex-col border-l bg-white shadow-xl"
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
+      initial={{
+        transform: reduce ? "none" : "translateX(100%)",
+        opacity: reduce ? 0 : 1,
+      }}
+      animate={{ transform: "translateX(0)", opacity: 1 }}
+      exit={{
+        transform: reduce ? "none" : "translateX(100%)",
+        opacity: reduce ? 0 : 1,
+      }}
+      transition={{ duration: reduce ? 0.12 : 0.25, ease: [0.32, 0.72, 0, 1] }}
     >
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-1">
@@ -119,15 +133,18 @@ export function TopJobPanel({
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <AnimatePresence mode="wait" initial={false} custom={contentMotion}>
           <motion.div
             key={job.id}
-            custom={direction}
+            custom={contentMotion}
             variants={contentVariants}
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.18, ease: "easeInOut" }}
+            transition={{
+              duration: reduce ? 0.08 : 0.14,
+              ease: [0.23, 1, 0.32, 1],
+            }}
             className="flex h-full flex-col"
           >
             <JobDetails
