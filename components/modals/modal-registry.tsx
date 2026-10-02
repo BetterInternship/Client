@@ -1,5 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { BellOff, FileUp, LucideIcon, Share2, Trash2 } from "lucide-react";
+import { FileUp, LucideIcon, Trash2 } from "lucide-react";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -23,7 +23,9 @@ import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import type { ResumeDTO } from "@/lib/api/services";
-import ApplicationActionModal from "./ApplicationActionModal";
+import ApplicationActionModal, {
+  getApplicationActionModalTitle,
+} from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import CloseListingModal from "./CloseListingModal";
 import DiscardEditModal from "./DiscardEditModal";
@@ -137,10 +139,10 @@ export const useModalRegistry = () => {
               pendingApplicantCount={pendingApplicantCount}
             />,
             {
-              title: `Delete ${job.title}`,
+              title: `Delete ${job.title}?`,
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("delete-listing"),
@@ -168,7 +170,6 @@ export const useModalRegistry = () => {
             "close-listing",
             DefaultModalLayout,
             <CloseListingModal
-              jobTitle={jobTitle}
               pendingCount={pendingCount}
               shortlistedCount={shortlistedCount}
               isProcessing={isProcessing}
@@ -177,10 +178,10 @@ export const useModalRegistry = () => {
               onCancel={() => close("close-listing")}
             />,
             {
-              title: `Close ${jobTitle}`,
+              title: `Close ${jobTitle}?`,
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("close-listing"),
@@ -207,15 +208,14 @@ export const useModalRegistry = () => {
                 close("discard-edit");
               }}
               onCancel={() => close("discard-edit")}
-              title={title}
               message={message}
               confirmLabel={confirmLabel}
             />,
             {
-              title: "Discard changes?",
+              title: title ?? "Discard your changes?",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("discard-edit"),
@@ -225,23 +225,10 @@ export const useModalRegistry = () => {
       shareJob: {
         open: ({ job }: { job: Job }) =>
           open("share-job", DefaultModalLayout, <ShareJobModal job={job} />, {
-            title: (
-              <div className="flex min-w-0 items-center gap-3">
-                <HeaderIcon icon={Share2} />
-                <h2 className="truncate text-base font-semibold">
-                  Share listing
-                  {job.title && (
-                    <span className="font-normal text-gray-500">
-                      {" "}
-                      — {job.title}
-                    </span>
-                  )}
-                </h2>
-              </div>
-            ),
+            title: job.title ? `Share listing — ${job.title}` : "Share listing",
             closeOnBackdropClick: true,
             closeOnEscapeKey: true,
-            showHeaderDivider: true,
+            showHeaderDivider: false,
           }),
         close: () => close("share-job"),
       },
@@ -251,30 +238,41 @@ export const useModalRegistry = () => {
           type,
           applicants,
           isProcessing,
+          acceptanceMessage,
+          onAcceptanceMessageChange,
           onConfirm,
+          onCancel,
         }: {
           type: ApplicationAction;
           applicants: EmployerApplication[];
           isProcessing: boolean;
+          acceptanceMessage: string;
+          onAcceptanceMessageChange: (message: string) => void;
           onConfirm: () => void;
-        }) =>
-          open(
+          onCancel: () => void;
+        }) => {
+          const title = getApplicationActionModalTitle(type, applicants);
+
+          return open(
             "application-action",
             DefaultModalLayout,
             <ApplicationActionModal
               type={type}
               applicants={applicants}
               isProcessing={isProcessing}
+              acceptanceMessage={acceptanceMessage}
+              onAcceptanceMessageChange={onAcceptanceMessageChange}
               onConfirm={onConfirm}
-              onCancel={() => close("application-action")}
+              onCancel={onCancel}
             />,
             {
-              title: `Change application status`,
+              title,
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
-          ),
+          );
+        },
         close: () => close("application-action"),
       },
       completeProfileApply: {
@@ -390,7 +388,7 @@ export const useModalRegistry = () => {
               showCloseButton: false,
               closeOnBackdropClick: false,
               closeOnEscapeKey: false,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("cancel-form-request"),
@@ -408,7 +406,7 @@ export const useModalRegistry = () => {
               showCloseButton: false,
               closeOnBackdropClick: false,
               closeOnEscapeKey: false,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("resend-form-request"),
@@ -417,16 +415,12 @@ export const useModalRegistry = () => {
       // Generic warning modal for reuse
       warning: {
         open: ({
-          icon,
-          iconColor,
           title,
           message,
           primaryAction,
           secondaryAction,
           panelClassName,
         }: {
-          icon: LucideIcon;
-          iconColor: string;
           title: string;
           message: string;
           primaryAction: { label: string; onClick: () => void };
@@ -437,16 +431,13 @@ export const useModalRegistry = () => {
             "warning",
             DefaultModalLayout,
             <WarningModal
-              icon={icon}
-              iconColor={iconColor}
-              title={title}
               message={message}
               primaryAction={primaryAction}
               secondaryAction={secondaryAction}
               close={() => close("warning")}
             />,
             {
-              title: " ",
+              title,
               closeOnBackdropClick: false,
               closeOnEscapeKey: false,
               showCloseButton: false,
@@ -613,7 +604,7 @@ export const useModalRegistry = () => {
               title: "Turn off applicant emails?",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("digest-optout"),
@@ -649,9 +640,6 @@ export const useModalRegistry = () => {
             "notifications-required",
             DefaultModalLayout,
             <WarningModal
-              icon={BellOff}
-              iconColor="text-amber-500"
-              title="Notifications are off"
               message="No one on your team currently receives applicant emails. Turn on notifications before you can have active listings."
               primaryAction={{
                 label: "Turn on notifications",
@@ -660,7 +648,7 @@ export const useModalRegistry = () => {
               close={() => close("notifications-required")}
             />,
             {
-              title: " ",
+              title: "Notifications are off",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
               showCloseButton: true,
@@ -683,10 +671,10 @@ export const useModalRegistry = () => {
               onCancel={() => close("moa-upload")}
             />,
             {
-              title: modalTitleWithIcon(FileUp, "Upload MOA Documents"),
+              title: "Upload MOA Documents",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
               panelClassName: "sm:max-w-2xl",
             },
           ),

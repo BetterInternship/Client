@@ -824,7 +824,12 @@ export const ApplicationService = {
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number },
+    review_options: {
+      review?: string;
+      notes?: string;
+      status?: number;
+      acceptance_message?: string;
+    },
   ) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("applications").r(id, "review").build(),
