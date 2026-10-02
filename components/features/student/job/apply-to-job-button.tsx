@@ -2,7 +2,7 @@ import { useJobStatus } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
-import { CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -10,17 +10,22 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { isProfileEligibleForListing } from "@/lib/profile";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { ListingAlertButton } from "./listing-alert-button";
+import { savePostLoginRedirect } from "@/lib/post-login-redirect";
 
 export const ApplyToJobButton = ({
   profile,
   job,
   onApply,
   className,
+  disabled,
+  presentation,
 }: {
   profile: PublicUser | null;
   job: Job;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
   className?: string;
+  disabled?: boolean;
+  presentation?: "curated";
 }) => {
   const auth = useAuthContext();
   const modalRegistry = useModalRegistry();
@@ -31,7 +36,9 @@ export const ApplyToJobButton = ({
   // A hibernating listing can't be applied to — the CTA becomes a job alert
   // toggle instead, everywhere ApplyToJobButton is rendered.
   if (job.hibernating) {
-    return <ListingAlertButton job={job} className={className} />;
+    return (
+      <ListingAlertButton job={job} className={className} disabled={disabled} />
+    );
   }
 
   /**
@@ -41,6 +48,9 @@ export const ApplyToJobButton = ({
    */
   const handleApply = () => {
     if (!profile || !auth.isAuthenticated()) {
+      savePostLoginRedirect(
+        `${window.location.pathname}${window.location.search}`,
+      );
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
@@ -65,19 +75,23 @@ export const ApplyToJobButton = ({
 
   return (
     <Button
-      disabled={applied}
+      disabled={disabled || applied}
       scheme={applied ? "supportive" : "primary"}
       size={"md"}
-      onClick={() => !applied && handleApply()}
+      onClick={() => !disabled && !applied && handleApply()}
       className={cn(
         className,
         isSuperListing &&
+          presentation !== "curated" &&
           !applied &&
           "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-amber-400/50 shadow-[0_4px_14px_rgba(245,158,11,0.3)] font-bold",
       )}
     >
       {applied && <CheckCircle className="w-4 h-4" />}
       {applied ? "Applied" : "Apply"}
+      {presentation === "curated" && !applied && (
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      )}
     </Button>
   );
 };
