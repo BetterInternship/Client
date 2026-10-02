@@ -116,3 +116,28 @@ export const AuthContextProvider = ({
     </AuthContext.Provider>
   );
 };
+
+const GUEST_AUTH: IAuthContext = {
+  register: () => Promise.resolve(null),
+  logout: () => Promise.resolve(),
+  isAuthenticated: () => false,
+  refreshAuthentication: () => Promise.resolve(null),
+  redirectIfNotLoggedIn: () => {},
+  redirectIfLoggedIn: () => {},
+};
+
+/**
+ * A logged-out student auth context, for student components rendered where
+ * there is no student session to read — the hire site's Top page preview.
+ * The hire layout provides its own (different) auth context, so without this
+ * `useAuthContext()` returns `{}` there and `auth.isAuthenticated()` throws.
+ *
+ * @component
+ */
+export const GuestAuthContextProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
+  <AuthContext.Provider value={GUEST_AUTH}>{children}</AuthContext.Provider>
+);

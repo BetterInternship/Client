@@ -59,8 +59,8 @@ export function TopPageView({
   /**
    * The university whose link this is (/<university>/top/<slug>) — named in
    * the heading, the source of the page's colour, and what the logged-out
-   * partner control is about. Absent only in the god preview, which shows a
-   * category on its own.
+   * partner control is about. The god preview passes a placeholder, since a
+   * category is shared by many universities.
    */
   university?: PublicTopUniversity;
   /** The same university's other live categories, linked under the grid. */
@@ -217,6 +217,7 @@ export function TopPageView({
                 onFilterChange={setMoaFilteredJobs}
                 active={moaActive}
                 onActiveChange={setMoaActive}
+                disabled={disabled}
               />
             </div>
           </div>
@@ -402,21 +403,32 @@ export function TopPageView({
             <span className="font-semibold text-[#101033]">
               More for {university.name}:
             </span>
-            {siblings.map((sibling) => (
-              <Link
-                key={sibling.slug}
-                href={`/${university.slug}/top/${sibling.slug}`}
-                className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
-              >
-                {sibling.name} Internships
-              </Link>
-            ))}
-            <Link
-              href={`/${university.slug}`}
-              className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
-            >
-              All categories
-            </Link>
+            {/* The preview has no real university behind these links, so
+                they are shown as plain text there. */}
+            {[
+              ...siblings.map((sibling) => ({
+                href: `/${university.slug}/top/${sibling.slug}`,
+                label: `${sibling.name} Internships`,
+              })),
+              { href: `/${university.slug}`, label: "All categories" },
+            ].map(({ href, label }) =>
+              disabled ? (
+                <span
+                  key={href}
+                  className="font-medium text-[var(--top-accent-text)]"
+                >
+                  {label}
+                </span>
+              ) : (
+                <Link
+                  key={href}
+                  href={href}
+                  className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
+                >
+                  {label}
+                </Link>
+              ),
+            )}
           </nav>
         )}
         <TopDiscordCTA />

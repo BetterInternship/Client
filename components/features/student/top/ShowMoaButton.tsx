@@ -58,13 +58,16 @@ export function ShowMoaButton({
   onFilterChange,
   active,
   onActiveChange,
+  disabled,
 }: {
-  /** The page's university; absent in the god preview. */
+  /** The page's university; the god preview passes a placeholder. */
   university?: PublicTopUniversity;
   pageJobs: Job[];
   onFilterChange: (filtered: Job[] | null) => void;
   active: boolean;
   onActiveChange: (active: boolean) => void;
+  /** The god preview: the control is shown but does nothing. */
+  disabled?: boolean;
 }) {
   const auth = useAuthContext();
   const authenticated = auth.isAuthenticated();
@@ -128,8 +131,7 @@ export function ShowMoaButton({
   };
 
   if (!authenticated) {
-    // The god preview shows a category on its own, with no university to
-    // ask about.
+    // Without a university there is nothing to ask about.
     if (!university) return null;
 
     // The university has no partner-platform account, so there are no MOAs
@@ -147,6 +149,7 @@ export function ShowMoaButton({
             type="button"
             variant="outline"
             scheme="supportive"
+            disabled={disabled}
             onClick={() =>
               modalRegistry.inviteUniversity.open({
                 universityName: university.name,
@@ -177,6 +180,7 @@ export function ShowMoaButton({
           type="button"
           variant="outline"
           scheme="supportive"
+          disabled={disabled}
           onClick={() =>
             modalRegistry.topUniversityLogin.open({
               universityName: university.name,
@@ -210,6 +214,7 @@ export function ShowMoaButton({
         type="button"
         variant="outline"
         scheme="supportive"
+        disabled={disabled}
         onClick={handleToggle}
         aria-pressed={active}
         aria-label={`${active ? "Show all internships instead of companies partnered with" : "Show companies partnered with"} ${get_university(profile.data?.university)?.name ?? "your university"}`}

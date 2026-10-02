@@ -3,8 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
-import { Badge, Button, Input } from "@betterinternship/components";
+import { ArrowLeft, Check, Link2, Link2Off } from "lucide-react";
+import { Portal as TooltipPortal } from "@radix-ui/react-tooltip";
+import { Badge, Button, cn, Input } from "@betterinternship/components";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { baseUrl } from "@/lib/site-url";
 import { ListSummary } from "@/components/features/hire/god/ui";
 import {
   useGodTopUniversityGrid,
@@ -32,6 +39,83 @@ const toStaged = (row: GodTopUniversityRow): StagedRow => ({
 
 const sameIds = (a: string[], b: string[]) =>
   a.length === b.length && a.every((id) => b.includes(id));
+
+const COPIED_FEEDBACK_MS = 1600;
+
+/**
+ * The copy-link control under a ticked cell: one click copies that
+ * university's link for that page. A link that would not open yet (the tick
+ * is unsaved, or the page is a draft) shows a broken-link icon and explains
+ * why instead of copying — it stays focusable (`aria-disabled`, not
+ * `disabled`) so the reason is reachable by hover and by keyboard.
+ */
+function CopyPageLinkButton({
+  url,
+  subject,
+  notLiveReason,
+}: {
+  url: string;
+  /** What the link is for, e.g. "Data Science for De La Salle University". */
+  subject: string;
+  notLiveReason?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  const handleCopy = async () => {
+    if (notLiveReason) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      toast.error("Could not copy the link.");
+    }
+  };
+
+  const Icon = notLiveReason ? Link2Off : copied ? Check : Link2;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={
+            notLiveReason
+              ? `Link to ${subject} is not live. ${notLiveReason}`
+              : `Copy link to ${subject}`
+          }
+          aria-disabled={!!notLiveReason}
+          onClick={() => void handleCopy()}
+          className={cn(
+            "flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+            notLiveReason
+              ? "cursor-not-allowed text-slate-300"
+              : copied
+                ? "cursor-pointer text-emerald-600"
+                : "cursor-pointer text-slate-400 hover:bg-slate-200/70 hover:text-slate-700",
+          )}
+        >
+          <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+          <span role="status" className="sr-only">
+            {copied ? "Link copied" : ""}
+          </span>
+        </button>
+      </TooltipTrigger>
+      {/* Portalled: the table scrolls and has sticky cells, both of which
+          would clip or cover a tooltip rendered in place. */}
+      <TooltipPortal>
+        <TooltipContent side="bottom" className="max-w-56 px-2 py-1 text-xs">
+          {notLiveReason ?? "Copy link"}
+        </TooltipContent>
+      </TooltipPortal>
+    </Tooltip>
+  );
+}
 
 /**
  * The university grid (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md D15): a row
@@ -317,21 +401,45 @@ export default function TopUniversitiesGridPage() {
                           />
                         </div>
                       </td>
-                      {pages.map((page) => (
-                        <td
-                          key={page.id}
-                          className={`border-b px-3 py-2 text-center ${dirty ? "bg-amber-50" : "group-hover:bg-slate-50"}`}
-                        >
-                          <input
-                            type="checkbox"
-                            aria-label={`${page.name} for ${university.name}`}
-                            checked={row.pageIds.includes(page.id)}
-                            disabled={!!urlProblem}
-                            onChange={() => togglePage(university, page.id)}
-                            className="h-4 w-4 cursor-pointer disabled:cursor-not-allowed"
-                          />
-                        </td>
-                      ))}
+                      {pages.map((page) => {
+                        const ticked = row.pageIds.includes(page.id);
+                        const notLiveReason = !university.page_ids.includes(
+                          page.id,
+                        )
+                          ? "Save to make this link live."
+                          : !page.is_published
+                            ? `${page.name} is still a draft. Publish it to make this link live.`
+                            : undefined;
+
+                        return (
+                          <td
+                            key={page.id}
+                            className={`border-b px-3 py-1.5 ${dirty ? "bg-amber-50" : "group-hover:bg-slate-50"}`}
+                          >
+                            <div className="flex flex-col items-center gap-0.5">
+                              <input
+                                type="checkbox"
+                                aria-label={`${page.name} for ${university.name}`}
+                                checked={ticked}
+                                disabled={!!urlProblem}
+                                onChange={() => togglePage(university, page.id)}
+                                className="h-4 w-4 cursor-pointer disabled:cursor-not-allowed"
+                              />
+                              {/* Always the same height, so ticking a cell
+                                  never changes the row's height. */}
+                              <div className="flex h-6 items-center justify-center">
+                                {ticked && (
+                                  <CopyPageLinkButton
+                                    url={`${baseUrl}/${university.slug}/top/${page.slug}`}
+                                    subject={`${page.name} for ${university.name}`}
+                                    notLiveReason={notLiveReason}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      })}
                       <td
                         className={`border-b px-3 py-2 text-right ${dirty ? "bg-amber-50" : "group-hover:bg-slate-50"}`}
                       >
