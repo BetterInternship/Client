@@ -18,7 +18,7 @@ export const CancelFormModal = ({
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="flex flex-col w-full gap-5 mt-2 text-sm text-gray-600 leading-relaxed text-justify">
+    <div className="flex flex-col w-full gap-3 mt-2 text-sm text-gray-600 leading-relaxed text-justify">
       This will cancel the current form request and stop any further responses.{" "}
       <br />
       <br />

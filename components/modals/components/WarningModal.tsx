@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@betterinternship/components";
+import { LucideIcon } from "lucide-react";
+
 export interface WarningModalProps {
+  icon: LucideIcon;
+  iconColor: string;
+  title: string;
   message: string;
   primaryAction: {
     label: string;
@@ -15,6 +20,9 @@ export interface WarningModalProps {
 }
 
 export function WarningModal({
+  icon: Icon,
+  iconColor,
+  title,
   message,
   primaryAction,
   secondaryAction,
@@ -31,10 +39,21 @@ export function WarningModal({
   };
 
   return (
-    <div className="space-y-5">
-      <p className="text-sm text-gray-600 leading-relaxed text-left whitespace-pre-line">
-        {message}
-      </p>
+    <div className="space-y-3">
+      {/* Icon - centered */}
+      <div className="flex justify-center mb-1">
+        <Icon className={`w-16 h-16 ${iconColor} flex-shrink-0`} />
+      </div>
+
+      {/* Title and Message */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold text-gray-900 text-center">
+          {title}
+        </h3>
+        <p className="text-sm text-gray-600 leading-relaxed text-left whitespace-pre-line">
+          {message}
+        </p>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2 justify-end">

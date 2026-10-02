@@ -24,8 +24,6 @@ interface SearchCommandBarProps {
   onSelectPage: () => void;
   onApply: () => void;
   onToggleSelect?: (job: Job) => void;
-  /** Shorter labels keep the Top-page toolbar usable on narrow phones. */
-  presentation?: "curated";
 }
 
 interface SelectedJobRowProps {
@@ -76,7 +74,6 @@ export function SearchCommandBar({
   onSelectPage,
   onApply,
   onToggleSelect,
-  presentation,
 }: SearchCommandBarProps) {
   const { isMobile } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +151,6 @@ export function SearchCommandBar({
                         variant="ghost"
                         size="icon"
                         onClick={onCancel}
-                        aria-label="Clear selected jobs"
                       >
                         <X />
                       </Button>,
@@ -165,11 +161,7 @@ export function SearchCommandBar({
                         className={"h-10" + (isOpen ? " bg-muted" : "")}
                       >
                         <List />
-                        <span>
-                          {presentation === "curated"
-                            ? `Selected (${selectedCount})`
-                            : `Open Selected Jobs (${selectedCount})`}
-                        </span>
+                        <span>Open Selected Jobs ({selectedCount})</span>
                       </Button>,
                       <Button
                         key="apply"
@@ -208,7 +200,6 @@ export function SearchCommandBar({
                         variant="ghost"
                         size="sm"
                         onClick={onCancel}
-                        aria-label="Clear selected jobs"
                       >
                         <X />
                       </Button>,

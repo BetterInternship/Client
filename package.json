@@ -9,7 +9,6 @@
     "publish": "npm run build && git push origin develop",
     "start": "next start",
     "lint": "next lint",
-    "preview:modals": "node scripts/preview-modals.mjs",
     "postinstall": "patch-package"
   },
   "dependencies": {

@@ -12,7 +12,6 @@ export const ShareJobButton = ({
   job,
   className,
   onOpen,
-  disabled,
 }: {
   job: Job;
   className?: string;
@@ -21,7 +20,6 @@ export const ShareJobButton = ({
   // mint settles (not on click) so the sheet — and this button's loader —
   // stays visible for the whole wait instead of closing immediately.
   onOpen?: () => void;
-  disabled?: boolean;
 }) => {
   const modals = useModalRegistry();
   const queryClient = useQueryClient();
@@ -48,8 +46,8 @@ export const ShareJobButton = ({
   return (
     <Button
       variant="outline"
-      onClick={() => !disabled && void handleClick()}
-      disabled={disabled || minting}
+      onClick={() => void handleClick()}
+      disabled={minting}
       name="Share"
       scheme="default"
       size="md"

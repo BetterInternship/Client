@@ -1,19 +1,27 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import {
   useJobListingsPage,
+  useJobStatus,
   useJobData,
   useProfileData,
 } from "@/lib/api/student.data.api";
+import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { useModalRef } from "@/hooks/use-modal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
-import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
@@ -23,20 +31,16 @@ import { SearchResultsDesktop } from "@/components/features/student/search/Searc
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const modalRegistry = useModalRegistry();
+  const { isAuthenticated } = useAuthContext();
   const { isMobile } = useMobile();
 
-  // selection + bulk apply (plan §5.3 — shared with the Top pages)
-  const {
-    selectMode,
-    setSelectMode,
-    selectedJobsList,
-    toggleSelect,
-    isSelected,
-    clearSelection,
-    selectAllOnPage,
-    unselectAllOnPage,
-    openMassApply,
-  } = useMassApplySelection();
+  // selection + bulk apply
+  const [selectMode, setSelectMode] = useState(false);
+  // Snapshot of the Job object at the moment it was ticked — selections
+  // survive page flips and filter changes since the server no longer keeps
+  // every listing in memory client-side (D8).
+  const [selectedJobs, setSelectedJobs] = useState<Map<string, Job>>(new Map());
 
   // job list & filters
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -76,6 +80,7 @@ export default function SearchPage() {
     page: _jobsPage,
     limit: jobsPageSize,
   });
+  const jobStatus = useJobStatus();
   const applicationActions = useApplicationActions();
 
   // Modals
@@ -147,11 +152,186 @@ export default function SearchPage() {
     }
   }, [jobIdParam, jobIdOnPage, deepLinkJob.data, jobsPage, selectedJob]);
 
+  // Auto-close toolbar when all selections are cleared
+  useEffect(() => {
+    if (selectedJobs.size === 0 && selectMode) {
+      setSelectMode(false);
+    }
+  }, [selectedJobs.size, selectMode]);
+
+  const toggleSelect = (job: Job) => {
+    if (!job.id || job.challenge || job.hibernating) return;
+    const jobId = job.id;
+
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      if (next.has(jobId)) {
+        next.delete(jobId);
+      } else {
+        next.set(jobId, job);
+      }
+      return next;
+    });
+  };
+
+  const isSelected = (jobId?: string) => !!jobId && selectedJobs.has(jobId);
+
+  const clearSelection = () => setSelectedJobs(new Map());
+
+  const selectAllOnPage = () => {
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      jobsPage.forEach((j) => {
+        if (j.id && !j.challenge && !j.hibernating) next.set(j.id, j);
+      });
+      return next;
+    });
+  };
+
+  const unselectAllOnPage = () => {
+    setSelectedJobs((prev) => {
+      const next = new Map(prev);
+      jobsPage.forEach((j) => {
+        if (j.id) next.delete(j.id);
+      });
+      return next;
+    });
+  };
+
+  const selectedJobsList = useMemo(
+    () => Array.from(selectedJobs.values()),
+    [selectedJobs],
+  );
+
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
     if (isMobile) jobModalRef.current?.open();
   };
 
+  /* --------------------------------------------
+    * Mass apply actions (stable + minimal re-renders)
+    -------------------------------------------- */
+  const openMassApply = () => {
+    if (!isAuthenticated()) {
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      return;
+    }
+
+    const allApplied =
+      selectedJobsList.length > 0 &&
+      selectedJobsList.every((j) => jobStatus.isJobApplied(j.id ?? ""));
+    if (!selectedJobsList.length || allApplied) {
+      toast.error(
+        "No eligible jobs selected. Select jobs you haven’t applied to yet.",
+      );
+      return;
+    }
+
+    modalRegistry.completeProfileApply.open({
+      profile: profile.data,
+      applyLabel: `Apply to ${selectedJobs.size || 0}`,
+      onApply: ({ resumeId }: ApplyPayload) => {
+        void runMassApply(resumeId);
+      },
+    });
+  };
+
+  // guard against double-submit
+  const isSubmittingRef = useRef(false);
+
+  const runMassApply = useCallback(
+    async (resumeId: string) => {
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
+
+      try {
+        if (!selectedJobsList.length) return;
+
+        const skipped: { job: Job; reason: string }[] = [];
+        const eligible: Job[] = [];
+
+        for (const job of selectedJobsList) {
+          if (job.hibernating) {
+            skipped.push({ job, reason: "No longer accepting applicants" });
+            continue;
+          }
+          if (jobStatus.isJobApplied(job.id ?? "")) {
+            skipped.push({ job, reason: "Already applied" });
+            continue;
+          }
+          const internshipPreferences = job.internship_preferences;
+          const needsGithub =
+            internshipPreferences?.require_github &&
+            !profile.data?.github_link?.trim();
+          const needsPortfolio =
+            internshipPreferences?.require_portfolio &&
+            !profile.data?.portfolio_link?.trim();
+
+          if (needsGithub) {
+            skipped.push({ job, reason: "Requires GitHub profile" });
+            continue;
+          }
+          if (needsPortfolio) {
+            skipped.push({ job, reason: "Requires portfolio link" });
+            continue;
+          }
+          eligible.push(job);
+        }
+
+        if (!eligible.length) {
+          const data = {
+            ok: [],
+            skipped,
+            failed: [] as { job: Job; error: string }[],
+          };
+          modalRegistry.massApplyResult.open({
+            massApplyResultsData: data,
+            clearSelection,
+            setSelectMode,
+          });
+          return;
+        }
+
+        const ok: Job[] = [];
+        const failed: { job: Job; error: string }[] = [];
+
+        for (const job of eligible) {
+          try {
+            await applicationActions.create.mutateAsync({
+              job_id: job.id ?? "",
+              resume_id: resumeId,
+              source: "mass",
+            });
+            if (applicationActions.create.error) {
+              failed.push({
+                job,
+                error:
+                  applicationActions.create.error.message || "Unknown error",
+              });
+            } else {
+              const error = applicationActions.create.data?.message;
+              if (error) failed.push({ job, error });
+              else ok.push(job);
+            }
+          } catch (e) {
+            const errorMessage =
+              e instanceof Error ? e.message : "Unknown error";
+            failed.push({ job, error: errorMessage });
+          }
+        }
+
+        const data = { ok, skipped, failed };
+        modalRegistry.massApplyResult.open({
+          massApplyResultsData: data,
+          clearSelection,
+          setSelectMode,
+        });
+      } finally {
+        isSubmittingRef.current = false;
+      }
+    },
+    [profile.data, applicationActions, clearSelection, setSelectMode],
+  );
   const handleSingleApply = useCallback(
     async ({ resumeId }: ApplyPayload) => {
       if (!selectedJob?.id || !resumeId) return;
@@ -186,8 +366,8 @@ export default function SearchPage() {
           setSelectMode(false);
           clearSelection();
         }}
-        onUnselectPage={() => unselectAllOnPage(jobsPage)}
-        onSelectPage={() => selectAllOnPage(jobsPage)}
+        onUnselectPage={unselectAllOnPage}
+        onSelectPage={selectAllOnPage}
         onApply={openMassApply}
         onToggleSelect={toggleSelect}
       />

@@ -29,7 +29,6 @@ export const JobHead = ({
   employer,
   size = "",
   wrap = false,
-  headingAs = "h1",
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
@@ -38,12 +37,10 @@ export const JobHead = ({
   // when a badge sits beside the title and could otherwise overlap it
   // (see JobCard's hibernating badge).
   wrap?: boolean;
-  headingAs?: "h1" | "h2";
 }) => {
-  const Heading = headingAs;
   return (
     <div className="flex-1 min-w-0 text-wrap">
-      <Heading
+      <h1
         className={cn(
           "text-" + size + "xl",
           "font-semibold leading-tight transition-colors line-clamp-2 wrap-break-word",
@@ -51,7 +48,7 @@ export const JobHead = ({
         )}
       >
         {title}
-      </Heading>
+      </h1>
       <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1">
         <p className="text-sm text-muted-foreground font-medium">
           {employer ?? "Unknown"}
@@ -204,20 +201,6 @@ export const EmployerMOA = ({
     <Badge variant="solid" type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
       {toAbbreviation(get_university(university_id)?.name)} MOA
-    </Badge>
-  );
-};
-
-// Listing-level attribute (set by the employer, ListingInternshipPreferences)
-// — not to be confused with a student's own credited/voluntary preference.
-export const CreditedBadge = ({ job }: { job: Job }) => {
-  if (!job.internship_preferences?.internship_types?.includes("credited")) {
-    return null;
-  }
-
-  return (
-    <Badge variant="solid" type="supportive" className="w-fit">
-      Credited
     </Badge>
   );
 };
@@ -742,7 +725,6 @@ export function JobDetails({
   actions = [],
   applyDisabledText = "Complete required items to apply.",
   className,
-  showCredited,
 }: {
   job: Job;
   user?: {
@@ -752,7 +734,6 @@ export function JobDetails({
   actions?: React.ReactNode[];
   applyDisabledText?: string;
   className?: string;
-  showCredited?: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -773,7 +754,6 @@ export function JobDetails({
           actions={job.hibernating ? [] : actions}
           disabled={missingRequired}
         />
-        {showCredited && <CreditedBadge job={job} />}
 
         <Section title="Job Details">
           <JobDetailsSummary job={job} />

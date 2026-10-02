@@ -1,6 +1,9 @@
+import { Ban } from "lucide-react";
+import { HeaderIcon } from "../ui/text";
 import { Button } from "@betterinternship/components";
 
 interface CloseListingModalProps {
+  jobTitle: string;
   pendingCount: number;
   shortlistedCount: number;
   isProcessing: boolean;
@@ -16,6 +19,7 @@ interface CloseListingModalProps {
  * (Docs/plans/APPLICANT_STATUS_FINALIZATION_PLAN.md §4.3, D3/D11).
  */
 export default function CloseListingModal({
+  jobTitle,
   pendingCount,
   shortlistedCount,
   isProcessing,
@@ -24,7 +28,11 @@ export default function CloseListingModal({
   onCancel,
 }: CloseListingModalProps) {
   return (
-    <div className="flex flex-col gap-5 h-full w-full">
+    <div className="flex flex-col gap-3 h-full w-full">
+      <div className="flex items-center gap-3 pt-4">
+        <HeaderIcon icon={Ban} />
+        <h4>Close {jobTitle}?</h4>
+      </div>
       <span>
         {pendingCount} applicant{pendingCount === 1 ? "" : "s"} haven&apos;t
         heard back from you. They&apos;ll be told this listing has closed.

@@ -4,7 +4,6 @@ import { Loader } from "@/components/ui/loader";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { consumePostLoginRedirect } from "@/lib/post-login-redirect";
 
 const InternalSetupPage = () => {
   const queryClient = useQueryClient();
@@ -20,7 +19,7 @@ const InternalSetupPage = () => {
       await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
       await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
-      router.replace(consumePostLoginRedirect());
+      router.push("/search");
     })();
   });
 

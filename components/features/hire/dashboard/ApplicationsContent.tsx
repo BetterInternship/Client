@@ -243,7 +243,6 @@ export const ApplicationsContent = forwardRef<
       label={activeFilter === "archived" ? "Unarchive" : "Archive"}
       enabled={!bulkArchiveDisabled}
       disabledLabel={`${unfinalizedSelectedCount} of ${selectedApplications.size} selected haven't been accepted or rejected yet.`}
-      className="text-gray-500"
       onClick={() => {
         const apps = Array.from(selectedApplications)
           .map((id) => sortedApplications.find((app) => app.id === id))

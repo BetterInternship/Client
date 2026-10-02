@@ -18,7 +18,6 @@ export function useApplicationActions(
   const modalRegistry = useModalRegistry();
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [acceptanceMessage, setAcceptanceMessage] = useState("");
 
   // ensure single action is performed at once.
   const [applicationAction, setApplicationAction] = useState<{
@@ -33,12 +32,6 @@ export function useApplicationActions(
         type: applicationAction.type,
         applicants: applicationAction.applicants,
         isProcessing,
-        acceptanceMessage,
-        onAcceptanceMessageChange: setAcceptanceMessage,
-        onCancel: () => {
-          setApplicationAction({ type: "NONE", applicants: [] });
-          setAcceptanceMessage("");
-        },
         onConfirm: () => {
           void confirmAction();
         },
@@ -46,7 +39,7 @@ export function useApplicationActions(
     } else {
       modalRegistry.applicationAction.close();
     }
-  }, [applicationAction, isProcessing, acceptanceMessage]);
+  }, [applicationAction, isProcessing]);
 
   // handle requests for application actions.
   const triggerAction = (
@@ -54,7 +47,6 @@ export function useApplicationActions(
     applicants: EmployerApplication[],
     status?: number,
   ) => {
-    setAcceptanceMessage("");
     setApplicationAction({ type, applicants, targetStatus: status });
   };
 
@@ -69,11 +61,7 @@ export function useApplicationActions(
 
     try {
       // this object must match the structure of the updates requested in API-Server-V2\src\applications\applications.service.ts
-      let updatePayload: {
-        status?: number;
-        visibility?: string;
-        acceptance_message?: string;
-      } = {};
+      let updatePayload: { status?: number; visibility?: string } = {};
 
       let toastMessage: string;
 
@@ -87,12 +75,7 @@ export function useApplicationActions(
               : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was shortlisted.`;
           break;
         case "ACCEPT":
-          updatePayload = {
-            status: 4,
-            ...(acceptanceMessage.trim()
-              ? { acceptance_message: acceptanceMessage.trim() }
-              : {}),
-          };
+          updatePayload = { status: 4 };
           toastMessage =
             applicationAction.applicants.length > 1
               ? `${applicationAction.applicants.length} applications were accepted.`
@@ -159,7 +142,6 @@ export function useApplicationActions(
 
       // cleanup + callback.
       setApplicationAction({ type: "NONE", applicants: [] });
-      setAcceptanceMessage("");
       if (onSuccess) onSuccess();
     } catch (error: any) {
       toast.error(`${error}`);

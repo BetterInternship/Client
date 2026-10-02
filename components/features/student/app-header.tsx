@@ -48,14 +48,9 @@ const HIDE_ON_ROUTES = [
 export function StudentAppHeader({
   showActions = true,
   transparent = false,
-  showSearch = true,
-  onLogin,
 }: {
   showActions?: boolean;
   transparent?: boolean;
-  showSearch?: boolean;
-  /** Optional caller-owned login flow, e.g. preserving a Top-page return URL. */
-  onLogin?: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname() ?? "";
@@ -210,29 +205,26 @@ export function StudentAppHeader({
       .filter(Boolean)
       .join(" ") || undefined;
 
-  const loginRedirect = () => {
-    if (onLogin) onLogin();
-    else router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
-  };
+  const loginRedirect = () =>
+    router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
 
-  const desktopSearch =
-    showActions && showSearch ? (
-      <div className="flex w-full items-center gap-3 md:max-w-xl">
-        <SearchInput
-          value={searchTerm}
-          onChange={setSearchTerm}
-          onEnter={doSearch}
-          moaOnly={moaOnly}
-          onToggleMoa={handleMoaToggle}
-          showForCredit={authenticated}
-        />
-        {showFilters && (
-          <JobFilterProvider initial={initialFromUrl}>
-            <JobFilters onApply={onApplyFilters} />
-          </JobFilterProvider>
-        )}
-      </div>
-    ) : undefined;
+  const desktopSearch = showActions ? (
+    <div className="flex w-full items-center gap-3 md:max-w-xl">
+      <SearchInput
+        value={searchTerm}
+        onChange={setSearchTerm}
+        onEnter={doSearch}
+        moaOnly={moaOnly}
+        onToggleMoa={handleMoaToggle}
+        showForCredit={authenticated}
+      />
+      {showFilters && (
+        <JobFilterProvider initial={initialFromUrl}>
+          <JobFilters onApply={onApplyFilters} />
+        </JobFilterProvider>
+      )}
+    </div>
+  ) : undefined;
 
   const renderChrome = () => {
     // Maintenance / chrome-less: logo only.
@@ -282,16 +274,14 @@ export function StudentAppHeader({
             </div>
 
             <div className="flex items-center gap-2">
-              {showSearch && (
-                <button
-                  type="button"
-                  aria-label="Search"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 md:hidden"
-                  onClick={() => setOverlayOpen(true)}
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-              )}
+              <button
+                type="button"
+                aria-label="Search"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 hover:bg-gray-50 md:hidden"
+                onClick={() => setOverlayOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </button>
               <Button
                 type="button"
                 variant="outline"
@@ -319,7 +309,7 @@ export function StudentAppHeader({
         postLogoutPath="/"
         profileHref="/profile"
         search={desktopSearch}
-        onSearchClick={showSearch ? () => setOverlayOpen(true) : undefined}
+        onSearchClick={() => setOverlayOpen(true)}
         showMobileMenu={false}
         userAvatarUrl={avatarUrl || null}
       />
@@ -331,8 +321,6 @@ export function StudentAppHeader({
       <div
         className={cn(
           "sticky top-0 z-100",
-          transparent &&
-            "[&_header]:border-0 [&_header]:bg-transparent [&_header]:backdrop-blur-none",
           desktopHeaderHidden &&
             "max-h-0 -translate-y-2 overflow-hidden opacity-0 pointer-events-none transition-all duration-300 ease-out",
         )}
@@ -340,12 +328,10 @@ export function StudentAppHeader({
         {renderChrome()}
       </div>
 
-      {showSearch && (
-        <MobileSearchOverlay
-          open={overlayOpen}
-          onClose={() => setOverlayOpen(false)}
-        />
-      )}
+      <MobileSearchOverlay
+        open={overlayOpen}
+        onClose={() => setOverlayOpen(false)}
+      />
     </>
   );
 }

@@ -20,13 +20,11 @@ export const ListingAlertButton = ({
   className,
   size = "md",
   verbose = false,
-  disabled,
 }: {
   job: Job;
   className?: string;
   size?: "md" | "lg";
   verbose?: boolean;
-  disabled?: boolean;
 }) => {
   const auth = useAuthContext();
   const jobs = useJobStatus();
@@ -71,8 +69,8 @@ export const ListingAlertButton = ({
       variant={onAlert ? "outline" : undefined}
       scheme={onAlert ? "supportive" : "primary"}
       size={size}
-      disabled={disabled || pending}
-      onClick={(event) => !disabled && void handleToggle(event)}
+      disabled={pending}
+      onClick={(event) => void handleToggle(event)}
       className={className}
     >
       {onAlert ? (

@@ -14,20 +14,11 @@ export default function AllowLanding({
   const isStudentLanding = pathname === "/";
   const isAuthRoute = pathname === "/login" || pathname.startsWith("/register");
   const hideHeader = isStudentLanding || isAuthRoute;
-  const isListingCreationPage = pathname.endsWith("/listings/create");
 
   return (
     <>
       <Suspense>{!hideHeader && <HireAppHeader />}</Suspense>
-      <div
-        className={
-          isListingCreationPage
-            ? "flex flex-1 flex-col"
-            : "flex min-h-0 grow flex-col"
-        }
-      >
-        {children}
-      </div>
+      <div className="flex min-h-0 grow flex-col">{children}</div>
       {!isStudentLanding && (
         <div className="hidden md:block">
           <Footer />

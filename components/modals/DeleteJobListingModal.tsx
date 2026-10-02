@@ -1,4 +1,6 @@
 import { Job } from "@/lib/db/db.types";
+import { Trash2 } from "lucide-react";
+import { HeaderIcon } from "../ui/text";
 import { Button } from "@betterinternship/components";
 
 interface DeleteJobListingProps {
@@ -25,7 +27,11 @@ export default function DeleteJobListingModal({
   if (!job) return null;
 
   return (
-    <div className="flex flex-col gap-5 h-full w-full">
+    <div className="flex flex-col gap-3 h-full w-full">
+      <div className="flex items-center gap-3 pt-4">
+        <HeaderIcon icon={Trash2} />
+        <h4>Delete {job.title}?</h4>
+      </div>
       <span>
         {pendingApplicantCount > 0
           ? `This is permanent. ${pendingApplicantCount} applicant${pendingApplicantCount === 1 ? "" : "s"} will be told this listing has closed, and you won't be able to accept or reject anyone afterwards.`
