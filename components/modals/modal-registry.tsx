@@ -37,6 +37,7 @@ import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
+import { Button } from "@betterinternship/components";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -692,19 +693,71 @@ export const useModalRegistry = () => {
         close: () => close("moa-upload"),
       },
 
+      topUniversityLogin: {
+        open: ({
+          universityName,
+          onContinue,
+        }: {
+          universityName: string;
+          onContinue: () => void;
+        }) =>
+          open(
+            "top-university-login",
+            DefaultModalLayout,
+            <div className="flex flex-col gap-4 pt-2">
+              <p className="text-sm leading-6 text-muted-foreground">
+                Log in or create a free account to see companies partnered with{" "}
+                {universityName}. After signing in, the filter uses the
+                university on your profile.
+              </p>
+              <Button
+                type="button"
+                onClick={onContinue}
+                className="min-h-11 w-full"
+              >
+                Log in or create an account
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => close("top-university-login")}
+              >
+                Not now
+              </Button>
+            </div>,
+            {
+              title: "Find your university's partners",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("top-university-login"),
+      },
+
       // Fire-and-forget "invite my university" (Top pages' "Show companies
       // with MOA" button) — no backend record, see InviteUniversityModal.
       inviteUniversity: {
-        open: ({ universityName }: { universityName: string }) =>
+        open: ({
+          universityName,
+          onInviteSent,
+        }: {
+          universityName: string;
+          onInviteSent?: () => void;
+        }) =>
           open(
             "invite-university",
             DefaultModalLayout,
-            <InviteUniversityModal universityName={universityName} />,
+            <InviteUniversityModal
+              universityName={universityName}
+              onInviteSent={onInviteSent}
+            />,
             {
-              title: `Invite ${universityName}`,
+              title: "Invite your university",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
+              panelClassName: "sm:w-[440px] sm:max-w-[440px]",
             },
           ),
         close: () => close("invite-university"),

@@ -16,6 +16,7 @@ export interface IAutocompleteOption<ID extends number | string> {
 }
 
 type MobileDropdownMode = "sheet" | "inline";
+type InputIcons = boolean | "search";
 
 /* -------------------------------------------------------
  * Base component (array-based). Single uses length 0..1.
@@ -50,7 +51,7 @@ function AutocompleteBase<ID extends number | string>({
   preserveOptionOrder?: boolean;
   emptyText?: string;
   mobileDropdownMode?: MobileDropdownMode;
-  inputIcons?: boolean;
+  inputIcons?: InputIcons;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -265,15 +266,24 @@ function AutocompleteBase<ID extends number | string>({
   const decorateSingleInput = (input: React.ReactNode) =>
     inputIcons ? (
       <div className="relative min-w-0 flex-1">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
+        {inputIcons !== "search" && (
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+        )}
         {input}
-        <ChevronDown
-          className="pointer-events-none absolute right-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
+        {inputIcons === "search" ? (
+          <Search
+            className="pointer-events-none absolute right-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+        ) : (
+          <ChevronDown
+            className="pointer-events-none absolute right-3 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+        )}
       </div>
     ) : (
       input
@@ -374,7 +384,10 @@ function AutocompleteBase<ID extends number | string>({
           <Input
             id={inputId}
             value={singleDisplay || query}
-            className={cn("border-gray-300", inputIcons && "px-10")}
+            className={cn(
+              "border-gray-300",
+              inputIcons === "search" ? "pr-10" : inputIcons && "px-10",
+            )}
             placeholder={placeholder}
             readOnly={suppressMobileKeyboard}
             onChange={(e) => {
@@ -564,7 +577,7 @@ export const Autocomplete = <ID extends number | string>({
   preserveOptionOrder?: boolean;
   emptyText?: string;
   mobileDropdownMode?: MobileDropdownMode;
-  inputIcons?: boolean;
+  inputIcons?: InputIcons;
 }) => {
   return (
     <AutocompleteBase<ID>

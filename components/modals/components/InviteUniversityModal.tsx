@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import invitationArtwork from "@/public/top/university-invite.webp";
 import { ChevronDown } from "lucide-react";
 import {
   Button,
@@ -27,6 +29,7 @@ const PROVIDER_LABEL: Record<ComposeProvider, string> = {
 
 interface InviteUniversityModalProps {
   universityName: string;
+  onInviteSent?: () => void;
 }
 
 /**
@@ -39,9 +42,11 @@ interface InviteUniversityModalProps {
  */
 export function InviteUniversityModal({
   universityName,
+  onInviteSent,
 }: InviteUniversityModalProps) {
   const [email, setEmail] = useState("");
   const [provider, setProvider] = useState<ComposeProvider>("gmail");
+  const [composeOpened, setComposeOpened] = useState(false);
   const isValidEmail = EMAIL_PATTERN.test(email);
 
   const handleSend = () => {
@@ -53,15 +58,29 @@ export function InviteUniversityModal({
       body: buildUniversityInviteBody(),
     });
     window.open(url, "_blank", "noopener,noreferrer");
+    setComposeOpened(true);
   };
 
   return (
-    <div className="flex flex-col gap-4 pt-2">
-      <p className="text-sm text-muted-foreground">
-        If you want to find{" "}
-        <b>companies that have MOAs with {universityName}</b>, help us by
-        inviting them to BetterInternship.
-      </p>
+    <div className="flex flex-col gap-5 pb-1">
+      <div className="text-left">
+        <Image
+          src={invitationArtwork}
+          alt=""
+          className="mx-auto mb-4 h-auto w-[144px] sm:w-[176px]"
+          sizes="(min-width: 640px) 176px, 144px"
+          loading="eager"
+        />
+
+        <p className="mt-3 text-justify text-sm leading-6 text-muted-foreground">
+          Invite{" "}
+          <strong className="font-medium text-gray-900">
+            {universityName}
+          </strong>{" "}
+          to BetterInternship. We&apos;ll be copied into your email so we can
+          help connect your university with partner companies.
+        </p>
+      </div>
 
       <FormInput
         label="University contact email"
@@ -75,7 +94,7 @@ export function InviteUniversityModal({
       <div className="flex w-full">
         <Button
           type="button"
-          className="flex-1 rounded-r-none"
+          className="min-h-11 flex-1 rounded-r-none"
           disabled={!isValidEmail}
           onClick={handleSend}
         >
@@ -85,7 +104,7 @@ export function InviteUniversityModal({
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
-              className="rounded-l-none border-l border-white/25 px-3"
+              className="min-h-11 rounded-l-none border-l border-white/25 px-3"
               aria-label="Choose email provider"
             >
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -107,6 +126,23 @@ export function InviteUniversityModal({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {onInviteSent && composeOpened && (
+        <div className="flex flex-col gap-3">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Send the invitation in {PROVIDER_LABEL[provider]}, then come back
+            here to continue. We can&apos;t confirm delivery from your email
+            app.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onInviteSent}
+            className="min-h-11 w-full"
+          >
+            I&apos;ve sent it — continue
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

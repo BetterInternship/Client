@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import {
@@ -10,7 +11,7 @@ import {
   motion,
   useReducedMotion,
 } from "framer-motion";
-import { cn } from "@betterinternship/components";
+import { Button, cn } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useMobile } from "@/hooks/use-mobile";
 import { useProfileData } from "@/lib/api/student.data.api";
@@ -33,6 +34,9 @@ import type { PublicTopPage } from "@/lib/api/top-page.server";
 import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
 import motionStyles from "./top-motion.module.css";
+import { useDbRefs } from "@/lib/db/use-refs";
+import useModalRegistry from "@/components/modals/modal-registry";
+import emptyArtwork from "@/public/student/error.png";
 
 /**
  * The public Top page (plan §5.2). Server-rendered once per request (up to
@@ -58,6 +62,9 @@ export function TopPageView({
 }) {
   const { isMobile } = useMobile();
   const profile = useProfileData();
+  const { get_university } = useDbRefs();
+  const modalRegistry = useModalRegistry();
+  const universityName = get_university(profile.data?.university)?.name;
   const applicationActions = useApplicationActions();
   const bulkApply = useMassApplySelection(page.id);
   const prefersReducedMotion = useReducedMotion();
@@ -235,23 +242,56 @@ export function TopPageView({
             }}
           >
             {jobs.length === 0 ? (
-              <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
+              <div
+                className="py-8 text-center text-muted-foreground sm:py-12"
+                role="status"
+              >
                 {moaFilteredJobs !== null ? (
                   <>
-                    <p>
-                      None of this week&apos;s internships have an MOA with your
-                      university yet.
+                    <Image
+                      src={emptyArtwork}
+                      alt=""
+                      className="mx-auto mb-5 h-auto w-[240px] max-w-full mix-blend-multiply sm:w-[300px]"
+                      sizes="(min-width: 640px) 300px, 240px"
+                    />
+                    <h2 className="text-2xl font-semibold tracking-tight text-[#101033]">
+                      Help us help you
+                    </h2>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6">
+                      No internships in this week&apos;s collection match{" "}
+                      {universityName ?? "your university"}&apos;s partnerships
+                      yet.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMoaFilteredJobs(null);
-                        setMoaActive(false);
-                      }}
-                      className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
-                    >
-                      Clear filter
-                    </button>
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-6">
+                      Invite your university to BetterInternship and copy us in
+                      so we can help connect them with partner companies.
+                    </p>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                      <Button
+                        type="button"
+                        disabled={disabled || !universityName}
+                        onClick={() => {
+                          if (universityName)
+                            modalRegistry.inviteUniversity.open({
+                              universityName,
+                            });
+                        }}
+                        className="min-h-11"
+                      >
+                        Invite your university
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          setMoaFilteredJobs(null);
+                          setMoaActive(false);
+                        }}
+                        className="min-h-11"
+                      >
+                        Show all internships
+                      </Button>
+                    </div>
                   </>
                 ) : (
                   <>
