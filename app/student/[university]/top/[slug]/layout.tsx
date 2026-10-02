@@ -42,7 +42,12 @@ export async function generateMetadata({
   // The address without ?week= (or any other query) is the one search
   // engines should keep, so every QR variant folds into it.
   const path = `/${result.university.slug}/top/${result.page.slug}`;
-  const image = `${path}/og`;
+  const image = {
+    url: `${path}/og?v=2`,
+    width: 1200,
+    height: 630,
+    alt: `${title} — ${week.label}`,
+  };
 
   return {
     title,

@@ -399,43 +399,55 @@ export function TopPageView({
         <ApplySuccessModal job={lastAppliedJob} ref={applySuccessModalRef} />
       </div>
       <div className="relative mx-auto max-w-[1240px] px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
-        {university && (
-          <nav
-            aria-label={`More internships for ${university.name} students`}
-            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-          >
-            <span className="font-semibold text-[#101033]">
-              More for {university.name}:
-            </span>
-            {/* The preview has no real university behind these links, so
-                they are shown as plain text there. */}
-            {[
-              ...siblings.map((sibling) => ({
-                href: `/${university.slug}/top/${sibling.slug}`,
-                label: `${sibling.name} Internships`,
-              })),
-              { href: `/${university.slug}`, label: "All categories" },
-            ].map(({ href, label }) =>
-              disabled ? (
-                <span
-                  key={href}
-                  className="font-medium text-[var(--top-accent-text)]"
-                >
-                  {label}
-                </span>
-              ) : (
-                <Link
-                  key={href}
-                  href={href}
-                  className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
-                >
-                  {label}
-                </Link>
-              ),
-            )}
-          </nav>
-        )}
-        <TopDiscordCTA />
+        <div
+          className={motionStyles.ctaColumn}
+          data-panel-open={panelOpen}
+          style={{
+            width: panelOpen
+              ? "min(100%, calc(100% - var(--top-panel-width) + max(0px, calc((100vw - 1240px) / 2))))"
+              : "100%",
+          }}
+        >
+          {/* Inside the column so the links narrow with it when the side
+              panel is open, instead of running underneath the panel. */}
+          {university && (
+            <nav
+              aria-label={`More internships for ${university.name} students`}
+              className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+            >
+              <span className="font-semibold text-[#101033]">
+                More for {university.name}:
+              </span>
+              {/* The preview has no real university behind these links, so
+                  they are shown as plain text there. */}
+              {[
+                ...siblings.map((sibling) => ({
+                  href: `/${university.slug}/top/${sibling.slug}`,
+                  label: `${sibling.name} Internships`,
+                })),
+                { href: `/${university.slug}`, label: "All categories" },
+              ].map(({ href, label }) =>
+                disabled ? (
+                  <span
+                    key={href}
+                    className="font-medium text-[var(--top-accent-text)]"
+                  >
+                    {label}
+                  </span>
+                ) : (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="font-medium text-[var(--top-accent-text)] underline-offset-4 hover:underline"
+                  >
+                    {label}
+                  </Link>
+                ),
+              )}
+            </nav>
+          )}
+          <TopDiscordCTA compact={panelOpen} />
+        </div>
       </div>
       <SearchCommandBar
         visible={!disabled && bulkApply.selectMode}
