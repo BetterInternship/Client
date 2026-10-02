@@ -32,6 +32,7 @@ import {
 import { pickForeground } from "@/lib/utils/contrast";
 import { Loader } from "@/components/ui/loader";
 import { baseUrl } from "@/lib/site-url";
+import { currentManilaWeek, nextManilaWeek } from "@/lib/utils/manila-week";
 
 const MAX_MEMBERS = 12;
 
@@ -234,6 +235,14 @@ export default function TopPageEditorPage() {
   const accent = accentHex ?? DEFAULT_TOP_PAGE_ACCENT;
   const foreground = pickForeground(accent);
   const publicUrl = `${baseUrl}/top/${data.page.slug}`;
+  // Pubmat QR links carry ?week= so a stale pubmat shows the old-QR banner
+  // (Docs/plans/TOP_PAGES_WEEK_PARAM_PLAN.md). "Next week" exists because
+  // pubmats are made ahead: a QR copied on Friday with this week's value is
+  // stale from the Sunday it first goes on display.
+  const qrWeeks = [
+    { label: "this week", week: currentManilaWeek() },
+    { label: "next week", week: nextManilaWeek() },
+  ];
 
   const handlePreview = () => {
     try {
@@ -371,28 +380,49 @@ export default function TopPageEditorPage() {
           </label>
 
           {data.page.is_published && (
-            <div className="flex items-center gap-1 text-xs text-slate-500">
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 underline"
-              >
-                {publicUrl}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-              <button
-                type="button"
-                className="cursor-pointer rounded p-1 hover:bg-slate-100"
-                aria-label="Copy link"
-                onClick={() => {
-                  void navigator.clipboard.writeText(publicUrl);
-                  toast.success("Link copied.");
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            <>
+              <div className="flex items-center gap-1 text-xs text-slate-500">
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 underline"
+                >
+                  {publicUrl}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                <button
+                  type="button"
+                  className="cursor-pointer rounded p-1 hover:bg-slate-100"
+                  aria-label="Copy link"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(publicUrl);
+                    toast.success("Link copied.");
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {qrWeeks.map(({ label, week }) => (
+                  <Button
+                    key={week.key}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(
+                        `${publicUrl}?week=${week.key}`,
+                      );
+                      toast.success("QR link copied.");
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy QR link: {label} ({week.label})
+                  </Button>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -18,6 +18,7 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { TopJobCard } from "./TopJobCard";
 import { TopJobPanel } from "./TopJobPanel";
 import { ShowMoaButton } from "./ShowMoaButton";
+import { TopPageWeekWatcher } from "./TopPageWeekWatcher";
 import { topHeading } from "@/lib/utils/top-page-heading";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { pickForeground } from "@/lib/utils/contrast";
@@ -32,10 +33,17 @@ import type { PublicTopPage } from "@/lib/api/top-page.server";
 export function TopPageView({
   page,
   initialJobs,
+  weekKey,
   disabled,
 }: {
   page: PublicTopPage;
   initialJobs: Job[];
+  /**
+   * The server's current week ("YYYY-MM-DD" Sunday, Manila). Only the public
+   * page passes it; without it (the god preview) there is no old-QR banner
+   * and no visit event.
+   */
+  weekKey?: string;
   disabled?: boolean;
 }) {
   const { isMobile } = useMobile();
@@ -183,6 +191,16 @@ export function TopPageView({
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        {weekKey && (
+          <Suspense fallback={null}>
+            <TopPageWeekWatcher
+              page={page}
+              weekKey={weekKey}
+              jobCount={initialJobs.length}
+            />
+          </Suspense>
+        )}
+
         <div className="mb-4 flex justify-start">
           <ShowMoaButton
             pageJobs={initialJobs}

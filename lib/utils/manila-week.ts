@@ -7,6 +7,10 @@ export interface ManilaWeek {
   end: Date;
   /** "Sep 27 – Oct 3, 2026" */
   label: string;
+  /** The Sunday that starts the week, as a Manila calendar date: "2026-09-27". */
+  key: string;
+  /** The Saturday that ends the week, as a Manila calendar date: "2026-10-03". */
+  endKey: string;
 }
 
 const monthDayFormatter = new Intl.DateTimeFormat("en-US", {
@@ -53,5 +57,50 @@ export function currentManilaWeek(now: Date = new Date()): ManilaWeek {
     start: new Date(startShifted.getTime() - MANILA_OFFSET_MS),
     end: new Date(endShifted.getTime() - MANILA_OFFSET_MS),
     label,
+    // startShifted/endShifted sit at UTC midnight of the Manila calendar date,
+    // so their ISO date is the Manila date.
+    key: startShifted.toISOString().slice(0, 10),
+    endKey: endShifted.toISOString().slice(0, 10),
   };
+}
+
+/** The week after `now`'s, for pubmats that are made ahead of time. */
+export function nextManilaWeek(now: Date = new Date()): ManilaWeek {
+  return currentManilaWeek(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000));
+}
+
+export type WeekParamStatus =
+  | "none"
+  | "invalid"
+  | "current"
+  | "stale"
+  | "future";
+
+const WEEK_PARAM_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Classifies a Top page's `?week=` value (Docs/plans/TOP_PAGES_WEEK_PARAM_PLAN.md
+ * D1/D2) against the live week. Only "stale" shows the old-QR banner — a
+ * typo ("invalid") or a pubmat scanned before its week starts ("future")
+ * must not scare a student. Zero-padded ISO dates compare correctly as strings.
+ */
+export function classifyWeekParam(
+  raw: string | null,
+  week: Pick<ManilaWeek, "key" | "endKey">,
+): WeekParamStatus {
+  if (!raw) return "none";
+  if (!WEEK_PARAM_PATTERN.test(raw)) return "invalid";
+
+  // Rejects dates that parse but roll over (2026-02-31 → Mar 3).
+  const parsed = new Date(`${raw}T00:00:00Z`);
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== raw
+  ) {
+    return "invalid";
+  }
+
+  if (raw < week.key) return "stale";
+  if (raw > week.endKey) return "future";
+  return "current";
 }
