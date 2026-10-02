@@ -11,7 +11,7 @@ export function TopDiscordCTA() {
       aria-labelledby="top-discord-heading"
       className="relative mt-8 flex flex-col items-center gap-5 overflow-hidden rounded-[0.33em] border border-blue-100 bg-[linear-gradient(120deg,#d8ebff_0%,#f4faff_42%,#d5eaff_100%)] px-6 py-6 sm:min-h-[164px] sm:flex-row sm:gap-7 sm:py-5 lg:px-7"
     >
-      <div className="w-[200px] shrink-0 sm:absolute sm:bottom-0 sm:left-3 sm:w-[220px]">
+      <div className="relative h-[150px] w-[200px] shrink-0 sm:absolute sm:bottom-0 sm:left-3 sm:h-[165px] sm:w-[220px]">
         <TopDiscordArtwork />
       </div>
       <div className="relative flex-1 text-center sm:ml-52 sm:text-left">

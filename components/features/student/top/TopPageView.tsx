@@ -10,8 +10,7 @@ import {
   motion,
   useReducedMotion,
 } from "framer-motion";
-import { Badge, cn } from "@betterinternship/components";
-import { CalendarDays } from "lucide-react";
+import { cn } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useMobile } from "@/hooks/use-mobile";
 import { useProfileData } from "@/lib/api/student.data.api";
@@ -172,32 +171,25 @@ export function TopPageView({
   return (
     <div
       style={accentStyle}
-      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff]"
+      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff] max-md:overflow-clip"
     >
       <TopPageBackdrop />
       <TopPageNavbar disabled={disabled} />
-      <header className="relative mx-auto max-w-[1240px] px-4 pt-6 sm:px-6 sm:pt-9 lg:px-8 lg:pt-7">
+      <header className="relative mx-auto max-w-[1240px] px-4 pt-9 max-sm:pt-6 sm:px-6 lg:px-8 lg:pt-7">
         <div className="relative grid items-center gap-4 lg:min-h-[300px] lg:grid-cols-[1.2fr_1fr] lg:gap-0">
           <div className="relative z-10 lg:py-5">
-            <Badge
-              variant="outline"
-              type="default"
-              className="mb-5 w-fit gap-2.5 border-[#dde6ef] bg-white px-3 py-2 text-[13px] font-medium leading-none text-[#526078] shadow-[0_1px_2px_rgba(31,61,98,0.04)]"
-            >
-              <CalendarDays
-                className="h-4 w-4 shrink-0 text-[var(--top-accent-text)]"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-              <span className="tabular-nums">{week.label}</span>
-            </Badge>
-            <h1 className="text-[34px] font-bold leading-[1.08] tracking-tight text-[#101033] sm:text-5xl lg:text-[52px]">
+            <div className="mb-1 flex w-fit items-center gap-2.5">
+              <span className="text-base font-medium leading-6 text-[#526078] tabular-nums sm:text-lg">
+                {week.label}
+              </span>
+            </div>
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] max-sm:text-[32px] max-sm:leading-[1.12] sm:text-5xl lg:text-[52px]">
               Top {initialJobs.length}{" "}
               <span className="text-[var(--top-accent-text)]">{page.name}</span>
               <br className="hidden sm:block" /> Internship
               {initialJobs.length === 1 ? "" : "s"} This Week
             </h1>
-            <div className="mt-6 sm:mt-8">
+            <div className="mt-8 max-sm:mt-6">
               <ShowMoaButton
                 pageJobs={initialJobs}
                 onFilterChange={setMoaFilteredJobs}
@@ -206,7 +198,7 @@ export function TopPageView({
               />
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-[340px] -translate-y-4 sm:max-w-[460px] lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
+          <div className="relative mx-auto w-full max-w-[460px] -translate-y-4 max-sm:hidden lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
             <TopHeroArtwork />
           </div>
         </div>
@@ -214,7 +206,7 @@ export function TopPageView({
 
       <div
         className={cn(
-          "relative mx-auto w-full max-w-[1240px] px-4 pb-6 pt-2 sm:px-6 sm:pt-8 lg:px-8 lg:pt-6",
+          "relative mx-auto w-full max-w-[1240px] px-4 pt-8 max-sm:pb-6 max-sm:pt-4 sm:px-6 lg:px-8 lg:pt-6",
           bulkApply.selectMode && "pb-32 sm:pb-32",
         )}
       >
@@ -277,7 +269,7 @@ export function TopPageView({
               <div
                 className={cn(
                   motionStyles.jobGrid,
-                  "grid auto-rows-fr items-stretch gap-3 sm:gap-4 lg:gap-5",
+                  "grid items-stretch gap-3 sm:auto-rows-fr sm:gap-4 lg:gap-5",
                 )}
                 data-panel-open={panelOpen}
               >

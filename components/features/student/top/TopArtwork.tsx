@@ -87,7 +87,7 @@ export function TopHeroArtwork() {
           src={heroChart}
           alt=""
           className="h-auto w-full"
-          sizes="(min-width: 1024px) 360px, (min-width: 640px) 330px, 72vw"
+          sizes="(min-width: 1024px) 360px, (min-width: 640px) 330px, 173px"
           priority
         />
       </div>
@@ -99,7 +99,7 @@ export function TopHeroArtwork() {
           src={heroOpportunity}
           alt=""
           className="h-auto w-full"
-          sizes="(min-width: 1024px) 240px, (min-width: 640px) 220px, 48vw"
+          sizes="(min-width: 1024px) 240px, (min-width: 640px) 220px, 115px"
           priority
         />
       </div>
@@ -108,7 +108,7 @@ export function TopHeroArtwork() {
           src={discordApply}
           alt=""
           className="h-auto w-full"
-          sizes="(min-width: 1024px) 170px, (min-width: 640px) 156px, 34vw"
+          sizes="(min-width: 1024px) 170px, (min-width: 640px) 156px, 82px"
           priority
         />
       </div>
@@ -131,6 +131,7 @@ export function TopDiscordArtwork() {
           alt=""
           className="h-auto w-full"
           sizes="(min-width: 640px) 154px, 140px"
+          loading="eager"
         />
       </div>
       <div className={`${styles.layer} ${styles.apply}`} aria-hidden="true">
@@ -139,6 +140,7 @@ export function TopDiscordArtwork() {
           alt=""
           className="h-auto w-full"
           sizes="(min-width: 640px) 145px, 130px"
+          loading="eager"
         />
       </div>
     </div>

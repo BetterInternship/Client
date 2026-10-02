@@ -57,7 +57,7 @@ export function TopJobCard({
     <Card
       role="article"
       className={cn(
-        "relative isolate flex h-full min-w-0 min-h-[230px] flex-col gap-3 overflow-hidden px-4 py-5 transition-colors duration-200 sm:min-h-[250px] sm:px-6 sm:py-6",
+        "relative isolate flex h-full min-w-0 min-h-[250px] flex-col gap-3 overflow-hidden px-6 py-6 transition-colors duration-200 max-sm:min-h-0 max-sm:gap-2.5 max-sm:p-4",
         selected || bulkSelected
           ? "ring-1 ring-primary ring-offset-1"
           : "hover:border-primary/30 hover:shadow-sm",
@@ -116,7 +116,7 @@ export function TopJobCard({
         )}
       </div>
 
-      <div className="-mt-2 flex min-h-7 flex-wrap items-center gap-x-3 gap-y-2">
+      <div className="-mt-2 flex min-h-7 flex-wrap items-center gap-x-3 gap-y-2 max-sm:mt-0 max-sm:min-h-0 max-sm:gap-x-2 max-sm:gap-y-1.5">
         <JobBadges job={job} excludes={["moa"]} />
         {hasMoa ? (
           <EmployerMOA
@@ -130,7 +130,7 @@ export function TopJobCard({
       <div className="-mt-1">
         <JobLocation location={job.location} />
       </div>
-      <div className="min-h-12 text-sm leading-6 text-muted-foreground">
+      <div className="min-h-12 text-sm leading-6 text-muted-foreground max-sm:hidden">
         <div className="line-clamp-2">
           <ReactMarkdown
             allowedElements={["p", "strong", "em", "li"]}
@@ -145,16 +145,16 @@ export function TopJobCard({
         </div>
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2">
-        <p className="flex items-center gap-2 text-xs text-gray-500">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2 max-sm:flex-nowrap">
+        <p className="flex items-center gap-2 text-xs text-gray-500 max-sm:min-w-0">
           {age && (
             <>
               <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Posted {age}
+              <span>{age}</span>
             </>
           )}
         </p>
-        <div className="relative z-10 ml-auto flex items-center gap-2">
+        <div className="relative z-10 ml-auto flex items-center gap-2 max-sm:shrink-0">
           <SaveJobButton
             job={job}
             disabled={disabled}

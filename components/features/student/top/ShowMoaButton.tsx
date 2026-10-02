@@ -156,14 +156,14 @@ export function ShowMoaButton({
         }}
         preserveOptionOrder
         inputIcons
-        className="w-full max-w-xl lg:flex lg:items-center lg:gap-4 [&>div:first-child]:mb-2 lg:[&>div:first-child]:mb-0 [&>div:first-child]:shrink-0 [&_label]:text-sm sm:[&_label]:text-base [&_label]:font-semibold [&_label]:text-slate-950 [&_input]:min-h-11 [&_input]:placeholder:text-muted-foreground lg:[&_ul]:top-full"
+        className="max-w-xl sm:flex sm:items-center sm:gap-5 [&>div:first-child]:shrink-0 [&>div:first-child]:mb-2 sm:[&>div:first-child]:mb-0 [&_label]:text-base [&_label]:font-semibold [&_label]:text-slate-950 [&_input]:min-h-11 [&_input]:placeholder:text-muted-foreground sm:[&_ul]:top-full max-sm:w-full max-sm:[&_label]:text-sm max-sm:[&_input]:min-h-12 max-sm:[&_input]:bg-white"
       />
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
-      <span className="text-sm font-semibold text-slate-950 sm:text-base">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5 max-sm:gap-2">
+      <span className="font-semibold text-slate-950 max-sm:text-sm">
         Show companies partnered with
       </span>
       {active && <MoaFilterQuery onResult={handleResult} />}
@@ -177,7 +177,7 @@ export function ShowMoaButton({
         aria-busy={active && isPending}
         className={cn(
           motionStyles.action,
-          "min-h-11 w-full max-w-full justify-start gap-2 rounded-lg text-left whitespace-normal lg:w-auto",
+          "min-h-11 max-w-full gap-2 rounded-lg text-left whitespace-normal max-sm:min-h-12 max-sm:w-full max-sm:justify-start",
           active &&
             "bg-supportive text-supportive-foreground hover:bg-supportive/90",
         )}
