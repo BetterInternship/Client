@@ -49,11 +49,13 @@ export function StudentAppHeader({
   showActions = true,
   transparent = false,
   showSearch = true,
+  sticky = true,
   onLogin,
 }: {
   showActions?: boolean;
   transparent?: boolean;
   showSearch?: boolean;
+  sticky?: boolean;
   /** Optional caller-owned login flow, e.g. preserving a Top-page return URL. */
   onLogin?: () => void;
 }) {
@@ -330,7 +332,7 @@ export function StudentAppHeader({
     <>
       <div
         className={cn(
-          "sticky top-0 z-100",
+          sticky ? "sticky top-0 z-100" : "relative z-100 [&_header]:static",
           transparent &&
             "[&_header]:border-0 [&_header]:bg-transparent [&_header]:backdrop-blur-none",
           desktopHeaderHidden &&

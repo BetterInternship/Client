@@ -93,11 +93,12 @@ export function TopPageNavbar({ disabled }: { disabled?: boolean }) {
   return (
     <>
       {!disabled && (
-        <div className="sticky top-0 z-[100] md:hidden">
+        <div className="relative z-[100] md:hidden">
           <Suspense fallback={null}>
             <StudentAppHeader
               transparent
               showSearch={false}
+              sticky={false}
               onLogin={handleLogin}
             />
           </Suspense>
