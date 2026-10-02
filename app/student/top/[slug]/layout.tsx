@@ -33,7 +33,12 @@ export async function generateMetadata({
         result.jobs.length > companies.length ? " and more" : ""
       }.`
     : week.label;
-  const image = `/top/${result.page.slug}/og`;
+  const image = {
+    url: `/top/${result.page.slug}/og?v=2`,
+    width: 1200,
+    height: 630,
+    alt: `${title} — ${week.label}`,
+  };
 
   return {
     title,

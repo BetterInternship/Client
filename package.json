@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "preview:modals": "node scripts/preview-modals.mjs",
+    "preview:og": "node scripts/preview-og.mjs",
     "postinstall": "patch-package"
   },
   "dependencies": {
