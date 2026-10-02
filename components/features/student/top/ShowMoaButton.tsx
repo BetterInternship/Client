@@ -148,16 +148,19 @@ export function ShowMoaButton({
           <Button
             type="button"
             variant="outline"
-            scheme="supportive"
+            scheme="primary"
             disabled={disabled}
             onClick={() =>
               modalRegistry.inviteUniversity.open({
                 universityName: university.name,
               })
             }
+            // The page sets --primary to the university's colour. The text
+            // uses the darkened accent so a pale colour stays readable, and
+            // the hover tint follows the accent instead of the stock blue.
             className={cn(
               motionStyles.action,
-              "min-h-11 max-w-full gap-2 rounded-lg text-left whitespace-normal max-sm:min-h-12 max-sm:w-full max-sm:justify-start",
+              "min-h-11 max-w-full gap-2 rounded-lg text-left text-[color:var(--top-accent-text)] whitespace-normal hover:bg-primary/10 max-sm:min-h-12 max-sm:w-full max-sm:justify-start",
             )}
           >
             <Building2 className="h-4 w-4 shrink-0" />

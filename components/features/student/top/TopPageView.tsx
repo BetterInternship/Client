@@ -23,7 +23,7 @@ import { TopJobCard } from "./TopJobCard";
 import { TopJobPanel } from "./TopJobPanel";
 import { ShowMoaButton } from "./ShowMoaButton";
 import { TopPageWeekWatcher } from "./TopPageWeekWatcher";
-import { topUniversityLine } from "@/lib/utils/top-page-heading";
+import { TOP_UNIVERSITY_LINE } from "@/lib/utils/top-page-heading";
 import { TopHeroArtwork, TopPageBackdrop } from "./TopArtwork";
 import { TopDiscordCTA } from "./TopDiscordCTA";
 import { TopPageNavbar } from "./TopPageNavbar";
@@ -206,7 +206,11 @@ export function TopPageView({
                   of what the page is about, not a caption beside it. */}
               {university && (
                 <span className="mt-3 block text-xl font-semibold leading-snug tracking-normal text-[#526078] max-sm:mt-2 max-sm:text-lg sm:text-2xl">
-                  {topUniversityLine(university.name)}
+                  {TOP_UNIVERSITY_LINE.before}
+                  <span className="text-[var(--top-accent-text)]">
+                    {university.name}
+                  </span>
+                  {TOP_UNIVERSITY_LINE.after}
                 </span>
               )}
             </h1>

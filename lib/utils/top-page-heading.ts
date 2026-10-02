@@ -12,8 +12,18 @@ export function topHeading(count: number, name: string): string {
  * this is (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md D11).
  */
 export function topUniversityLine(universityName: string): string {
-  return `for ${universityName} students`;
+  return `${TOP_UNIVERSITY_LINE.before}${universityName}${TOP_UNIVERSITY_LINE.after}`;
 }
+
+/**
+ * The words around the name in that line, for where the name is styled on
+ * its own (the page's heading colours it). `topUniversityLine` is built from
+ * these, so the wording lives in one place.
+ */
+export const TOP_UNIVERSITY_LINE = {
+  before: "for ",
+  after: " students",
+} as const;
 
 /**
  * The browser / search-result title of a university's category page (D11):
