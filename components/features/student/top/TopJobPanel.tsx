@@ -26,10 +26,9 @@ const contentVariants = {
 };
 
 /**
- * Desktop-only overlay panel (plan D15): slides over the page without the
- * grid behind it collapsing or reflowing. Closes with Esc or the X only — no
- * backdrop click, since the grid is meant to stay visible and unobstructed
- * (plan defaults). Prev/next walk the visible cards in page order and
+ * Desktop-only details panel: the page reserves its width and compacts the
+ * cards beside it. Closes with Esc or X; the list remains interactive.
+ * Prev/next walk the visible cards in page order and
  * disable at the ends rather than wrapping.
  */
 export function TopJobPanel({
@@ -83,9 +82,9 @@ export function TopJobPanel({
   return (
     <motion.div
       role="dialog"
-      aria-modal="true"
+      aria-modal="false"
       aria-label={job.title ?? "Listing details"}
-      className="fixed inset-y-0 right-0 z-[100] flex w-full max-w-2xl flex-col border-l bg-white shadow-xl"
+      className="fixed inset-y-0 right-0 z-[100] flex w-[var(--top-panel-width)] flex-col border-l bg-white shadow-xl"
       initial={{
         transform: reduce ? "none" : "translateX(100%)",
         opacity: reduce ? 0 : 1,
@@ -148,7 +147,7 @@ export function TopJobPanel({
             className="flex h-full flex-col"
           >
             <JobDetails
-              className="p-6"
+              className="p-4 xl:p-6"
               job={job}
               showCredited
               user={{

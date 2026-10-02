@@ -4,7 +4,12 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import { Badge, cn } from "@betterinternship/components";
 import { CalendarDays } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
@@ -28,6 +33,7 @@ import { topAccentTextColor } from "@/lib/utils/top-page-presentation";
 import type { PublicTopPage } from "@/lib/api/top-page.server";
 import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
+import motionStyles from "./top-motion.module.css";
 
 /**
  * The public Top page (plan §5.2). Server-rendered once per request (up to
@@ -79,10 +85,20 @@ export function TopPageView({
   const [openJobId, setOpenJobId] = useState<string | null>(null);
   const openIndex = jobs.findIndex((job) => job.id === openJobId);
   const openJob = openIndex >= 0 ? jobs[openIndex] : null;
+  const panelOpen = !isMobile && !!openJob;
+  const layoutTransition = {
+    duration: prefersReducedMotion ? 0 : 0.24,
+    ease: [0.23, 1, 0.32, 1] as const,
+  };
 
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
   const [lastAppliedJob, setLastAppliedJob] = useState<Job | null>(null);
+
+  // The first mobile click mounts the modal; open it once its ref exists.
+  useEffect(() => {
+    if (isMobile && openJobId) jobModalRef.current?.open();
+  }, [isMobile, openJobId, jobModalRef]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -148,6 +164,7 @@ export function TopPageView({
         "--color-primary-foreground": pickForeground(accent),
         "--color-muted-foreground": "#626fa5",
         "--top-accent-text": topAccentTextColor(accent),
+        "--top-panel-width": "min(46vw, 42rem)",
       } as React.CSSProperties)
     : undefined;
   const week = currentManilaWeek();
@@ -159,7 +176,7 @@ export function TopPageView({
     >
       <TopPageBackdrop />
       <TopPageNavbar disabled={disabled} />
-      <header className="relative mx-auto max-w-[1240px] px-4 pt-9 sm:px-6 lg:px-8 lg:pt-7">
+      <header className="relative mx-auto max-w-[1240px] px-4 pt-6 sm:px-6 sm:pt-9 lg:px-8 lg:pt-7">
         <div className="relative grid items-center gap-4 lg:min-h-[300px] lg:grid-cols-[1.2fr_1fr] lg:gap-0">
           <div className="relative z-10 lg:py-5">
             <Badge
@@ -174,13 +191,13 @@ export function TopPageView({
               />
               <span className="tabular-nums">{week.label}</span>
             </Badge>
-            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] sm:text-5xl lg:text-[52px]">
+            <h1 className="text-[34px] font-bold leading-[1.08] tracking-tight text-[#101033] sm:text-5xl lg:text-[52px]">
               Top {initialJobs.length}{" "}
               <span className="text-[var(--top-accent-text)]">{page.name}</span>
               <br className="hidden sm:block" /> Internship
               {initialJobs.length === 1 ? "" : "s"} This Week
             </h1>
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <ShowMoaButton
                 pageJobs={initialJobs}
                 onFilterChange={setMoaFilteredJobs}
@@ -189,7 +206,7 @@ export function TopPageView({
               />
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-[460px] -translate-y-4 lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
+          <div className="relative mx-auto w-full max-w-[340px] -translate-y-4 sm:max-w-[460px] lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
             <TopHeroArtwork />
           </div>
         </div>
@@ -197,7 +214,7 @@ export function TopPageView({
 
       <div
         className={cn(
-          "relative mx-auto max-w-[1240px] px-4 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8 lg:pt-6",
+          "relative mx-auto w-full max-w-[1240px] px-4 pb-6 pt-2 sm:px-6 sm:pt-8 lg:px-8 lg:pt-6",
           bulkApply.selectMode && "pb-32 sm:pb-32",
         )}
       >
@@ -211,61 +228,86 @@ export function TopPageView({
           </Suspense>
         )}
 
-        <div ref={resultsRef}>
-          {jobs.length === 0 ? (
-            <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
-              {moaFilteredJobs !== null ? (
-                <>
-                  <p>
-                    None of this week&apos;s internships have an MOA with your
-                    university yet.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMoaFilteredJobs(null);
-                      setMoaActive(false);
-                    }}
-                    className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
+        <LayoutGroup>
+          <motion.div
+            ref={resultsRef}
+            layout={prefersReducedMotion ? false : true}
+            transition={{ layout: layoutTransition }}
+            style={{
+              // Keep the centered container's left gutter. Subtract only
+              // the part of the aside that overlaps the original grid.
+              width: panelOpen
+                ? "min(100%, calc(100% - var(--top-panel-width) + max(0px, calc((100vw - 1240px) / 2))))"
+                : "100%",
+              transformOrigin: "left top",
+            }}
+          >
+            {jobs.length === 0 ? (
+              <div className="rounded-[0.33em] border border-dashed border-gray-300 p-12 text-center text-muted-foreground">
+                {moaFilteredJobs !== null ? (
+                  <>
+                    <p>
+                      None of this week&apos;s internships have an MOA with your
+                      university yet.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMoaFilteredJobs(null);
+                        setMoaActive(false);
+                      }}
+                      className="mt-2 inline-block cursor-pointer text-gray-700 underline hover:text-gray-900"
+                    >
+                      Clear filter
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p>No featured internships right now.</p>
+                    <Link
+                      href="/search"
+                      className="mt-2 inline-block text-primary underline"
+                    >
+                      Browse all listings
+                    </Link>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  motionStyles.jobGrid,
+                  "grid auto-rows-fr items-stretch gap-3 sm:gap-4 lg:gap-5",
+                )}
+                data-panel-open={panelOpen}
+              >
+                {jobs.map((job) => (
+                  <motion.div
+                    key={job.id}
+                    layout={prefersReducedMotion ? false : "position"}
+                    transition={{ layout: layoutTransition }}
+                    className="min-w-0"
                   >
-                    Clear filter
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p>No featured internships right now.</p>
-                  <Link
-                    href="/search"
-                    className="mt-2 inline-block text-primary underline"
-                  >
-                    Browse all listings
-                  </Link>
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 items-stretch gap-4 md:auto-rows-fr md:grid-cols-2 lg:gap-5">
-              {jobs.map((job) => (
-                <TopJobCard
-                  key={job.id}
-                  job={job}
-                  profile={profile.data}
-                  selected={job.id === openJobId}
-                  onOpen={() => handleOpen(job)}
-                  onApply={({ resumeId }) => applyToJob(job, resumeId)}
-                  disabled={disabled}
-                  bulkSelected={bulkApply.isSelected(job.id)}
-                  onToggleSelect={() => {
-                    if (disabled) return;
-                    bulkApply.setSelectMode(true);
-                    bulkApply.toggleSelect(job);
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-        <TopDiscordCTA />
+                    <TopJobCard
+                      job={job}
+                      profile={profile.data}
+                      selected={job.id === openJobId}
+                      onOpen={() => handleOpen(job)}
+                      onApply={({ resumeId }) => applyToJob(job, resumeId)}
+                      disabled={disabled}
+                      bulkSelected={bulkApply.isSelected(job.id)}
+                      onToggleSelect={() => {
+                        if (disabled) return;
+                        bulkApply.setSelectMode(true);
+                        bulkApply.toggleSelect(job);
+                      }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </LayoutGroup>
 
         <AnimatePresence>
           {!isMobile && openJob && (
@@ -302,6 +344,9 @@ export function TopPageView({
         )}
 
         <ApplySuccessModal job={lastAppliedJob} ref={applySuccessModalRef} />
+      </div>
+      <div className="relative mx-auto max-w-[1240px] px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+        <TopDiscordCTA />
       </div>
       <SearchCommandBar
         visible={!disabled && bulkApply.selectMode}
