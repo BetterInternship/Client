@@ -38,6 +38,12 @@ const samples = [
   },
   { name: "Marketing", count: 1, companies: ["Example Company"] },
   { name: "Finance", count: 0, companies: [] },
+  // A university's landing page (/<university>), not a category.
+  { landing: true },
+  {
+    landing: true,
+    university: "Polytechnic University of the Philippines - Sta. Mesa",
+  },
 ];
 
 function load(file, imports = {}) {
@@ -77,31 +83,54 @@ const escape = (value) =>
   );
 const images = new Map();
 
+const ogImage = load("lib/utils/top-og-image.tsx", {
+  "@/lib/utils/top-page-heading": heading,
+});
+
 async function render(index) {
   const sample = samples[index];
-  const route = load("app/student/[university]/top/[slug]/og/route.tsx", {
+  const university = { name: universityOf(sample), slug: "preview-university" };
+  const shared = {
     "@/lib/utils/top-page-heading": heading,
     "@/lib/utils/manila-week": week,
-    "@/lib/api/top-page.server": {
-      fetchTopUniversityPage: async () => ({
-        status: "ok",
-        page: { name: sample.name, slug: "preview" },
-        university: { name: universityOf(sample), slug: "preview-university" },
-        jobs: Array.from({ length: sample.count }, (_, i) => ({
-          employer: { name: sample.companies[i % sample.companies.length] },
-        })),
-      }),
-    },
-  });
-  const response = await route.GET(
-    new Request(`http://localhost:${port}/preview-university/top/preview/og`),
-    {
-      params: Promise.resolve({
-        university: "preview-university",
-        slug: "preview",
-      }),
-    },
-  );
+    "@/lib/utils/top-og-image": ogImage,
+  };
+  const response = sample.landing
+    ? await load("app/student/[university]/og/route.tsx", {
+        ...shared,
+        "@/lib/api/top-page.server": {
+          fetchTopUniversity: async () => ({
+            status: "ok",
+            university,
+            pages: [],
+          }),
+        },
+      }).GET(new Request(`http://localhost:${port}/preview-university/og`), {
+        params: Promise.resolve({ university: "preview-university" }),
+      })
+    : await load("app/student/[university]/top/[slug]/og/route.tsx", {
+        ...shared,
+        "@/lib/api/top-page.server": {
+          fetchTopUniversityPage: async () => ({
+            status: "ok",
+            page: { name: sample.name, slug: "preview" },
+            university,
+            jobs: Array.from({ length: sample.count }, (_, i) => ({
+              employer: { name: sample.companies[i % sample.companies.length] },
+            })),
+          }),
+        },
+      }).GET(
+        new Request(
+          `http://localhost:${port}/preview-university/top/preview/og`,
+        ),
+        {
+          params: Promise.resolve({
+            university: "preview-university",
+            slug: "preview",
+          }),
+        },
+      );
   if (
     !response.ok ||
     !response.headers.get("content-type")?.includes("image/png")
@@ -152,13 +181,21 @@ const server = createServer(async (request, response) => {
         *{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#061633;font-family:system-ui,sans-serif}main{max-width:1400px;margin:auto;padding:40px 24px}h1{margin:0 0 8px;font-size:28px}header p{color:#526175;line-height:1.5}header{margin-bottom:32px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}h2{font-size:17px;margin:0 0 12px}.card{overflow:hidden;border:1px solid #dce2eb;border-radius:12px;background:white}.card img{display:block;width:100%;aspect-ratio:1200/630;background:#edf2f9}.copy{padding:18px}.domain{font-size:12px;color:#526175}.title{font-size:18px;font-weight:650;margin:8px 0}.description{font-size:14px;line-height:1.5;color:#526175;margin:0}.original{display:inline-block;margin-top:10px;font-size:13px;color:#2563eb}footer{margin-top:32px;color:#526175;font-size:13px}@media(max-width:760px){.grid{grid-template-columns:1fr}main{padding:24px 16px}}
       </style><main><header><h1>Link previews</h1><p>Actual Top-page OG images in a link-card shell. Sample companies and counts, current Manila week.<br>Edit the OG route and restart this command to review changes.</p></header><div class="grid">${samples
         .map((sample, index) => {
-          const title = heading.topUniversityPageTitle(
-            sample.count,
-            sample.name,
-            universityOf(sample),
-          );
-          const description = `This week's top ${sample.name} internships for ${universityOf(sample)} students, ${week.currentManilaWeek().label}.${sample.companies.length ? ` Featuring ${sample.companies.join(", ")}.` : ""}`;
-          return `<section><h2>${escape(sample.name)} · ${sample.count} listing${sample.count === 1 ? "" : "s"}</h2><div class="card"><img src="/images/${index}.png" alt="${escape(title)}"><div class="copy"><div class="domain">betterinternship.com</div><p class="title">${escape(title)}</p><p class="description">${escape(description)}</p></div></div><a class="original" href="/images/${index}.png" target="_blank" rel="noopener">Open full-size image ↗</a></section>`;
+          // Mirrors each page's own metadata (app/student/[university]).
+          const title = sample.landing
+            ? `Internships for ${universityOf(sample)} Students`
+            : heading.topUniversityPageTitle(
+                sample.count,
+                sample.name,
+                universityOf(sample),
+              );
+          const description = sample.landing
+            ? `This week's top internships for ${universityOf(sample)} students on BetterInternship: Data Science, Design.`
+            : `This week's top ${sample.name} internships for ${universityOf(sample)} students, ${week.currentManilaWeek().label}.${sample.companies.length ? ` Featuring ${sample.companies.join(", ")}.` : ""}`;
+          const label = sample.landing
+            ? "University landing page"
+            : `${sample.name} · ${sample.count} listing${sample.count === 1 ? "" : "s"}`;
+          return `<section><h2>${escape(label)}</h2><div class="card"><img src="/images/${index}.png" alt="${escape(title)}"><div class="copy"><div class="domain">betterinternship.com</div><p class="title">${escape(title)}</p><p class="description">${escape(description)}</p></div></div><a class="original" href="/images/${index}.png" target="_blank" rel="noopener">Open full-size image ↗</a></section>`;
         })
         .join(
           "",

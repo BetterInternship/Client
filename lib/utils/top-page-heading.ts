@@ -40,6 +40,9 @@ export function topUniversityPageTitle(
   } for ${universityName} Students`;
 }
 
+/** The heading on a university landing page's link-preview image. */
+export const TOP_UNIVERSITY_OG_HEADING = "Top Internships This Week";
+
 /** The heading and title of a university's landing page (D12). */
 export function topUniversityHeading(universityName: string): string {
   return `Internships for ${universityName} students`;
