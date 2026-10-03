@@ -64,10 +64,40 @@ import {
   employerUsersControllerUpdateMemberNotifications,
   employerUsersControllerUpdateMyNotifications,
 } from "./generated/endpoints/employer-users/employer-users";
+import {
+  getUsersControllerUpdateLogoUrl,
+  getUsersControllerUploadResumeUrl,
+  usersControllerCancelForm,
+  usersControllerCorrectFormRecipient,
+  usersControllerDeleteResume,
+  usersControllerFilloutForm,
+  usersControllerGetCorrectFormRecipientContext,
+  usersControllerGetMqJob,
+  usersControllerGetMyFormTemplate,
+  usersControllerGetMyFormTemplates,
+  usersControllerGetMyGeneratedForms,
+  usersControllerInitiateForm,
+  usersControllerJoinFormGroup,
+  usersControllerMyPfp,
+  usersControllerMyResumes,
+  usersControllerMyResumeUrl,
+  usersControllerPfpById,
+  usersControllerResendForm,
+  usersControllerResumeUrlById,
+  usersControllerSelf,
+  usersControllerSetDefaultResume,
+  usersControllerToggleSaveJob,
+  usersControllerUpdateResume,
+  usersControllerUpdateSelf,
+  usersControllerUploadSignatureImage,
+  usersControllerUserById,
+} from "./generated/endpoints/users/users";
 import type {
   CreateJobChallengeListingDto,
   CreateJobDto,
+  InitiateFormDto,
   UpdateJobDto,
+  UpdateUserDto,
 } from "./generated/models";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
@@ -384,10 +414,9 @@ export const FormService = {
     source: "draw" | "upload";
     dataUrl: string;
   }) {
-    return APIClient.post<UploadSignatureImageResponse>(
-      APIRouteBuilder("users").r("me/signature-image").build(),
+    return usersControllerUploadSignatureImage(
       data,
-    );
+    ) as unknown as Promise<UploadSignatureImageResponse>;
   },
 
   async initiateForm(data: {
@@ -398,10 +427,9 @@ export const FormService = {
   }) {
     // Docs-Server now queues this (docs-signing RabbitMQ migration plan §6.2)
     // and returns `{ success, jobId }` — poll it via `getMqJob` below.
-    return APIClient.post<MqJobQueuedResponse>(
-      APIRouteBuilder("users").r("me/initiate-form").build(),
+    return usersControllerInitiateForm(
       data,
-    );
+    ) as unknown as Promise<MqJobQueuedResponse>;
   },
 
   async filloutForm(data: {
@@ -410,76 +438,74 @@ export const FormService = {
     values: Record<string, string>;
     disableEsign?: boolean;
   }) {
-    return APIClient.post<MqJobQueuedResponse>(
-      APIRouteBuilder("users").r("me/fillout-form").build(),
-      data,
-    );
+    // The server's body class has no `audit` or `disableEsign` field; the old
+    // client sent `data` as given, which is what this still does.
+    return usersControllerFilloutForm(
+      data as unknown as InitiateFormDto,
+    ) as unknown as Promise<MqJobQueuedResponse>;
   },
 
   async getMqJob(jobId: string) {
-    return APIClient.get<MqJobResponse>(
-      APIRouteBuilder("users").r("me/mq-jobs", jobId).build(),
-    );
+    return usersControllerGetMqJob(jobId) as unknown as Promise<MqJobResponse>;
   },
 
   async getMyFormTemplates() {
-    const response = await APIClient.get<{
+    const response = (await usersControllerGetMyFormTemplates()) as unknown as {
       formGroupDescription: string;
       formTemplates: FormTemplate[];
-    }>(APIRouteBuilder("users").r("me/form-templates").build());
+    };
     return response;
   },
 
   async getMyGeneratedForms() {
-    const { forms } = await APIClient.get<{
-      forms: {
-        form_label: string | null;
-        form_name: string;
-        form_process_id: string;
-        form_process_status: string | null;
-        timestamp: string;
-        form_processes: {
-          prefilled_document_id?: string;
-          pending_document_id?: string;
-          signed_document_id?: string;
-          latest_document_url?: string;
-          signing_parties?: IFormSigningParty[];
-          rejection_reason?: string;
-        };
-      }[];
-    }>(APIRouteBuilder("users").r("me/form-log").build());
+    const { forms } =
+      (await usersControllerGetMyGeneratedForms()) as unknown as {
+        forms: {
+          form_label: string | null;
+          form_name: string;
+          form_process_id: string;
+          form_process_status: string | null;
+          timestamp: string;
+          form_processes: {
+            prefilled_document_id?: string;
+            pending_document_id?: string;
+            signed_document_id?: string;
+            latest_document_url?: string;
+            signing_parties?: IFormSigningParty[];
+            rejection_reason?: string;
+          };
+        }[];
+      };
     return forms ?? [];
   },
 
   async getForm(formName: string) {
-    const form = await APIClient.get<
-      {
-        formTemplate: {
-          name: string;
-          label: string;
-          version: number;
-          base_document_id: string;
-        };
-        formMetadata: IFormMetadata;
-        documentUrl: string;
-      } & FetchResponse
-    >(APIRouteBuilder("users").r(`me/form?name=${formName}`).build());
+    const form = (await usersControllerGetMyFormTemplate({
+      name: formName,
+    })) as unknown as {
+      formTemplate: {
+        name: string;
+        label: string;
+        version: number;
+        base_document_id: string;
+      };
+      formMetadata: IFormMetadata;
+      documentUrl: string;
+    } & FetchResponse;
     return form;
   },
 
   async resendForm(formProcessId: string) {
-    const form = await APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r(`me/resend-form`).build(),
-      { formProcessId },
-    );
+    const form = (await usersControllerResendForm({
+      formProcessId,
+    })) as unknown as FetchResponse;
     return form;
   },
 
   async cancelForm(formProcessId: string) {
-    const form = await APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r(`me/cancel-form`).build(),
-      { formProcessId },
-    );
+    const form = (await usersControllerCancelForm({
+      formProcessId,
+    })) as unknown as FetchResponse;
     return form;
   },
 };
@@ -514,39 +540,32 @@ interface DefaultResumeResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
-    const result = APIClient.get<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
-      options,
-    );
-    return result;
+    return usersControllerSelf(options) as unknown as Promise<UserResponse>;
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
-      data,
-    );
+    return usersControllerUpdateSelf(
+      data as unknown as UpdateUserDto,
+    ) as unknown as Promise<UserResponse>;
   },
 
   async joinFormGroup(code: string) {
-    return APIClient.post<JoinFormGroupResponse>(
-      APIRouteBuilder("users").r("join-form-group").build(),
-      { code },
-    );
+    return usersControllerJoinFormGroup({
+      code,
+    }) as unknown as Promise<JoinFormGroupResponse>;
   },
 
   async correctFormRecipient(eventId: string, recipientEmail: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r("me", "edit-recipient").build(),
-      {
-        eventId,
-        recipientEmail,
-      },
-    );
+    return usersControllerCorrectFormRecipient({
+      eventId,
+      recipientEmail,
+    }) as unknown as Promise<FetchResponse>;
   },
 
   async getCorrectFormRecipientContext(eventId: string) {
-    return APIClient.get<
+    return usersControllerGetCorrectFormRecipientContext({
+      eventId,
+    }) as unknown as Promise<
       FetchResponse & {
         context?: {
           eventId: string;
@@ -561,88 +580,82 @@ export const UserService = {
           }[];
         };
       }
-    >(
-      APIRouteBuilder("users").r("me", "edit-recipient").p({ eventId }).build(),
-    );
+    >;
   },
 
   async getMyResumes() {
-    return APIClient.get<ResumeArrayResponse>(
-      APIRouteBuilder("users").r("me", "resumes").build(),
-    );
+    return usersControllerMyResumes() as unknown as Promise<ResumeArrayResponse>;
   },
 
   async getMyResumeURL(resumeId: string) {
-    return APIClient.get<SignedFileUrlResponse>(
-      APIRouteBuilder("users").r("me", "resume", resumeId, "url").build(),
-    );
+    return usersControllerMyResumeUrl(
+      resumeId,
+    ) as unknown as Promise<SignedFileUrlResponse>;
   },
 
   async getMyPfpURL() {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build(),
-    );
+    return usersControllerMyPfp() as unknown as Promise<ResourceHashResponse>;
   },
 
   async getUserPfpURL(userId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "pic").build(),
-    );
+    return usersControllerPfpById(
+      userId,
+    ) as unknown as Promise<ResourceHashResponse>;
   },
 
   async updateMyPfp(file: FormData) {
-    return APIClient.put<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build(),
-      file,
-      "form-data",
+    // Same pass-through as EmployerService.updateMyPfp: the caller builds the
+    // FormData (field name and all), so it goes out as-is rather than through
+    // the generated wrapper, which would rebuild it under its own field name.
+    return careerFetch<ResourceHashResponse>(
+      getUsersControllerUpdateLogoUrl(),
+      { method: "PUT", body: file },
     );
   },
 
   async getUserResumeURL(userId: string, resumeId: string) {
-    return APIClient.get<SignedFileUrlResponse>(
-      APIRouteBuilder("users").r(userId, "resume", resumeId, "url").build(),
-    );
+    return usersControllerResumeUrlById(
+      userId,
+      resumeId,
+    ) as unknown as Promise<SignedFileUrlResponse>;
   },
 
   async uploadMyResume(form: FormData) {
-    return APIClient.put<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume").build(),
-      form,
-      "form-data",
+    // Pass-through again: the caller's FormData carries the file and its label.
+    return careerFetch<UploadResumeResponse>(
+      getUsersControllerUploadResumeUrl(),
+      { method: "PUT", body: form },
     );
   },
 
   async updateMyResume(resumeId: string, label: string) {
-    return APIClient.post<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "update", resumeId).build(),
-      { label: label },
-    );
+    return usersControllerUpdateResume(resumeId, {
+      label: label,
+    }) as unknown as Promise<UploadResumeResponse>;
   },
 
   async setDefaultResume(resumeId: string) {
-    return APIClient.post<DefaultResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "default").build(),
-      { resume_id: resumeId },
-    );
+    return usersControllerSetDefaultResume({
+      resume_id: resumeId,
+    }) as unknown as Promise<DefaultResumeResponse>;
   },
 
   async deleteMyResume(resumeId: string) {
-    return APIClient.post<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "delete", resumeId).build(),
-    );
+    return usersControllerDeleteResume(
+      resumeId,
+    ) as unknown as Promise<UploadResumeResponse>;
   },
 
   async saveJob(jobId: string) {
-    return APIClient.post<SaveJobResponse>(
-      APIRouteBuilder("users").r("save-job").build(),
-      { id: jobId },
-    );
+    return usersControllerToggleSaveJob({
+      id: jobId,
+    }) as unknown as Promise<SaveJobResponse>;
   },
 
   async getUserById(userId: string): Promise<StudentResponse> {
-    return APIClient.get<StudentResponse>(
-      APIRouteBuilder("users").r(userId).build(),
-    );
+    return usersControllerUserById(
+      userId,
+    ) as unknown as Promise<StudentResponse>;
   },
 };
 
