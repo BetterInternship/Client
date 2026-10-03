@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { fetchTopUniversity } from "@/lib/api/top-page.server";
 import { baseUrl } from "@/lib/site-url";
 import { topUniversityHeading } from "@/lib/utils/top-page-heading";
+import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { TopUniversityLanding } from "@/components/features/student/top/TopUniversityLanding";
 
 /**
@@ -35,12 +36,25 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const categories = result.pages.map((page) => page.name).join(", ");
   const title = `Internships for ${name} Students`;
   const description = `This week's top internships for ${name} students on BetterInternship: ${categories}.`;
+  const path = `/${result.university.slug}`;
+  const image = {
+    url: `${path}/og`,
+    width: 1200,
+    height: 630,
+    alt: `Top internships for ${name} students — ${currentManilaWeek().label}`,
+  };
 
   return {
     title,
     description,
-    alternates: { canonical: `/${result.university.slug}` },
-    openGraph: { title, description, type: "website" },
+    alternates: { canonical: path },
+    openGraph: { title, description, images: [image], type: "website" },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
