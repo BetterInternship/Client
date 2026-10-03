@@ -107,10 +107,18 @@ const getRefsDataUncached = async (): Promise<RefsData> => {
   };
 };
 
-// cache refs data for one hour and catch repeat calls to reduce db calls.
+// Cache refs data for seven days and catch repeat calls to reduce db calls.
+// Seven days (not the old one hour) so it matches the Top pages' own
+// `revalidate` (TOP_PAGES_REVALIDATE_SECONDS = 604800): Next caps a page's
+// ISR lifetime at the shortest revalidate among its data dependencies, and
+// this runs in every student/hire layout, so a shorter value here would drag
+// the Top pages down with it. Trade-off: refs tables (universities, colleges,
+// job types, …) are stale for up to a week — fine, they change rarely and
+// only by hand. Revisit with a revalidateTag("refs-data") trigger if that
+// ever becomes a problem.
 export const getRefsData = cache(
   unstable_cache(getRefsDataUncached, ["refs-data"], {
-    revalidate: 3600,
+    revalidate: 604800,
     tags: ["refs-data"],
   }),
 );
