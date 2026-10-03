@@ -13,11 +13,16 @@ import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 /**
  * Selection + bulk-apply state, pulled out of app/student/search/page.tsx
  * with no behaviour change there (plan §5.3) so the Top pages can reuse it.
- * `topPageId`, when given, is attributed on every mass application (D20).
+ * `topPageId`, when given, is attributed on every mass application (D20),
+ * along with `topPageUniversityId` — the university whose Top page link the
+ * student is on.
  *
  * @hook
  */
-export function useMassApplySelection(topPageId?: string) {
+export function useMassApplySelection(
+  topPageId?: string,
+  topPageUniversityId?: string,
+) {
   const { isAuthenticated } = useAuthContext();
   const jobStatus = useJobStatus();
   const profile = useProfileData();
@@ -145,6 +150,7 @@ export function useMassApplySelection(topPageId?: string) {
               resume_id: resumeId,
               source: "mass",
               top_page_id: topPageId,
+              top_page_university_id: topPageUniversityId,
             });
             if (applicationActions.create.error) {
               failed.push({
@@ -181,6 +187,7 @@ export function useMassApplySelection(topPageId?: string) {
       applicationActions,
       clearSelection,
       topPageId,
+      topPageUniversityId,
     ],
   );
 

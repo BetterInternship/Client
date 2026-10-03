@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Reorder } from "framer-motion";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Copy,
-  ExternalLink,
-  Eye,
-  GripVertical,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Eye, GripVertical, X } from "lucide-react";
 import { Badge, Button, Input } from "@betterinternship/components";
 import { Meta } from "@/components/features/hire/god/ui";
 import {
@@ -25,14 +19,8 @@ import {
 } from "@/lib/api/god.api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useDbRefs } from "@/lib/db/use-refs";
-import {
-  topHeading,
-  DEFAULT_TOP_PAGE_ACCENT,
-} from "@/lib/utils/top-page-heading";
-import { pickForeground } from "@/lib/utils/contrast";
+import { topHeading } from "@/lib/utils/top-page-heading";
 import { Loader } from "@/components/ui/loader";
-import { baseUrl } from "@/lib/site-url";
-import { currentManilaWeek, nextManilaWeek } from "@/lib/utils/manila-week";
 
 const MAX_MEMBERS = 12;
 
@@ -64,7 +52,6 @@ export default function TopPageEditorPage() {
 
   const [loaded, setLoaded] = useState(false);
   const [name, setName] = useState("");
-  const [accentHex, setAccentHex] = useState<string | null>(null);
   const [isPublished, setIsPublished] = useState(false);
   const [members, setMembers] = useState<StagedMember[]>([]);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -74,7 +61,6 @@ export default function TopPageEditorPage() {
   useEffect(() => {
     if (!data?.page || loaded) return;
     setName(data.page.name);
-    setAccentHex(data.page.accent_hex);
     setIsPublished(data.page.is_published);
     setMembers(
       data.page.members.map((m) => ({
@@ -92,7 +78,6 @@ export default function TopPageEditorPage() {
   const resetToServer = () => {
     if (!data?.page) return;
     setName(data.page.name);
-    setAccentHex(data.page.accent_hex);
     setIsPublished(data.page.is_published);
     setMembers(
       data.page.members.map((m) => ({
@@ -110,13 +95,12 @@ export default function TopPageEditorPage() {
     if (!data?.page) return false;
     const original = data.page;
     if (name !== original.name) return true;
-    if ((accentHex ?? null) !== (original.accent_hex ?? null)) return true;
     if (isPublished !== original.is_published) return true;
     const originalIds = original.members.map((m) => m.job_id);
     const currentIds = members.map((m) => m.job_id);
     if (originalIds.length !== currentIds.length) return true;
     return originalIds.some((jobId, i) => jobId !== currentIds[i]);
-  }, [data, name, accentHex, isPublished, members]);
+  }, [data, name, isPublished, members]);
 
   // beforeunload guard (plan §6) — in-app navigation isn't intercepted (no
   // stable "will navigate" hook in the App Router), so this covers tab
@@ -170,7 +154,6 @@ export default function TopPageEditorPage() {
 
     const response = await saveTopPage.mutateAsync({
       name: trimmedName,
-      accent_hex: accentHex,
       is_published: isPublished,
       job_ids: members.map((m) => m.job_id),
       updated_at: updatedAt,
@@ -203,7 +186,6 @@ export default function TopPageEditorPage() {
     if (response.page) {
       const page = response.page;
       setName(page.name);
-      setAccentHex(page.accent_hex);
       setIsPublished(page.is_published);
       setMembers(
         page.members.map((m) => ({
@@ -232,17 +214,7 @@ export default function TopPageEditorPage() {
   ).length;
   const currentPageName = data.page.name;
   const heading = topHeading(visibleCount, name.trim() || currentPageName);
-  const accent = accentHex ?? DEFAULT_TOP_PAGE_ACCENT;
-  const foreground = pickForeground(accent);
-  const publicUrl = `${baseUrl}/top/${data.page.slug}`;
-  // Pubmat QR links carry ?week= so a stale pubmat shows the old-QR banner
-  // (Docs/plans/TOP_PAGES_WEEK_PARAM_PLAN.md). "Next week" exists because
-  // pubmats are made ahead: a QR copied on Friday with this week's value is
-  // stale from the Sunday it first goes on display.
-  const qrWeeks = [
-    { label: "this week", week: currentManilaWeek() },
-    { label: "next week", week: nextManilaWeek() },
-  ];
+  const universityCount = data.page.university_count;
 
   const handlePreview = () => {
     try {
@@ -250,7 +222,6 @@ export default function TopPageEditorPage() {
         `top-page-preview:${id}`,
         JSON.stringify({
           name: name.trim() || currentPageName,
-          accent_hex: accentHex,
           job_ids: members.map((m) => m.job_id),
         }),
       );
@@ -319,7 +290,8 @@ export default function TopPageEditorPage() {
                 {" — "}
                 {slugPreview.data.available ? (
                   <span>
-                    /top/<strong>{slugPreview.data.slug}</strong>
+                    /&lt;university&gt;/top/
+                    <strong>{slugPreview.data.slug}</strong>
                   </span>
                 ) : (
                   <span className="text-red-600">
@@ -332,43 +304,7 @@ export default function TopPageEditorPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600">
-              Accent colour
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={accentHex ?? DEFAULT_TOP_PAGE_ACCENT}
-                onChange={(e) => setAccentHex(e.target.value)}
-                className="h-8 w-10 cursor-pointer rounded border border-gray-200"
-              />
-              <Input
-                value={accentHex ?? ""}
-                placeholder={DEFAULT_TOP_PAGE_ACCENT}
-                onChange={(e) => setAccentHex(e.target.value || null)}
-                className="w-32"
-              />
-              {accentHex && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAccentHex(null)}
-                >
-                  Reset to default
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div
-            className="rounded-[0.33em] px-4 py-2 text-sm font-medium"
-            style={{ backgroundColor: accent, color: foreground }}
-          >
-            Apply
-          </div>
-
+        <div className="flex flex-wrap items-center gap-4">
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -379,51 +315,17 @@ export default function TopPageEditorPage() {
             Published
           </label>
 
-          {data.page.is_published && (
-            <>
-              <div className="flex items-center gap-1 text-xs text-slate-500">
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 underline"
-                >
-                  {publicUrl}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-                <button
-                  type="button"
-                  className="cursor-pointer rounded p-1 hover:bg-slate-100"
-                  aria-label="Copy link"
-                  onClick={() => {
-                    void navigator.clipboard.writeText(publicUrl);
-                    toast.success("Link copied.");
-                  }}
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {qrWeeks.map(({ label, week }) => (
-                  <Button
-                    key={week.key}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(
-                        `${publicUrl}?week=${week.key}`,
-                      );
-                      toast.success("QR link copied.");
-                    }}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                    Copy QR link: {label} ({week.label})
-                  </Button>
-                ))}
-              </div>
-            </>
-          )}
+          {/* A page has no link of its own any more: it is live at each
+              university it is ticked for, and the colour and the links to
+              copy live with the university (TOP_PAGES_UNIVERSITY_PLAN.md). */}
+          <p className="text-xs text-slate-500">
+            {universityCount === 0
+              ? "Not ticked for any university yet, so it has no link."
+              : `Ticked for ${universityCount} universit${universityCount === 1 ? "y" : "ies"}.`}{" "}
+            <Link href="/god/top-pages/universities" className="underline">
+              Universities, colours and links
+            </Link>
+          </p>
         </div>
       </div>
 

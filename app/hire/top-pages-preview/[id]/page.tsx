@@ -6,12 +6,22 @@ import { Job } from "@/lib/db/db.types";
 import { TopPageView } from "@/components/features/student/top/TopPageView";
 import { useGodTopPage, useTopPagePreviewJobs } from "@/lib/api/god.api";
 import { Loader } from "@/components/ui/loader";
+import { GuestAuthContextProvider } from "@/lib/ctx-auth";
+import type { PublicTopUniversity } from "@/lib/api/top-page.server";
 
 interface PreviewSnapshot {
   name: string;
-  accent_hex: string | null;
   job_ids: string[];
 }
+
+/** Stands in for whichever university's link the category is opened from. */
+const PLACEHOLDER_UNIVERSITY: PublicTopUniversity = {
+  id: "",
+  name: "University Name",
+  slug: "university-name",
+  accent_hex: null,
+  has_partner_account: false,
+};
 
 /**
  * Opened in a new tab from the god editor's "Preview" button. Deliberately
@@ -19,16 +29,21 @@ interface PreviewSnapshot {
  * unconditionally over every child route, and this page needs to look like
  * the real public page, not a god-mode screen with a tab bar on it.
  *
- * Renders the actual TopPageView — the same component the public /top/<slug>
- * page uses — rather than a hand-built lookalike, so there's nothing here to
- * drift out of sync and the click-to-open side panel/mobile sheet works
- * exactly like the real page. `disabled` turns off Apply/Save/Share/the
- * waitlist-alert toggle: this tab has no student session, so those buttons
- * would otherwise redirect straight into the student Google OAuth flow (or,
- * if this browser happens to also hold a real student session, actually
- * apply/save/alert for real).
+ * Renders the actual TopPageView — the same component the public
+ * /<university>/top/<slug> page uses — rather than a hand-built lookalike, so
+ * there's nothing here to drift out of sync and the click-to-open side
+ * panel/mobile sheet works exactly like the real page. A category is shared
+ * by many universities, so a placeholder stands in for the university: its
+ * name fills the heading line, the colour is the default, and the partner
+ * control is the one most universities get.
  *
- * Reads the editor's staged (possibly unsaved) name/accent/order out of
+ * `disabled` turns off Apply/Save/Share, the waitlist-alert toggle, the
+ * partner control and the links to the university's other pages: this tab
+ * has no student session and no real university. The page is wrapped in a
+ * logged-out student auth context because the hire layout only provides the
+ * hire one, and the student components read the student one.
+ *
+ * Reads the editor's staged (possibly unsaved) name/order out of
  * sessionStorage — set by the opener right before window.open, same
  * origin/tab so the browser carries it over — and falls back to the
  * last-saved page if that's missing (a manual reload of this tab).
@@ -61,7 +76,6 @@ export default function TopPagePreviewPage() {
     (saved?.page
       ? {
           name: saved.page.name,
-          accent_hex: saved.page.accent_hex,
           job_ids: saved.page.members.map((m) => m.job_id),
         }
       : null);
@@ -86,22 +100,26 @@ export default function TopPagePreviewPage() {
     <div>
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
         <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-2 text-xs text-slate-500">
-          Preview only — Apply, Save and Share are disabled here.{" "}
+          Preview only — the buttons are disabled here. &quot;
+          {PLACEHOLDER_UNIVERSITY.name}&quot; stands in for the university; each
+          university&apos;s own link shows its name and colour.{" "}
           {snapshot
             ? "Showing your unsaved edits."
             : "Showing the last saved version."}
         </div>
       </div>
-      <TopPageView
-        page={{
-          id,
-          name: effective.name,
-          slug: saved?.page?.slug ?? "",
-          accent_hex: effective.accent_hex,
-        }}
-        initialJobs={jobs}
-        disabled
-      />
+      <GuestAuthContextProvider>
+        <TopPageView
+          page={{
+            id,
+            name: effective.name,
+            slug: saved?.page?.slug ?? "",
+          }}
+          university={PLACEHOLDER_UNIVERSITY}
+          initialJobs={jobs}
+          disabled
+        />
+      </GuestAuthContextProvider>
     </div>
   );
 }

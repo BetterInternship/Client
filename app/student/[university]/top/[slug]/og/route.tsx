@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
-import { fetchTopPage } from "@/lib/api/top-page.server";
-import { topHeading } from "@/lib/utils/top-page-heading";
+import { fetchTopUniversityPage } from "@/lib/api/top-page.server";
+import { topHeading, topUniversityLine } from "@/lib/utils/top-page-heading";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
 
 const size = { width: 1200, height: 630 };
@@ -26,22 +26,23 @@ async function fetchFont(url: string) {
 }
 
 /**
- * Generated OG image for a Top page: heading, date range and first 3
- * company names, in the job previews' brand style. Falls back to the static
- * /og.png on any failure — not found, unpublished, or a fetch error — same
- * contract as the per-job OG route. Cached 60s (not the job route's 86400):
- * the whole point of this feature is that the line-up rotates weekly.
+ * Generated OG image for a university's category page: heading, university,
+ * date range and first 3 company names, in the job previews' brand style.
+ * Falls back to the static /og.png on any failure — not found, not live, or
+ * a fetch error — same contract as the per-job OG route. Cached 60s (not the
+ * job route's 86400): the whole point of this feature is that the line-up
+ * rotates weekly.
  */
 export async function GET(
   request: Request,
-  context: { params: Promise<{ slug: string }> },
+  context: { params: Promise<{ university: string; slug: string }> },
 ) {
-  const { slug } = await context.params;
+  const { university, slug } = await context.params;
   const fallback = () =>
     Response.redirect(new URL("/og.png", request.url).toString(), 307);
 
   try {
-    const result = await fetchTopPage(slug);
+    const result = await fetchTopUniversityPage(university, slug);
     if (result.status !== "ok") return fallback();
 
     const [spaceGroteskMedium, spaceGroteskBold] = await Promise.all([
@@ -123,6 +124,21 @@ export async function GET(
             }}
           >
             {heading}
+          </div>
+          <div
+            style={{
+              fontSize: 36,
+              fontWeight: 700,
+              lineHeight: 1.25,
+              textAlign: "center",
+              maxWidth: 980,
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+              overflow: "hidden",
+            }}
+          >
+            {topUniversityLine(result.university.name)}
           </div>
           <div
             style={{

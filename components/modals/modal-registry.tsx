@@ -39,6 +39,7 @@ import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
+import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
 import { Button } from "@betterinternship/components";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
@@ -749,6 +750,43 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("invite-university"),
+      },
+
+      // God mode: the copyable links of one university's Top pages, opened
+      // from the university grid.
+      topUniversityLinks: {
+        open: ({
+          universityName,
+          universitySlug,
+          pages,
+          hasUnsavedChanges,
+        }: {
+          universityName: string;
+          universitySlug: string;
+          pages: {
+            id: string;
+            name: string;
+            slug: string;
+            is_published: boolean;
+          }[];
+          hasUnsavedChanges: boolean;
+        }) =>
+          open(
+            "top-university-links",
+            DefaultModalLayout,
+            <TopUniversityLinksModal
+              universitySlug={universitySlug}
+              pages={pages}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />,
+            {
+              title: universityName,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              panelClassName: "sm:max-w-2xl",
+            },
+          ),
+        close: () => close("top-university-links"),
       },
 
       closeAll: () => close(),
