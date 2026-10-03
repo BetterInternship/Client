@@ -5,16 +5,16 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
-import type { EmployerApplicationRecordUser } from "./employerApplicationRecordUser";
 import type { EmployerApplicationRecordJob } from "./employerApplicationRecordJob";
+import type { EmployerApplicationRecordUser } from "./employerApplicationRecordUser";
 import type { EmployerApplicationRecordSource } from "./employerApplicationRecordSource";
 import type { EmployerApplicationRecordVisibility } from "./employerApplicationRecordVisibility";
 
 export interface EmployerApplicationRecord {
   /** @nullable */
-  user?: EmployerApplicationRecordUser;
-  /** @nullable */
   job?: EmployerApplicationRecordJob;
+  /** @nullable */
+  user?: EmployerApplicationRecordUser;
   applied_at: string;
   /** @nullable */
   cover_letter: string | null;

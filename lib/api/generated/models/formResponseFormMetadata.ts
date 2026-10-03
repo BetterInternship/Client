@@ -6,4 +6,4 @@
  * OpenAPI spec version: 2.0
  */
 
-export type UsersControllerGetMyFormTemplates200 = { [key: string]: unknown };
+export type FormResponseFormMetadata = { [key: string]: unknown };

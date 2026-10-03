@@ -5,8 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { EmployerApplicantUser } from "./employerApplicantUser";
 
 /**
  * @nullable
  */
-export type EmployerApplicationRecordUser = { [key: string]: unknown } | null;
+export type EmployerApplicationRecordUser = EmployerApplicantUser | null;

@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { MqJob } from "./mqJob";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface MqJobResponse {
+  success: boolean;
+  message?: string;
+  job?: MqJob;
 }

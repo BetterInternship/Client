@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { SavedJobSummary } from "./savedJobSummary";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface SaveJobResponse {
+  success: boolean;
+  message?: string;
+  job?: SavedJobSummary;
 }

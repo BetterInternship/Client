@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { ResumeRecord } from "./resumeRecord";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface ResumeResponse {
+  success: boolean;
+  message?: string;
+  resume: ResumeRecord;
 }

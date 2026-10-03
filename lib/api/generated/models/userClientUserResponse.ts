@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { UserClientUser } from "./userClientUser";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface UserClientUserResponse {
+  success: boolean;
+  message?: string;
+  user: UserClientUser;
 }

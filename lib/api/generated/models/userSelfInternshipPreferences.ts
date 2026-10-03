@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 
-export type UsersControllerGetCorrectFormRecipientContext200 = {
-  [key: string]: unknown;
-};
+/**
+ * @nullable
+ */
+export type UserSelfInternshipPreferences = { [key: string]: unknown } | null;

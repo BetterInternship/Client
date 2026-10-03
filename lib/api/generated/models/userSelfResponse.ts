@@ -5,5 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { UserSelf } from "./userSelf";
 
-export type UsersControllerInitiateForm201 = { [key: string]: unknown };
+export interface UserSelfResponse {
+  success: boolean;
+  message?: string;
+  user: UserSelf;
+}

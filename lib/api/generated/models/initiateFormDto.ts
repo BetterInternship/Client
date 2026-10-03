@@ -5,7 +5,12 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { InitiateFormDtoValues } from "./initiateFormDtoValues";
+import type { InitiateFormDtoAudit } from "./initiateFormDtoAudit";
 
 export interface InitiateFormDto {
-  [key: string]: unknown;
+  formName: string;
+  formVersion: number;
+  values: InitiateFormDtoValues;
+  audit: InitiateFormDtoAudit;
 }

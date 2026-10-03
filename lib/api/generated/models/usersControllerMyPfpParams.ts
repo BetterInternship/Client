@@ -7,5 +7,5 @@
  */
 
 export type UsersControllerMyPfpParams = {
-  hash: string;
+  hash?: string;
 };

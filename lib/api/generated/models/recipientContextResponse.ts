@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { RecipientContext } from "./recipientContext";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface RecipientContextResponse {
+  success: boolean;
+  message?: string;
+  context?: RecipientContext;
 }

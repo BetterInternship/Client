@@ -5,7 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { UploadSignatureImageDtoSource } from "./uploadSignatureImageDtoSource";
 
 export interface UploadSignatureImageDto {
-  [key: string]: unknown;
+  source: UploadSignatureImageDtoSource;
+  dataUrl: string;
 }

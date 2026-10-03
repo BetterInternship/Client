@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { FormGroup } from "./formGroup";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface JoinFormGroupResponse {
+  success: boolean;
+  message?: string;
+  formGroup?: FormGroup;
 }

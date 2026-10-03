@@ -9,26 +9,40 @@ import type {
   BaseResponse,
   CancelFormDto,
   CorrectFormRecipientDto,
+  DefaultResumeResponse,
+  FileHashResponse,
+  FormLogResponse,
+  FormResponse,
+  FormTemplatesResponse,
   InitiateFormDto,
   JoinFormGroupDto,
+  JoinFormGroupResponse,
+  MqJobQueuedResponse,
+  MqJobResponse,
+  RecipientContextResponse,
   ResendFormDto,
+  ResumeResponse,
+  ResumeUploadResponse,
+  ResumesResponse,
   SaveJobDto,
+  SaveJobResponse,
   SetDefaultResumeDto,
+  SignedUrlResponse,
   UpdateResumeDto,
   UpdateUserDto,
   UploadSignatureImageDto,
-  UsersControllerFilloutForm201,
-  UsersControllerGetCorrectFormRecipientContext200,
+  UploadSignatureImageResponse,
+  UserClientUserResponse,
+  UserSelfResponse,
+  UserUpdateResponse,
   UsersControllerGetCorrectFormRecipientContextParams,
-  UsersControllerGetMqJob200,
   UsersControllerGetMyFormTemplateParams,
-  UsersControllerGetMyFormTemplates200,
-  UsersControllerInitiateForm201,
   UsersControllerMyPfpParams,
   UsersControllerMyResumeParams,
   UsersControllerPfpByIdParams,
   UsersControllerResumeByIdParams,
-  UsersControllerUploadSignatureImage201,
+  UsersControllerUpdateLogoBody,
+  UsersControllerUploadResumeBody,
 } from "../../models";
 
 import { careerFetch } from "../../../career-fetch";
@@ -39,8 +53,8 @@ export const getUsersControllerSelfUrl = () => {
 
 export const usersControllerSelf = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerSelfUrl(), {
+): Promise<UserSelfResponse> => {
+  return careerFetch<UserSelfResponse>(getUsersControllerSelfUrl(), {
     ...options,
     method: "GET",
   });
@@ -53,8 +67,8 @@ export const getUsersControllerUpdateSelfUrl = () => {
 export const usersControllerUpdateSelf = async (
   updateUserDto: UpdateUserDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerUpdateSelfUrl(), {
+): Promise<UserUpdateResponse> => {
+  return careerFetch<UserUpdateResponse>(getUsersControllerUpdateSelfUrl(), {
     ...options,
     method: "PUT",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -63,7 +77,7 @@ export const usersControllerUpdateSelf = async (
 };
 
 export const getUsersControllerMyPfpUrl = (
-  params: UsersControllerMyPfpParams,
+  params?: UsersControllerMyPfpParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -81,10 +95,10 @@ export const getUsersControllerMyPfpUrl = (
 };
 
 export const usersControllerMyPfp = async (
-  params: UsersControllerMyPfpParams,
+  params?: UsersControllerMyPfpParams,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getUsersControllerMyPfpUrl(params), {
+): Promise<FileHashResponse> => {
+  return careerFetch<FileHashResponse>(getUsersControllerMyPfpUrl(params), {
     ...options,
     method: "GET",
   });
@@ -95,11 +109,18 @@ export const getUsersControllerUpdateLogoUrl = () => {
 };
 
 export const usersControllerUpdateLogo = async (
+  usersControllerUpdateLogoBody: UsersControllerUpdateLogoBody,
   options?: RequestInit,
 ): Promise<BaseResponse> => {
+  const formData = new FormData();
+  if (usersControllerUpdateLogoBody.pfp !== undefined) {
+    formData.append(`pfp`, usersControllerUpdateLogoBody.pfp);
+  }
+
   return careerFetch<BaseResponse>(getUsersControllerUpdateLogoUrl(), {
     ...options,
     method: "PUT",
+    body: formData,
   });
 };
 
@@ -140,11 +161,14 @@ export const getUsersControllerMyResumeUrlUrl = (resumeId: string) => {
 export const usersControllerMyResumeUrl = async (
   resumeId: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerMyResumeUrlUrl(resumeId), {
-    ...options,
-    method: "GET",
-  });
+): Promise<SignedUrlResponse> => {
+  return careerFetch<SignedUrlResponse>(
+    getUsersControllerMyResumeUrlUrl(resumeId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getUsersControllerMyResumesUrl = () => {
@@ -153,8 +177,8 @@ export const getUsersControllerMyResumesUrl = () => {
 
 export const usersControllerMyResumes = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerMyResumesUrl(), {
+): Promise<ResumesResponse> => {
+  return careerFetch<ResumesResponse>(getUsersControllerMyResumesUrl(), {
     ...options,
     method: "GET",
   });
@@ -167,18 +191,21 @@ export const getUsersControllerSetDefaultResumeUrl = () => {
 export const usersControllerSetDefaultResume = async (
   setDefaultResumeDto: SetDefaultResumeDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerSetDefaultResumeUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(setDefaultResumeDto),
-  });
+): Promise<DefaultResumeResponse> => {
+  return careerFetch<DefaultResumeResponse>(
+    getUsersControllerSetDefaultResumeUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(setDefaultResumeDto),
+    },
+  );
 };
 
 export const getUsersControllerPfpByIdUrl = (
   id: string,
-  params: UsersControllerPfpByIdParams,
+  params?: UsersControllerPfpByIdParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -197,13 +224,16 @@ export const getUsersControllerPfpByIdUrl = (
 
 export const usersControllerPfpById = async (
   id: string,
-  params: UsersControllerPfpByIdParams,
+  params?: UsersControllerPfpByIdParams,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getUsersControllerPfpByIdUrl(id, params), {
-    ...options,
-    method: "GET",
-  });
+): Promise<FileHashResponse> => {
+  return careerFetch<FileHashResponse>(
+    getUsersControllerPfpByIdUrl(id, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getUsersControllerResumeByIdUrl = (
@@ -252,8 +282,8 @@ export const usersControllerResumeUrlById = async (
   id: string,
   resumeId: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<SignedUrlResponse> => {
+  return careerFetch<SignedUrlResponse>(
     getUsersControllerResumeUrlByIdUrl(id, resumeId),
     {
       ...options,
@@ -267,15 +297,25 @@ export const getUsersControllerUploadResumeUrl = () => {
 };
 
 export const usersControllerUploadResume = async (
-  updateResumeDto: UpdateResumeDto,
+  usersControllerUploadResumeBody: UsersControllerUploadResumeBody,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerUploadResumeUrl(), {
-    ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateResumeDto),
-  });
+): Promise<ResumeUploadResponse> => {
+  const formData = new FormData();
+  if (usersControllerUploadResumeBody.resume !== undefined) {
+    formData.append(`resume`, usersControllerUploadResumeBody.resume);
+  }
+  if (usersControllerUploadResumeBody.label !== undefined) {
+    formData.append(`label`, usersControllerUploadResumeBody.label);
+  }
+
+  return careerFetch<ResumeUploadResponse>(
+    getUsersControllerUploadResumeUrl(),
+    {
+      ...options,
+      method: "PUT",
+      body: formData,
+    },
+  );
 };
 
 export const getUsersControllerUpdateResumeUrl = (resumeId: string) => {
@@ -286,8 +326,8 @@ export const usersControllerUpdateResume = async (
   resumeId: string,
   updateResumeDto: UpdateResumeDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<ResumeResponse> => {
+  return careerFetch<ResumeResponse>(
     getUsersControllerUpdateResumeUrl(resumeId),
     {
       ...options,
@@ -305,8 +345,8 @@ export const getUsersControllerDeleteResumeUrl = (resumeId: string) => {
 export const usersControllerDeleteResume = async (
   resumeId: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<ResumeResponse> => {
+  return careerFetch<ResumeResponse>(
     getUsersControllerDeleteResumeUrl(resumeId),
     {
       ...options,
@@ -321,8 +361,8 @@ export const getUsersControllerGetMyFormTemplatesUrl = () => {
 
 export const usersControllerGetMyFormTemplates = async (
   options?: RequestInit,
-): Promise<UsersControllerGetMyFormTemplates200> => {
-  return careerFetch<UsersControllerGetMyFormTemplates200>(
+): Promise<FormTemplatesResponse> => {
+  return careerFetch<FormTemplatesResponse>(
     getUsersControllerGetMyFormTemplatesUrl(),
     {
       ...options,
@@ -352,8 +392,8 @@ export const getUsersControllerGetMyFormTemplateUrl = (
 export const usersControllerGetMyFormTemplate = async (
   params: UsersControllerGetMyFormTemplateParams,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(
+): Promise<FormResponse> => {
+  return careerFetch<FormResponse>(
     getUsersControllerGetMyFormTemplateUrl(params),
     {
       ...options,
@@ -369,13 +409,16 @@ export const getUsersControllerJoinFormGroupUrl = () => {
 export const usersControllerJoinFormGroup = async (
   joinFormGroupDto: JoinFormGroupDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerJoinFormGroupUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(joinFormGroupDto),
-  });
+): Promise<JoinFormGroupResponse> => {
+  return careerFetch<JoinFormGroupResponse>(
+    getUsersControllerJoinFormGroupUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(joinFormGroupDto),
+    },
+  );
 };
 
 export const getUsersControllerInitiateFormUrl = () => {
@@ -385,16 +428,13 @@ export const getUsersControllerInitiateFormUrl = () => {
 export const usersControllerInitiateForm = async (
   initiateFormDto: InitiateFormDto,
   options?: RequestInit,
-): Promise<UsersControllerInitiateForm201> => {
-  return careerFetch<UsersControllerInitiateForm201>(
-    getUsersControllerInitiateFormUrl(),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(initiateFormDto),
-    },
-  );
+): Promise<MqJobQueuedResponse> => {
+  return careerFetch<MqJobQueuedResponse>(getUsersControllerInitiateFormUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(initiateFormDto),
+  });
 };
 
 export const getUsersControllerFilloutFormUrl = () => {
@@ -404,16 +444,13 @@ export const getUsersControllerFilloutFormUrl = () => {
 export const usersControllerFilloutForm = async (
   initiateFormDto: InitiateFormDto,
   options?: RequestInit,
-): Promise<UsersControllerFilloutForm201> => {
-  return careerFetch<UsersControllerFilloutForm201>(
-    getUsersControllerFilloutFormUrl(),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(initiateFormDto),
-    },
-  );
+): Promise<MqJobQueuedResponse> => {
+  return careerFetch<MqJobQueuedResponse>(getUsersControllerFilloutFormUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(initiateFormDto),
+  });
 };
 
 export const getUsersControllerGetMqJobUrl = (id: string) => {
@@ -423,14 +460,11 @@ export const getUsersControllerGetMqJobUrl = (id: string) => {
 export const usersControllerGetMqJob = async (
   id: string,
   options?: RequestInit,
-): Promise<UsersControllerGetMqJob200> => {
-  return careerFetch<UsersControllerGetMqJob200>(
-    getUsersControllerGetMqJobUrl(id),
-    {
-      ...options,
-      method: "GET",
-    },
-  );
+): Promise<MqJobResponse> => {
+  return careerFetch<MqJobResponse>(getUsersControllerGetMqJobUrl(id), {
+    ...options,
+    method: "GET",
+  });
 };
 
 export const getUsersControllerUploadSignatureImageUrl = () => {
@@ -440,8 +474,8 @@ export const getUsersControllerUploadSignatureImageUrl = () => {
 export const usersControllerUploadSignatureImage = async (
   uploadSignatureImageDto: UploadSignatureImageDto,
   options?: RequestInit,
-): Promise<UsersControllerUploadSignatureImage201> => {
-  return careerFetch<UsersControllerUploadSignatureImage201>(
+): Promise<UploadSignatureImageResponse> => {
+  return careerFetch<UploadSignatureImageResponse>(
     getUsersControllerUploadSignatureImageUrl(),
     {
       ...options,
@@ -459,8 +493,8 @@ export const getUsersControllerCancelFormUrl = () => {
 export const usersControllerCancelForm = async (
   cancelFormDto: CancelFormDto,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getUsersControllerCancelFormUrl(), {
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(getUsersControllerCancelFormUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -475,8 +509,8 @@ export const getUsersControllerResendFormUrl = () => {
 export const usersControllerResendForm = async (
   resendFormDto: ResendFormDto,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getUsersControllerResendFormUrl(), {
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(getUsersControllerResendFormUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -504,13 +538,16 @@ export const getUsersControllerCorrectFormRecipientUrl = () => {
 export const usersControllerCorrectFormRecipient = async (
   correctFormRecipientDto: CorrectFormRecipientDto,
   options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getUsersControllerCorrectFormRecipientUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(correctFormRecipientDto),
-  });
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(
+    getUsersControllerCorrectFormRecipientUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(correctFormRecipientDto),
+    },
+  );
 };
 
 export const getUsersControllerGetCorrectFormRecipientContextUrl = (
@@ -534,8 +571,8 @@ export const getUsersControllerGetCorrectFormRecipientContextUrl = (
 export const usersControllerGetCorrectFormRecipientContext = async (
   params: UsersControllerGetCorrectFormRecipientContextParams,
   options?: RequestInit,
-): Promise<UsersControllerGetCorrectFormRecipientContext200> => {
-  return careerFetch<UsersControllerGetCorrectFormRecipientContext200>(
+): Promise<RecipientContextResponse> => {
+  return careerFetch<RecipientContextResponse>(
     getUsersControllerGetCorrectFormRecipientContextUrl(params),
     {
       ...options,
@@ -550,11 +587,14 @@ export const getUsersControllerGetMyGeneratedFormsUrl = () => {
 
 export const usersControllerGetMyGeneratedForms = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerGetMyGeneratedFormsUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<FormLogResponse> => {
+  return careerFetch<FormLogResponse>(
+    getUsersControllerGetMyGeneratedFormsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getUsersControllerToggleSaveJobUrl = () => {
@@ -564,8 +604,8 @@ export const getUsersControllerToggleSaveJobUrl = () => {
 export const usersControllerToggleSaveJob = async (
   saveJobDto: SaveJobDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerToggleSaveJobUrl(), {
+): Promise<SaveJobResponse> => {
+  return careerFetch<SaveJobResponse>(getUsersControllerToggleSaveJobUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -609,9 +649,12 @@ export const getUsersControllerUserByIdUrl = (id: string) => {
 export const usersControllerUserById = async (
   id: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getUsersControllerUserByIdUrl(id), {
-    ...options,
-    method: "GET",
-  });
+): Promise<UserClientUserResponse> => {
+  return careerFetch<UserClientUserResponse>(
+    getUsersControllerUserByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };

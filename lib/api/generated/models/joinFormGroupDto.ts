@@ -7,5 +7,5 @@
  */
 
 export interface JoinFormGroupDto {
-  [key: string]: unknown;
+  code: string;
 }

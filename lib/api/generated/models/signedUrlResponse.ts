@@ -6,4 +6,8 @@
  * OpenAPI spec version: 2.0
  */
 
-export type UsersControllerFilloutForm201 = { [key: string]: unknown };
+export interface SignedUrlResponse {
+  success: boolean;
+  message?: string;
+  url: string;
+}

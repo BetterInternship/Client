@@ -7,9 +7,9 @@
  */
 import type { UserApplicationRecordSource } from "./userApplicationRecordSource";
 import type { UserApplicationRecordVisibility } from "./userApplicationRecordVisibility";
-import type { UserApplicationRecordUsers } from "./userApplicationRecordUsers";
 import type { JobRecord } from "./jobRecord";
 import type { UserApplicationRecordEmployer } from "./userApplicationRecordEmployer";
+import type { UserApplicationRecordUsers } from "./userApplicationRecordUsers";
 
 export interface UserApplicationRecord {
   applied_at: string;
@@ -36,9 +36,9 @@ export interface UserApplicationRecord {
   /** @nullable */
   user_id: string | null;
   visibility: UserApplicationRecordVisibility;
-  /** @nullable */
-  users?: UserApplicationRecordUsers;
   job: JobRecord;
   /** @nullable */
   employer?: UserApplicationRecordEmployer;
+  /** @nullable */
+  users?: UserApplicationRecordUsers;
 }

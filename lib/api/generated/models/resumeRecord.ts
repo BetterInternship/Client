@@ -6,4 +6,11 @@
  * OpenAPI spec version: 2.0
  */
 
-export type UsersControllerGetMqJob200 = { [key: string]: unknown };
+export interface ResumeRecord {
+  filename: string;
+  id: string;
+  is_deleted: boolean;
+  label: string;
+  uploaded_at: string;
+  user_id: string;
+}

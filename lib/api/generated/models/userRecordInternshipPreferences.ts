@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 
-export interface CancelFormDto {
-  formProcessId: string;
-}
+/**
+ * @nullable
+ */
+export type UserRecordInternshipPreferences = { [key: string]: unknown } | null;

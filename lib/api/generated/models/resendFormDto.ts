@@ -7,5 +7,5 @@
  */
 
 export interface ResendFormDto {
-  [key: string]: unknown;
+  formProcessId: string;
 }

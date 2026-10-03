@@ -5,8 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { UserRecord } from "./userRecord";
 
 /**
  * @nullable
  */
-export type UserApplicationRecordUsers = { [key: string]: unknown } | null;
+export type UserApplicationRecordUsers = UserRecord | null;

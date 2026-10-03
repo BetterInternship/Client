@@ -6,6 +6,8 @@
  * OpenAPI spec version: 2.0
  */
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface RecipientSigningParty {
+  id: string;
+  title: string;
+  email: string;
 }

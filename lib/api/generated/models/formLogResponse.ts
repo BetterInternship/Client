@@ -5,7 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { FormLogEntry } from "./formLogEntry";
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface FormLogResponse {
+  success: boolean;
+  message?: string;
+  forms: FormLogEntry[];
 }

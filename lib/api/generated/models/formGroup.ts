@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 
-export interface CancelFormDto {
-  formProcessId: string;
+export interface FormGroup {
+  id: string;
+  description: string;
 }
