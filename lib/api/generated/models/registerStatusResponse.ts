@@ -6,4 +6,8 @@
  * OpenAPI spec version: 2.0
  */
 
-export type AuthControllerEmployerRegister201 = { [key: string]: unknown };
+export interface RegisterStatusResponse {
+  success: boolean;
+  message?: string;
+  email: string;
+}

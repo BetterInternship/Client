@@ -7,11 +7,17 @@
  */
 import type {
   ActivateEmailDto,
-  AuthControllerEmployerRegister201,
   AuthControllerHandleSecureLinkParams,
   BaseResponse,
   EmailDto,
+  EmployerEmailStatusResponse,
+  EmployerLoggedInResponse,
+  EmployerLoginResponse,
+  EmployerRegisterResponse,
   HireRegistrationDto,
+  LoggedInResponse,
+  RegisterResponse,
+  RegisterStatusResponse,
   RegisterUserDto,
 } from "../../models";
 
@@ -130,11 +136,14 @@ export const getAuthControllerRegisterStatusUrl = () => {
 
 export const authControllerRegisterStatus = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerRegisterStatusUrl(), {
-    ...options,
-    method: "GET",
-  });
+): Promise<RegisterStatusResponse> => {
+  return careerFetch<RegisterStatusResponse>(
+    getAuthControllerRegisterStatusUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
 export const getAuthControllerRegisterUrl = () => {
@@ -144,8 +153,8 @@ export const getAuthControllerRegisterUrl = () => {
 export const authControllerRegister = async (
   registerUserDto: RegisterUserDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerRegisterUrl(), {
+): Promise<RegisterResponse> => {
+  return careerFetch<RegisterResponse>(getAuthControllerRegisterUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -172,8 +181,8 @@ export const getAuthControllerLoggedInUrl = () => {
 
 export const authControllerLoggedIn = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerLoggedInUrl(), {
+): Promise<LoggedInResponse> => {
+  return careerFetch<LoggedInResponse>(getAuthControllerLoggedInUrl(), {
     ...options,
     method: "POST",
   });
@@ -186,13 +195,16 @@ export const getAuthControllerEmployerEmailStatusUrl = () => {
 export const authControllerEmployerEmailStatus = async (
   emailDto: EmailDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerEmployerEmailStatusUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(emailDto),
-  });
+): Promise<EmployerEmailStatusResponse> => {
+  return careerFetch<EmployerEmailStatusResponse>(
+    getAuthControllerEmployerEmailStatusUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(emailDto),
+    },
+  );
 };
 
 export const getAuthControllerEmployerRegisterUrl = () => {
@@ -202,14 +214,48 @@ export const getAuthControllerEmployerRegisterUrl = () => {
 export const authControllerEmployerRegister = async (
   hireRegistrationDto: HireRegistrationDto,
   options?: RequestInit,
-): Promise<AuthControllerEmployerRegister201> => {
-  return careerFetch<AuthControllerEmployerRegister201>(
+): Promise<EmployerRegisterResponse> => {
+  const formData = new FormData();
+  hireRegistrationDto.accepted_universities.forEach((value) =>
+    formData.append(`accepted_universities`, value),
+  );
+  formData.append(
+    `accepts_non_university`,
+    hireRegistrationDto.accepts_non_university.toString(),
+  );
+  if (hireRegistrationDto.description !== null) {
+    formData.append(`description`, hireRegistrationDto.description);
+  }
+  if (hireRegistrationDto.email !== null) {
+    formData.append(`email`, hireRegistrationDto.email);
+  }
+  if (hireRegistrationDto.industry !== null) {
+    formData.append(`industry`, hireRegistrationDto.industry);
+  }
+  formData.append(`legal_entity_name`, hireRegistrationDto.legal_entity_name);
+  if (hireRegistrationDto.location !== null) {
+    formData.append(`location`, hireRegistrationDto.location);
+  }
+  if (hireRegistrationDto.logo !== null) {
+    formData.append(`logo`, hireRegistrationDto.logo);
+  }
+  formData.append(`name`, hireRegistrationDto.name);
+  if (hireRegistrationDto.phone_number !== null) {
+    formData.append(`phone_number`, hireRegistrationDto.phone_number);
+  }
+  if (hireRegistrationDto.website !== null) {
+    formData.append(`website`, hireRegistrationDto.website);
+  }
+  if (hireRegistrationDto.contact_name !== undefined) {
+    formData.append(`contact_name`, hireRegistrationDto.contact_name);
+  }
+
+  return careerFetch<EmployerRegisterResponse>(
     getAuthControllerEmployerRegisterUrl(),
     {
       ...options,
       method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(hireRegistrationDto),
+      body: formData,
     },
   );
 };
@@ -256,13 +302,16 @@ export const getAuthControllerVerifyHireLoginOtpUrl = () => {
 export const authControllerVerifyHireLoginOtp = async (
   activateEmailDto: ActivateEmailDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerVerifyHireLoginOtpUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(activateEmailDto),
-  });
+): Promise<EmployerLoginResponse> => {
+  return careerFetch<EmployerLoginResponse>(
+    getAuthControllerVerifyHireLoginOtpUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(activateEmailDto),
+    },
+  );
 };
 
 export const getAuthControllerActivateHireAccountUrl = () => {
@@ -272,13 +321,16 @@ export const getAuthControllerActivateHireAccountUrl = () => {
 export const authControllerActivateHireAccount = async (
   activateEmailDto: ActivateEmailDto,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerActivateHireAccountUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(activateEmailDto),
-  });
+): Promise<EmployerLoginResponse> => {
+  return careerFetch<EmployerLoginResponse>(
+    getAuthControllerActivateHireAccountUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(activateEmailDto),
+    },
+  );
 };
 
 export const getAuthControllerEmployerLoggedInUrl = () => {
@@ -287,11 +339,14 @@ export const getAuthControllerEmployerLoggedInUrl = () => {
 
 export const authControllerEmployerLoggedIn = async (
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerEmployerLoggedInUrl(), {
-    ...options,
-    method: "POST",
-  });
+): Promise<EmployerLoggedInResponse> => {
+  return careerFetch<EmployerLoggedInResponse>(
+    getAuthControllerEmployerLoggedInUrl(),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
 export const getAuthControllerEmployerSignOutUrl = () => {
