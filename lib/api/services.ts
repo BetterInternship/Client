@@ -53,6 +53,13 @@ import {
 } from "./generated/endpoints/employer/employer";
 import { careerFetch } from "./career-fetch";
 import {
+  authControllerActivateAccount,
+  authControllerRegister,
+  authControllerRegisterStatus,
+  authControllerRequestActivation,
+  authControllerSignOut,
+} from "./generated/endpoints/auth/auth";
+import {
   employerUsersControllerChangeRole,
   employerUsersControllerDeactivate,
   employerUsersControllerGetMe,
@@ -96,6 +103,7 @@ import type {
   CreateJobChallengeListingDto,
   CreateJobDto,
   InitiateFormDto,
+  RegisterUserDto,
   UpdateJobDto,
   UpdateUserDto,
 } from "./generated/models";
@@ -318,37 +326,31 @@ interface SignedFileUrlResponse extends FetchResponse {
 
 export const AuthService = {
   async register(user: Partial<PublicUser>) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("register").build(),
-      user,
-    );
+    return authControllerRegister(
+      user as unknown as RegisterUserDto,
+    ) as unknown as Promise<AuthResponse>;
   },
 
   // whether the browser holds a valid registration cookie (set by the OAuth callback)
   async registerStatus() {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("register", "status").build(),
-    );
+    return authControllerRegisterStatus() as unknown as Promise<ResourceHashResponse>;
   },
 
   async requestActivation(email: string) {
-    return APIClient.post<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("activate").build(),
-      { email },
-    );
+    return authControllerRequestActivation({
+      email,
+    }) as unknown as Promise<ResourceHashResponse>;
   },
 
   async activate(email: string, otp: string) {
-    return APIClient.post<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("activate", "otp").build(),
-      { email, otp },
-    );
+    return authControllerActivateAccount({
+      email,
+      otp,
+    }) as unknown as Promise<ResourceHashResponse>;
   },
 
   async logout() {
-    await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("logout").build(),
-    );
+    await authControllerSignOut();
   },
 };
 interface UserResponse extends FetchResponse {

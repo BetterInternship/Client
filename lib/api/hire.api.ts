@@ -9,7 +9,16 @@
 
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { Employer, EmployerSelf } from "../db/db.types";
-import { APIClient, APIRouteBuilder } from "./api-client";
+import { careerFetch } from "./career-fetch";
+import {
+  authControllerActivateHireAccount,
+  authControllerEmployerLoggedIn,
+  authControllerEmployerSignOut,
+  authControllerRequestHireActivation,
+  authControllerRequestHireLoginOtp,
+  authControllerVerifyHireLoginOtp,
+  getAuthControllerEmployerRegisterUrl,
+} from "./generated/endpoints/auth/auth";
 import {
   godsControllerSignInAs,
   godsControllerExitProxy,
@@ -34,40 +43,39 @@ export interface AuthResponse extends FetchResponse {
 }
 
 export const EmployerAuthService = {
+  // The caller builds its own FormData, so this skips the generated wrapper
+  // (which would assemble a fresh one field by field) and sends it as given.
   async register(employer: Partial<Employer> | FormData) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "register").build(),
-      employer,
-      "form-data",
-    );
+    return careerFetch<AuthResponse>(getAuthControllerEmployerRegisterUrl(), {
+      method: "POST",
+      body: employer as FormData,
+    });
   },
 
   async requestLoginOtp(email: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "login", "otp", "request").build(),
-      { email },
-    );
+    return authControllerRequestHireLoginOtp({
+      email,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async verifyLoginOtp(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "login", "otp", "verify").build(),
-      { email, otp },
-    );
+    return authControllerVerifyHireLoginOtp({
+      email,
+      otp,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async requestActivation(email: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "activate").build(),
-      { email },
-    );
+    return authControllerRequestHireActivation({
+      email,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async activate(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "activate", "otp").build(),
-      { email, otp },
-    );
+    return authControllerActivateHireAccount({
+      email,
+      otp,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async loginAsEmployer(employer_id: string) {
@@ -80,18 +88,14 @@ export const EmployerAuthService = {
   },
 
   async logout() {
-    await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("hire", "logout").build(),
-    );
+    await authControllerEmployerSignOut();
   },
 
   // Backs authctx's refreshAuthentication() — the one call that must survive
   // a full page load and still know both *who* is signed in and whether
   // they're a god (plan §6.2).
   async loggedIn() {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "loggedin").build(),
-    );
+    return authControllerEmployerLoggedIn() as unknown as Promise<AuthResponse>;
   },
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
