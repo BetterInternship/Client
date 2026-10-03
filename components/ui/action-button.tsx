@@ -27,18 +27,19 @@ export const ActionButton = ({
       <button
         data-destructive={destructive}
         disabled={!enabled}
-        className="
+        className={`
           group
           relative
-          flex justify-center items-center p-2 transition rounded-[0.33em]
+          flex justify-center items-center p-2 rounded-[0.33em] transition-colors duration-200
+          enabled:cursor-pointer
           enabled:data-[destructive=true]:hover:text-red-600
-          enabled:data-[destructive=true]:hover:bg-destructive/25
-          enabled:data-[destructive=false]:hover:bg-primary/25
+          enabled:data-[destructive=false]:hover:text-primary
 
           disabled:text-gray-500
           disabled:cursor-not-allowed
           disabled:hover:bg-transparent
-        "
+          ${className ?? ""}
+        `}
         onClick={onClick}
       >
         {notification && (

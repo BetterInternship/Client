@@ -201,7 +201,7 @@ export function ApplicantPage({
               icon={Archive}
               label="Archive application"
               onClick={onArchive}
-              className="text-gray-500 enabled:data-[destructive=false]:hover:bg-gray-100 enabled:hover:text-gray-800"
+              className="text-gray-500"
             />
             <DropdownMenu
               items={statuses}

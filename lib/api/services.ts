@@ -838,6 +838,12 @@ export const ApplicationService = {
     resume_id: string;
     challenge_submission?: string;
     source?: "mass";
+    // Attribution for an apply made from a Top page (plan D20). Hand-written
+    // facade call for now — see CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+    top_page_id?: string;
+    // The university whose Top page link (/<university>/top/<slug>) the
+    // apply came from.
+    top_page_university_id?: string;
   }) {
     // Same Date-vs-string difference as getApplications above.
     return applicationsControllerCreate(
@@ -853,7 +859,12 @@ export const ApplicationService = {
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number },
+    review_options: {
+      review?: string;
+      notes?: string;
+      status?: number;
+      acceptance_message?: string;
+    },
   ): Promise<FetchResponse> {
     return applicationsControllerUpdate(id, review_options);
   },

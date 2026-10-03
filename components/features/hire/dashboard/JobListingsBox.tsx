@@ -5,7 +5,7 @@ import { cn, Badge, Button, Card } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { ArrowRight, Check, Lock, Pause, Zap } from "lucide-react";
+import { ArrowRight, Check, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { toast } from "sonner";
@@ -54,8 +54,6 @@ export function JobListingsBox({
     if (job.paused) {
       const waitingCount = job.waiting_count ?? 0;
       modalRegistry.warning.open({
-        icon: Lock,
-        iconColor: "text-destructive",
         title: "This listing is inactive",
         message: `It was paused automatically after a period of inactivity.\n\n${
           waitingCount > 0

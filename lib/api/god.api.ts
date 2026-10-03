@@ -1,5 +1,10 @@
-import { Employer } from "@/lib/db/db.types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Employer, Job } from "@/lib/db/db.types";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
@@ -299,5 +304,276 @@ export function useGodUniversities() {
       godsControllerGetMoaUniversities() as unknown as Promise<{
         universities: University[];
       }>,
+  });
+}
+
+// ── Top pages (Docs/plans/TOP_PAGES_IMPLEMENTATION_PLAN.md) ────────────────
+// Hand-written facade for now — D25: the orval codegen migration isn't
+// merged yet. See CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+
+export interface TopPageListRow {
+  id: string;
+  name: string;
+  slug: string;
+  is_published: boolean;
+  member_count: number;
+  hidden_count: number;
+  updated_at: string;
+}
+
+export interface TopPageListResponse extends FetchResponse {
+  pages: TopPageListRow[];
+}
+
+export function useGodTopPages() {
+  return useQuery({
+    queryKey: ["god-top-pages"],
+    queryFn: () =>
+      APIClient.get<TopPageListResponse>(
+        APIRouteBuilder("god").r("top-pages").build(),
+      ),
+  });
+}
+
+export type TopPageMemberState =
+  | "live"
+  | "hibernating"
+  | "off"
+  | "unlisted"
+  | "unverified_employer";
+
+export interface TopPageMember {
+  job_id: string;
+  position: number;
+  state: TopPageMemberState;
+  title: string;
+  employer_name: string | null;
+  last_activated_at?: string;
+}
+
+export interface GodTopPageDetail {
+  id: string;
+  name: string;
+  slug: string;
+  is_published: boolean;
+  updated_at: string;
+  members: TopPageMember[];
+  /** How many universities this page is ticked for in the university grid. */
+  university_count: number;
+}
+
+export interface SlugOwner {
+  id: string;
+  name: string;
+}
+
+// The server sends the conflict/invalid-job-ids shape directly over the
+// response body on a non-2xx status (no thrown exception on this codebase's
+// fetch client — see api-client.ts), so create/save's response type carries
+// every possible field rather than just the success shape.
+export interface GodTopPageResponse extends FetchResponse {
+  page?: GodTopPageDetail;
+  owner?: SlugOwner;
+  job_ids?: string[];
+}
+
+export function useGodTopPage(id: string | undefined) {
+  return useQuery({
+    queryKey: ["god-top-page", id],
+    queryFn: () =>
+      APIClient.get<GodTopPageResponse>(
+        APIRouteBuilder("god")
+          .r("top-pages", id as string)
+          .build(),
+      ),
+    enabled: !!id,
+  });
+}
+
+export function useCreateTopPage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) =>
+      APIClient.post<GodTopPageResponse>(
+        APIRouteBuilder("god").r("top-pages").build(),
+        { name },
+      ),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ["god-top-pages"] });
+      }
+    },
+  });
+}
+
+export interface SaveTopPagePayload {
+  name: string;
+  is_published: boolean;
+  job_ids: string[];
+  updated_at: string;
+}
+
+export function useSaveTopPage(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: SaveTopPagePayload) =>
+      APIClient.put<GodTopPageResponse>(
+        APIRouteBuilder("god").r("top-pages", id).build(),
+        payload,
+      ),
+    onSuccess: (response) => {
+      if (response.success && response.page) {
+        queryClient.setQueryData(["god-top-page", id], response);
+        queryClient.invalidateQueries({ queryKey: ["god-top-pages"] });
+        // The grid shows each page's name and published state as a column.
+        void queryClient.invalidateQueries({
+          queryKey: ["god-top-universities"],
+        });
+      }
+    },
+  });
+}
+
+// ── Top pages: the university grid (TOP_PAGES_UNIVERSITY_PLAN.md D15) ──────
+
+export interface GodTopUniversityRow {
+  id: string;
+  name: string;
+  /** The university's part of the URL — built from its name by the server. */
+  slug: string;
+  accent_hex: string | null;
+  has_partner_account: boolean;
+  /** No usable URL name, or the same one as another university. */
+  slug_clash: boolean;
+  page_ids: string[];
+}
+
+export interface GodTopGridPage {
+  id: string;
+  name: string;
+  slug: string;
+  is_published: boolean;
+}
+
+export interface GodTopUniversityGridResponse extends FetchResponse {
+  universities?: GodTopUniversityRow[];
+  pages?: GodTopGridPage[];
+}
+
+export function useGodTopUniversityGrid() {
+  return useQuery({
+    queryKey: ["god-top-universities"],
+    queryFn: () =>
+      APIClient.get<GodTopUniversityGridResponse>(
+        APIRouteBuilder("god").r("top-pages", "universities").build(),
+      ),
+    // Always refetch on open: this is an editor, and a stale grid would
+    // quietly overwrite another admin's ticks on Save.
+    staleTime: 0,
+  });
+}
+
+export interface SaveTopUniversityRow {
+  id: string;
+  accent_hex: string | null;
+  /** Replaces the university's ticks — not merged into them. */
+  page_ids: string[];
+}
+
+export function useSaveTopUniversityGrid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (universities: SaveTopUniversityRow[]) =>
+      APIClient.put<GodTopUniversityGridResponse>(
+        APIRouteBuilder("god").r("top-pages", "universities").build(),
+        { universities },
+      ),
+    onSuccess: (response) => {
+      if (response.success && response.universities) {
+        queryClient.setQueryData(["god-top-universities"], response);
+        // Each page's editor shows how many universities it is ticked for.
+        void queryClient.invalidateQueries({ queryKey: ["god-top-page"] });
+      }
+    },
+  });
+}
+
+export interface SlugPreviewResult {
+  slug: string;
+  available: boolean;
+  owner?: SlugOwner;
+}
+
+/**
+ * Plain async call rather than a persistent useQuery — the editor's live
+ * name preview debounces this itself and doesn't need cross-render caching.
+ */
+export async function fetchTopPageSlugPreview(
+  name: string,
+  pageId?: string,
+): Promise<SlugPreviewResult> {
+  return APIClient.get<SlugPreviewResult>(
+    APIRouteBuilder("god")
+      .r("top-pages", "slug-preview")
+      .p({ name, page_id: pageId })
+      .build(),
+  );
+}
+
+export interface TopPageCandidate {
+  id: string;
+  title: string;
+  employer_name: string | null;
+  job_category_ids: string[];
+  last_activated_at: string;
+}
+
+export interface TopPageCandidatesResponse extends FetchResponse {
+  data: TopPageCandidate[];
+  total: number;
+}
+
+export function useTopPageCandidates(params: {
+  search?: string;
+  category?: string;
+  page: number;
+}) {
+  return useQuery({
+    queryKey: ["god-top-page-candidates", params],
+    queryFn: () =>
+      APIClient.get<TopPageCandidatesResponse>(
+        APIRouteBuilder("god")
+          .r("top-pages", "candidates")
+          .p({
+            search: params.search,
+            category: params.category,
+            page: params.page,
+          })
+          .build(),
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export interface TopPagePreviewJobsResponse extends FetchResponse {
+  jobs: Job[];
+}
+
+/**
+ * Backs the editor's "Preview" button: shapes whatever job_ids it currently
+ * has staged (possibly unsaved) the same way the public page shapes its own
+ * members, rather than reading back whatever was last saved.
+ */
+export function useTopPagePreviewJobs(jobIds: string[]) {
+  return useQuery({
+    queryKey: ["god-top-page-preview-jobs", jobIds],
+    queryFn: () =>
+      APIClient.get<TopPagePreviewJobsResponse>(
+        APIRouteBuilder("god")
+          .r("top-pages", "preview-jobs")
+          .p({ job_ids: jobIds.join(",") })
+          .build(),
+      ),
+    enabled: jobIds.length > 0,
   });
 }
