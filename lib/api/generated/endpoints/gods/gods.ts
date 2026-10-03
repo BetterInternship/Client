@@ -150,6 +150,22 @@ export const godsControllerGetEmployerLoginStats = async (
   );
 };
 
+export const getGodsControllerRefreshEmployerLoginStatsUrl = () => {
+  return `/api/god/stats/employer-logins/refresh`;
+};
+
+export const godsControllerRefreshEmployerLoginStats = async (
+  options?: RequestInit,
+): Promise<EmployerLoginMetricsResponse> => {
+  return careerFetch<EmployerLoginMetricsResponse>(
+    getGodsControllerRefreshEmployerLoginStatsUrl(),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
 export const getGodsControllerRegisterAndListUrl = () => {
   return `/api/god/employers/create-and-list`;
 };

@@ -13,8 +13,12 @@ export interface UpdateApplicationDto {
   resume_id?: string;
   challenge_submission?: string;
   source?: UpdateApplicationDtoSource;
+  top_page_id?: string;
+  top_page_university_id?: string;
   notes?: string;
   status?: number;
   visibility?: UpdateApplicationDtoVisibility;
   review?: string;
+  /** @maxLength 2000 */
+  acceptance_message?: string;
 }

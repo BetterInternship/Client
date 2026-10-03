@@ -27,6 +27,10 @@ export interface ApplicationRecord {
   source: ApplicationRecordSource;
   status: number;
   /** @nullable */
+  top_page_id: string | null;
+  /** @nullable */
+  top_page_university_id: string | null;
+  /** @nullable */
   updated_at: string | null;
   /** @nullable */
   user_id: string | null;

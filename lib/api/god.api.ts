@@ -5,13 +5,13 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
 import {
   godsControllerCreateListing,
   godsControllerGetApplicationStats,
   godsControllerGetEmployerLoginStats,
+  godsControllerRefreshEmployerLoginStats,
   godsControllerGetEmployers,
   godsControllerGetMoaDocuments,
   godsControllerGetMoaDocumentUrl,
@@ -22,6 +22,17 @@ import {
   godsControllerRegisterAndList,
   godsControllerCreateEmployer,
 } from "./generated/endpoints/gods/gods";
+import {
+  godTopPagesControllerCandidates,
+  godTopPagesControllerCreate,
+  godTopPagesControllerGetOne,
+  godTopPagesControllerList,
+  godTopPagesControllerPreviewJobs,
+  godTopPagesControllerSave,
+  godTopPagesControllerSaveUniversityGrid,
+  godTopPagesControllerSlugPreview,
+  godTopPagesControllerUniversityGrid,
+} from "./generated/endpoints/god-top-pages/god-top-pages";
 
 export interface ListingData {
   title: string;
@@ -143,9 +154,7 @@ export function useRefreshEmployerLoginMetrics() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      APIClient.post<EmployerLoginMetricsResponse>(
-        APIRouteBuilder("god").r("stats", "employer-logins", "refresh").build(),
-      ),
+      godsControllerRefreshEmployerLoginStats() as unknown as Promise<EmployerLoginMetricsResponse>,
     onSuccess: (response) => {
       if (response.success && response.stats) {
         queryClient.setQueryData(["god-employer-login-metrics"], response);
@@ -308,8 +317,9 @@ export function useGodUniversities() {
 }
 
 // ── Top pages (Docs/plans/TOP_PAGES_IMPLEMENTATION_PLAN.md) ────────────────
-// Hand-written facade for now — D25: the orval codegen migration isn't
-// merged yet. See CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+// The generated models type dates as the strings they are on the wire and
+// leave out the optional fields these hand-written interfaces add, so every
+// function below keeps its old return type until callers move to the models.
 
 export interface TopPageListRow {
   id: string;
@@ -328,10 +338,7 @@ export interface TopPageListResponse extends FetchResponse {
 export function useGodTopPages() {
   return useQuery({
     queryKey: ["god-top-pages"],
-    queryFn: () =>
-      APIClient.get<TopPageListResponse>(
-        APIRouteBuilder("god").r("top-pages").build(),
-      ),
+    queryFn: (): Promise<TopPageListResponse> => godTopPagesControllerList(),
   });
 }
 
@@ -381,11 +388,9 @@ export function useGodTopPage(id: string | undefined) {
   return useQuery({
     queryKey: ["god-top-page", id],
     queryFn: () =>
-      APIClient.get<GodTopPageResponse>(
-        APIRouteBuilder("god")
-          .r("top-pages", id as string)
-          .build(),
-      ),
+      godTopPagesControllerGetOne(
+        id as string,
+      ) as unknown as Promise<GodTopPageResponse>,
     enabled: !!id,
   });
 }
@@ -394,10 +399,9 @@ export function useCreateTopPage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (name: string) =>
-      APIClient.post<GodTopPageResponse>(
-        APIRouteBuilder("god").r("top-pages").build(),
-        { name },
-      ),
+      godTopPagesControllerCreate({
+        name,
+      }) as unknown as Promise<GodTopPageResponse>,
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["god-top-pages"] });
@@ -417,10 +421,10 @@ export function useSaveTopPage(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: SaveTopPagePayload) =>
-      APIClient.put<GodTopPageResponse>(
-        APIRouteBuilder("god").r("top-pages", id).build(),
+      godTopPagesControllerSave(
+        id,
         payload,
-      ),
+      ) as unknown as Promise<GodTopPageResponse>,
     onSuccess: (response) => {
       if (response.success && response.page) {
         queryClient.setQueryData(["god-top-page", id], response);
@@ -464,9 +468,7 @@ export function useGodTopUniversityGrid() {
   return useQuery({
     queryKey: ["god-top-universities"],
     queryFn: () =>
-      APIClient.get<GodTopUniversityGridResponse>(
-        APIRouteBuilder("god").r("top-pages", "universities").build(),
-      ),
+      godTopPagesControllerUniversityGrid() as unknown as Promise<GodTopUniversityGridResponse>,
     // Always refetch on open: this is an editor, and a stale grid would
     // quietly overwrite another admin's ticks on Save.
     staleTime: 0,
@@ -484,10 +486,9 @@ export function useSaveTopUniversityGrid() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (universities: SaveTopUniversityRow[]) =>
-      APIClient.put<GodTopUniversityGridResponse>(
-        APIRouteBuilder("god").r("top-pages", "universities").build(),
-        { universities },
-      ),
+      godTopPagesControllerSaveUniversityGrid({
+        universities,
+      }) as unknown as Promise<GodTopUniversityGridResponse>,
     onSuccess: (response) => {
       if (response.success && response.universities) {
         queryClient.setQueryData(["god-top-universities"], response);
@@ -512,12 +513,10 @@ export async function fetchTopPageSlugPreview(
   name: string,
   pageId?: string,
 ): Promise<SlugPreviewResult> {
-  return APIClient.get<SlugPreviewResult>(
-    APIRouteBuilder("god")
-      .r("top-pages", "slug-preview")
-      .p({ name, page_id: pageId })
-      .build(),
-  );
+  return godTopPagesControllerSlugPreview({
+    name,
+    page_id: pageId || undefined,
+  });
 }
 
 export interface TopPageCandidate {
@@ -540,17 +539,14 @@ export function useTopPageCandidates(params: {
 }) {
   return useQuery({
     queryKey: ["god-top-page-candidates", params],
+    // Empty strings were dropped by APIRouteBuilder; the generated URL builder
+    // only drops undefined, so normalise here to keep the same query string.
     queryFn: () =>
-      APIClient.get<TopPageCandidatesResponse>(
-        APIRouteBuilder("god")
-          .r("top-pages", "candidates")
-          .p({
-            search: params.search,
-            category: params.category,
-            page: params.page,
-          })
-          .build(),
-      ),
+      godTopPagesControllerCandidates({
+        search: params.search || undefined,
+        category: params.category || undefined,
+        page: String(params.page),
+      }) as unknown as Promise<TopPageCandidatesResponse>,
     placeholderData: keepPreviousData,
   });
 }
@@ -568,12 +564,9 @@ export function useTopPagePreviewJobs(jobIds: string[]) {
   return useQuery({
     queryKey: ["god-top-page-preview-jobs", jobIds],
     queryFn: () =>
-      APIClient.get<TopPagePreviewJobsResponse>(
-        APIRouteBuilder("god")
-          .r("top-pages", "preview-jobs")
-          .p({ job_ids: jobIds.join(",") })
-          .build(),
-      ),
+      godTopPagesControllerPreviewJobs({
+        job_ids: jobIds.join(","),
+      }) as unknown as Promise<TopPagePreviewJobsResponse>,
     enabled: jobIds.length > 0,
   });
 }

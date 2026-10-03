@@ -12,4 +12,6 @@ export interface CreateApplicationDto {
   resume_id: string;
   challenge_submission?: string;
   source?: CreateApplicationDtoSource;
+  top_page_id?: string;
+  top_page_university_id?: string;
 }
