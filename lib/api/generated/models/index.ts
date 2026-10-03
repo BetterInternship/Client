@@ -143,6 +143,7 @@ export * from "./jobSearchResponse";
 export * from "./jobsControllerSearchParams";
 export * from "./joinFormGroupDto";
 export * from "./joinFormGroupResponse";
+export * from "./linkResolveResponse";
 export * from "./loggedInResponse";
 export * from "./magicLinkResponse";
 export * from "./moaDocumentUrlResponse";

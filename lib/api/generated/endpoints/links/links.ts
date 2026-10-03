@@ -5,7 +5,7 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
-import type { BaseResponse } from "../../models";
+import type { LinkResolveResponse } from "../../models";
 
 import { careerFetch } from "../../../career-fetch";
 
@@ -16,8 +16,8 @@ export const getLinksControllerResolveUrl = (slug: string) => {
 export const linksControllerResolve = async (
   slug: string,
   options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getLinksControllerResolveUrl(slug), {
+): Promise<LinkResolveResponse> => {
+  return careerFetch<LinkResolveResponse>(getLinksControllerResolveUrl(slug), {
     ...options,
     method: "GET",
   });
