@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { Job } from "@/lib/db/db.types";
 import { pickForeground } from "@/lib/utils/contrast";
 import { DEFAULT_TOP_PAGE_ACCENT } from "@/lib/utils/top-page-heading";
+import { createTopPalette } from "@/lib/utils/top-page-palette";
 
 /** Preserve curation order and annotate only verified university matches. */
 export function filterTopMoaJobs(jobs: Job[], matchedIds: Set<string>): Job[] {
@@ -31,23 +32,62 @@ export function topAccentTextColor(hex: string): string {
   return `#${rgb.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** Shift the blue artwork's hue without flattening its whites or shading. */
+export function topArtworkFilter(hex: string): string {
+  if (
+    !/^#[0-9a-f]{6}$/i.test(hex) ||
+    hex.toLowerCase() === DEFAULT_TOP_PAGE_ACCENT
+  ) {
+    return "none";
+  }
+  const [r, g, b] = [1, 3, 5].map(
+    (start) => parseInt(hex.slice(start, start + 2), 16) / 255,
+  );
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  if (delta === 0) return "grayscale(1)";
+  const hue =
+    (60 *
+      (max === r
+        ? (g - b) / delta
+        : max === g
+          ? (b - r) / delta + 2
+          : (r - g) / delta + 4) +
+      360) %
+    360;
+  const saturation = delta / (1 - Math.abs(max + min - 1));
+  // Assets are blue (~215°). Keep the original lightness so very dark or
+  // pale custom colours don't obscure the illustrations' readable details.
+  return `hue-rotate(${hue - 215}deg) saturate(${saturation})`;
+}
+
 /**
- * The CSS variables every Top page surface (category page, university
- * landing page) sets on its root, from the university's colour. This is the
- * one place the colour is "exposed" to components
- * (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md D6): anything under that root can
- * read `--primary` / `--color-primary` (and their `-foreground` pair) or
- * `--top-accent-text` (the same hue, darkened enough to read on white).
+ * Shared Top page tokens, scoped to the university/category page root.
+ * The page uses a controlled perceptual palette; artwork retains its existing
+ * tint based on the original university colour, independent of UI shades.
  */
 export function topAccentStyle(accentHex?: string | null): CSSProperties {
-  const accent = accentHex ?? DEFAULT_TOP_PAGE_ACCENT;
+  const accent =
+    accentHex && /^#[0-9a-f]{6}$/i.test(accentHex)
+      ? accentHex
+      : DEFAULT_TOP_PAGE_ACCENT;
+  const palette = createTopPalette(accent);
   return {
-    "--primary": accent,
-    "--primary-foreground": pickForeground(accent),
-    "--color-primary": accent,
-    "--color-primary-foreground": pickForeground(accent),
-    "--color-muted-foreground": "#626fa5",
-    "--top-accent-text": topAccentTextColor(accent),
+    "--primary": palette.primary,
+    "--primary-foreground": pickForeground(palette.primary),
+    "--color-primary": palette.primary,
+    "--color-primary-foreground": pickForeground(palette.primary),
+    "--color-muted-foreground": palette.muted,
+    "--top-accent-text": palette.text,
+    "--top-surface": palette.surface,
+    "--top-ribbon": palette.ribbon,
+    "--top-ribbon-soft": palette.ribbonSoft,
+    "--top-border": palette.border,
+    "--top-cta-start": palette.ctaStart,
+    "--top-cta-middle": palette.ctaMiddle,
+    "--top-cta-end": palette.ctaEnd,
+    "--top-artwork-filter": topArtworkFilter(accent),
     "--top-panel-width": "min(46vw, 42rem)",
   } as CSSProperties;
 }

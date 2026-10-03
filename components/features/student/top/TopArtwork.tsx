@@ -57,9 +57,13 @@ export function TopPageBackdrop() {
           y2="900"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#d9edff" stopOpacity=".8" />
-          <stop offset=".6" stopColor="#e6f4ff" stopOpacity=".35" />
-          <stop offset="1" stopColor="#f7fbff" stopOpacity="0" />
+          <stop stopColor="var(--top-ribbon)" stopOpacity=".8" />
+          <stop
+            offset=".6"
+            stopColor="var(--top-ribbon-soft)"
+            stopOpacity=".35"
+          />
+          <stop offset="1" stopColor="var(--top-surface)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <g stroke={`url(#${id}-ribbon)`} strokeWidth="115" strokeLinecap="round">

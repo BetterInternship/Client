@@ -51,7 +51,7 @@ export function TopUniversityLanding({
   return (
     <div
       style={topAccentStyle(university.accent_hex)}
-      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff] max-md:overflow-clip"
+      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[var(--top-surface)] max-md:overflow-clip"
     >
       <TopPageBackdrop />
       <TopPageNavbar />
@@ -75,7 +75,7 @@ export function TopUniversityLanding({
               <Card
                 className={cn(
                   motionStyles.action,
-                  "relative flex h-full min-w-0 flex-col gap-2 px-6 py-6 transition-colors duration-200 hover:border-primary/30 hover:shadow-sm max-sm:p-4",
+                  "relative flex h-full min-w-0 flex-col gap-2 border-[var(--top-border)] px-6 py-6 transition-colors duration-200 hover:border-primary/30 hover:shadow-sm max-sm:p-4",
                 )}
               >
                 <h2 className="text-xl font-semibold tracking-tight text-[#101033]">

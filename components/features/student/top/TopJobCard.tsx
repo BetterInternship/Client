@@ -57,9 +57,9 @@ export function TopJobCard({
     <Card
       role="article"
       className={cn(
-        "relative isolate flex h-full min-w-0 min-h-[250px] flex-col gap-3 overflow-hidden px-6 py-6 transition-colors duration-200 max-sm:min-h-0 max-sm:gap-2.5 max-sm:p-4",
+        "relative isolate flex h-full min-w-0 min-h-[250px] flex-col gap-3 overflow-hidden border-[var(--top-border)] px-6 py-6 transition-colors duration-200 max-sm:min-h-0 max-sm:gap-2.5 max-sm:p-4",
         selected || bulkSelected
-          ? "ring-1 ring-primary ring-offset-1"
+          ? "ring-1 ring-[var(--top-accent-text)] ring-offset-1"
           : "hover:border-primary/30 hover:shadow-sm",
       )}
     >

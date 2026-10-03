@@ -12,6 +12,11 @@
   animation-play-state: paused;
 }
 
+/* Filter only decorative images, never the page's logos or content. */
+.layer img {
+  filter: var(--top-artwork-filter, none);
+}
+
 .discord {
   height: 100%;
   overflow: hidden;

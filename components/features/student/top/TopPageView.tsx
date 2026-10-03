@@ -185,7 +185,7 @@ export function TopPageView({
   return (
     <div
       style={accentStyle}
-      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff] max-md:overflow-clip"
+      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[var(--top-surface)] max-md:overflow-clip"
     >
       <TopPageBackdrop />
       <TopPageNavbar disabled={disabled} />
@@ -273,6 +273,7 @@ export function TopPageView({
                       src={emptyArtwork}
                       alt=""
                       className="mx-auto mb-5 h-auto w-[240px] max-w-full mix-blend-multiply sm:w-[300px]"
+                      style={{ filter: "var(--top-artwork-filter, none)" }}
                       sizes="(min-width: 640px) 300px, 240px"
                     />
                     <h2 className="text-2xl font-semibold tracking-tight text-[#101033]">
