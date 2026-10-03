@@ -1,4 +1,4 @@
-import { permanentRedirect, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { fetchTopUniversityPage } from "@/lib/api/top-page.server";
 import { baseUrl } from "@/lib/site-url";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
@@ -10,15 +10,22 @@ import { TopPageView } from "@/components/features/student/top/TopPageView";
  * own curated set — the same for every university — with the university
  * named in the heading.
  *
- * What is cached is the data, not the page: fetchTopUniversityPage's fetch
- * is held for 60s (matching the server's own Cache-Control), so a god edit
- * or the Sunday week rollover shows up within a minute. The page itself is
- * rendered on every request — with no generateStaticParams, Next treats a
- * dynamic segment as server-rendered on demand (confirmed with `next build`,
- * 2026-10-02), and this `revalidate` only sets the segment's default for
- * fetches.
+ * A cached static page (Docs/plans/TOP_PAGES_STATIC_GENERATION_PLAN.md).
+ * `generateStaticParams` returns nothing, so a build renders no page and
+ * never calls Career-Server; each page is built on its first visit (or by
+ * Career-Server's warm-up) and then served from the cache. It is rebuilt only
+ * when Career-Server revalidates the tags on its data
+ * (app/student/api/top-pages/revalidate), or after `revalidate` seconds as a
+ * safety net. Because it is built once, anything read from the clock here —
+ * `weekKey` — is frozen until the next rebuild; keep request-time state out
+ * of this file (the week banner reads `?week=` in the browser for that
+ * reason).
  */
-export const revalidate = 60;
+export const revalidate = 604800; // TOP_PAGES_REVALIDATE_SECONDS
+
+export function generateStaticParams() {
+  return [];
+}
 
 export default async function TopPage({
   params,
@@ -35,7 +42,7 @@ export default async function TopPage({
   // string rides along: a renamed page's old pubmat QR still carries ?week=,
   // and that is exactly the stale-QR case (week-param plan D8). searchParams
   // is awaited only here, so the normal path stays free of request-time
-  // APIs and could be made a cached static page later without changes.
+  // APIs and the page can be cached statically.
   if (result.status === "moved") {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(await searchParams)) {
@@ -52,8 +59,10 @@ export default async function TopPage({
   // unknown): its landing page lists what it does have. 307 — the category
   // could be ticked later.
   if (result.status === "university_only") redirect(`/${university}`);
-  // No such university, or one with no live page at all.
-  if (result.status === "not_found") redirect("/search");
+  // No such university, or one with no live page at all, or no such
+  // category. A real 404 (not a redirect), so the cached answer is a proper
+  // "gone" that crawlers drop and bots can't fill the cache with 200s.
+  if (result.status === "not_found") notFound();
 
   const universityUrl = `${baseUrl}/${result.university.slug}`;
   const structuredData = [
@@ -101,7 +110,9 @@ export default async function TopPage({
         }}
       />
       {/* The week is computed here, not in the browser, so the old-QR banner
-          compares against the server's clock (cached ≤60s with the page). */}
+          compares against the server's clock — as of when the page was last
+          built (Career-Server rebuilds every page at the Sunday 00:00 Manila
+          rollover). */}
       <TopPageView
         page={result.page}
         university={result.university}

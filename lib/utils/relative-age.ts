@@ -1,8 +1,12 @@
 /**
- * Age label for a Top page card (plan D14), from jobs.last_activated_at so a
- * reopened listing counts as fresh — the same field marketplace ordering
- * uses. Under 1 day is "Today"; under a week is "X days ago"; under 4 weeks
- * is "X weeks ago"; from 4 weeks on it's just "months ago", no number.
+ * Age label for a Top page card, from jobs.last_activated_at so a reopened
+ * listing counts as fresh — the same field marketplace ordering uses.
+ *
+ * Deliberately fuzzy (Docs/plans/TOP_PAGES_STATIC_GENERATION_PLAN.md D9): a
+ * Top page is rendered once and served from cache for days, so an exact "3
+ * days ago" would be wrong by the time most people read it. These three
+ * buckets stay true for far longer than a page stays cached. Wording is
+ * provisional (plan O4).
  */
 export function formatListingAge(
   date: string | Date | null | undefined,
@@ -13,11 +17,7 @@ export function formatListingAge(
 
   const days = Math.floor((Date.now() - then) / (24 * 60 * 60 * 1000));
 
-  if (days < 1) return "Today";
-  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
-  if (days < 28) {
-    const weeks = Math.floor(days / 7);
-    return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
-  }
-  return "months ago";
+  if (days < 14) return "Posted recently";
+  if (days < 60) return "Posted a few weeks ago";
+  return "Posted a while ago";
 }
