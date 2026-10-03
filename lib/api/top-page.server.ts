@@ -1,5 +1,10 @@
 import "server-only";
 import { Job } from "../db/db.types";
+import {
+  topPagesControllerListLive,
+  topPagesControllerResolveUniversity,
+  topPagesControllerResolveUniversityPage,
+} from "./generated/endpoints/top-pages/top-pages";
 
 export interface PublicTopPage {
   id: string;
@@ -64,8 +69,6 @@ export function isTopSlugShape(value: string): boolean {
   return value.length <= 60 && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(value);
 }
 
-const apiUrl = (path: string) => `${process.env.NEXT_PUBLIC_API_URL}${path}`;
-
 /**
  * Fetches GET /top-pages/universities/:slug — the university landing page.
  * Same pattern as job-preview.server.ts: anonymous, cached 60s to match the
@@ -78,11 +81,9 @@ export async function fetchTopUniversity(
   if (!isTopSlugShape(universitySlug)) return { status: "not_found" };
 
   try {
-    const res = await fetch(
-      apiUrl(`/top-pages/universities/${encodeURIComponent(universitySlug)}`),
-      { next: { revalidate: 60 } },
-    );
-    const data = (await res.json()) as Partial<
+    const data = (await topPagesControllerResolveUniversity(universitySlug, {
+      next: { revalidate: 60 },
+    })) as unknown as Partial<
       Extract<TopUniversityResolution, { status: "ok" }>
     >;
 
@@ -109,13 +110,11 @@ export async function fetchTopUniversityPage(
   }
 
   try {
-    const res = await fetch(
-      apiUrl(
-        `/top-pages/universities/${encodeURIComponent(universitySlug)}/${encodeURIComponent(pageSlug)}`,
-      ),
+    const data = (await topPagesControllerResolveUniversityPage(
+      universitySlug,
+      pageSlug,
       { next: { revalidate: 60 } },
-    );
-    const data = (await res.json()) as {
+    )) as unknown as {
       status?: string;
       university?: PublicTopUniversity;
       page?: PublicTopPage;
@@ -155,14 +154,9 @@ export interface TopSitemapUniversity {
  */
 export async function fetchTopSitemap(): Promise<TopSitemapUniversity[]> {
   try {
-    const res = await fetch(apiUrl("/top-pages/universities"), {
+    const data = (await topPagesControllerListLive({
       next: { revalidate: 3600 },
-    });
-    if (!res.ok) return [];
-
-    const data = (await res.json()) as {
-      universities?: TopSitemapUniversity[];
-    };
+    })) as unknown as { universities?: TopSitemapUniversity[] };
     return data.universities ?? [];
   } catch {
     return [];

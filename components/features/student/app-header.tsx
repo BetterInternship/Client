@@ -25,6 +25,7 @@ import {
   JobFilterProvider,
   JobFilters,
 } from "@/components/features/student/search/JobFilters";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 /** Routes where the header is suppressed entirely. */
 const HIDE_ON_ROUTES = [
@@ -214,7 +215,7 @@ export function StudentAppHeader({
 
   const loginRedirect = () => {
     if (onLogin) onLogin();
-    else router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+    else router.push(googleLoginUrl());
   };
 
   const desktopSearch =

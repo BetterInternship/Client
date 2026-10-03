@@ -42,7 +42,8 @@ export const useFile = ({
   fetcher,
   defaultURL = "",
 }: {
-  route: string | ((...args: any[]) => string);
+  /** Builds the file's URL from the hash the fetcher returned (see `fileUrls`). */
+  route: (hash: string, ...args: any[]) => string;
   fetcher: (...args: any[]) => Promise<any>;
   defaultURL?: string;
 }): IUseFile => {
@@ -79,9 +80,7 @@ export const useFile = ({
       }
 
       // Update url
-      const resolvedRoute =
-        typeof route === "function" ? route(...args) : route;
-      setURL(`${process.env.NEXT_PUBLIC_API_URL}${resolvedRoute}?hash=${hash}`);
+      setURL(route(hash, ...args));
       setLoading(false);
     },
     [fetcher, route],

@@ -24,6 +24,7 @@ import {
   godsControllerExitProxy,
   godsControllerVerifyEmployer,
   godsControllerUnverifyEmployer,
+  godsControllerGenerateMagicLink,
 } from "./generated/endpoints/gods/gods";
 
 interface EmployerResponse extends FetchResponse {
@@ -96,6 +97,13 @@ export const EmployerAuthService = {
   // they're a god (plan §6.2).
   async loggedIn() {
     return authControllerEmployerLoggedIn() as unknown as Promise<AuthResponse>;
+  },
+
+  // A god mints a one-click sign-in link for an employer's owner.
+  async generateMagicLink(employer_id: string) {
+    return godsControllerGenerateMagicLink({
+      employer_id,
+    }) as unknown as Promise<FetchResponse & { magicLink: string }>;
   },
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {

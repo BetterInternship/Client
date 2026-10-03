@@ -14,6 +14,7 @@ import { Job } from "@/lib/db/db.types";
 import type { PublicTopUniversity } from "@/lib/api/top-page.server";
 import { filterTopMoaJobs } from "@/lib/utils/top-page-presentation";
 import motionStyles from "./top-motion.module.css";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 // Mounted only while the filter is active, so the authenticated MOA lookup
 // (GET /jobs/search?moa=Has MOA, scoped to the caller's own university) never
@@ -191,7 +192,7 @@ export function ShowMoaButton({
                 savePostLoginRedirect(
                   `${window.location.pathname}${window.location.search}`,
                 );
-                window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+                window.location.href = googleLoginUrl();
               },
             })
           }

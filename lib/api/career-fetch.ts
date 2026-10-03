@@ -1,21 +1,15 @@
 /**
  * Mutator for the orval-generated Career-Server client (orval.config.ts).
  *
- * Every generated function ends up here. It must behave exactly like
- * `FetchClient.request` in api-client.ts, because callers read `.success` and
+ * Every generated function ends up here. It behaves exactly like the
+ * hand-written `FetchClient` it replaced, because callers read `.success` and
  * `.error` off the results and the persisted React Query cache holds them.
  * The request-shape suite in .tools/client-api-contract-tests checks this
  * from the outside.
  */
 
-import { redirectIfMaintenanceMode } from "./api-client";
-
-// Generated paths start with the server's global prefix (`/api/applications`),
-// and NEXT_PUBLIC_API_URL already ends in `/api`. Strip that suffix once so the
-// two do not join into `/api/api`.
-const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL ?? "")
-  .replace(/\/+$/, "")
-  .replace(/\/api$/, "");
+import { apiUrl } from "./api-origin";
+import { redirectIfMaintenanceMode } from "./maintenance";
 
 const isBinaryBody = (body: BodyInit | null | undefined) =>
   (typeof FormData !== "undefined" && body instanceof FormData) ||
@@ -35,7 +29,7 @@ export const careerFetch = async <T>(
     ? { ...options.headers }
     : { "Content-Type": "application/json", ...options.headers };
 
-  const url = /^https?:\/\//.test(path) ? path : `${API_ORIGIN}${path}`;
+  const url = apiUrl(path);
 
   try {
     const response = await fetch(url, {

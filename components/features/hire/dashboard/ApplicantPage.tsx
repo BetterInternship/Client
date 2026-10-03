@@ -56,6 +56,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/text";
 import { ActionButton } from "@/components/ui/action-button";
+import { fileUrls } from "@/lib/api/urls";
 
 interface ApplicantPageProps {
   jobId: string | undefined;
@@ -153,11 +154,13 @@ export function ApplicantPage({
         ),
       [application?.user_id, application?.resume_id],
     ),
-    route: useMemo(
-      () =>
-        application
-          ? `/users/${application.user_id}/resume/${application.resume_id}`
-          : "",
+    route: useCallback(
+      (hash: string) =>
+        fileUrls.userResume(
+          hash,
+          application?.user_id ?? "",
+          application?.resume_id ?? "",
+        ),
       [application?.user_id, application?.resume_id],
     ),
   });

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { baseUrl } from "@/lib/site-url";
 import { fetchTopSitemap } from "@/lib/api/top-page.server";
+import { JobService } from "@/lib/api/services";
 
 export const revalidate = 3600;
 
@@ -13,13 +14,9 @@ interface SitemapJob {
 
 async function fetchSitemapJobs(): Promise<SitemapJob[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
+    const data = (await JobService.getAllJobs({
       next: { revalidate: 3600 },
-    });
-
-    if (!res.ok) return [];
-
-    const data = (await res.json()) as { jobs?: SitemapJob[] };
+    })) as unknown as { jobs?: SitemapJob[] };
 
     return data.jobs ?? [];
   } catch {

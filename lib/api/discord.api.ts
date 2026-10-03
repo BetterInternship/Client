@@ -1,4 +1,4 @@
-import { APIRouteBuilder } from "./api-client";
+import { discordOAuthStartUrl } from "./urls";
 import {
   discordIntegrationControllerCompleteSetup,
   discordIntegrationControllerStartOAuth,
@@ -25,10 +25,7 @@ export const DiscordService = {
   },
 
   authorizationUrl(jobId?: string) {
-    return APIRouteBuilder("integrations")
-      .r("discord", "oauth", "start")
-      .p({ job_id: jobId })
-      .build();
+    return discordOAuthStartUrl(jobId);
   },
 
   getMobileAuthorizationUrl(jobId?: string) {

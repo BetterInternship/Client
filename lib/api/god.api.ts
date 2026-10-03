@@ -376,7 +376,7 @@ export interface SlugOwner {
 
 // The server sends the conflict/invalid-job-ids shape directly over the
 // response body on a non-2xx status (no thrown exception on this codebase's
-// fetch client — see api-client.ts), so create/save's response type carries
+// fetch client — see career-fetch.ts), so create/save's response type carries
 // every possible field rather than just the success shape.
 export interface GodTopPageResponse extends FetchResponse {
   page?: GodTopPageDetail;

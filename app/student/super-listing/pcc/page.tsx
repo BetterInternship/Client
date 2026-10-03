@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
@@ -16,6 +16,7 @@ import type {
   PccSubmissionForm,
   SubmissionStep,
 } from "./components/types";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -77,12 +78,6 @@ export default function PccSuperListingPage() {
 
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
-
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/pcc";
-    return `${base}/super-listings/submission/pcc`;
-  }, []);
 
   const onFieldChange = (field: keyof PccSubmissionForm, value: string) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -208,20 +203,14 @@ export default function PccSuperListingPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email.trim(),
-          submissionLink: form.submissionLink.trim(),
-          submissionNotes: combinedNotes,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
+      const data = (await SuperListingService.submit("pcc", {
+        email: form.email.trim(),
+        submissionLink: form.submissionLink.trim(),
+        submissionNotes: combinedNotes,
+        "cf-token": isDevelopment ? "dev-bypass" : token,
+      })) as PccSubmissionResponse;
 
-      const data = (await response.json()) as PccSubmissionResponse;
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your application.");
       }
 

@@ -29,6 +29,7 @@ import type {
 } from "@/components/features/student/profile/profile-types";
 import useModalRegistry from "@/components/modals/modal-registry";
 import bg2 from "../../../public/bg2.png";
+import { fileUrls } from "@/lib/api/urls";
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -46,7 +47,8 @@ export default function ProfilePage() {
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
-    route: (resumeId: string) => `/users/me/resume/${resumeId}`,
+    route: (hash: string, resumeId: string) =>
+      fileUrls.myResume(hash, resumeId),
   });
   const resumes = useQuery({
     queryKey: ["my-resumes"],

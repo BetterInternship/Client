@@ -14,7 +14,6 @@ import {
   User,
   EmployerApplication,
 } from "@/lib/db/db.types";
-import { APIClient, APIRouteBuilder } from "./api-client";
 import {
   applicationsControllerCreate,
   applicationsControllerGetOwn,
@@ -41,7 +40,9 @@ import {
   jobsControllerUpdate,
 } from "./generated/endpoints/jobs/jobs";
 import {
+  employersControllerApplicants,
   employersControllerAutoLinkIomAccount,
+  employersControllerFindEmployer,
   employersControllerFindLogo,
   employersControllerMoaUniversities,
   employersControllerSelf,
@@ -52,6 +53,7 @@ import {
   getEmployersControllerUploadMoaDocumentUrl,
 } from "./generated/endpoints/employer/employer";
 import { careerFetch } from "./career-fetch";
+import { linksControllerResolve } from "./generated/endpoints/links/links";
 import {
   authControllerActivateAccount,
   authControllerRegister,
@@ -148,6 +150,12 @@ export interface MqJobResponse {
 export const EmployerService = {
   async getMyProfile() {
     return employersControllerSelf() as unknown as Promise<EmployerResponse>;
+  },
+
+  async getEmployerById(employerId: string) {
+    return employersControllerFindEmployer(
+      employerId,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async getEmployerPfpURL(employerId: string) {
@@ -709,9 +717,19 @@ export interface ShareLinkResponse extends FetchResponse {
   url?: string;
 }
 
+// Short links (/l/<slug>) resolve to the page they stand for.
+export const LinkService = {
+  async resolve(slug: string, options: RequestInit = {}) {
+    return linksControllerResolve(slug, options);
+  },
+};
+
 export const JobService = {
-  async getAllJobs() {
-    return jobsControllerFindAllListed() as unknown as Promise<JobsResponse>;
+  // `options` lets server components pass Next's `{ next: { revalidate } }`.
+  async getAllJobs(options: RequestInit = {}) {
+    return jobsControllerFindAllListed(
+      options,
+    ) as unknown as Promise<JobsResponse>;
   },
 
   async searchJobs(params: JobSearchParams = {}) {
@@ -866,9 +884,7 @@ export const ApplicationService = {
   },
 
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
-    return APIClient.get<EmployerApplicationsResponse>(
-      APIRouteBuilder("employer").r("applications").build(),
-    );
+    return employersControllerApplicants() as unknown as Promise<EmployerApplicationsResponse>;
   },
 
   async reviewApplication(
