@@ -381,6 +381,10 @@ export const FormCheckbox = ({
   tooltip,
   tooltipId,
   labelAddon,
+  id,
+  disabled,
+  "aria-label": ariaLabel,
+  "aria-describedby": ariaDescribedBy,
   ...props
 }: FormCheckboxProps) => {
   const blurTransition = useBlurTransition({
@@ -402,6 +406,10 @@ export const FormCheckbox = ({
       )}
       <div className="flex gap-2 sm:items-center">
         <Checkbox
+          id={id}
+          disabled={disabled}
+          aria-label={ariaLabel}
+          aria-describedby={ariaDescribedBy}
           name={label ?? ""}
           checked={indeterminate ? "indeterminate" : checked}
           className={cn(
@@ -438,8 +446,10 @@ export const FormCheckbox = ({
   );
 };
 
-interface FormCheckBoxGroupProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onToggle"> {
+interface FormCheckBoxGroupProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onToggle"
+> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (values: (string | number)[]) => void;

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import StudentAppHeader from "@/components/features/student/app-header";
+import { useIsTopRoute } from "@/lib/use-session-gate";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
 
@@ -12,11 +13,16 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
+  // Top pages draw their own navbar.
+  const isTopPage = useIsTopRoute();
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");
   const hideSharedHeader =
-    isStudentLanding || pathname.startsWith("/companies/") || isChallengePage;
+    isStudentLanding ||
+    pathname.startsWith("/companies/") ||
+    isChallengePage ||
+    isTopPage;
 
   if (hideSharedHeader) {
     return (

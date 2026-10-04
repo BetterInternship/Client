@@ -124,7 +124,12 @@ export function useEmployerApplications() {
 
   const review = async (
     app_id: string,
-    review_options: { review?: string; notes?: string; status?: number },
+    review_options: {
+      review?: string;
+      notes?: string;
+      status?: number;
+      acceptance_message?: string;
+    },
   ) => {
     // const cache = get_cache() as EmployerApplication[];
     const response = await ApplicationService.reviewApplication(

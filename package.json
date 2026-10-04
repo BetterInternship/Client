@@ -9,12 +9,14 @@
     "publish": "npm run build && git push origin develop",
     "start": "next start",
     "lint": "next lint",
+    "preview:modals": "node scripts/preview-modals.mjs",
+    "preview:og": "node scripts/preview-og.mjs",
     "postinstall": "patch-package"
   },
   "dependencies": {
     "@betterinternship/components": "^2.9.5",
     "@betterinternship/core": "^2.25.0",
-    "@betterinternship/schema": "^1.13.4",
+    "@betterinternship/schema": "^1.16.1",
     "@marsidev/react-turnstile": "^1.4.2",
     "@mdxeditor/editor": "^3.35.1",
     "@posthog/react": "^1.8.1",

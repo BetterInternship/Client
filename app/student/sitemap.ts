@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { baseUrl } from "@/lib/site-url";
+import { fetchTopSitemap } from "@/lib/api/top-page.server";
 
 export const revalidate = 3600;
 
@@ -27,7 +28,10 @@ async function fetchSitemapJobs(): Promise<SitemapJob[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const jobs = await fetchSitemapJobs();
+  const [jobs, topUniversities] = await Promise.all([
+    fetchSitemapJobs(),
+    fetchTopSitemap(),
+  ]);
 
   const jobEntries: MetadataRoute.Sitemap = jobs.map((job) => ({
     url: `${baseUrl}/search/${job.id}`,
@@ -36,6 +40,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.8,
   }));
+
+  // Nothing else on the site links to a Top page yet, so these entries are
+  // the only way search engines discover them (besides shared links): each
+  // live university's landing page, and each of its category pages. A
+  // category with nothing to show this week is left out — its page sets
+  // noindex for the same reason.
+  const topPageEntries: MetadataRoute.Sitemap = topUniversities.flatMap(
+    (university) => [
+      {
+        url: `${baseUrl}/${university.slug}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      ...university.pages
+        .filter((page) => page.listing_count > 0)
+        .map((page) => ({
+          url: `${baseUrl}/${university.slug}/top/${page.slug}`,
+          lastModified: page.updated_at,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        })),
+    ],
+  );
 
   const staticEntries: MetadataRoute.Sitemap = [
     { url: baseUrl, changeFrequency: "daily", priority: 1.0 },
@@ -79,5 +106,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  return [...staticEntries, ...jobEntries];
+  return [...staticEntries, ...jobEntries, ...topPageEntries];
 }

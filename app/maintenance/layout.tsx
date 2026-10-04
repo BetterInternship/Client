@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "../globals.css";
+import { inter } from "../fonts";
 import bg2 from "../../public/bg2.png";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { AuthContextProvider } from "@/lib/ctx-auth";
@@ -37,7 +38,7 @@ export default async function MaintenanceLayout({
   const refsData = await getRefsData();
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="h-full m-0 overflow-hidden p-0 antialiased">
         <RefsContextProvider data={refsData}>
           <PostHogProvider>

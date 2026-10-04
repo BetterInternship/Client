@@ -15,6 +15,7 @@ import {
   EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
+import { clearSessionHint, setSessionHint } from "@/lib/session-hint";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
@@ -276,6 +277,7 @@ export const AuthService = {
     await APIClient.post<FetchResponse>(
       APIRouteBuilder("auth").r("logout").build(),
     );
+    clearSessionHint();
   },
 };
 interface UserResponse extends FetchResponse {
@@ -471,10 +473,15 @@ interface DefaultResumeResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
-    const result = APIClient.get<UserResponse>(
+    const result = await APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
       options,
     );
+    // Keep the browser's session hint in step with what the API just said
+    // (session-hint.ts). A failure of any kind clears it: a stale hint is
+    // cheap, but one that never clears would keep asking.
+    if (result?.success && result.user) setSessionHint();
+    else clearSessionHint();
     return result;
   },
 
@@ -806,6 +813,12 @@ export const ApplicationService = {
     resume_id: string;
     challenge_submission?: string;
     source?: "mass";
+    // Attribution for an apply made from a Top page (plan D20). Hand-written
+    // facade call for now — see CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+    top_page_id?: string;
+    // The university whose Top page link (/<university>/top/<slug>) the
+    // apply came from.
+    top_page_university_id?: string;
   }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
@@ -821,7 +834,12 @@ export const ApplicationService = {
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number },
+    review_options: {
+      review?: string;
+      notes?: string;
+      status?: number;
+      acceptance_message?: string;
+    },
   ) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("applications").r(id, "review").build(),
