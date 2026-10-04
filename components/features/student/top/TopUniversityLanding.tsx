@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { usePostHog } from "@posthog/react";
 import { Card, cn } from "@betterinternship/components";
@@ -10,12 +11,27 @@ import type {
   TopUniversityPageCard,
 } from "@/lib/api/top-page.server";
 import { topAccentStyle } from "@/lib/utils/top-page-presentation";
-import { topUniversityHeading } from "@/lib/utils/top-page-heading";
+import {
+  DEFAULT_TOP_PAGE_ACCENT,
+  topUniversityHeading,
+} from "@/lib/utils/top-page-heading";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
+import { topArtworkFilter } from "@/lib/utils/top-page-presentation";
 import { TopPageBackdrop } from "./TopArtwork";
+import { topCategoryArtworkBySlug } from "./top-category-artwork";
 import { TopDiscordCTA } from "./TopDiscordCTA";
 import { TopPageNavbar } from "./TopPageNavbar";
 import motionStyles from "./top-motion.module.css";
+
+const artworkSaturationVariations = [0.9, 1, 1.1] as const;
+
+function categoryImageFilter(siteFilter: string, pageIndex: number) {
+  const saturation =
+    artworkSaturationVariations[pageIndex % artworkSaturationVariations.length];
+  return [siteFilter === "none" ? null : siteFilter, `saturate(${saturation})`]
+    .filter(Boolean)
+    .join(" ");
+}
 
 /**
  * A university's landing page, /<university>
@@ -33,6 +49,9 @@ export function TopUniversityLanding({
 }) {
   const posthog = usePostHog();
   const week = currentManilaWeek();
+  const siteArtworkFilter = topArtworkFilter(
+    university.accent_hex ?? DEFAULT_TOP_PAGE_ACCENT,
+  );
 
   // Once per mount: StrictMode's double effect and re-renders must not
   // double-count a visit (same guard as TopPageWeekWatcher).
@@ -62,44 +81,69 @@ export function TopUniversityLanding({
         <h1 className="mt-1 text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] max-sm:text-[32px] max-sm:leading-[1.12] sm:text-5xl lg:text-[52px]">
           {topUniversityHeading(university.name)}
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-[#526078]">
-          This week&apos;s top internships, picked by category. Choose one to
-          see the listings and apply.
-        </p>
       </header>
 
       <div className="relative mx-auto w-full max-w-[1240px] px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
-        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-5">
-          {pages.map((page) => (
-            <li key={page.id} className="min-w-0">
-              <Card
-                className={cn(
-                  motionStyles.action,
-                  "relative flex h-full min-w-0 flex-col gap-2 border-[var(--top-border)] px-6 py-6 transition-colors duration-200 hover:border-primary/30 hover:shadow-sm max-sm:p-4",
-                )}
-              >
-                <h2 className="text-xl font-semibold tracking-tight text-[#101033]">
-                  {/* One link, stretched over the whole card — no other
-                      interactive element sits inside it. */}
+        <ul className="grid gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-5">
+          {pages.map((page, index) => {
+            const artwork = topCategoryArtworkBySlug[page.slug];
+            const tintFilter = categoryImageFilter(siteArtworkFilter, index);
+            return (
+              <li key={page.id} className="min-w-0">
+                <Card
+                  className={cn(
+                    motionStyles.action,
+                    "relative h-full min-w-0 overflow-hidden rounded-[1.1rem] border border-[#e6e9ef] bg-white p-3 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#cfd5df] hover:shadow-[0_10px_28px_rgba(31,45,68,0.08)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4",
+                  )}
+                >
                   <Link
                     href={`/${university.slug}/top/${page.slug}`}
-                    className="static rounded-sm after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-primary"
+                    className="group relative block rounded-[0.85rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
-                    {page.name} Internships
+                    <div
+                      className="relative grid aspect-[1.55] place-items-center overflow-hidden rounded-[0.85rem]"
+                      style={{
+                        backgroundColor:
+                          "color-mix(in srgb, var(--top-accent-text) 7%, white)",
+                      }}
+                      aria-hidden="true"
+                    >
+                      {artwork && (
+                        <Image
+                          src={artwork.primary}
+                          alt=""
+                          width={384}
+                          height={384}
+                          className="relative z-10 h-auto w-[min(68%,210px)] transition-transform duration-300 group-hover:-translate-y-1 group-hover:rotate-2 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:rotate-0"
+                          style={{ filter: tintFilter }}
+                          sizes="(min-width: 1024px) 210px, (min-width: 640px) 190px, 68vw"
+                        />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-3 px-1 pb-1 pt-3">
+                      <div className="min-w-0">
+                        <h2 className="line-clamp-2 text-[15px] font-semibold leading-5 tracking-tight text-[#101033]">
+                          {page.name}
+                        </h2>
+                        <p className="mt-1 text-xs font-medium text-[#101033]">
+                          {page.listing_count > 0
+                            ? `Top ${page.listing_count} this week`
+                            : "No featured internships this week"}
+                        </p>
+                      </div>
+                      <ArrowRight
+                        className={cn(
+                          "h-4 w-4 shrink-0 text-[#101033]",
+                          motionStyles.arrow,
+                        )}
+                        aria-hidden="true"
+                      />
+                    </div>
                   </Link>
-                </h2>
-                <p className="flex items-center gap-1.5 text-sm font-medium text-[var(--top-accent-text)]">
-                  {page.listing_count > 0
-                    ? `Top ${page.listing_count} this week`
-                    : "No featured internships this week"}
-                  <ArrowRight
-                    className={cn("h-4 w-4", motionStyles.arrow)}
-                    aria-hidden="true"
-                  />
-                </p>
-              </Card>
-            </li>
-          ))}
+                </Card>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
