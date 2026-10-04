@@ -126,7 +126,7 @@ export const usersControllerUpdateLogo = async (
 
 export const getUsersControllerMyResumeUrl = (
   resumeId: string,
-  params: UsersControllerMyResumeParams,
+  params?: UsersControllerMyResumeParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -145,7 +145,7 @@ export const getUsersControllerMyResumeUrl = (
 
 export const usersControllerMyResume = async (
   resumeId: string,
-  params: UsersControllerMyResumeParams,
+  params?: UsersControllerMyResumeParams,
   options?: RequestInit,
 ): Promise<void> => {
   return careerFetch<void>(getUsersControllerMyResumeUrl(resumeId, params), {
@@ -239,7 +239,7 @@ export const usersControllerPfpById = async (
 export const getUsersControllerResumeByIdUrl = (
   id: string,
   resumeId: string,
-  params: UsersControllerResumeByIdParams,
+  params?: UsersControllerResumeByIdParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -259,7 +259,7 @@ export const getUsersControllerResumeByIdUrl = (
 export const usersControllerResumeById = async (
   id: string,
   resumeId: string,
-  params: UsersControllerResumeByIdParams,
+  params?: UsersControllerResumeByIdParams,
   options?: RequestInit,
 ): Promise<void> => {
   return careerFetch<void>(

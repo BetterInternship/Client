@@ -59,7 +59,7 @@ export const employersControllerUpdateSelf = async (
 };
 
 export const getEmployersControllerLogoUrl = (
-  params: EmployersControllerLogoParams,
+  params?: EmployersControllerLogoParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -77,7 +77,7 @@ export const getEmployersControllerLogoUrl = (
 };
 
 export const employersControllerLogo = async (
-  params: EmployersControllerLogoParams,
+  params?: EmployersControllerLogoParams,
   options?: RequestInit,
 ): Promise<FileHashResponse> => {
   return careerFetch<FileHashResponse>(getEmployersControllerLogoUrl(params), {
@@ -230,7 +230,7 @@ export const employersControllerFindEmployerList = async (
 
 export const getEmployersControllerFindLogoUrl = (
   id: string,
-  params: EmployersControllerFindLogoParams,
+  params?: EmployersControllerFindLogoParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -249,7 +249,7 @@ export const getEmployersControllerFindLogoUrl = (
 
 export const employersControllerFindLogo = async (
   id: string,
-  params: EmployersControllerFindLogoParams,
+  params?: EmployersControllerFindLogoParams,
   options?: RequestInit,
 ): Promise<FileHashResponse> => {
   return careerFetch<FileHashResponse>(

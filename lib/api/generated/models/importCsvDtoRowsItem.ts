@@ -6,4 +6,4 @@
  * OpenAPI spec version: 2.0
  */
 
-export type ImportCsvDtoRowsItem = { [key: string]: unknown };
+export type ImportCsvDtoRowsItem = { [key: string]: string };

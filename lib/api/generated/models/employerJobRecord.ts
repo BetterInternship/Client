@@ -7,7 +7,6 @@
  */
 import type { EmployerJobRecordInternshipPreferences } from "./employerJobRecordInternshipPreferences";
 import type { EmployerJobRecordPauseReason } from "./employerJobRecordPauseReason";
-import type { EmployerJobRecordPausedAt } from "./employerJobRecordPausedAt";
 import type { EmployerJobRecordEmployer } from "./employerJobRecordEmployer";
 import type { EmployerJobRecordChallenge } from "./employerJobRecordChallenge";
 
@@ -17,7 +16,7 @@ export interface EmployerJobRecord {
   /** @nullable */
   pause_reason?: EmployerJobRecordPauseReason;
   /** @nullable */
-  paused_at?: EmployerJobRecordPausedAt;
+  paused_at?: string | null;
   waiting_count?: number;
   /** @nullable */
   employer: EmployerJobRecordEmployer;

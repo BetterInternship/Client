@@ -7,5 +7,5 @@
  */
 
 export type EmployersControllerFindLogoParams = {
-  hash: string;
+  hash?: string;
 };

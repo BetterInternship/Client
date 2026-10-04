@@ -7,5 +7,5 @@
  */
 
 export type UsersControllerResumeByIdParams = {
-  hash: string;
+  hash?: string;
 };

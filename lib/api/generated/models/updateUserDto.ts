@@ -5,10 +5,12 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
-import type { UpdateUserDtoInternshipPreferences } from "./updateUserDtoInternshipPreferences";
+import type { StudentInternshipPreferences } from "./studentInternshipPreferences";
 import type { UpdateUserDtoInternshipMoaFields } from "./updateUserDtoInternshipMoaFields";
 
 export interface UpdateUserDto {
+  internship_preferences?: StudentInternshipPreferences;
+  internship_moa_fields?: UpdateUserDtoInternshipMoaFields;
   apply_for_me?: boolean;
   /** @nullable */
   auto_apply_enabled_at?: string | null;
@@ -28,7 +30,6 @@ export interface UpdateUserDto {
   first_name?: string | null;
   /** @nullable */
   github_link?: string | null;
-  internship_preferences?: UpdateUserDtoInternshipPreferences;
   /** @nullable */
   last_name?: string | null;
   /** @nullable */
@@ -51,5 +52,4 @@ export interface UpdateUserDto {
   form_group_id?: string | null;
   /** @nullable */
   form_group_joined_at?: string | null;
-  internship_moa_fields?: UpdateUserDtoInternshipMoaFields;
 }

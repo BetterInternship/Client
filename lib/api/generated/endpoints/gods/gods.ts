@@ -73,7 +73,7 @@ export const godsControllerGenerateMagicLink = async (
 };
 
 export const getGodsControllerGetEmployersUrl = (
-  params: GodsControllerGetEmployersParams,
+  params?: GodsControllerGetEmployersParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -91,7 +91,7 @@ export const getGodsControllerGetEmployersUrl = (
 };
 
 export const godsControllerGetEmployers = async (
-  params: GodsControllerGetEmployersParams,
+  params?: GodsControllerGetEmployersParams,
   options?: RequestInit,
 ): Promise<PaginatedEmployersResponse> => {
   return careerFetch<PaginatedEmployersResponse>(

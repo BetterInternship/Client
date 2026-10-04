@@ -6,4 +6,4 @@
  * OpenAPI spec version: 2.0
  */
 
-export type InitiateFormDtoValues = { [key: string]: unknown };
+export type InitiateFormDtoValues = { [key: string]: string };

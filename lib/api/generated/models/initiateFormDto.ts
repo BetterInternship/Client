@@ -9,8 +9,8 @@ import type { InitiateFormDtoValues } from "./initiateFormDtoValues";
 import type { InitiateFormDtoAudit } from "./initiateFormDtoAudit";
 
 export interface InitiateFormDto {
-  formName: string;
-  formVersion: number;
   values: InitiateFormDtoValues;
   audit: InitiateFormDtoAudit;
+  formName: string;
+  formVersion: number;
 }

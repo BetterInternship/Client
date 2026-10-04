@@ -9,6 +9,9 @@ import type { ApplicationRecordSource } from "./applicationRecordSource";
 import type { ApplicationRecordVisibility } from "./applicationRecordVisibility";
 
 export interface ApplicationRecord {
+  /** @nullable */
+  source: ApplicationRecordSource;
+  visibility: ApplicationRecordVisibility;
   applied_at: string;
   /** @nullable */
   cover_letter: string | null;
@@ -23,8 +26,6 @@ export interface ApplicationRecord {
   resume_id: string | null;
   /** @nullable */
   review: string | null;
-  /** @nullable */
-  source: ApplicationRecordSource;
   status: number;
   /** @nullable */
   top_page_id: string | null;
@@ -34,5 +35,4 @@ export interface ApplicationRecord {
   updated_at: string | null;
   /** @nullable */
   user_id: string | null;
-  visibility: ApplicationRecordVisibility;
 }

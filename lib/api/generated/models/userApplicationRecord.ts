@@ -12,6 +12,14 @@ import type { UserApplicationRecordEmployer } from "./userApplicationRecordEmplo
 import type { UserApplicationRecordUsers } from "./userApplicationRecordUsers";
 
 export interface UserApplicationRecord {
+  /** @nullable */
+  source: UserApplicationRecordSource;
+  visibility: UserApplicationRecordVisibility;
+  job: JobRecord;
+  /** @nullable */
+  employer?: UserApplicationRecordEmployer;
+  /** @nullable */
+  users?: UserApplicationRecordUsers;
   applied_at: string;
   /** @nullable */
   cover_letter: string | null;
@@ -24,8 +32,6 @@ export interface UserApplicationRecord {
   notes: string | null;
   /** @nullable */
   resume_id: string | null;
-  /** @nullable */
-  source: UserApplicationRecordSource;
   status: number;
   /** @nullable */
   top_page_id: string | null;
@@ -35,10 +41,4 @@ export interface UserApplicationRecord {
   updated_at: string | null;
   /** @nullable */
   user_id: string | null;
-  visibility: UserApplicationRecordVisibility;
-  job: JobRecord;
-  /** @nullable */
-  employer?: UserApplicationRecordEmployer;
-  /** @nullable */
-  users?: UserApplicationRecordUsers;
 }

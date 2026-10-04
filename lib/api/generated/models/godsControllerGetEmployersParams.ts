@@ -8,8 +8,8 @@
 import type { GodsControllerGetEmployersSortDir } from "./godsControllerGetEmployersSortDir";
 
 export type GodsControllerGetEmployersParams = {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
   search?: string;
   is_verified?: string;
   sort_by?: string;

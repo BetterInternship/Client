@@ -9,14 +9,14 @@ import type { WaitlistedRowRemovalReason } from "./waitlistedRowRemovalReason";
 import type { WaitlistedJob } from "./waitlistedJob";
 
 export interface WaitlistedRow {
+  /** @nullable */
+  removal_reason: WaitlistedRowRemovalReason;
+  job: WaitlistedJob;
   created_at: string;
   id: string;
   job_id: string;
   /** @nullable */
   notified_at: string | null;
   /** @nullable */
-  removal_reason: WaitlistedRowRemovalReason;
-  /** @nullable */
   removed_at: string | null;
-  job: WaitlistedJob;
 }

@@ -9,6 +9,11 @@ import type { GodEmployerRecordLastSession } from "./godEmployerRecordLastSessio
 import type { GodTeamEmail } from "./godTeamEmail";
 
 export interface GodEmployerRecord {
+  application_count: number;
+  /** @nullable */
+  last_session: GodEmployerRecordLastSession;
+  /** @nullable */
+  team_emails: GodTeamEmail[] | null;
   accepted_universities: string[];
   accepts_non_university: boolean;
   created_at: string;
@@ -34,9 +39,4 @@ export interface GodEmployerRecord {
   updated_at: string;
   /** @nullable */
   website: string | null;
-  application_count: number;
-  /** @nullable */
-  last_session: GodEmployerRecordLastSession;
-  /** @nullable */
-  team_emails: GodTeamEmail[] | null;
 }
