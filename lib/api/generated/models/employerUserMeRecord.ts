@@ -7,6 +7,8 @@
  */
 
 export interface EmployerUserMeRecord {
+  is_owner: boolean;
+  other_subscribed_recipients: number;
   created_at: string;
   email: string;
   employer_id: string;
@@ -24,6 +26,4 @@ export interface EmployerUserMeRecord {
   receives_applicant_digest: boolean;
   role: string;
   updated_at: string;
-  is_owner: boolean;
-  other_subscribed_recipients: number;
 }

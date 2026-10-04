@@ -5,8 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { StudentInternshipPreferences } from "./studentInternshipPreferences";
 
 /**
  * @nullable
  */
-export type UserSelfInternshipPreferences = { [key: string]: unknown } | null;
+export type UserSelfInternshipPreferences = StudentInternshipPreferences | null;

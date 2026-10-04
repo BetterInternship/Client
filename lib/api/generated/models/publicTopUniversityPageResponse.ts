@@ -8,14 +8,14 @@
 import type { PublicTopUniversityPageResponseStatus } from "./publicTopUniversityPageResponseStatus";
 import type { TopUniversitySummary } from "./topUniversitySummary";
 import type { TopPageSummary } from "./topPageSummary";
-import type { PublicTopUniversityPageResponseJobsItem } from "./publicTopUniversityPageResponseJobsItem";
+import type { PublicJobRecord } from "./publicJobRecord";
 import type { TopPageLink } from "./topPageLink";
 
 export interface PublicTopUniversityPageResponse {
   status: PublicTopUniversityPageResponseStatus;
   university?: TopUniversitySummary;
   page?: TopPageSummary;
-  jobs?: PublicTopUniversityPageResponseJobsItem[];
+  jobs?: PublicJobRecord[];
   siblings?: TopPageLink[];
   slug?: string;
 }

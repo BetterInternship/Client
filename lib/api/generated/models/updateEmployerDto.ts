@@ -7,5 +7,23 @@
  */
 
 export interface UpdateEmployerDto {
-  [key: string]: unknown;
+  accepted_universities?: string[];
+  accepts_non_university?: boolean;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  industry?: string | null;
+  legal_entity_name?: string;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  logo?: string | null;
+  name?: string;
+  /** @nullable */
+  phone_number?: string | null;
+  /** @nullable */
+  website?: string | null;
+  contact_name?: string;
 }

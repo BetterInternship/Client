@@ -5,10 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
-import type { GodTopPagePreviewResponseJobsItem } from "./godTopPagePreviewResponseJobsItem";
+import type { PublicJobRecord } from "./publicJobRecord";
 
 export interface GodTopPagePreviewResponse {
   success: boolean;
   message?: string;
-  jobs?: GodTopPagePreviewResponseJobsItem[];
+  jobs?: PublicJobRecord[];
 }

@@ -7,5 +7,5 @@
  */
 
 export type UsersControllerMyResumeParams = {
-  hash: string;
+  hash?: string;
 };

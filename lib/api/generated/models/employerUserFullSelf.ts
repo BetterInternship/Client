@@ -7,6 +7,8 @@
  */
 
 export interface EmployerUserFullSelf {
+  is_owner: boolean;
+  god: boolean;
   created_at: string;
   email: string;
   employer_id: string;
@@ -24,6 +26,4 @@ export interface EmployerUserFullSelf {
   receives_applicant_digest: boolean;
   role: string;
   updated_at: string;
-  is_owner: boolean;
-  god: boolean;
 }
