@@ -9,21 +9,21 @@ import { TopUniversityLanding } from "@/components/features/student/top/TopUnive
 /**
  * A university's landing page: /<university>
  * (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md D12), listing its live Top page
- * categories. Its data is cached 60s, like the category pages it links to;
- * the page itself is rendered on every request (see the note there).
+ * categories. A cached static page, built and rebuilt the same way as the
+ * category pages it links to (see [slug]/page.tsx).
  *
  * `[university]` is the first path segment of the student site, so this
  * route also receives every unknown one-segment path. Anything that is not
- * a university with at least one live category ends in the normal not-found
- * page (fetchTopUniversity rejects junk shapes without calling the server).
- *
- * Known cost: the not-found screen from here is sent with status 200 and a
- * `noindex` tag, not a 404 status — the response has already started
- * streaming (app/student/loading.tsx) by the time notFound() runs, same as
- * search/[job_id]. Before this route existed, an unknown one-segment path
- * matched nothing and got a real 404.
+ * a university with at least one live category ends in notFound()
+ * (fetchTopUniversity rejects junk shapes without calling the server). Since
+ * the page is built before it is sent, that is a real 404 status, cached
+ * like any other result.
  */
-export const revalidate = 60;
+export const revalidate = 604800; // TOP_PAGES_REVALIDATE_SECONDS
+
+export function generateStaticParams() {
+  return [];
+}
 
 type Params = { params: Promise<{ university: string }> };
 

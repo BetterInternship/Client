@@ -40,6 +40,7 @@ import { ShareJobModal } from "./components/ShareJobModal";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
+import { RebuildTopPagesModal } from "./components/RebuildTopPagesModal";
 import { Button } from "@betterinternship/components";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
@@ -787,6 +788,25 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("top-university-links"),
+      },
+
+      // God mode: confirm before rebuilding every Top page. Not dismissible by
+      // backdrop or Escape, so a stray click can't close it mid-request.
+      rebuildTopPages: {
+        open: () =>
+          open(
+            "rebuild-top-pages",
+            DefaultModalLayout,
+            <RebuildTopPagesModal close={() => close("rebuild-top-pages")} />,
+            {
+              title: "Rebuild all Top pages?",
+              closeOnBackdropClick: false,
+              closeOnEscapeKey: false,
+              showCloseButton: false,
+              panelClassName: "sm:max-w-md",
+            },
+          ),
+        close: () => close("rebuild-top-pages"),
       },
 
       closeAll: () => close(),

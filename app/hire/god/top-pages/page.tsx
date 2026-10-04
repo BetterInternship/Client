@@ -18,6 +18,7 @@ import {
   TopPageListRow,
 } from "@/lib/api/god.api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 function TopPageRow({
   page,
@@ -56,6 +57,7 @@ function TopPageRow({
  */
 export default function TopPagesListPage() {
   const router = useRouter();
+  const modalRegistry = useModalRegistry();
   const { data, isPending } = useGodTopPages();
   const createTopPage = useCreateTopPage();
 
@@ -126,14 +128,24 @@ export default function TopPagesListPage() {
           )}
           {/* A page is only live at the universities it is ticked for —
               that, each university's colour and its links live in the grid. */}
-          <Button
-            size="sm"
-            variant="outline"
-            className="ml-auto"
-            onClick={() => router.push("/god/top-pages/universities")}
-          >
-            Universities
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            {/* Rebuilds and warms every live page now. Confirmed in a modal
+                first: it is a lot of work to trigger by accident. */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => modalRegistry.rebuildTopPages.open()}
+            >
+              Rebuild all pages
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => router.push("/god/top-pages/universities")}
+            >
+              Universities
+            </Button>
+          </div>
         </div>
       }
     >
