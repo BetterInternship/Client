@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "../globals.css";
+import { inter } from "../fonts";
 import { AuthContextProvider } from "./authctx";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
@@ -85,7 +86,7 @@ const HTMLContent = ({
       <AppContextProvider>
         <AuthContextProvider>
           <TooltipProvider>
-            <html lang="en" className="h-full">
+            <html lang="en" className={`h-full ${inter.variable}`}>
               <Head>
                 <meta
                   name="viewport"

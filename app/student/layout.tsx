@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "../globals.css";
+import { inter } from "../fonts";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
@@ -93,7 +94,7 @@ const HTMLContent = ({
         <AuthContextProvider>
           <TooltipProvider>
             <HeaderContextProvider>
-              <html lang="en" className="h-full">
+              <html lang="en" className={`h-full ${inter.variable}`}>
                 <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                   <AppMQJobsProvider>
                     <FilloutJobsProvider>
