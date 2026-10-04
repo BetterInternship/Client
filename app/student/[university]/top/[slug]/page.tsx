@@ -1,8 +1,13 @@
-import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { Suspense } from "react";
+import { notFound, redirect } from "next/navigation";
 import { fetchTopUniversityPage } from "@/lib/api/top-page.server";
 import { baseUrl } from "@/lib/site-url";
 import { currentManilaWeek } from "@/lib/utils/manila-week";
 import { TopPageView } from "@/components/features/student/top/TopPageView";
+import {
+  TopPageMovedNotice,
+  TopPageMovedRedirect,
+} from "@/components/features/student/top/TopPageMovedRedirect";
 
 /**
  * A university's category page: /<university>/top/<slug>
@@ -19,7 +24,8 @@ import { TopPageView } from "@/components/features/student/top/TopPageView";
  * safety net. Because it is built once, anything read from the clock here —
  * `weekKey` — is frozen until the next rebuild; keep request-time state out
  * of this file (the week banner reads `?week=` in the browser for that
- * reason).
+ * reason). In particular, never await `searchParams` here: a static page that
+ * does fails with a 500 (verified on a production build, 2026-10-04).
  */
 export const revalidate = 604800; // TOP_PAGES_REVALIDATE_SECONDS
 
@@ -29,30 +35,26 @@ export function generateStaticParams() {
 
 export default async function TopPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ university: string; slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { university, slug } = await params;
   const result = await fetchTopUniversityPage(university, slug);
 
-  // An old slug always points at the page's current one — 308 so search
-  // engines and browsers update their own records of the URL. The query
-  // string rides along: a renamed page's old pubmat QR still carries ?week=,
-  // and that is exactly the stale-QR case (week-param plan D8). searchParams
-  // is awaited only here, so the normal path stays free of request-time
-  // APIs and the page can be cached statically.
+  // An old slug always points at the page's current one. The query string
+  // has to ride along — a renamed page's old pubmat QR still carries ?week=,
+  // and that is exactly the stale-QR case (week-param plan D8) — but a cached
+  // page cannot see the query, so the redirect happens in the browser, which
+  // can. (A server-side 308 needs `await searchParams`, which turns the
+  // whole route dynamic and breaks static generation.) The layout marks this
+  // response noindex with the current address as canonical, so search
+  // engines still move to it.
   if (result.status === "moved") {
-    const query = new URLSearchParams();
-    for (const [key, value] of Object.entries(await searchParams)) {
-      for (const item of Array.isArray(value) ? value : [value]) {
-        if (item !== undefined) query.append(key, item);
-      }
-    }
-    const search = query.toString();
-    permanentRedirect(
-      `/${university}/top/${result.slug}${search ? `?${search}` : ""}`,
+    const to = `/${university}/top/${result.slug}`;
+    return (
+      <Suspense fallback={<TopPageMovedNotice to={to} />}>
+        <TopPageMovedRedirect to={to} />
+      </Suspense>
     );
   }
   // The university is live but this category isn't (unticked, unpublished or
