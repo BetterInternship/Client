@@ -410,6 +410,19 @@ export function useCreateTopPage() {
   });
 }
 
+/**
+ * Starts a full rebuild of every Top page. Resolves with success false and a
+ * message when the server isn't set up for it, or a rebuild is already running.
+ */
+export function useRebuildTopPages() {
+  return useMutation({
+    mutationFn: () =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("top-pages", "regenerate").build(),
+      ),
+  });
+}
+
 export interface SaveTopPagePayload {
   name: string;
   is_published: boolean;
