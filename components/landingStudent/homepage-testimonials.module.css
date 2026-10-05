@@ -1,0 +1,123 @@
+.marquee {
+  position: relative;
+}
+
+.viewport {
+  overflow: hidden;
+  padding-block: 8px;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: roll 130s linear infinite;
+}
+
+.group {
+  display: flex;
+  gap: 16px;
+  padding-right: 16px;
+}
+
+.testimonial {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  margin: 0;
+  padding: 26px;
+  border: 1px solid var(--home-border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.testimonial .quote {
+  margin: 0 0 24px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.25px;
+}
+
+.testimonial .author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e4efff;
+  color: #355b92;
+  font-size: 13px;
+  font-weight: 650;
+  flex-shrink: 0;
+}
+
+.identity strong {
+  display: block;
+  font-size: 14px;
+}
+
+.identity span,
+.context {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #526582;
+}
+
+.context {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--home-border);
+}
+
+.marquee[data-paused="true"] .track,
+.marquee:focus-within .track {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes roll {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  .testimonial {
+    width: 290px;
+    padding: 22px;
+  }
+
+  .testimonial .quote {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    overflow-x: auto;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .group[aria-hidden="true"],
+  .testimonial[data-duplicate="true"] {
+    display: none;
+  }
+}
