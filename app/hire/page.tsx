@@ -40,7 +40,6 @@ export default function HomePage() {
       <div ref={heroRef}>
         <HeroSection />
       </div>
-      {/* Logo carousel temporarily hidden for production. */}
       <div id="features" className="scroll-mt-64">
         <FeaturesSection />
       </div>
