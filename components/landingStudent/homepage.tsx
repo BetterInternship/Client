@@ -70,7 +70,7 @@ const testimonials = [
 function Brand() {
   return (
     <Link href="/" className="home-brand" aria-label="BetterInternship home">
-      <Image src="/BetterInternshipLogo.png" width={36} height={36} alt="" />
+      <Image src="/homepage-logo.png" width={36} height={36} alt="" />
       <span>BetterInternship</span>
     </Link>
   );
@@ -101,6 +101,7 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
             <a href={STUDENT_FORM_GUIDE}>Guides</a>
             <a href={loginHref} className="home-login">
               Log in
+              <ArrowRight size={15} aria-hidden="true" />
             </a>
           </nav>
         </header>

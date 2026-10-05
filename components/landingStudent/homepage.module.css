@@ -68,7 +68,12 @@
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 48%), transparent 75%),
+    linear-gradient(
+      180deg,
+      rgb(255 255 255 / 88%) 0,
+      rgb(255 255 255 / 65%) 76px,
+      transparent 180px
+    ),
     radial-gradient(
       ellipse at 50% 35%,
       rgb(255 255 255 / 78%),
@@ -90,7 +95,7 @@
 .homepage :global(.home-brand) {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--home-navy);
   font-size: 18px;
   font-weight: 750;
@@ -100,35 +105,41 @@
 .homepage :global(.home-header nav) {
   display: flex;
   align-items: center;
-  gap: 30px;
-  font-size: 14px;
-  font-weight: 550;
+  gap: 32px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.homepage :global(.home-header .home-brand img) {
+  width: 24px;
+  height: 24px;
 }
 .homepage :global(.home-header nav a) {
-  color: var(--home-navy);
+  color: #374151;
 }
 .homepage :global(.home-header nav a:hover) {
-  color: var(--home-blue);
+  color: #111827;
 }
 .homepage :global(.home-header .home-login) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   background: transparent;
-  border: 1px solid var(--home-navy);
-  border-radius: 10px;
-  padding: 10px 24px;
-  color: var(--home-navy);
-  font-weight: 600;
+  border: 1px solid rgb(55 65 81 / 35%);
+  border-radius: 8px;
+  padding: 8px 18px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 550;
   white-space: nowrap;
   transition:
     background-color 160ms ease,
     border-color 160ms ease;
 }
 .homepage :global(.home-header .home-login:hover) {
-  background: rgb(16 16 68 / 6%);
-  border-color: var(--home-navy);
-  color: var(--home-navy);
+  background: rgb(55 65 81 / 6%);
+  border-color: #374151;
+  color: #111827;
 }
 .homepage :global(.home-hero-content) {
   text-align: center;
@@ -716,8 +727,8 @@
   gap: 8px;
 }
 .homepage :global(.home-footer .home-brand img) {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
 }
 .homepage :global(.home-footer p) {
   color: var(--home-muted);
@@ -1617,5 +1628,34 @@
   .homepage :global(.home-footer-bottom) {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .homepage :global(.home-header .home-login),
+  .homepage :global(.home-quick-filters a),
+  .homepage :global(.home-discord-button) {
+    transition:
+      transform 200ms var(--home-ease-out),
+      box-shadow 200ms ease,
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease;
+  }
+
+  .homepage :global(.home-header .home-login:hover),
+  .homepage :global(.home-quick-filters a:hover),
+  .homepage :global(.home-discord-button:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgb(31 45 68 / 7%);
+  }
+
+  .homepage :global(.home-login svg),
+  .homepage :global(.home-discord-button svg:last-child) {
+    transition: transform 200ms var(--home-ease-out);
+  }
+
+  .homepage :global(.home-login:hover svg),
+  .homepage :global(.home-discord-button:hover svg:last-child) {
+    transform: translateX(3px);
   }
 }
