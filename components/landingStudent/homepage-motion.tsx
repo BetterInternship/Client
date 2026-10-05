@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode, type CSSProperties } from "react";
 
 /** Progressive enhancement: server-rendered content stays visible without JS.
  * Reveal offscreen sections once; never replay motion while people read them. */
 export function HomepageMotion({
   children,
   className,
+  style,
 }: {
   children: ReactNode;
   className: string;
+  style?: CSSProperties;
 }) {
   const root = useRef<HTMLDivElement>(null);
 
@@ -68,7 +70,7 @@ export function HomepageMotion({
   }, []);
 
   return (
-    <div ref={root} className={className}>
+    <div ref={root} className={className} style={style}>
       {children}
     </div>
   );

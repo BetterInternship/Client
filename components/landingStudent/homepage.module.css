@@ -5,11 +5,31 @@
   --home-border: #e1eafa;
   --home-tint: #f0f6ff;
   --home-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  background: #fff;
+  position: relative;
+  isolation: isolate;
+  background: var(--top-surface);
   color: var(--home-navy);
   /* Campus scene → editorial stories → asymmetric fields → product grid
      → dark social moment → quiet FAQ. Artwork is reserved for fields/Discord. */
   min-height: 100%;
+  /* The portal shell is a viewport-height flex layout. Let this page keep
+     its content height so its background paints through the full scroll. */
+  flex-shrink: 0;
+}
+
+.homepage :global(.home-page-backdrop) {
+  position: absolute;
+  inset: 800px 0 auto;
+  height: 900px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 15%,
+    rgb(0 0 0 / 55%) 50%,
+    transparent 90%
+  );
 }
 
 .homepage :global(*) {
@@ -354,10 +374,13 @@
   margin-top: 3px;
 }
 .homepage :global(.home-section) {
-  margin-top: 64px;
+  margin-top: 96px;
+}
+.homepage :global(.home-popular) {
+  margin-top: 112px;
 }
 .homepage :global(.home-section-heading) {
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 .homepage :global(h2) {
   margin: 0;
@@ -746,7 +769,7 @@
 .homepage :global(.home-field-gallery) {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 165px);
+  grid-template-rows: repeat(2, 190px);
   gap: 16px;
   min-width: 0;
   width: 100%;
@@ -811,36 +834,24 @@
   border-color: #80b4ff;
 }
 .homepage :global(.home-search-art) {
-  position: absolute;
-  z-index: -1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 0;
   pointer-events: none;
-  width: 110px;
-  height: 110px;
-  top: -10px;
-  right: 0;
-}
-.homepage :global(.home-search-software .home-search-art) {
-  width: 160px;
-  height: 160px;
-  top: -8px;
-  right: -20px;
-}
-.homepage :global(.home-search-marketing .home-search-art) {
-  width: 110px;
-  height: 110px;
-  top: -24px;
-  right: -22px;
-}
-.homepage :global(.home-search-archi .home-search-art) {
-  width: 110px;
-  height: 110px;
-  top: -30px;
-  right: -10px;
+  width: 100%;
+  align-self: stretch;
+  margin-bottom: 12px;
 }
 .homepage :global(.home-search-art img) {
-  width: 100%;
+  position: absolute;
+  width: min(100%, 140px);
   height: 100%;
   object-fit: contain;
+}
+.homepage :global(.home-search-software .home-search-art img) {
+  width: min(100%, 260px);
 }
 .homepage :global(.home-search-label) {
   display: inline-flex;
@@ -1184,11 +1195,8 @@
     grid-column: 2;
     grid-row: 3;
   }
-  .homepage :global(.home-search-software .home-search-art) {
-    width: 160px;
-    height: 160px;
-    right: -15px;
-    top: -30px;
+  .homepage :global(.home-search-software .home-search-art img) {
+    width: min(100%, 180px);
   }
   .homepage :global(.home-search-software .home-search-label) {
     font-size: 32px;
@@ -1288,7 +1296,13 @@
     font-size: 18px;
   }
   .homepage :global(.home-section) {
-    margin-top: 40px;
+    margin-top: 56px;
+  }
+  .homepage :global(.home-popular) {
+    margin-top: 64px;
+  }
+  .homepage :global(.home-section-heading) {
+    margin-bottom: 24px;
   }
   .homepage :global(h2) {
     font-size: 27px;
@@ -1322,22 +1336,11 @@
     grid-column: auto;
     grid-row: auto;
   }
-  .homepage :global(.home-search-art) {
-    width: 80px;
-    height: 80px;
+  .homepage :global(.home-search-art img) {
+    width: min(100%, 90px);
   }
-  .homepage :global(.home-search-software .home-search-art) {
-    width: 110px;
-    height: 110px;
-    right: -12px;
-    top: -10px;
-  }
-  .homepage :global(.home-search-marketing .home-search-art),
-  .homepage :global(.home-search-archi .home-search-art) {
-    width: 80px;
-    height: 80px;
-    top: -18px;
-    right: -8px;
+  .homepage :global(.home-search-software .home-search-art img) {
+    width: min(100%, 130px);
   }
   .homepage :global(.home-illustrated-search .home-search-label) {
     font-size: 19px;
@@ -1410,7 +1413,7 @@
     font-size: 14px;
   }
   .homepage :global(.home-faq) {
-    margin-top: 40px;
+    margin-top: 56px;
   }
   .homepage :global(.home-footer-grid) {
     grid-template-columns: repeat(2, minmax(0, 1fr));

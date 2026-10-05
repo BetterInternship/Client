@@ -1,13 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Search,
-  MessageCircle,
-  Facebook,
-  Mail,
-} from "lucide-react";
+import { ArrowRight, MessageCircle, Facebook, Mail } from "lucide-react";
 import {
   BI_DISCORD_INVITE,
   STUDENT_FORM_GUIDE,
@@ -30,12 +24,14 @@ import { HomepageMotion } from "./homepage-motion";
 import { HomepageFaq } from "./homepage-faq";
 import { HomepageTestimonials } from "./homepage-testimonials";
 import { HomepageFieldPicker } from "./homepage-field-picker";
+import { HomepageFieldCards } from "./homepage-field-cards";
+import { TopPageBackdrop } from "@/components/features/student/top/TopArtwork";
+import { topAccentStyle } from "@/lib/utils/top-page-presentation";
 
 const hireHref =
   process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
   "https://hire.betterinternship.com";
 const loginHref = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-const popularArtwork = ["software", "marketing", "it", "accounting", "archi"];
 
 // Supplied example copy. Replace with approved student testimonials.
 const testimonials = [
@@ -81,7 +77,10 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
   const fields = getHomepageFields(refs.job_categories);
   const popular = getPopularSearches(fields);
   return (
-    <HomepageMotion className={styles.homepage}>
+    <HomepageMotion className={styles.homepage} style={topAccentStyle()}>
+      <div className="home-page-backdrop" aria-hidden="true">
+        <TopPageBackdrop />
+      </div>
       <div className="home-hero">
         <Image
           src="/homepage-campus.webp"
@@ -149,51 +148,7 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
             <h2 id="home-popular-heading">Popular searches</h2>
             <p>Explore what students are looking for.</p>
           </div>
-          <nav
-            className="home-popular-links"
-            aria-label="Popular internship searches"
-          >
-            <div className="home-field-gallery">
-              {popular.slice(0, 5).map((search, index) => (
-                <Link
-                  key={search.label}
-                  href={search.href}
-                  className={`home-illustrated-search home-search-${popularArtwork[index]}`}
-                >
-                  <span className="home-search-art" aria-hidden="true">
-                    <Image
-                      src={`/homepage/${popularArtwork[index]}.webp`}
-                      width={384}
-                      height={384}
-                      sizes={
-                        index === 0
-                          ? "(max-width: 767px) 110px, 160px"
-                          : "(max-width: 767px) 80px, 110px"
-                      }
-                      alt=""
-                    />
-                  </span>
-                  <span className="home-search-label">
-                    <Search aria-hidden="true" size={17} />
-                    {search.label}
-                  </span>
-                  <ArrowRight
-                    className="home-search-arrow"
-                    size={18}
-                    aria-hidden="true"
-                  />
-                </Link>
-              ))}
-            </div>
-            <div className="home-popular-quick-links">
-              {popular.slice(5).map((search) => (
-                <Link key={search.label} href={search.href}>
-                  <Search aria-hidden="true" size={17} />
-                  {search.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+          <HomepageFieldCards fields={popular.slice(0, 5)} />
         </section>
 
         <section
