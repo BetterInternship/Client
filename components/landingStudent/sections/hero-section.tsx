@@ -169,8 +169,6 @@ export function HeroSection() {
                 </Button>
               </Link>
             </div>
-
-            {/* Logo carousel temporarily hidden for production. */}
           </motion.div>
         </div>
 
