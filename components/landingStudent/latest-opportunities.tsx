@@ -145,10 +145,10 @@ export async function LatestOpportunities({
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3>{job.title || "Internship opportunity"}</h3>
                   <p className="home-company">{companyName}</p>
                 </div>
               </div>
+              <h3>{job.title || "Internship opportunity"}</h3>
               <div className="home-job-facts">
                 <span>
                   <MapPin aria-hidden="true" size={16} />

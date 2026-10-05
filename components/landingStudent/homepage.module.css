@@ -429,13 +429,14 @@
 .homepage :global(.home-opportunities-grid) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 .homepage :global(.home-opportunity) {
   position: relative;
   border: 1px solid var(--home-border);
-  border-radius: 8px;
-  min-height: 206px;
+  border-radius: 16px;
+  background: #fff;
+  min-height: 280px;
   transition:
     border-color 180ms var(--home-ease-out),
     box-shadow 180ms var(--home-ease-out);
@@ -448,37 +449,40 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 18px;
+  padding: 24px;
   color: var(--home-navy);
   border-radius: inherit;
 }
 .homepage :global(.home-opportunity h3) {
-  font-size: 17px;
+  font-size: 20px;
   line-height: 1.3;
   font-weight: 700;
   letter-spacing: -0.35px;
-  padding-right: 24px;
-  margin: 0;
+  overflow-wrap: anywhere;
+  margin: 0 0 16px;
 }
 .homepage :global(.home-company) {
-  margin: 5px 0 0;
-  color: var(--home-muted);
-  font-size: 13px;
+  margin: 0;
+  color: var(--home-navy);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 .homepage :global(.home-job-heading) {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  padding-right: 28px;
 }
 .homepage :global(.home-job-heading > div:last-child) {
   min-width: 0;
 }
 .homepage :global(.home-company-logo) {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 .homepage :global(.home-company-logo img) {
   object-fit: contain;
@@ -487,9 +491,9 @@
 .homepage :global(.home-company-logo > span) {
   background: #edf2fa;
   color: #50648d;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 .homepage :global(.home-job-footer) {
   display: flex;
@@ -497,8 +501,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding-top: 14px;
+  border-top: 1px solid var(--home-border);
+  padding-top: 16px;
   margin-top: auto;
+}
+.homepage :global(.home-opportunity .home-tags) {
+  margin-bottom: 20px;
 }
 .homepage :global(.home-card-action) {
   display: inline-flex;
@@ -507,7 +515,7 @@
   font-size: 12px;
   font-weight: 600;
   color: #0057ce;
-  opacity: 0.7;
+  opacity: 1;
 }
 .homepage :global(.home-opportunity:focus-within .home-card-action) {
   opacity: 1;
@@ -517,7 +525,7 @@
   flex-wrap: wrap;
   gap: 8px 14px;
   color: var(--home-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   margin-bottom: 12px;
 }
@@ -536,8 +544,8 @@
 }
 .homepage :global(.home-bookmark) {
   position: absolute;
-  top: 13px;
-  right: 10px;
+  top: 20px;
+  right: 16px;
   display: grid;
   place-items: center;
   width: 36px;
@@ -943,9 +951,12 @@
   }
   .homepage :global(.home-opportunity) {
     transition:
-      transform 180ms var(--home-ease-out),
-      border-color 180ms var(--home-ease-out),
-      box-shadow 180ms var(--home-ease-out);
+      transform 200ms var(--home-ease-out),
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+  .homepage :global(.home-card-action svg) {
+    transition: transform 200ms var(--home-ease-out);
   }
   .homepage :global(.home-card-action) {
     transition:
@@ -1062,11 +1073,15 @@
   .homepage :global(.home-opportunity:hover) {
     transform: translateY(-2px);
   }
+  .homepage :global(.home-opportunity:hover .home-card-action svg),
+  .homepage :global(.home-opportunity:focus-within .home-card-action svg) {
+    transform: translateX(3px);
+  }
 }
 @media (hover: hover) and (pointer: fine) {
   .homepage :global(.home-opportunity:hover) {
-    border-color: var(--home-blue);
-    box-shadow: 0 3px 10px rgb(38 72 122 / 5%);
+    border-color: #cfd5df;
+    box-shadow: 0 6px 20px rgb(31 45 68 / 7%);
   }
   .homepage :global(.home-opportunity:hover .home-card-action) {
     opacity: 1;
@@ -1381,7 +1396,14 @@
     grid-template-columns: 1fr;
   }
   .homepage :global(.home-opportunity) {
-    min-height: 198px;
+    min-height: 260px;
+  }
+  .homepage :global(.home-opportunity-link) {
+    padding: 20px;
+  }
+  .homepage :global(.home-bookmark) {
+    top: 16px;
+    right: 12px;
   }
   .homepage :global(.home-discord) {
     grid-template-columns: 1fr;
