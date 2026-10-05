@@ -25,7 +25,10 @@ import { HomepageFaq } from "./homepage-faq";
 import { HomepageTestimonials } from "./homepage-testimonials";
 import { HomepageFieldPicker } from "./homepage-field-picker";
 import { HomepageFieldCards } from "./homepage-field-cards";
-import { TopPageBackdrop } from "@/components/features/student/top/TopArtwork";
+import {
+  TopPageBackdrop,
+  TopDiscordArtwork,
+} from "@/components/features/student/top/TopArtwork";
 import { topAccentStyle } from "@/lib/utils/top-page-presentation";
 
 const hireHref =
@@ -170,32 +173,24 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
         </section>
 
         <section
-          className="home-discord home-section home-reveal"
+          className="home-discord home-discord-top home-section home-reveal"
           aria-labelledby="home-discord-heading"
         >
+          <div className="home-discord-art" aria-hidden="true">
+            <div className="home-discord-shared-art">
+              <TopDiscordArtwork />
+            </div>
+          </div>
           <div className="home-discord-copy">
             <h2 id="home-discord-heading">
-              Get notified when <span>new internships drop.</span>
+              Get notified when <span>new internships drop</span> and{" "}
+              <span>apply with one click</span>
             </h2>
-            <p>
-              Join our Discord for new internship alerts,
-              <br className="home-desktop-break" /> and apply in one click.
-            </p>
             <a className="home-discord-button" href={BI_DISCORD_INVITE}>
               <DiscordMark width={24} height={24} />
               Join the Discord
               <ArrowRight aria-hidden="true" size={20} />
             </a>
-          </div>
-          <div className="home-discord-art">
-            <Image
-              src="/top/layers/prepared/discord-phone.webp"
-              width={688}
-              height={1015}
-              sizes="(max-width: 767px) 200px, 250px"
-              alt="Illustration of a phone showing a Discord internship listings feed"
-              className="home-discord-phone"
-            />
           </div>
         </section>
 

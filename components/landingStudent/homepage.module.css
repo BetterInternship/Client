@@ -1462,3 +1462,72 @@
     padding-top: 24px;
   }
 }
+.homepage :global(.home-discord.home-discord-top) {
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 1.35fr);
+  min-height: 400px;
+  border: 1px solid #28355a;
+  background: #10142b;
+  color: #fff;
+}
+
+.homepage :global(.home-discord-top::before),
+.homepage :global(.home-discord-top .home-discord-art::before) {
+  display: none;
+}
+
+.homepage :global(.home-discord-top .home-discord-copy) {
+  min-width: 0;
+  padding: 44px 48px 44px 24px;
+  text-align: left;
+}
+
+.homepage :global(.home-discord-top h2) {
+  color: #fff;
+  max-width: none;
+  font-size: clamp(30px, 3vw, 40px);
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+
+.homepage :global(.home-discord-top h2 span) {
+  color: #80b4ff;
+}
+
+.homepage :global(.home-discord-top p) {
+  color: #c8d3e8;
+  max-width: none;
+}
+
+.homepage :global(.home-discord-shared-art) {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 24px, 460px);
+  height: 369px;
+}
+
+.homepage :global(.home-discord-top .home-discord-art) {
+  min-height: 400px;
+}
+
+@media (max-width: 767px) {
+  .homepage :global(.home-discord.home-discord-top) {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .homepage :global(.home-discord-top .home-discord-art) {
+    min-height: 260px;
+    margin-top: 0;
+  }
+  .homepage :global(.home-discord-shared-art) {
+    width: min(100% - 24px, 280px);
+    height: 255px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .homepage :global(.home-discord-top .home-discord-copy) {
+    padding: 24px;
+  }
+}
