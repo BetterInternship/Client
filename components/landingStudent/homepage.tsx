@@ -21,8 +21,8 @@ import {
 import styles from "./homepage.module.css";
 import { DiscordMark } from "@/components/features/student/top/DiscordMark";
 import { HomepageMotion } from "./homepage-motion";
-import { HomepageFaq } from "./homepage-faq";
 import { HomepageTestimonials } from "./homepage-testimonials";
+import { HomepageFaq } from "./homepage-faq";
 import { HomepageFieldPicker } from "./homepage-field-picker";
 import { HomepageFieldCards } from "./homepage-field-cards";
 import {

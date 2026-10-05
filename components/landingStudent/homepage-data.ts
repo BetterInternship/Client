@@ -86,28 +86,18 @@ export function getPopularSearches(options: HomepageField[]): HomepageField[] {
 
 export const homepageFaqs = [
   {
-    question: "Is BetterInternship free for students?",
+    question: "How do I check whether a company has an MOA with my university?",
     answer:
-      "Yes. Students can browse internships, create a profile, and apply to opportunities on BetterInternship for free.",
+      "On your university’s Top page, use ‘Show companies with MOA’ to see opportunities from companies with an MOA on record for your university. Confirm the agreement’s validity and your program’s requirements with your internship coordinator.",
   },
   {
-    question: "How do I apply for an internship?",
+    question: "What happens after I apply?",
     answer:
-      "Log in with Google, complete your student profile, and upload your resume. Open an internship listing and select Apply. Some opportunities may also ask you to complete a short challenge.",
+      "Your application and selected resume are submitted to the employer for review. If they want to move forward, they may contact you with next steps. Each employer manages its own hiring process, so response times vary.",
   },
   {
-    question: "What does MOA-ready mean?",
+    question: "Can I track my applications on BetterInternship?",
     answer:
-      "An MOA is a Memorandum of Agreement between a company and your university. A listing marked as having an MOA has an agreement on record for your university. Always confirm your program’s requirements and the agreement’s validity with your internship coordinator.",
-  },
-  {
-    question: "Can I apply to multiple internships?",
-    answer:
-      "Yes. You can apply to multiple opportunities that fit your interests and availability, and track your applications in your account.",
-  },
-  {
-    question: "How do I know if an internship is legitimate?",
-    answer:
-      "Public listings come from verified employer accounts. Still review the company, responsibilities, and terms carefully. Never pay an application fee or share sensitive financial information, and contact us if a listing seems suspicious.",
+      "Yes. Log in and open My Applications to see the internships you’ve applied to and their recorded application statuses.",
   },
 ];
