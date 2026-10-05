@@ -207,31 +207,13 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
       </main>
 
       <footer className="home-footer">
-        <div className="home-container home-footer-grid">
+        <div className="home-container home-footer-top">
           <div className="home-footer-brand">
             <Brand />
-            <p>Discover opportunities. Build your future.</p>
-          </div>
-          <nav aria-label="For students">
-            <h3>For Students</h3>
-            <Link href="/search">Find Internships</Link>
-            <a href="#popular-searches">Popular Searches</a>
-            <a href={STUDENT_FORM_GUIDE}>Guides</a>
-          </nav>
-          <nav aria-label="For companies">
-            <h3>For Companies</h3>
-            <a href={hireHref}>Post Opportunities</a>
-            <a href={SUPPORT_EMAIL_LINK}>Talent Solutions</a>
-            <a href={SUPPORT_EMAIL_LINK}>Contact Us</a>
-          </nav>
-          <nav aria-label="Legal">
-            <h3>Legal</h3>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/privacy">Cookies &amp; privacy</Link>
-          </nav>
-          <div className="home-footer-socials">
-            <nav aria-label="Social and contact links">
+            <nav
+              className="home-footer-icons"
+              aria-label="Social and contact links"
+            >
               <a href={BI_DISCORD_INVITE} aria-label="BetterInternship Discord">
                 <MessageCircle size={20} aria-hidden="true" />
               </a>
@@ -245,12 +227,26 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
                 <Mail size={20} aria-hidden="true" />
               </a>
             </nav>
-            <p>
-              © {new Date().getFullYear()} BetterInternship.
-              <br />
-              All rights reserved.
-            </p>
           </div>
+          <nav className="home-footer-group" aria-label="For students">
+            <h3>For Students</h3>
+            <Link href="/search">Find Internships</Link>
+            <a href={STUDENT_FORM_GUIDE}>Guides</a>
+          </nav>
+          <div className="home-footer-company">
+            <nav className="home-footer-group" aria-label="For companies">
+              <h3>For Companies</h3>
+              <a href={hireHref}>Post Opportunities</a>
+              <a href={SUPPORT_EMAIL_LINK}>Contact Us</a>
+            </nav>
+          </div>
+        </div>
+        <div className="home-container home-footer-bottom">
+          <nav className="home-footer-links" aria-label="Legal">
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+          </nav>
+          <p>© {new Date().getFullYear()} BetterInternship.</p>
         </div>
       </footer>
     </HomepageMotion>
