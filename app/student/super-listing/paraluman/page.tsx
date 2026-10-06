@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
@@ -17,6 +17,7 @@ import type {
   ParalumanSubmissionForm,
   SubmissionStep,
 } from "./components/types";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -146,12 +147,6 @@ export default function ParalumanPage() {
     };
   }, [modalRegistry, router, showClosedModal]);
 
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/paraluman";
-    return `${base}/super-listings/submission/paraluman`;
-  }, []);
-
   const onFieldChange = (
     field: keyof ParalumanSubmissionForm,
     value: string,
@@ -277,20 +272,14 @@ export default function ParalumanPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email.trim(),
-          submissionLink: form.submissionLink.trim(),
-          submissionNotes: combinedNotes,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
+      const data = (await SuperListingService.submit("paraluman", {
+        email: form.email.trim(),
+        submissionLink: form.submissionLink.trim(),
+        submissionNotes: combinedNotes,
+        "cf-token": isDevelopment ? "dev-bypass" : token,
+      })) as ParalumanSubmissionResponse;
 
-      const data = (await response.json()) as ParalumanSubmissionResponse;
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your application.");
       }
 

@@ -9,6 +9,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
 import { Job } from "@/lib/db/db.types";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 /**
  * Selection + bulk-apply state, pulled out of app/student/search/page.tsx
@@ -196,7 +197,7 @@ export function useMassApplySelection(
       savePostLoginRedirect(
         `${window.location.pathname}${window.location.search}`,
       );
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      window.location.href = googleLoginUrl();
       return;
     }
 

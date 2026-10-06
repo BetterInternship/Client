@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
+import { googleLoginUrl } from "@/lib/api/urls";
 import { readSessionHint } from "@/lib/session-hint";
 import { useIsTopRoute } from "@/lib/use-session-gate";
 
@@ -112,7 +113,7 @@ export const AuthContextProvider = ({
           const redirectPath = `${window.location.pathname}${window.location.search}`;
           savePostLoginRedirect(redirectPath);
         }
-        router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+        router.push(googleLoginUrl());
       }
     }, [isAuthenticated, isLoading]);
 

@@ -28,6 +28,7 @@ import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
 import { StudentAppHeader } from "@/components/features/student/app-header";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 /** Minimal editorial navigation, in normal flow over the page's artwork. */
 export function TopPageNavbar({ disabled }: { disabled?: boolean }) {
@@ -87,7 +88,7 @@ export function TopPageNavbar({ disabled }: { disabled?: boolean }) {
     savePostLoginRedirect(
       `${window.location.pathname}${window.location.search}`,
     );
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    window.location.href = googleLoginUrl();
   };
 
   return (

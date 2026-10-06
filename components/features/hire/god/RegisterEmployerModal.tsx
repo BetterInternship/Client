@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@betterinternship/components";
 import { FormInput } from "@/components/EditForm";
 import { isValidEmail } from "@/lib/utils";
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
+import { EmployerAuthService } from "@/lib/api/hire.api";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { toast } from "sonner";
@@ -142,13 +142,7 @@ export function GenerateMagicLinkModal({
   const handleGen = async () => {
     if (!selectedEid) return alert("Select employer first.");
     setLoading(true);
-    const url = APIRouteBuilder("god").r("generate-magic-link").build();
-    const res = await APIClient.post<FetchResponse & { magicLink: string }>(
-      url,
-      {
-        employer_id: selectedEid,
-      },
-    );
+    const res = await EmployerAuthService.generateMagicLink(selectedEid);
     if (res.success) {
       setMagicLink(res.magicLink);
     } else {

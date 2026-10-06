@@ -4,7 +4,6 @@ import {
   type ChangeEvent,
   type FormEvent,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -19,6 +18,7 @@ import { cn, Badge } from "@betterinternship/components";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -136,12 +136,6 @@ export default function FFFPage() {
     };
   }, [modalRegistry, router, showClosedModal]);
 
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/fff";
-    return `${base}/super-listings/submission/fff`;
-  }, []);
-
   const updateField =
     (field: keyof FffSubmissionPayload) =>
     (
@@ -170,18 +164,12 @@ export default function FFFPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
+      const data = (await SuperListingService.submit("fff", {
+        ...form,
+        "cf-token": isDevelopment ? "dev-bypass" : token,
+      })) as FffSubmissionResponse;
 
-      const data = (await response.json()) as FffSubmissionResponse;
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your submission.");
       }
 

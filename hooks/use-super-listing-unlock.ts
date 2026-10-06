@@ -1,13 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 type UnlockStatus = "locked" | "unlocked";
-
-type RegisterUnlockResponse = {
-  success: boolean;
-  message?: string;
-};
 
 type RegisterUnlockInput = {
   cfToken: string;
@@ -19,7 +15,6 @@ type UseSuperListingUnlockOptions = {
   slug: string;
 };
 
-const getApiBase = () => process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const getStorageKey = (slug: string) => `super-listing:${slug}:unlock`;
 
 type StoredUnlockState = {
@@ -69,33 +64,22 @@ export function useSuperListingUnlock({
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
 
-  const endpointBase = useMemo(() => {
-    const apiBase = getApiBase();
-    if (!apiBase) return `/api/super-listings/${slug}/unlock`;
-    return `${apiBase}/super-listings/${slug}/unlock`;
-  }, [slug]);
-
   const register = useCallback(
     async ({ cfToken, email }: RegisterUnlockInput) => {
       setMessage("");
 
-      const response = await fetch(`${endpointBase}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          "cf-token": isDevelopment ? "dev-bypass" : cfToken,
-        }),
+      const data = await SuperListingService.registerUnlock(slug, {
+        email: email.trim(),
+        "cf-token": isDevelopment ? "dev-bypass" : cfToken,
       });
-      const data = (await response.json()) as RegisterUnlockResponse;
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your unlock link.");
       }
 
       return data;
     },
-    [endpointBase, isDevelopment],
+    [slug, isDevelopment],
   );
 
   const unlock = useCallback(

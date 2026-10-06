@@ -14,7 +14,101 @@ import {
   User,
   EmployerApplication,
 } from "@/lib/db/db.types";
-import { APIClient, APIRouteBuilder } from "./api-client";
+import {
+  applicationsControllerCreate,
+  applicationsControllerGetOwn,
+  applicationsControllerMarkViewed,
+  applicationsControllerUpdate,
+} from "./generated/endpoints/applications/applications";
+import {
+  jobsControllerCreate,
+  jobsControllerCreateSuper,
+  jobsControllerDeactivateBulk,
+  jobsControllerDelete,
+  jobsControllerFindAllListed,
+  jobsControllerFindOne,
+  jobsControllerFindOneActive,
+  jobsControllerGetOwned,
+  jobsControllerGetSaved,
+  jobsControllerGetWaitlisted,
+  jobsControllerJoinWaitlist,
+  jobsControllerLeaveWaitlist,
+  jobsControllerSearch,
+  jobsControllerShareLink,
+  jobsControllerUnpause,
+  jobsControllerUnpauseAll,
+  jobsControllerUpdate,
+} from "./generated/endpoints/jobs/jobs";
+import {
+  employersControllerApplicants,
+  employersControllerAutoLinkIomAccount,
+  employersControllerFindEmployer,
+  employersControllerFindLogo,
+  employersControllerMoaUniversities,
+  employersControllerSelf,
+  employersControllerStartIomLogin,
+  employersControllerStartIomRegistration,
+  employersControllerUpdateSelf,
+  getEmployersControllerUpdateLogoUrl,
+  getEmployersControllerUploadMoaDocumentUrl,
+} from "./generated/endpoints/employer/employer";
+import { careerFetch } from "./career-fetch";
+import { linksControllerResolve } from "./generated/endpoints/links/links";
+import {
+  authControllerActivateAccount,
+  authControllerRegister,
+  authControllerRegisterStatus,
+  authControllerRequestActivation,
+  authControllerSignOut,
+} from "./generated/endpoints/auth/auth";
+import {
+  employerUsersControllerChangeRole,
+  employerUsersControllerDeactivate,
+  employerUsersControllerGetMe,
+  employerUsersControllerInvite,
+  employerUsersControllerListTeam,
+  employerUsersControllerReactivate,
+  employerUsersControllerResendInvite,
+  employerUsersControllerUpdateMe,
+  employerUsersControllerUpdateMemberNotifications,
+  employerUsersControllerUpdateMyNotifications,
+} from "./generated/endpoints/employer-users/employer-users";
+import {
+  getUsersControllerUpdateLogoUrl,
+  getUsersControllerUploadResumeUrl,
+  usersControllerCancelForm,
+  usersControllerCorrectFormRecipient,
+  usersControllerDeleteResume,
+  usersControllerFilloutForm,
+  usersControllerGetCorrectFormRecipientContext,
+  usersControllerGetMqJob,
+  usersControllerGetMyFormTemplate,
+  usersControllerGetMyFormTemplates,
+  usersControllerGetMyGeneratedForms,
+  usersControllerInitiateForm,
+  usersControllerJoinFormGroup,
+  usersControllerMyPfp,
+  usersControllerMyResumes,
+  usersControllerMyResumeUrl,
+  usersControllerPfpById,
+  usersControllerResendForm,
+  usersControllerResumeUrlById,
+  usersControllerSelf,
+  usersControllerSetDefaultResume,
+  usersControllerToggleSaveJob,
+  usersControllerUpdateResume,
+  usersControllerUpdateSelf,
+  usersControllerUploadSignatureImage,
+  usersControllerUserById,
+} from "./generated/endpoints/users/users";
+import type {
+  CreateJobChallengeListingDto,
+  CreateJobDto,
+  InitiateFormDto,
+  RegisterUserDto,
+  UpdateJobDto,
+  UpdateUserDto,
+} from "./generated/models";
 import { clearSessionHint, setSessionHint } from "@/lib/session-hint";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
@@ -56,65 +150,67 @@ export interface MqJobResponse {
 
 export const EmployerService = {
   async getMyProfile() {
-    return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build(),
-    );
+    return employersControllerSelf() as unknown as Promise<EmployerResponse>;
+  },
+
+  async getEmployerById(employerId: string) {
+    return employersControllerFindEmployer(
+      employerId,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async getEmployerPfpURL(employerId: string) {
-    return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r(employerId, "pic").build(),
-    );
+    return employersControllerFindLogo(
+      employerId,
+      {} as unknown as import("./generated/models").EmployersControllerFindLogoParams,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async updateMyProfile(data: Partial<Employer>) {
-    return APIClient.put<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build(),
-      data,
-    );
+    return employersControllerUpdateSelf(
+      data as unknown as import("./generated/models").UpdateEmployerDto,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async updateMyPfp(file: Blob | null) {
-    return APIClient.put<ResourceHashResponse>(
-      APIRouteBuilder("employer").r("me", "pic").build(),
-      file,
-      "form-data",
+    // The old FetchClient sent whatever was passed as the raw body in
+    // "form-data" mode, unwrapped — including when a caller cast a FormData
+    // past this Blob|null signature (company-tab.tsx, via @ts-ignore). The
+    // generated employersControllerUpdateLogo always wraps its argument in a
+    // *new* FormData under a "logo" field, which isn't the same wire body, so
+    // this bypasses it and calls the mutator directly to keep the body as-is.
+    return careerFetch<ResourceHashResponse>(
+      getEmployersControllerUpdateLogoUrl(),
+      { method: "PUT", body: file ?? undefined },
     );
   },
 
   async getMoaUniversities() {
-    return APIClient.get<MoaUniversitiesResponse>(
-      APIRouteBuilder("employer").r("moa-universities").build(),
-    );
+    return employersControllerMoaUniversities() as unknown as Promise<MoaUniversitiesResponse>;
   },
 
   async startIomLogin() {
-    return APIClient.post<IomStartResponse>(
-      APIRouteBuilder("employer").r("iom-link", "start-login").build(),
-      {},
-    );
+    return employersControllerStartIomLogin() as unknown as Promise<IomStartResponse>;
   },
 
   async uploadMoaDocument(formData: FormData) {
-    return APIClient.post<FetchResponse & { moa?: any; error?: string }>(
-      APIRouteBuilder("employer").r("moa-document").build(),
-      formData,
-      "form-data",
+    // Same pass-through reasoning as updateMyPfp above: the caller's whole
+    // FormData (which may carry extra fields beyond "file") goes out as-is,
+    // rather than through the generated wrapper's single-field reshape.
+    return careerFetch<FetchResponse & { moa?: any; error?: string }>(
+      getEmployersControllerUploadMoaDocumentUrl(),
+      { method: "POST", body: formData },
     );
   },
 
   async startIomRegistration() {
-    return APIClient.post<IomStartResponse>(
-      APIRouteBuilder("employer").r("iom-link", "start-registration").build(),
-      {},
-    );
+    return employersControllerStartIomRegistration() as unknown as Promise<IomStartResponse>;
   },
 
   async autoLinkIomAccount(token: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer").r("iom-link", "auto-link").build(),
-      { token },
-    );
+    return employersControllerAutoLinkIomAccount({
+      token,
+    }) as unknown as Promise<FetchResponse>;
   },
 };
 
@@ -150,9 +246,7 @@ export const EmployerUserService = {
   // ── Self-service ────────────────────────────────────────────────────
 
   async getMe() {
-    return APIClient.get<EmployerSelfResponse>(
-      APIRouteBuilder("employer-users").r("me").build(),
-    );
+    return employerUsersControllerGetMe() as unknown as Promise<EmployerSelfResponse>;
   },
 
   async updateMe(data: {
@@ -160,70 +254,65 @@ export const EmployerUserService = {
     middle_name?: string | null;
     last_name?: string | null;
   }) {
-    return APIClient.put<EmployerSelfResponse>(
-      APIRouteBuilder("employer-users").r("me").build(),
+    return employerUsersControllerUpdateMe(
       data,
-    );
+    ) as unknown as Promise<EmployerSelfResponse>;
   },
 
   async updateMyNotifications(
     receives_applicant_digest: boolean,
     close_active_listings?: boolean,
   ) {
-    return APIClient.patch<UpdateNotificationsResponse>(
-      APIRouteBuilder("employer-users").r("me", "notifications").build(),
-      { receives_applicant_digest, close_active_listings },
-    );
+    return employerUsersControllerUpdateMyNotifications({
+      receives_applicant_digest,
+      close_active_listings,
+    }) as unknown as Promise<UpdateNotificationsResponse>;
   },
 
   // ── Team management (ADMIN) ────────────────────────────────────────
 
   async getTeam() {
-    return APIClient.get<EmployerTeamResponse>(
-      APIRouteBuilder("employer-users").build(),
-    );
+    return employerUsersControllerListTeam() as unknown as Promise<EmployerTeamResponse>;
   },
 
   async invite(email: string, role: EmployerUserRole) {
-    return APIClient.post<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r("invite").build(),
-      { email, role },
-    );
+    return employerUsersControllerInvite({
+      email,
+      role: role as unknown as import("./generated/models").InviteEmployerUserDtoRole,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async resendInvite(userId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("employer-users").r(userId, "resend-invite").build(),
-    );
+    return employerUsersControllerResendInvite(
+      userId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async changeRole(userId: string, role: EmployerUserRole) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId).build(),
-      { role },
-    );
+    return employerUsersControllerChangeRole(userId, {
+      role: role as unknown as import("./generated/models").UpdateEmployerUserRoleDtoRole,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async deactivateMember(userId: string) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "deactivate").build(),
-    );
+    return employerUsersControllerDeactivate(
+      userId,
+    ) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async reactivateMember(userId: string) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "reactivate").build(),
-    );
+    return employerUsersControllerReactivate(
+      userId,
+    ) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 
   async updateMemberNotifications(
     userId: string,
     receives_applicant_digest: boolean,
   ) {
-    return APIClient.patch<EmployerTeamMemberResponse>(
-      APIRouteBuilder("employer-users").r(userId, "notifications").build(),
-      { receives_applicant_digest },
-    );
+    return employerUsersControllerUpdateMemberNotifications(userId, {
+      receives_applicant_digest,
+    }) as unknown as Promise<EmployerTeamMemberResponse>;
   },
 };
 
@@ -246,37 +335,31 @@ interface SignedFileUrlResponse extends FetchResponse {
 
 export const AuthService = {
   async register(user: Partial<PublicUser>) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("register").build(),
-      user,
-    );
+    return authControllerRegister(
+      user as unknown as RegisterUserDto,
+    ) as unknown as Promise<AuthResponse>;
   },
 
   // whether the browser holds a valid registration cookie (set by the OAuth callback)
   async registerStatus() {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("register", "status").build(),
-    );
+    return authControllerRegisterStatus() as unknown as Promise<ResourceHashResponse>;
   },
 
   async requestActivation(email: string) {
-    return APIClient.post<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("activate").build(),
-      { email },
-    );
+    return authControllerRequestActivation({
+      email,
+    }) as unknown as Promise<ResourceHashResponse>;
   },
 
   async activate(email: string, otp: string) {
-    return APIClient.post<ResourceHashResponse>(
-      APIRouteBuilder("auth").r("activate", "otp").build(),
-      { email, otp },
-    );
+    return authControllerActivateAccount({
+      email,
+      otp,
+    }) as unknown as Promise<ResourceHashResponse>;
   },
 
   async logout() {
-    await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("logout").build(),
-    );
+    await authControllerSignOut();
     clearSessionHint();
   },
 };
@@ -343,10 +426,9 @@ export const FormService = {
     source: "draw" | "upload";
     dataUrl: string;
   }) {
-    return APIClient.post<UploadSignatureImageResponse>(
-      APIRouteBuilder("users").r("me/signature-image").build(),
+    return usersControllerUploadSignatureImage(
       data,
-    );
+    ) as unknown as Promise<UploadSignatureImageResponse>;
   },
 
   async initiateForm(data: {
@@ -357,10 +439,9 @@ export const FormService = {
   }) {
     // Docs-Server now queues this (docs-signing RabbitMQ migration plan §6.2)
     // and returns `{ success, jobId }` — poll it via `getMqJob` below.
-    return APIClient.post<MqJobQueuedResponse>(
-      APIRouteBuilder("users").r("me/initiate-form").build(),
+    return usersControllerInitiateForm(
       data,
-    );
+    ) as unknown as Promise<MqJobQueuedResponse>;
   },
 
   async filloutForm(data: {
@@ -369,76 +450,74 @@ export const FormService = {
     values: Record<string, string>;
     disableEsign?: boolean;
   }) {
-    return APIClient.post<MqJobQueuedResponse>(
-      APIRouteBuilder("users").r("me/fillout-form").build(),
-      data,
-    );
+    // The server's body class has no `audit` or `disableEsign` field; the old
+    // client sent `data` as given, which is what this still does.
+    return usersControllerFilloutForm(
+      data as unknown as InitiateFormDto,
+    ) as unknown as Promise<MqJobQueuedResponse>;
   },
 
   async getMqJob(jobId: string) {
-    return APIClient.get<MqJobResponse>(
-      APIRouteBuilder("users").r("me/mq-jobs", jobId).build(),
-    );
+    return usersControllerGetMqJob(jobId) as unknown as Promise<MqJobResponse>;
   },
 
   async getMyFormTemplates() {
-    const response = await APIClient.get<{
+    const response = (await usersControllerGetMyFormTemplates()) as unknown as {
       formGroupDescription: string;
       formTemplates: FormTemplate[];
-    }>(APIRouteBuilder("users").r("me/form-templates").build());
+    };
     return response;
   },
 
   async getMyGeneratedForms() {
-    const { forms } = await APIClient.get<{
-      forms: {
-        form_label: string | null;
-        form_name: string;
-        form_process_id: string;
-        form_process_status: string | null;
-        timestamp: string;
-        form_processes: {
-          prefilled_document_id?: string;
-          pending_document_id?: string;
-          signed_document_id?: string;
-          latest_document_url?: string;
-          signing_parties?: IFormSigningParty[];
-          rejection_reason?: string;
-        };
-      }[];
-    }>(APIRouteBuilder("users").r("me/form-log").build());
+    const { forms } =
+      (await usersControllerGetMyGeneratedForms()) as unknown as {
+        forms: {
+          form_label: string | null;
+          form_name: string;
+          form_process_id: string;
+          form_process_status: string | null;
+          timestamp: string;
+          form_processes: {
+            prefilled_document_id?: string;
+            pending_document_id?: string;
+            signed_document_id?: string;
+            latest_document_url?: string;
+            signing_parties?: IFormSigningParty[];
+            rejection_reason?: string;
+          };
+        }[];
+      };
     return forms ?? [];
   },
 
   async getForm(formName: string) {
-    const form = await APIClient.get<
-      {
-        formTemplate: {
-          name: string;
-          label: string;
-          version: number;
-          base_document_id: string;
-        };
-        formMetadata: IFormMetadata;
-        documentUrl: string;
-      } & FetchResponse
-    >(APIRouteBuilder("users").r(`me/form?name=${formName}`).build());
+    const form = (await usersControllerGetMyFormTemplate({
+      name: formName,
+    })) as unknown as {
+      formTemplate: {
+        name: string;
+        label: string;
+        version: number;
+        base_document_id: string;
+      };
+      formMetadata: IFormMetadata;
+      documentUrl: string;
+    } & FetchResponse;
     return form;
   },
 
   async resendForm(formProcessId: string) {
-    const form = await APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r(`me/resend-form`).build(),
-      { formProcessId },
-    );
+    const form = (await usersControllerResendForm({
+      formProcessId,
+    })) as unknown as FetchResponse;
     return form;
   },
 
   async cancelForm(formProcessId: string) {
-    const form = await APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r(`me/cancel-form`).build(),
-      { formProcessId },
-    );
+    const form = (await usersControllerCancelForm({
+      formProcessId,
+    })) as unknown as FetchResponse;
     return form;
   },
 };
@@ -473,10 +552,9 @@ interface DefaultResumeResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
-    const result = await APIClient.get<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
+    const result = (await usersControllerSelf(
       options,
-    );
+    )) as unknown as UserResponse;
     // Keep the browser's session hint in step with what the API just said
     // (session-hint.ts). A failure of any kind clears it: a stale hint is
     // cheap, but one that never clears would keep asking.
@@ -486,31 +564,28 @@ export const UserService = {
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
-      data,
-    );
+    return usersControllerUpdateSelf(
+      data as unknown as UpdateUserDto,
+    ) as unknown as Promise<UserResponse>;
   },
 
   async joinFormGroup(code: string) {
-    return APIClient.post<JoinFormGroupResponse>(
-      APIRouteBuilder("users").r("join-form-group").build(),
-      { code },
-    );
+    return usersControllerJoinFormGroup({
+      code,
+    }) as unknown as Promise<JoinFormGroupResponse>;
   },
 
   async correctFormRecipient(eventId: string, recipientEmail: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("users").r("me", "edit-recipient").build(),
-      {
-        eventId,
-        recipientEmail,
-      },
-    );
+    return usersControllerCorrectFormRecipient({
+      eventId,
+      recipientEmail,
+    }) as unknown as Promise<FetchResponse>;
   },
 
   async getCorrectFormRecipientContext(eventId: string) {
-    return APIClient.get<
+    return usersControllerGetCorrectFormRecipientContext({
+      eventId,
+    }) as unknown as Promise<
       FetchResponse & {
         context?: {
           eventId: string;
@@ -525,88 +600,82 @@ export const UserService = {
           }[];
         };
       }
-    >(
-      APIRouteBuilder("users").r("me", "edit-recipient").p({ eventId }).build(),
-    );
+    >;
   },
 
   async getMyResumes() {
-    return APIClient.get<ResumeArrayResponse>(
-      APIRouteBuilder("users").r("me", "resumes").build(),
-    );
+    return usersControllerMyResumes() as unknown as Promise<ResumeArrayResponse>;
   },
 
   async getMyResumeURL(resumeId: string) {
-    return APIClient.get<SignedFileUrlResponse>(
-      APIRouteBuilder("users").r("me", "resume", resumeId, "url").build(),
-    );
+    return usersControllerMyResumeUrl(
+      resumeId,
+    ) as unknown as Promise<SignedFileUrlResponse>;
   },
 
   async getMyPfpURL() {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build(),
-    );
+    return usersControllerMyPfp() as unknown as Promise<ResourceHashResponse>;
   },
 
   async getUserPfpURL(userId: string) {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "pic").build(),
-    );
+    return usersControllerPfpById(
+      userId,
+    ) as unknown as Promise<ResourceHashResponse>;
   },
 
   async updateMyPfp(file: FormData) {
-    return APIClient.put<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build(),
-      file,
-      "form-data",
+    // Same pass-through as EmployerService.updateMyPfp: the caller builds the
+    // FormData (field name and all), so it goes out as-is rather than through
+    // the generated wrapper, which would rebuild it under its own field name.
+    return careerFetch<ResourceHashResponse>(
+      getUsersControllerUpdateLogoUrl(),
+      { method: "PUT", body: file },
     );
   },
 
   async getUserResumeURL(userId: string, resumeId: string) {
-    return APIClient.get<SignedFileUrlResponse>(
-      APIRouteBuilder("users").r(userId, "resume", resumeId, "url").build(),
-    );
+    return usersControllerResumeUrlById(
+      userId,
+      resumeId,
+    ) as unknown as Promise<SignedFileUrlResponse>;
   },
 
   async uploadMyResume(form: FormData) {
-    return APIClient.put<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume").build(),
-      form,
-      "form-data",
+    // Pass-through again: the caller's FormData carries the file and its label.
+    return careerFetch<UploadResumeResponse>(
+      getUsersControllerUploadResumeUrl(),
+      { method: "PUT", body: form },
     );
   },
 
   async updateMyResume(resumeId: string, label: string) {
-    return APIClient.post<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "update", resumeId).build(),
-      { label: label },
-    );
+    return usersControllerUpdateResume(resumeId, {
+      label: label,
+    }) as unknown as Promise<UploadResumeResponse>;
   },
 
   async setDefaultResume(resumeId: string) {
-    return APIClient.post<DefaultResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "default").build(),
-      { resume_id: resumeId },
-    );
+    return usersControllerSetDefaultResume({
+      resume_id: resumeId,
+    }) as unknown as Promise<DefaultResumeResponse>;
   },
 
   async deleteMyResume(resumeId: string) {
-    return APIClient.post<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", "delete", resumeId).build(),
-    );
+    return usersControllerDeleteResume(
+      resumeId,
+    ) as unknown as Promise<UploadResumeResponse>;
   },
 
   async saveJob(jobId: string) {
-    return APIClient.post<SaveJobResponse>(
-      APIRouteBuilder("users").r("save-job").build(),
-      { id: jobId },
-    );
+    return usersControllerToggleSaveJob({
+      id: jobId,
+    }) as unknown as Promise<SaveJobResponse>;
   },
 
   async getUserById(userId: string): Promise<StudentResponse> {
-    return APIClient.get<StudentResponse>(
-      APIRouteBuilder("users").r(userId).build(),
-    );
+    return usersControllerUserById(
+      userId,
+    ) as unknown as Promise<StudentResponse>;
   },
 };
 
@@ -658,127 +727,123 @@ export interface ShareLinkResponse extends FetchResponse {
   url?: string;
 }
 
+// Short links (/l/<slug>) resolve to the page they stand for.
+export const LinkService = {
+  async resolve(slug: string, options: RequestInit = {}) {
+    return linksControllerResolve(slug, options);
+  },
+};
+
 export const JobService = {
-  async getAllJobs() {
-    return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
+  // `options` lets server components pass Next's `{ next: { revalidate } }`.
+  async getAllJobs(options: RequestInit = {}) {
+    return jobsControllerFindAllListed(
+      options,
+    ) as unknown as Promise<JobsResponse>;
   },
 
   async searchJobs(params: JobSearchParams = {}) {
     const join = (values?: string[]) =>
       values?.length ? values.join(",") : undefined;
 
-    return APIClient.get<JobSearchResponse>(
-      APIRouteBuilder("jobs")
-        .r("search")
-        .p({
-          page: params.page,
-          limit: params.limit,
-          search: params.search,
-          mode: join(params.mode),
-          workload: join(params.workload),
-          position: join(params.position),
-          allowance: join(params.allowance),
-          moa: join(params.moa),
-          university: params.university,
-        })
-        .build(),
-    );
+    return jobsControllerSearch({
+      page: params.page,
+      limit: params.limit,
+      // The old APIRouteBuilder dropped empty-string params entirely; the
+      // generated URL builder only drops undefined, so an empty search is
+      // normalized here to keep that same query string.
+      search: params.search || undefined,
+      mode: join(params.mode),
+      workload: join(params.workload),
+      position: join(params.position),
+      allowance: join(params.allowance),
+      moa: join(params.moa),
+      university: params.university || undefined,
+    }) as unknown as Promise<JobSearchResponse>;
   },
 
   // !! this only fetches an *active* job.
   async getJobById(jobId: string) {
-    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r(jobId).build());
+    return jobsControllerFindOneActive(
+      jobId,
+    ) as unknown as Promise<JobResponse>;
   },
 
   // sorry for confusing name
   // the one above existed prior and i don't want to break anything that depends on it
   // this one gets a single job, whether it is active or not.
   async getAnyJobById(jobId: string) {
-    return APIClient.get<JobResponse>(
-      APIRouteBuilder("jobs").r("owned").r(jobId).build(),
-    );
+    return jobsControllerFindOne(jobId) as unknown as Promise<JobResponse>;
   },
 
   async getSavedJobs() {
-    return APIClient.get<SavedJobsResponse>(
-      APIRouteBuilder("jobs").r("saved").build(),
-    );
+    return jobsControllerGetSaved() as unknown as Promise<SavedJobsResponse>;
   },
 
   async getOwnedJobs() {
-    return APIClient.get<OwnedJobsResponse>(
-      APIRouteBuilder("jobs").r("owned").build(),
-    );
+    return jobsControllerGetOwned() as unknown as Promise<OwnedJobsResponse>;
   },
 
   async createJob(job: Partial<Job>) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("create").build(),
-      job,
-    );
+    // The generated DTO requires the core listing fields; the old facade
+    // accepted any partial job object, same as the rest of this batch's
+    // request-side casts (see the batch's plan notes on Date-vs-string too).
+    return jobsControllerCreate(
+      job as unknown as CreateJobDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async createSuperJob(job: CreateJobChallengeListingPayload) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("create-super").build(),
-      job,
-    );
+    return jobsControllerCreateSuper(
+      job as unknown as CreateJobChallengeListingDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async updateJob(jobId: string, job: UpdateJobChallengeListingPayload) {
-    return APIClient.put<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build(),
-      job,
-    );
+    return jobsControllerUpdate(
+      jobId,
+      job as unknown as UpdateJobDto,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async deleteJob(jobId: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build(),
-    );
+    return jobsControllerDelete(jobId) as unknown as Promise<FetchResponse>;
   },
 
   async unpauseJob(jobId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).r("unpause").build(),
-    );
+    return jobsControllerUnpause(jobId) as unknown as Promise<FetchResponse>;
   },
 
   async unpauseAllJobs() {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r("unpause-all").build(),
-    );
+    return jobsControllerUnpauseAll() as unknown as Promise<FetchResponse>;
   },
 
   async deactivateBulk(jobIds: string[]) {
-    return APIClient.post<DeactivateBulkResponse>(
-      APIRouteBuilder("jobs").r("deactivate-bulk").build(),
-      { job_ids: jobIds },
-    );
+    return jobsControllerDeactivateBulk({
+      job_ids: jobIds,
+    }) as unknown as Promise<DeactivateBulkResponse>;
   },
 
   async joinWaitlist(jobId: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
-    );
+    return jobsControllerJoinWaitlist(
+      jobId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async leaveWaitlist(jobId: string) {
-    return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
-    );
+    return jobsControllerLeaveWaitlist(
+      jobId,
+    ) as unknown as Promise<FetchResponse>;
   },
 
   async getWaitlistedJobs() {
-    return APIClient.get<WaitlistedJobsResponse>(
-      APIRouteBuilder("jobs").r("waitlisted").build(),
-    );
+    return jobsControllerGetWaitlisted() as unknown as Promise<WaitlistedJobsResponse>;
   },
 
   async mintShareLink(jobId: string) {
-    return APIClient.post<ShareLinkResponse>(
-      APIRouteBuilder("jobs").r(jobId, "share-link").build(),
-    );
+    return jobsControllerShareLink(
+      jobId,
+    ) as unknown as Promise<ShareLinkResponse>;
   },
 };
 
@@ -796,16 +861,19 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
+  // GET /applications reads no query parameters, so the paging and status
+  // filters this used to accept were never applied and are no longer sent.
   async getApplications(
-    params: {
+    _params: {
       page?: number;
       limit?: number;
       status?: string;
     } = {},
   ) {
-    return APIClient.get<UserApplicationsResponse>(
-      APIRouteBuilder("applications").p(params).build(),
-    );
+    // The generated model types dates as the strings they are on the wire;
+    // UserApplication (db.types) types them as Date. The facade keeps its old
+    // return type until callers move to the generated models.
+    return applicationsControllerGetOwn() as unknown as Promise<UserApplicationsResponse>;
   },
 
   async createApplication(data: {
@@ -813,23 +881,20 @@ export const ApplicationService = {
     resume_id: string;
     challenge_submission?: string;
     source?: "mass";
-    // Attribution for an apply made from a Top page (plan D20). Hand-written
-    // facade call for now — see CLIENT_API_CODEGEN_MIGRATION_PLAN.md batch TP.
+    // Attribution for an apply made from a Top page (plan D20).
     top_page_id?: string;
     // The university whose Top page link (/<university>/top/<slug>) the
     // apply came from.
     top_page_university_id?: string;
   }) {
-    return APIClient.post<CreateApplicationResponse>(
-      APIRouteBuilder("applications").r("create").build(),
+    // Same Date-vs-string difference as getApplications above.
+    return applicationsControllerCreate(
       data,
-    );
+    ) as unknown as Promise<CreateApplicationResponse>;
   },
 
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
-    return APIClient.get<EmployerApplicationsResponse>(
-      APIRouteBuilder("employer").r("applications").build(),
-    );
+    return employersControllerApplicants() as unknown as Promise<EmployerApplicationsResponse>;
   },
 
   async reviewApplication(
@@ -840,17 +905,12 @@ export const ApplicationService = {
       status?: number;
       acceptance_message?: string;
     },
-  ) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("applications").r(id, "review").build(),
-      review_options,
-    );
+  ): Promise<FetchResponse> {
+    return applicationsControllerUpdate(id, review_options);
   },
 
-  async markApplicationViewed(id: string) {
-    return APIClient.post<FetchResponse>(
-      APIRouteBuilder("applications").r(id, "view").build(),
-    );
+  async markApplicationViewed(id: string): Promise<FetchResponse> {
+    return applicationsControllerMarkViewed(id);
   },
 };
 

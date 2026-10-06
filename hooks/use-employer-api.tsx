@@ -1,4 +1,3 @@
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import {
   ApplicationService,
   EmployerService,
@@ -30,11 +29,10 @@ export const useEmployerName = (id: string) => {
   useEffect(() => {
     if (id.trim() === "") return;
     // ! refactor lol
-    APIClient.get<any>(APIRouteBuilder("employer").r(id).build()).then(
-      ({ employer }: { employer: Employer }) => {
-        setEmployerName(employer?.name ?? "");
-      },
-    );
+    EmployerService.getEmployerById(id).then((response) => {
+      const { employer } = response as unknown as { employer: Employer };
+      setEmployerName(employer?.name ?? "");
+    });
   }, [id]);
 
   return {

@@ -6,6 +6,7 @@ import { Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 /**
  * The hero banner shown on a hibernating listing's details pane (desktop) /
@@ -46,7 +47,7 @@ export const HibernatingListingBanner = ({
 
   const handleToggle = async () => {
     if (!auth.isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      window.location.href = googleLoginUrl();
       return;
     }
     if (!job.id) return;

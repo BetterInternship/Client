@@ -7,6 +7,7 @@ import { cn } from "@betterinternship/components";
 import { useJobActions } from "@/lib/api/student.actions.api";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 export const SaveJobButton = ({
   job,
@@ -57,7 +58,7 @@ export const SaveJobButton = ({
 
   const handleSave = async () => {
     if (!auth.isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      window.location.href = googleLoginUrl();
       return;
     }
     // Start the delight only after our own request succeeds and the saved

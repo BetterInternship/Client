@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
@@ -17,6 +17,7 @@ import type {
   PanelKey,
   SubmissionStep,
 } from "./components/types";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -155,12 +156,6 @@ export default function AnteriorePage() {
     };
   }, [modalRegistry, router, showClosedModal]);
 
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/anteriore";
-    return `${base}/super-listings/submission/anteriore`;
-  }, []);
-
   const onFieldChange = (
     field: keyof AnterioreSubmissionForm,
     value: string,
@@ -269,20 +264,14 @@ export default function AnteriorePage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email.trim(),
-          submissionLink: form.submissionLink.trim(),
-          submissionNotes: combinedNotes,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
+      const data = (await SuperListingService.submit("anteriore", {
+        email: form.email.trim(),
+        submissionLink: form.submissionLink.trim(),
+        submissionNotes: combinedNotes,
+        "cf-token": isDevelopment ? "dev-bypass" : token,
+      })) as AnterioreSubmissionResponse;
 
-      const data = (await response.json()) as AnterioreSubmissionResponse;
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your application.");
       }
 

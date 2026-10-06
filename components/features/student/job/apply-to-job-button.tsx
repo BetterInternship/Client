@@ -11,6 +11,7 @@ import { isProfileEligibleForListing } from "@/lib/profile";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { ListingAlertButton } from "./listing-alert-button";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 export const ApplyToJobButton = ({
   profile,
@@ -51,7 +52,7 @@ export const ApplyToJobButton = ({
       savePostLoginRedirect(
         `${window.location.pathname}${window.location.search}`,
       );
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      window.location.href = googleLoginUrl();
       return;
     }
 

@@ -1,5 +1,10 @@
 import "server-only";
 import { Job } from "../db/db.types";
+import { apiUrl } from "./api-origin";
+import {
+  getJobsControllerFindOneActiveUrl,
+  jobsControllerFindOneActive,
+} from "./generated/endpoints/jobs/jobs";
 
 export interface JobPreviewData {
   title?: string | null;
@@ -31,22 +36,20 @@ export async function fetchJobPreview(
   jobId: string,
 ): Promise<JobPreviewData | null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`,
-      {
-        next: { revalidate: 300 },
-      },
-    );
-    const data = (await res.json()) as { job?: JobPreviewData | null };
+    const data = (await jobsControllerFindOneActive(jobId, {
+      next: { revalidate: 300 },
+    })) as unknown as { job?: JobPreviewData | null };
     return data?.job ?? null;
   } catch {
     return null;
   }
 }
 
-// fetch full job data for a given job ID
+// fetch full job data for a given job ID. Unlike the preview above this one
+// throws on a non-OK response (callers rely on that), which careerFetch never
+// does, so it takes its URL from the generated builder and fetches directly.
 export async function fetchJobFull(jobId: string): Promise<Job | null> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`, {
+  const res = await fetch(apiUrl(getJobsControllerFindOneActiveUrl(jobId)), {
     next: { revalidate: 300 },
   });
 

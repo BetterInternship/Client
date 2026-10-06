@@ -9,7 +9,23 @@
 
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { Employer, EmployerSelf } from "../db/db.types";
-import { APIClient, APIRouteBuilder } from "./api-client";
+import { careerFetch } from "./career-fetch";
+import {
+  authControllerActivateHireAccount,
+  authControllerEmployerLoggedIn,
+  authControllerEmployerSignOut,
+  authControllerRequestHireActivation,
+  authControllerRequestHireLoginOtp,
+  authControllerVerifyHireLoginOtp,
+  getAuthControllerEmployerRegisterUrl,
+} from "./generated/endpoints/auth/auth";
+import {
+  godsControllerSignInAs,
+  godsControllerExitProxy,
+  godsControllerVerifyEmployer,
+  godsControllerUnverifyEmployer,
+  godsControllerGenerateMagicLink,
+} from "./generated/endpoints/gods/gods";
 
 interface EmployerResponse extends FetchResponse {
   success: boolean;
@@ -28,79 +44,77 @@ export interface AuthResponse extends FetchResponse {
 }
 
 export const EmployerAuthService = {
+  // The caller builds its own FormData, so this skips the generated wrapper
+  // (which would assemble a fresh one field by field) and sends it as given.
   async register(employer: Partial<Employer> | FormData) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "register").build(),
-      employer,
-      "form-data",
-    );
+    return careerFetch<AuthResponse>(getAuthControllerEmployerRegisterUrl(), {
+      method: "POST",
+      body: employer as FormData,
+    });
   },
 
   async requestLoginOtp(email: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "login", "otp", "request").build(),
-      { email },
-    );
+    return authControllerRequestHireLoginOtp({
+      email,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async verifyLoginOtp(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "login", "otp", "verify").build(),
-      { email, otp },
-    );
+    return authControllerVerifyHireLoginOtp({
+      email,
+      otp,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async requestActivation(email: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "activate").build(),
-      { email },
-    );
+    return authControllerRequestHireActivation({
+      email,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async activate(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "activate", "otp").build(),
-      { email, otp },
-    );
+    return authControllerActivateHireAccount({
+      email,
+      otp,
+    }) as unknown as Promise<AuthResponse>;
   },
 
   async loginAsEmployer(employer_id: string) {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "proxy").build(),
-    );
+    return godsControllerSignInAs(employer_id) as unknown as Promise<AuthResponse>;
   },
 
   // Undoes loginAsEmployer — restores the acting god's own account.
   async exitProxy() {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("god").r("exit-proxy").build(),
-    );
+    return godsControllerExitProxy() as unknown as Promise<AuthResponse>;
   },
 
   async logout() {
-    await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("hire", "logout").build(),
-    );
+    await authControllerEmployerSignOut();
   },
 
   // Backs authctx's refreshAuthentication() — the one call that must survive
   // a full page load and still know both *who* is signed in and whether
   // they're a god (plan §6.2).
   async loggedIn() {
-    return APIClient.post<AuthResponse>(
-      APIRouteBuilder("auth").r("hire", "loggedin").build(),
-    );
+    return authControllerEmployerLoggedIn() as unknown as Promise<AuthResponse>;
+  },
+
+  // A god mints a one-click sign-in link for an employer's owner.
+  async generateMagicLink(employer_id: string) {
+    return godsControllerGenerateMagicLink({
+      employer_id,
+    }) as unknown as Promise<FetchResponse & { magicLink: string }>;
   },
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "verify").build(),
-    );
+    return godsControllerVerifyEmployer(
+      employer_id,
+    ) as unknown as Promise<EmployerResponse>;
   },
 
   async unverifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("god").r("employers", employer_id, "unverify").build(),
-    );
+    return godsControllerUnverifyEmployer(
+      employer_id,
+    ) as unknown as Promise<EmployerResponse>;
   },
 };
