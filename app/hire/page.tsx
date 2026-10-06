@@ -6,7 +6,6 @@ import { FeaturesSection } from "@/components/landingHire/sections/features";
 import { FAQsSection } from "@/components/landingHire/sections/faqs";
 import { useEffect, useRef, useState } from "react";
 import { EndSection } from "@/components/landingHire/sections/end";
-import { SocialProofSection } from "@/components/landingHire/sections/social-proof";
 import { Footer } from "@/components/shared/footer";
 
 export default function HomePage() {
@@ -41,7 +40,6 @@ export default function HomePage() {
       <div ref={heroRef}>
         <HeroSection />
       </div>
-      <SocialProofSection />
       <div id="features" className="scroll-mt-64">
         <FeaturesSection />
       </div>

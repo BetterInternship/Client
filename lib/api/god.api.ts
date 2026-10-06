@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
+import { careerFetch } from "./career-fetch";
 import {
   godsControllerCreateListing,
   godsControllerGetApplicationStats,
@@ -407,6 +408,21 @@ export function useCreateTopPage() {
         queryClient.invalidateQueries({ queryKey: ["god-top-pages"] });
       }
     },
+  });
+}
+
+/**
+ * Starts a full rebuild of every Top page. Resolves with success false and a
+ * message when the server isn't set up for it, or a rebuild is already running.
+ */
+export function useRebuildTopPages() {
+  return useMutation({
+    // Not in the generated client yet (the server spec predates the route),
+    // so the path is written out here; careerFetch keeps the old behaviour.
+    mutationFn: () =>
+      careerFetch<FetchResponse>("/api/god/top-pages/regenerate", {
+        method: "POST",
+      }),
   });
 }
 

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { PublicUser } from "@/lib/db/db.types";
 import { AuthService, UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
@@ -8,6 +14,8 @@ import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";
 import { googleLoginUrl } from "@/lib/api/urls";
+import { readSessionHint } from "@/lib/session-hint";
+import { useIsTopRoute } from "@/lib/use-session-gate";
 
 interface IAuthContext {
   register: (
@@ -58,9 +66,21 @@ export const AuthContextProvider = ({
     return response.user;
   };
 
+  // A Top page asks "who am I?" only when this browser has been signed in
+  // before (session-hint.ts); otherwise the visitor is logged out and the
+  // question would only come back 401. The provider outlives navigation, so
+  // the check is repeated when the route changes and made once it is allowed.
+  const onTopRoute = useIsTopRoute();
+  const checked = useRef(false);
   useEffect(() => {
+    if (checked.current) return;
+    if (onTopRoute && !readSessionHint()) {
+      setIsLoading(false);
+      return;
+    }
+    checked.current = true;
     void refreshAuthentication();
-  }, []);
+  }, [onTopRoute]);
 
   const register = async (user: Partial<PublicUser>) => {
     const response = await AuthService.register(user);

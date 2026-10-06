@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import StudentAppHeader from "@/components/features/student/app-header";
+import { useIsTopRoute } from "@/lib/use-session-gate";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
 
@@ -12,11 +13,8 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
-  // Top pages live at /<university> and /<university>/top/<slug>, and draw
-  // their own navbar. A university's URL name can't be told apart from any
-  // other first path segment by its text, so this keys off the route itself:
-  // only app/student/[university]/** has a `university` param.
-  const isTopPage = typeof useParams()?.university === "string";
+  // Top pages draw their own navbar.
+  const isTopPage = useIsTopRoute();
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");

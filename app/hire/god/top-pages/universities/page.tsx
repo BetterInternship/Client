@@ -23,6 +23,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import { DEFAULT_TOP_PAGE_ACCENT } from "@/lib/utils/top-page-heading";
 import { topUniversityUrlProblem } from "@/lib/utils/top-university-url";
+import { currentManilaWeek } from "@/lib/utils/manila-week";
 
 const ACCENT_HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
@@ -44,9 +45,11 @@ const COPIED_FEEDBACK_MS = 1600;
 
 /**
  * The copy-link control under a ticked cell: one click copies that
- * university's link for that page. A link that would not open yet (the tick
- * is unsaved, or the page is a draft) shows a broken-link icon and explains
- * why instead of copying — it stays focusable (`aria-disabled`, not
+ * university's link for that page, with `?week=` set to the Sunday of the
+ * current Manila week so a printed copy shows the old-QR banner once its week
+ * has passed (TOP_PAGES_WEEK_PARAM_PLAN.md). A link that would not open yet
+ * (the tick is unsaved, or the page is a draft) shows a broken-link icon and
+ * explains why instead of copying — it stays focusable (`aria-disabled`, not
  * `disabled`) so the reason is reachable by hover and by keyboard.
  */
 function CopyPageLinkButton({
@@ -70,7 +73,11 @@ function CopyPageLinkButton({
   const handleCopy = async () => {
     if (notLiveReason) return;
     try {
-      await navigator.clipboard.writeText(url);
+      // The week is read at the click, not at render: this page can stay open
+      // across a Sunday, and the link must carry the week it was copied in.
+      await navigator.clipboard.writeText(
+        `${url}?week=${currentManilaWeek().key}`,
+      );
       setCopied(true);
     } catch {
       toast.error("Could not copy the link.");

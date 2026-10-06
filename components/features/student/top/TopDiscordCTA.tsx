@@ -21,7 +21,7 @@ export function TopDiscordCTA({ compact = false }: { compact?: boolean }) {
       style={{ transformOrigin: "left top" }}
       aria-labelledby="top-discord-heading"
       className={cn(
-        "relative mt-8 flex flex-col items-center gap-5 overflow-hidden rounded-[0.33em] border border-blue-100 bg-[linear-gradient(120deg,#d8ebff_0%,#f4faff_42%,#d5eaff_100%)] px-6 py-6",
+        "relative mt-8 flex flex-col items-center gap-5 overflow-hidden rounded-[0.33em] border border-[var(--top-border)] bg-[linear-gradient(120deg,var(--top-cta-start)_0%,var(--top-cta-middle)_42%,var(--top-cta-end)_100%)] px-6 py-6",
         !compact && "sm:min-h-[164px] sm:flex-row sm:gap-7 sm:py-5 lg:px-7",
       )}
     >

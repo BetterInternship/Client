@@ -109,6 +109,7 @@ import type {
   UpdateJobDto,
   UpdateUserDto,
 } from "./generated/models";
+import { clearSessionHint, setSessionHint } from "@/lib/session-hint";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
@@ -359,6 +360,7 @@ export const AuthService = {
 
   async logout() {
     await authControllerSignOut();
+    clearSessionHint();
   },
 };
 interface UserResponse extends FetchResponse {
@@ -550,7 +552,15 @@ interface DefaultResumeResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
-    return usersControllerSelf(options) as unknown as Promise<UserResponse>;
+    const result = (await usersControllerSelf(
+      options,
+    )) as unknown as UserResponse;
+    // Keep the browser's session hint in step with what the API just said
+    // (session-hint.ts). A failure of any kind clears it: a stale hint is
+    // cheap, but one that never clears would keep asking.
+    if (result?.success && result.user) setSessionHint();
+    else clearSessionHint();
+    return result;
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {

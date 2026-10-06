@@ -66,41 +66,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/search`, changeFrequency: "daily", priority: 0.9 },
     {
       url: `${baseUrl}/companies/sofi-ai`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/anteriore`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/fff`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/pcc`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/sofi-ai`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/sofi-ai-marketing`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/super-listing/miro`,
-      changeFrequency: "monthly",
+      changeFrequency: "yearly",
       priority: 0.6,
     },
-    { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   return [...staticEntries, ...jobEntries, ...topPageEntries];

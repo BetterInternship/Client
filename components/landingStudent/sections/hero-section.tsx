@@ -6,7 +6,6 @@ import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Button } from "@betterinternship/components";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 import { Navigation } from "@/components/landingStudent/navigation";
 import { DoodleUnderline } from "@/components/landingStudent/ui/doodle-underline";
@@ -169,11 +168,6 @@ export function HeroSection() {
                   For Employers
                 </Button>
               </Link>
-            </div>
-
-            {/* logos */}
-            <div className="overflow-x-auto no-scrollbar mt-10">
-              <LogoCarouselBasic />
             </div>
           </motion.div>
         </div>

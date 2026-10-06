@@ -2,11 +2,10 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
-import heroChart from "@/public/top/layers/prepared/hero-chart.webp";
-import heroOpportunity from "@/public/top/layers/prepared/hero-opportunity.webp";
 import discordPhone from "@/public/top/layers/prepared/discord-phone.webp";
 import discordApply from "@/public/top/layers/prepared/discord-apply.webp";
 import styles from "./top-artwork.module.css";
+import { topCategoryArtworkBySlug } from "./top-category-artwork";
 
 /** Decorative loops run only while their scene is visible and the tab is
  * active. Reduced motion stays static. */
@@ -57,9 +56,13 @@ export function TopPageBackdrop() {
           y2="900"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#d9edff" stopOpacity=".8" />
-          <stop offset=".6" stopColor="#e6f4ff" stopOpacity=".35" />
-          <stop offset="1" stopColor="#f7fbff" stopOpacity="0" />
+          <stop stopColor="var(--top-ribbon)" stopOpacity=".8" />
+          <stop
+            offset=".6"
+            stopColor="var(--top-ribbon-soft)"
+            stopOpacity=".35"
+          />
+          <stop offset="1" stopColor="var(--top-surface)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <g stroke={`url(#${id}-ribbon)`} strokeWidth="115" strokeLinecap="round">
@@ -73,8 +76,9 @@ export function TopPageBackdrop() {
   );
 }
 
-export function TopHeroArtwork() {
+export function TopHeroArtwork({ pageSlug }: { pageSlug: string }) {
   const motion = useArtworkMotion();
+  const category = topCategoryArtworkBySlug[pageSlug];
   return (
     <div
       ref={motion.ref}
@@ -82,27 +86,38 @@ export function TopHeroArtwork() {
       data-artwork="hero"
       data-motion-running={motion.running}
     >
-      <div className={`${styles.layer} ${styles.chart}`} aria-hidden="true">
-        <Image
-          src={heroChart}
-          alt=""
-          className="h-auto w-full"
-          sizes="(min-width: 1024px) 360px, (min-width: 640px) 330px, 173px"
-          priority
-        />
-      </div>
-      <div
-        className={`${styles.layer} ${styles.opportunity}`}
-        aria-hidden="true"
-      >
-        <Image
-          src={heroOpportunity}
-          alt=""
-          className="h-auto w-full"
-          sizes="(min-width: 1024px) 240px, (min-width: 640px) 220px, 115px"
-          priority
-        />
-      </div>
+      {category && (
+        <>
+          <div
+            className={`${styles.layer} ${styles.categoryPrimary}`}
+            aria-hidden="true"
+          >
+            <Image
+              src={category.primary}
+              alt=""
+              width={384}
+              height={384}
+              className="h-auto w-full"
+              sizes="(min-width: 1024px) 340px, (min-width: 640px) 300px, 1px"
+              priority
+            />
+          </div>
+          <div
+            className={`${styles.layer} ${styles.categorySecondary}`}
+            aria-hidden="true"
+          >
+            <Image
+              src={category.secondary}
+              alt=""
+              width={384}
+              height={384}
+              className="h-auto w-full"
+              sizes="(min-width: 1024px) 325px, (min-width: 640px) 286px, 1px"
+              priority
+            />
+          </div>
+        </>
+      )}
       <div className={`${styles.layer} ${styles.heroApply}`} aria-hidden="true">
         <Image
           src={discordApply}

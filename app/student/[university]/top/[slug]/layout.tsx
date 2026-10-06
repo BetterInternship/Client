@@ -17,6 +17,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { university, slug } = await params;
   const result = await fetchTopUniversityPage(university, slug);
+  // An old slug is answered by a browser-side redirect (see page.tsx), so
+  // tell crawlers where the page lives now instead of indexing the alias.
+  if (result.status === "moved") {
+    return {
+      robots: { index: false },
+      alternates: { canonical: `/${university}/top/${result.slug}` },
+    };
+  }
   if (result.status !== "ok") return {};
 
   const title = topUniversityPageTitle(

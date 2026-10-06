@@ -12,6 +12,7 @@ import {
   ListingInternshipPreferences,
   Job,
 } from "@/lib/db/db.types";
+import { useStudentQueriesEnabled } from "@/lib/use-session-gate";
 
 /**
  * internship_preferences has historically been stored as a JSON-encoded
@@ -89,11 +90,13 @@ export function useJobListingsPage(params: JobSearchParams = {}) {
  * @hook
  */
 export function useJobStatus() {
+  const enabled = useStudentQueriesEnabled();
   const applications = useApplicationsData();
 
   const _savedJobs = useQuery({
     queryKey: ["my-saved-jobs"],
     queryFn: JobService.getSavedJobs,
+    enabled,
   });
 
   const savedJobs = useMemo(
@@ -102,7 +105,7 @@ export function useJobStatus() {
   );
 
   return {
-    isPending: _savedJobs.isPending,
+    isPending: enabled && _savedJobs.isPending,
     error: _savedJobs.error,
     savedJobs,
     isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
@@ -208,12 +211,19 @@ export function useShareLink(jobId: string | undefined) {
  * @hook
  */
 export function useProfileData() {
-  const { isPending, data, error, refetch } = useQuery({
+  // Off on a Top page for a browser with no session hint: the visitor is
+  // logged out, so the question would only come back 401. Cached data (a
+  // restored session) is still returned; nothing is requested.
+  const enabled = useStudentQueriesEnabled();
+  const query = useQuery({
     queryKey: ["my-profile"],
     queryFn: () => UserService.getMyProfile(),
+    enabled,
   });
+  const { data, error, refetch } = query;
+  const isPending = enabled && query.isPending;
 
-  const cachedFailure = !isPending && !error && !data?.user;
+  const cachedFailure = enabled && !isPending && !error && !data?.user;
   const attempted = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -250,11 +260,15 @@ export function useProfileData() {
  * @hook
  */
 export function useWaitlistsData() {
-  const { isPending, data, error } = useQuery({
+  const enabled = useStudentQueriesEnabled();
+  const query = useQuery({
     queryKey: ["my-waitlists"],
     queryFn: () => JobService.getWaitlistedJobs(),
     staleTime: 30 * 1000,
+    enabled,
   });
+  const { data, error } = query;
+  const isPending = enabled && query.isPending;
 
   const deduped = useMemo(() => {
     const rows = data?.waitlisted ?? [];
@@ -305,16 +319,18 @@ export function useWaitlistsData() {
  * @hook
  */
 export function useApplicationsData() {
+  const enabled = useStudentQueriesEnabled();
   const applications = useQuery({
     queryKey: ["my-applications"],
     queryFn: () => ApplicationService.getApplications(),
     staleTime: 30 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    enabled,
   });
 
   return {
-    isPending: applications.isPending,
+    isPending: enabled && applications.isPending,
     error: applications.error,
     data: applications.data?.applications ?? [],
   };

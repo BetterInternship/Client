@@ -12,27 +12,14 @@
   animation-play-state: paused;
 }
 
+/* Filter only decorative images, never the page's logos or content. */
+.layer img {
+  filter: var(--top-artwork-filter, none);
+}
+
 .discord {
   height: 100%;
   overflow: hidden;
-}
-
-.chart {
-  top: 10%;
-  right: 7%;
-  width: 72%;
-  /* The image already leans counterclockwise; reverse that baked-in tilt.
-     Separate rotate keeps this pose intact during bobbing/reduced motion. */
-  rotate: 20deg;
-  animation: chart-bob 5.8s cubic-bezier(0.77, 0, 0.175, 1) infinite paused;
-}
-
-.opportunity {
-  bottom: 5%;
-  left: 0;
-  z-index: 1;
-  width: 48%;
-  animation: card-bob 6.8s cubic-bezier(0.77, 0, 0.175, 1) -2.4s infinite paused;
 }
 
 .heroApply {
@@ -40,6 +27,23 @@
   right: 1%;
   z-index: 2;
   width: 34%;
+  animation: apply-bob 5.2s cubic-bezier(0.77, 0, 0.175, 1) -2.1s infinite
+    paused;
+}
+
+.categoryPrimary {
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 68%;
+  animation: chart-bob 5.8s cubic-bezier(0.77, 0, 0.175, 1) infinite paused;
+}
+
+.categorySecondary {
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 65%;
   animation: apply-bob 5.2s cubic-bezier(0.77, 0, 0.175, 1) -2.1s infinite
     paused;
 }
@@ -72,16 +76,6 @@
   }
   50% {
     transform: translateY(-6px) rotate(0.35deg);
-  }
-}
-
-@keyframes card-bob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0);
-  }
-  50% {
-    transform: translateY(-8px) rotate(-0.45deg);
   }
 }
 

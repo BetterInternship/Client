@@ -1,10 +1,5 @@
 import "server-only";
 import { Job } from "../db/db.types";
-import {
-  topPagesControllerListLive,
-  topPagesControllerResolveUniversity,
-  topPagesControllerResolveUniversityPage,
-} from "./generated/endpoints/top-pages/top-pages";
 
 export interface PublicTopPage {
   id: string;
@@ -15,7 +10,7 @@ export interface PublicTopPage {
 /**
  * The university a Top page link belongs to
  * (Docs/plans/TOP_PAGES_UNIVERSITY_PLAN.md). `slug` is the university's part
- * of the URL, built by the server from its full name on every request.
+ * of the URL, built by the server from its name on every request.
  */
 export interface PublicTopUniversity {
   id: string;
@@ -45,6 +40,21 @@ export type TopUniversityResolution =
     }
   | { status: "not_found" };
 
+/** A university and the categories ticked for it (GET /top-pages/universities/:slug). */
+export type TopUniversitySummaryResolution =
+  | {
+      status: "ok";
+      university: PublicTopUniversity;
+      pages: PublicTopPage[];
+    }
+  | { status: "not_found" };
+
+/** One category's listings, the same for every university (GET /top-pages/categories/:slug). */
+export type TopCategoryResolution =
+  | { status: "ok"; page: PublicTopPage; jobs: Job[] }
+  | { status: "moved"; slug: string }
+  | { status: "not_found" };
+
 export type TopUniversityPageResolution =
   | {
       status: "ok";
@@ -70,36 +80,146 @@ export function isTopSlugShape(value: string): boolean {
 }
 
 /**
- * Fetches GET /top-pages/universities/:slug — the university landing page.
- * Same pattern as job-preview.server.ts: anonymous, cached 60s to match the
- * server's own Cache-Control, never throws (a network failure degrades to
- * not_found, same as an unknown university).
+ * How long Top page data and the pages built from it are cached
+ * (Docs/plans/TOP_PAGES_STATIC_GENERATION_PLAN.md D2): a safety net, not the
+ * normal refresh. Career-Server revalidates the tags below whenever something
+ * changes, so under normal operation nothing is ever this old. Next needs a
+ * literal for a route's own `revalidate` export, so those files repeat the
+ * number; keep them in step with this one.
  */
-export async function fetchTopUniversity(
-  universitySlug: string,
-): Promise<TopUniversityResolution> {
-  if (!isTopSlugShape(universitySlug)) return { status: "not_found" };
+export const TOP_PAGES_REVALIDATE_SECONDS = 604800;
+
+/**
+ * Cache tags (plan D6), keyed by the URL slug because that is what a page
+ * knows. Career-Server builds the same strings when it asks for a
+ * revalidation (src/top-pages/top-pages-regeneration.service.ts).
+ */
+export const topCategoryTag = (slug: string) => `top:cat:${slug}`;
+export const topUniversityTag = (slug: string) => `top:uni:${slug}`;
+export const TOP_SITEMAP_TAG = "top:sitemap";
+
+const apiUrl = (path: string) => `${process.env.NEXT_PUBLIC_API_URL}${path}`;
+
+/**
+ * The server could not answer (network failure, 5xx, unreadable body). This
+ * is thrown rather than turned into `not_found`: a cached page outlives the
+ * moment it was built, so a transient failure must not be baked into a
+ * week-long "not found". A page that throws is not cached — Next keeps
+ * serving the previous version, or shows an error for a page not built yet.
+ */
+export class TopPageFetchError extends Error {
+  constructor(path: string, detail: string) {
+    super(`Top pages request ${path} failed: ${detail}`);
+    this.name = "TopPageFetchError";
+  }
+}
+
+async function fetchTopJson<T extends { status?: string }>(
+  path: string,
+  tags: string[],
+): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(apiUrl(path), {
+      next: { tags, revalidate: TOP_PAGES_REVALIDATE_SECONDS },
+    });
+  } catch (error) {
+    throw new TopPageFetchError(path, String(error));
+  }
+  if (!res.ok) throw new TopPageFetchError(path, `HTTP ${res.status}`);
 
   try {
-    const data = (await topPagesControllerResolveUniversity(universitySlug, {
-      next: { revalidate: 60 },
-    })) as unknown as Partial<
-      Extract<TopUniversityResolution, { status: "ok" }>
-    >;
-
-    if (data?.status === "ok" && data.university && data.pages) {
-      return { status: "ok", university: data.university, pages: data.pages };
-    }
-    return { status: "not_found" };
-  } catch {
-    return { status: "not_found" };
+    return (await res.json()) as T;
+  } catch (error) {
+    throw new TopPageFetchError(path, String(error));
   }
 }
 
 /**
- * Fetches GET /top-pages/universities/:universitySlug/:pageSlug — the
- * resolver behind /<university>/top/<slug>. Anonymous, cached 60s, never
- * throws.
+ * Fetches GET /top-pages/categories/:slug — a category's listings. Identical
+ * for every university, so every university page shares this one cached
+ * response (plan D5).
+ */
+export async function fetchTopCategory(
+  pageSlug: string,
+): Promise<TopCategoryResolution> {
+  if (!isTopSlugShape(pageSlug)) return { status: "not_found" };
+
+  const data = await fetchTopJson<{
+    status?: string;
+    page?: PublicTopPage;
+    jobs?: Job[];
+    slug?: string;
+  }>(`/top-pages/categories/${encodeURIComponent(pageSlug)}`, [
+    topCategoryTag(pageSlug),
+  ]);
+
+  if (data.status === "ok" && data.page && data.jobs) {
+    return { status: "ok", page: data.page, jobs: data.jobs };
+  }
+  if (data.status === "moved" && data.slug) {
+    return { status: "moved", slug: data.slug };
+  }
+  if (data.status === "not_found") return { status: "not_found" };
+  throw new TopPageFetchError(pageSlug, "unexpected category response");
+}
+
+/**
+ * Fetches GET /top-pages/universities/:slug — the university and the
+ * categories ticked for it, without any listings.
+ */
+export async function fetchTopUniversitySummary(
+  universitySlug: string,
+): Promise<TopUniversitySummaryResolution> {
+  if (!isTopSlugShape(universitySlug)) return { status: "not_found" };
+
+  const data = await fetchTopJson<{
+    status?: string;
+    university?: PublicTopUniversity;
+    pages?: PublicTopPage[];
+  }>(`/top-pages/universities/${encodeURIComponent(universitySlug)}`, [
+    topUniversityTag(universitySlug),
+  ]);
+
+  if (data.status === "ok" && data.university && data.pages) {
+    return { status: "ok", university: data.university, pages: data.pages };
+  }
+  if (data.status === "not_found") return { status: "not_found" };
+  throw new TopPageFetchError(universitySlug, "unexpected university response");
+}
+
+/**
+ * The university landing page's data: the summary plus how many listings each
+ * category shows right now. The counts come from the category fetches the
+ * category pages share, so they cost no extra request once those are cached.
+ */
+export async function fetchTopUniversity(
+  universitySlug: string,
+): Promise<TopUniversityResolution> {
+  const summary = await fetchTopUniversitySummary(universitySlug);
+  if (summary.status !== "ok") return { status: "not_found" };
+
+  const pages = await Promise.all(
+    summary.pages.map(async (page) => {
+      const category = await fetchTopCategory(page.slug);
+      return {
+        ...page,
+        listing_count: category.status === "ok" ? category.jobs.length : 0,
+      };
+    }),
+  );
+  return { status: "ok", university: summary.university, pages };
+}
+
+/**
+ * The resolver behind /<university>/top/<slug>, composed from the two cached
+ * fetches above (plan §3.2).
+ *
+ *   not_found        unknown university (or one with no live category), or a
+ *                    category that does not exist / is not published
+ *   university_only  the university is live and the category exists, but it
+ *                    is not ticked for this university
+ *   moved            an old slug of a category that is ticked for it
  */
 export async function fetchTopUniversityPage(
   universitySlug: string,
@@ -109,38 +229,33 @@ export async function fetchTopUniversityPage(
     return { status: "not_found" };
   }
 
-  try {
-    const data = (await topPagesControllerResolveUniversityPage(
-      universitySlug,
-      pageSlug,
-      { next: { revalidate: 60 } },
-    )) as unknown as {
-      status?: string;
-      university?: PublicTopUniversity;
-      page?: PublicTopPage;
-      jobs?: Job[];
-      siblings?: TopPageLink[];
-      slug?: string;
-    };
-
-    if (data?.status === "ok" && data.university && data.page && data.jobs) {
-      return {
-        status: "ok",
-        university: data.university,
-        page: data.page,
-        jobs: data.jobs,
-        siblings: data.siblings ?? [],
-      };
-    }
-    if (data?.status === "moved" && data.slug) {
-      return { status: "moved", slug: data.slug };
-    }
-    if (data?.status === "university_only")
-      return { status: "university_only" };
-    return { status: "not_found" };
-  } catch {
+  const [summary, category] = await Promise.all([
+    fetchTopUniversitySummary(universitySlug),
+    fetchTopCategory(pageSlug),
+  ]);
+  if (summary.status !== "ok" || category.status === "not_found") {
     return { status: "not_found" };
   }
+
+  if (category.status === "moved") {
+    return summary.pages.some((page) => page.slug === category.slug)
+      ? { status: "moved", slug: category.slug }
+      : { status: "university_only" };
+  }
+
+  if (!summary.pages.some((page) => page.id === category.page.id)) {
+    return { status: "university_only" };
+  }
+
+  return {
+    status: "ok",
+    university: summary.university,
+    page: category.page,
+    jobs: category.jobs,
+    siblings: summary.pages
+      .filter((page) => page.id !== category.page.id)
+      .map(({ name, slug }) => ({ name, slug })),
+  };
 }
 
 export interface TopSitemapUniversity {
@@ -150,13 +265,23 @@ export interface TopSitemapUniversity {
 
 /**
  * Fetches GET /top-pages/universities — every university with a live page,
- * and those pages, for app/student/sitemap.ts.
+ * and those pages, for app/student/sitemap.ts. Unlike the page fetches this
+ * degrades to an empty list on failure: the sitemap route re-runs hourly, so
+ * nothing stays wrong for long.
  */
 export async function fetchTopSitemap(): Promise<TopSitemapUniversity[]> {
   try {
-    const data = (await topPagesControllerListLive({
-      next: { revalidate: 3600 },
-    })) as unknown as { universities?: TopSitemapUniversity[] };
+    const res = await fetch(apiUrl("/top-pages/universities"), {
+      next: {
+        tags: [TOP_SITEMAP_TAG],
+        revalidate: TOP_PAGES_REVALIDATE_SECONDS,
+      },
+    });
+    if (!res.ok) return [];
+
+    const data = (await res.json()) as {
+      universities?: TopSitemapUniversity[];
+    };
     return data.universities ?? [];
   } catch {
     return [];

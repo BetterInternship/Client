@@ -185,23 +185,55 @@ export function TopPageView({
   return (
     <div
       style={accentStyle}
-      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[#f7fbff] max-md:overflow-clip"
+      className="relative min-h-screen w-full shrink-0 overflow-hidden bg-[var(--top-surface)] max-md:overflow-clip"
     >
       <TopPageBackdrop />
       <TopPageNavbar disabled={disabled} />
       <header className="relative mx-auto max-w-[1240px] px-4 pt-9 max-sm:pt-6 sm:px-6 lg:px-8 lg:pt-7">
-        <div className="relative grid items-center gap-4 lg:min-h-[300px] lg:grid-cols-[1.2fr_1fr] lg:gap-0">
-          <div className="relative z-10 lg:py-5">
+        <div className="relative grid items-center gap-4 lg:min-h-[300px] lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-0">
+          <div className="relative z-10 min-w-0 lg:py-5">
             <div className="mb-1 flex w-fit items-center gap-2.5">
               <span className="text-base font-medium leading-6 text-[#526078] tabular-nums sm:text-lg">
                 {week.label}
               </span>
             </div>
-            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] max-sm:text-[32px] max-sm:leading-[1.12] sm:text-5xl lg:text-[52px]">
-              Top {initialJobs.length}{" "}
-              <span className="text-[var(--top-accent-text)]">{page.name}</span>
-              <br className="hidden sm:block" /> Internship
-              {initialJobs.length === 1 ? "" : "s"} This Week
+            <h1 className="min-w-0 text-4xl font-bold leading-[1.08] tracking-tight text-[#101033] max-sm:text-[clamp(1.25rem,7vw,2rem)] max-sm:leading-[1.12] sm:text-[clamp(2rem,3.6vw,3.25rem)]">
+              {page.slug === "operations-human-resources" ? (
+                <>
+                  <span className="whitespace-nowrap">
+                    Top {initialJobs.length}{" "}
+                    <span className="text-[var(--top-accent-text)]">
+                      Operations &amp; Human
+                    </span>
+                  </span>
+                  <br />
+                  <span className="whitespace-nowrap">
+                    <span className="text-[var(--top-accent-text)]">
+                      Resources
+                    </span>{" "}
+                    Internship{initialJobs.length === 1 ? "" : "s"}
+                  </span>
+                  <br />
+                  This Week
+                </>
+              ) : (
+                <>
+                  <span
+                    className={cn(
+                      "inline-block",
+                      page.slug === "accounting-finance" && "whitespace-nowrap",
+                    )}
+                  >
+                    Top {initialJobs.length}{" "}
+                    <span className="text-[var(--top-accent-text)]">
+                      {page.name}
+                    </span>
+                  </span>{" "}
+                  <span className="inline-block whitespace-nowrap">
+                    Internship{initialJobs.length === 1 ? "" : "s"} This Week
+                  </span>
+                </>
+              )}
               {/* Inside the <h1> on purpose: the university's name is part
                   of what the page is about, not a caption beside it. */}
               {university && (
@@ -226,7 +258,7 @@ export function TopPageView({
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-[460px] -translate-y-4 max-sm:hidden lg:absolute lg:-right-5 lg:-top-12 lg:w-[500px] lg:max-w-none">
-            <TopHeroArtwork />
+            <TopHeroArtwork pageSlug={page.slug} />
           </div>
         </div>
       </header>
@@ -273,6 +305,7 @@ export function TopPageView({
                       src={emptyArtwork}
                       alt=""
                       className="mx-auto mb-5 h-auto w-[240px] max-w-full mix-blend-multiply sm:w-[300px]"
+                      style={{ filter: "var(--top-artwork-filter, none)" }}
                       sizes="(min-width: 640px) 300px, 240px"
                     />
                     <h2 className="text-2xl font-semibold tracking-tight text-[#101033]">
