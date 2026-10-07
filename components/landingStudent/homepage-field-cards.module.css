@@ -34,9 +34,10 @@
   height: 100%;
   min-width: 0;
   padding: 12px;
-  border: 1px solid #e6e9ef;
-  border-radius: 16px;
+  border: 1px solid var(--home-border);
+  border-radius: var(--home-radius, 12px);
   background: #fff;
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -101,7 +102,7 @@
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
     border-color: #cfd5df;
-    box-shadow: 0 6px 20px rgb(31 45 68 / 7%);
+    box-shadow: var(--home-interactive-shadow);
   }
 }
 
@@ -113,9 +114,8 @@
       box-shadow 200ms ease;
   }
 
-  .art img,
-  .arrow {
-    transition: transform 200ms var(--home-ease-out);
+  .art img {
+    transition: transform 300ms ease;
   }
 
   .card:hover {
@@ -127,7 +127,7 @@
   }
 
   .link:hover .arrow {
-    transform: translateX(3px);
+    transform: translateX(2px);
   }
 }
 
@@ -160,7 +160,7 @@
 
   .card {
     padding: 10px;
-    border-radius: 14px;
+    border-radius: var(--home-radius, 12px);
   }
 
   .label {

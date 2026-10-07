@@ -1,0 +1,168 @@
+.browser {
+  width: 100%;
+}
+
+.opportunities {
+  width: 100%;
+  margin: 72px auto 0;
+  text-align: left;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(208px, 1fr);
+  gap: 16px;
+}
+
+.listing {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--home-border);
+  border-radius: var(--home-radius);
+  background: #fff;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.companyName {
+  margin: 0 0 14px;
+  color: var(--home-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.listingTitle {
+  margin: 0 0 4px;
+  color: var(--home-navy);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.35px;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  color: var(--home-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.facts span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.facts svg {
+  flex-shrink: 0;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+.tags span {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f1f4f8;
+  color: var(--home-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.tags span:first-child {
+  background: var(--home-secondary-tint);
+  color: var(--home-secondary-deep);
+}
+
+.listingFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  color: var(--home-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--home-blue);
+  font-weight: 550;
+}
+
+.viewMoreButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 60px;
+  margin: 20px auto 0;
+  padding: 12px 20px;
+  border: 1px solid var(--home-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--home-blue);
+  font-size: 15px;
+  font-weight: 550;
+  transition:
+    transform 200ms var(--home-ease-out),
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .listing:hover,
+  .listing:focus-within {
+    border-color: #cfd5df;
+    box-shadow: var(--home-interactive-shadow);
+  }
+
+  .viewMoreButton:hover {
+    border-color: #cfd5df;
+    box-shadow: var(--home-interactive-shadow);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .viewMoreButton:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .opportunities {
+    margin-top: 48px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .listing {
+    padding: 18px;
+  }
+}

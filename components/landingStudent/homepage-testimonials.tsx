@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import styles from "./homepage-testimonials.module.css";
 
 interface Testimonial {
@@ -18,6 +18,7 @@ export function HomepageTestimonials({
   testimonials: Testimonial[];
 }) {
   const root = useRef<HTMLDivElement>(null);
+  const headingId = useId();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -38,53 +39,58 @@ export function HomepageTestimonials({
   }, []);
 
   return (
-    <div
-      ref={root}
-      className={styles.marquee}
-      role="group"
-      aria-label="Student experiences"
-      data-paused={!visible}
+    <section
+      className={`${styles.section} home-testimonials home-reveal`}
+      aria-labelledby={headingId}
     >
+      <div className="home-section-heading">
+        <h2 id={headingId}>Loved by students</h2>
+        <p>What students are saying about BetterInternship.</p>
+      </div>
       <div
-        className={styles.viewport}
-        tabIndex={0}
-        aria-label="Student testimonials. Scroll to read when motion is reduced."
+        ref={root}
+        className={styles.marquee}
+        role="region"
+        aria-label="Student testimonials"
+        aria-roledescription="carousel"
+        data-paused={!visible}
       >
-        <div className={styles.track}>
-          {[0, 1].map((group) => (
-            <div
-              className={styles.group}
-              key={group}
-              aria-hidden={group === 1 ? true : undefined}
-            >
-              {[...testimonials, ...testimonials].map((student, index) => (
-                <figure
-                  className={styles.testimonial}
-                  key={`${student.name}-${index}`}
-                  data-duplicate={index >= testimonials.length}
-                  aria-hidden={index >= testimonials.length ? true : undefined}
-                >
-                  <blockquote className={styles.quote}>
-                    “{student.quote}”
-                  </blockquote>
-                  <figcaption className={styles.author}>
-                    <span className={styles.avatar} aria-hidden="true">
-                      {student.initials}
-                    </span>
-                    <div className={styles.identity}>
-                      <strong>{student.name}</strong>
-                      <span>{student.program}</span>
+        <div
+          className={styles.viewport}
+          tabIndex={0}
+          aria-label="Student testimonials. Focus or hover to pause the carousel."
+        >
+          <div className={styles.track}>
+            {[0, 1].map((group) => (
+              <div
+                className={styles.group}
+                key={group}
+                aria-hidden={group === 1 ? true : undefined}
+              >
+                {testimonials.map((student) => (
+                  <figure className={styles.testimonial} key={student.name}>
+                    <blockquote className={styles.quote}>
+                      “{student.quote}”
+                    </blockquote>
+                    <figcaption className={styles.author}>
+                      <span className={styles.avatar} aria-hidden="true">
+                        {student.initials}
+                      </span>
+                      <div className={styles.identity}>
+                        <strong>{student.name}</strong>
+                        <span>{student.program}</span>
+                      </div>
+                    </figcaption>
+                    <div className={styles.context}>
+                      {student.role} · {student.setup}
                     </div>
-                  </figcaption>
-                  <div className={styles.context}>
-                    {student.role} · {student.setup}
-                  </div>
-                </figure>
-              ))}
-            </div>
-          ))}
+                  </figure>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

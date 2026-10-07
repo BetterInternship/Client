@@ -2,6 +2,30 @@ import type { JobCategory } from "@/lib/db/db.types";
 
 export type HomepageField = { label: string; href: string };
 
+export const homepageHeroCategories = [
+  { field: "Software", label: "Software" },
+  { field: "Marketing", label: "Marketing" },
+  { field: "IT", label: "IT" },
+  { field: "Creative & Multimedia", label: "Creative" },
+  { field: "Data & Analytics", label: "Data" },
+  { field: "Accounting & Finance", label: "Finance" },
+  { field: "Operations & Human Resources", label: "HR" },
+  { field: "Legal", label: "Legal" },
+  { field: "Engineering & Architecture", label: "Engineering" },
+];
+
+export const homepageFieldArtworkSlugs: Record<string, string> = {
+  "Data & Analytics": "data-analytics",
+  Software: "software",
+  IT: "it",
+  "Accounting & Finance": "accounting-finance",
+  "Operations & Human Resources": "operations-human-resources",
+  Marketing: "marketing",
+  "Creative & Multimedia": "creative-multimedia",
+  Legal: "legal",
+  "Engineering & Architecture": "engineering-architecture",
+};
+
 const fields = [
   { label: "Data & Analytics", match: /data|analytics/i, query: "data" },
   { label: "Software", match: /software/i, query: "software" },
@@ -57,31 +81,6 @@ export function getHomepageFields(categories: JobCategory[]): HomepageField[] {
       href: searchHref(ids.size ? { position: [...ids].join(",") } : { query }),
     };
   });
-}
-
-export const quickFilters = [
-  { label: "Remote", href: searchHref({ mode: "2" }) },
-  { label: "Hybrid", href: searchHref({ mode: "1" }) },
-  { label: "On-site", href: searchHref({ mode: "0" }) },
-  { label: "Paid", href: searchHref({ allowance: "0" }) },
-  { label: "Part-time", href: searchHref({ workload: "1" }) },
-  { label: "Full-time", href: searchHref({ workload: "2" }) },
-];
-
-export function getPopularSearches(options: HomepageField[]): HomepageField[] {
-  const field = (index: number) => options[index].href;
-  return [
-    { label: "Software internships", href: field(1) },
-    { label: "Marketing internships", href: field(5) },
-    { label: "IT internships", href: field(2) },
-    { label: "Finance internships", href: field(3) },
-    { label: "Engineering internships", href: field(8) },
-    { label: "Remote internships", href: quickFilters[0].href },
-    { label: "Internships in Makati", href: searchHref({ query: "Makati" }) },
-    { label: "Internships in Manila", href: searchHref({ query: "Manila" }) },
-    { label: "Part-time internships", href: quickFilters[4].href },
-    { label: "Paid internships", href: quickFilters[3].href },
-  ];
 }
 
 export const homepageFaqs = [

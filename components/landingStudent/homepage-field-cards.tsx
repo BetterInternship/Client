@@ -3,16 +3,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@betterinternship/components";
 import { topCategoryArtworkBySlug } from "@/components/features/student/top/top-category-artwork";
-import type { HomepageField } from "./homepage-data";
+import motionStyles from "@/components/features/student/top/top-motion.module.css";
+import { homepageFieldArtworkSlugs, type HomepageField } from "./homepage-data";
 import styles from "./homepage-field-cards.module.css";
-
-const artworkSlugs = [
-  "software",
-  "marketing",
-  "it",
-  "accounting-finance",
-  "engineering-architecture",
-];
 
 /** Top-page card treatment with a compact, mixed-size homepage composition. */
 export function HomepageFieldCards({ fields }: { fields: HomepageField[] }) {
@@ -20,10 +13,11 @@ export function HomepageFieldCards({ fields }: { fields: HomepageField[] }) {
     <nav aria-label="Popular internship searches">
       <ul className={styles.grid}>
         {fields.map((field, index) => {
-          const artwork = topCategoryArtworkBySlug[artworkSlugs[index]];
+          const artwork =
+            topCategoryArtworkBySlug[homepageFieldArtworkSlugs[field.label]];
           return (
             <li key={field.label} className={styles.item}>
-              <Card className={styles.card}>
+              <Card className={`${styles.card} ${motionStyles.action}`}>
                 <Link href={field.href} className={styles.link}>
                   <div className={styles.art} aria-hidden="true">
                     {artwork && (
@@ -42,7 +36,10 @@ export function HomepageFieldCards({ fields }: { fields: HomepageField[] }) {
                   </div>
                   <div className={styles.label}>
                     <h3>{field.label}</h3>
-                    <ArrowRight className={styles.arrow} aria-hidden="true" />
+                    <ArrowRight
+                      className={`${styles.arrow} ${motionStyles.arrow}`}
+                      aria-hidden="true"
+                    />
                   </div>
                 </Link>
               </Card>

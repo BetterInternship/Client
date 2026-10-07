@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MessageCircle, Facebook, Mail } from "lucide-react";
@@ -9,22 +8,13 @@ import {
   SUPPORT_FACEBOOK,
 } from "@/constants";
 import type { RefsData } from "@/lib/db/db.types";
-import {
-  getHomepageFields,
-  getPopularSearches,
-  quickFilters,
-} from "./homepage-data";
-import {
-  LatestOpportunities,
-  OpportunitiesSkeleton,
-} from "./latest-opportunities";
+import { getHomepageFields } from "./homepage-data";
 import styles from "./homepage.module.css";
 import { DiscordMark } from "@/components/features/student/top/DiscordMark";
 import { HomepageMotion } from "./homepage-motion";
 import { HomepageTestimonials } from "./homepage-testimonials";
 import { HomepageFaq } from "./homepage-faq";
-import { HomepageFieldPicker } from "./homepage-field-picker";
-import { HomepageFieldCards } from "./homepage-field-cards";
+import { HomepageOpportunityBrowser } from "./homepage-opportunity-browser";
 import {
   TopPageBackdrop,
   TopDiscordArtwork,
@@ -41,34 +31,28 @@ const heroSprites = [
     name: "badge",
     width: 640,
     height: 564,
-    sizes: "(max-width: 767px) 130px, (max-width: 1379px) 340px, 500px",
+    sizes: "(max-width: 767px) 110px, (max-width: 1379px) 280px, 420px",
   },
   {
     name: "profile",
     width: 640,
     height: 434,
-    sizes: "(max-width: 767px) 100px, (max-width: 1379px) 220px, 320px",
+    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 176px, 256px",
   },
   {
     name: "cap",
     width: 640,
     height: 428,
-    sizes: "(max-width: 767px) 95px, (max-width: 1379px) 120px, 200px",
+    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 100px, 170px",
   },
-  { name: "squiggle", width: 640, height: 264, sizes: "90px" },
+  { name: "squiggle", width: 640, height: 264, sizes: "56px" },
   {
     name: "plane",
     width: 640,
     height: 409,
-    sizes: "(max-width: 767px) 45px, (max-width: 1379px) 60px, 100px",
+    sizes: "(max-width: 767px) 36px, (max-width: 1379px) 48px, 72px",
   },
-  { name: "sparkle", width: 640, height: 667, sizes: "26px" },
-  {
-    name: "briefcase",
-    width: 640,
-    height: 585,
-    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 140px, 200px",
-  },
+  { name: "sparkle", width: 640, height: 667, sizes: "20px" },
 ];
 
 // Supplied example copy. Replace with approved student testimonials.
@@ -113,136 +97,93 @@ function Brand() {
 
 export function StudentHomepage({ refs }: { refs: RefsData }) {
   const fields = getHomepageFields(refs.job_categories);
-  const popular = getPopularSearches(fields);
   return (
     <HomepageMotion className={styles.homepage} style={topAccentStyle()}>
       <div className="home-page-backdrop" aria-hidden="true">
         <TopPageBackdrop />
       </div>
-      <div className="home-hero">
-        <div className="home-hero-art" aria-hidden="true">
-          {heroSprites.map(({ name, width, height, sizes }) => (
-            <Image
-              key={name}
-              src={`/homepage/hero-${name}.webp`}
-              width={width}
-              height={height}
-              sizes={sizes}
-              alt=""
-              className={`home-hero-sprite home-hero-sprite-${name}`}
-            />
-          ))}
-        </div>
-        <header className="home-header home-container">
-          <Brand />
-          <nav aria-label="Main navigation">
-            <a href={hireHref}>For Companies</a>
-            <a href={STUDENT_FORM_GUIDE}>Guides</a>
-            <a href={loginHref} className="home-login">
-              Log in
-              <ArrowRight size={15} aria-hidden="true" />
-            </a>
-          </nav>
-        </header>
+      <div className="home-landing-art" aria-hidden="true">
+        {heroSprites.map(({ name, width, height, sizes }) => (
+          <Image
+            key={name}
+            src={`/homepage/hero-${name}.webp`}
+            width={width}
+            height={height}
+            sizes={sizes}
+            alt=""
+            className={`home-hero-sprite home-hero-sprite-${name}`}
+          />
+        ))}
+      </div>
+      <header className="home-header home-container">
+        <Brand />
+        <nav aria-label="Main navigation">
+          <a href={hireHref}>For Companies</a>
+          <a href={STUDENT_FORM_GUIDE}>Guides</a>
+          <a href={loginHref} className="home-login">
+            Log in
+            <ArrowRight size={15} aria-hidden="true" />
+          </a>
+        </nav>
+      </header>
+      <main className="home-main">
         <section
-          className="home-hero-content home-container"
+          className="home-intro home-container"
           aria-labelledby="home-heading"
         >
           <h1 id="home-heading">
             <span className="home-headline-line">Better internships</span>{" "}
-            <span className="home-apply-word">start here</span>
+            <span className="home-headline-line">start here</span>
           </h1>
           <p>Discover opportunities across the Philippines.</p>
-          <div className="home-field-picker">
-            <HomepageFieldPicker fields={fields} />
-            <nav
-              className="home-quick-filters"
-              aria-label="Quick internship searches"
-            >
-              <span className="home-search-suggestions-label">Try:</span>
-              {quickFilters.map((filter) => (
-                <Link href={filter.href} key={filter.label}>
-                  {filter.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
+          <HomepageOpportunityBrowser fields={fields} />
         </section>
-      </div>
-
-      <main className="home-container home-main">
-        <section
-          className="home-testimonials home-testimonials-marquee home-reveal"
-          aria-labelledby="home-testimonials-heading"
-        >
-          <h2 className="sr-only" id="home-testimonials-heading">
-            Student experiences
-          </h2>
+        <div className="home-container">
           <HomepageTestimonials testimonials={testimonials} />
-        </section>
 
-        <section
-          className="home-section home-popular home-reveal"
-          id="popular-searches"
-          aria-labelledby="home-popular-heading"
-        >
-          <div className="home-section-heading">
-            <h2 id="home-popular-heading">Popular searches</h2>
-            <p>Explore what students are looking for.</p>
-          </div>
-          <HomepageFieldCards fields={popular.slice(0, 5)} />
-        </section>
-
-        <section
-          className="home-section home-latest home-reveal"
-          aria-labelledby="home-latest-heading"
-        >
-          <div className="home-section-heading home-heading-with-link">
-            <div>
-              <h2 id="home-latest-heading">Latest opportunities</h2>
-              <p>Fresh internships from companies hiring now.</p>
+          <section
+            className="home-discord home-discord-top home-section home-reveal"
+            aria-labelledby="home-discord-heading"
+          >
+            <div className="home-discord-art" aria-hidden="true">
+              <div className="home-discord-shared-art">
+                <TopDiscordArtwork />
+              </div>
             </div>
-            <Link className="home-text-link" href="/search">
-              View all internships <ArrowRight aria-hidden="true" size={20} />
-            </Link>
-          </div>
-          <Suspense fallback={<OpportunitiesSkeleton />}>
-            <LatestOpportunities refs={refs} loginHref={loginHref} />
-          </Suspense>
-        </section>
-
-        <section
-          className="home-discord home-discord-top home-section home-reveal"
-          aria-labelledby="home-discord-heading"
-        >
-          <div className="home-discord-art" aria-hidden="true">
-            <div className="home-discord-shared-art">
-              <TopDiscordArtwork />
+            <div className="home-discord-copy">
+              <h2 id="home-discord-heading">
+                Get notified when <span>new internships drop</span> and{" "}
+                <span>apply with one click</span>
+              </h2>
+              <a className="home-discord-button" href={BI_DISCORD_INVITE}>
+                <DiscordMark width={24} height={24} />
+                Join the Discord
+                <ArrowRight aria-hidden="true" size={20} />
+              </a>
             </div>
-          </div>
-          <div className="home-discord-copy">
-            <h2 id="home-discord-heading">
-              Get notified when <span>new internships drop</span> and{" "}
-              <span>apply with one click</span>
-            </h2>
-            <a className="home-discord-button" href={BI_DISCORD_INVITE}>
-              <DiscordMark width={24} height={24} />
-              Join the Discord
-              <ArrowRight aria-hidden="true" size={20} />
-            </a>
-          </div>
-        </section>
+          </section>
 
-        <section
-          className="home-section home-faq home-reveal"
-          id="faq"
-          aria-labelledby="home-faq-heading"
-        >
-          <div className="home-section-heading">
-            <h2 id="home-faq-heading">Frequently asked questions</h2>
-          </div>
-          <HomepageFaq />
-        </section>
+          <section
+            className="home-section home-faq home-reveal"
+            id="faq"
+            aria-labelledby="home-faq-heading"
+          >
+            <div className="home-section-art" aria-hidden="true">
+              <Image
+                src="/homepage/landing-bulb.webp"
+                width={480}
+                height={513}
+                sizes="(max-width: 1023px) 80px, 120px"
+                className="home-page-sprite home-page-sprite-bulb"
+                alt=""
+              />
+            </div>
+            <div className="home-section-heading">
+              <h2 id="home-faq-heading">Frequently asked questions</h2>
+            </div>
+            <HomepageFaq />
+          </section>
+        </div>
       </main>
 
       <footer className="home-footer">

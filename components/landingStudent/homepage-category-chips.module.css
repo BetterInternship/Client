@@ -1,0 +1,126 @@
+.categories {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: max-content;
+  max-width: 100%;
+  min-height: 60px;
+  padding: 12px 20px;
+  border: 1px solid var(--home-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--home-navy);
+  font-size: 15px;
+  font-weight: 550;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--home-ease-out),
+    box-shadow 200ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: saturate(0.55) brightness(1.07) contrast(0.94);
+  opacity: 0.72;
+  transition:
+    filter 180ms ease,
+    opacity 180ms ease;
+}
+
+.chip[aria-pressed="true"] .icon {
+  filter: none;
+  opacity: 1;
+}
+
+.chip[aria-pressed="true"]:not(.primary) {
+  border-color: var(--home-secondary-border);
+  background: var(--home-secondary-tint);
+  color: var(--home-secondary-deep);
+  font-weight: 600;
+}
+
+.primary {
+  border-color: var(--home-blue);
+  background: var(--home-blue);
+  color: #fff;
+  font-weight: 600;
+}
+
+.chip:focus-visible:not(.primary) {
+  outline: 2px solid var(--home-secondary);
+  outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: #cfd5df;
+    box-shadow: var(--home-interactive-shadow);
+  }
+
+  .chip:hover .icon {
+    filter: none;
+    opacity: 1;
+  }
+
+  .primary:hover {
+    border-color: #0053c7;
+    background: #0053c7;
+    color: #fff;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .chip:hover {
+    transform: translateY(-2px);
+  }
+
+  .icon {
+    transition: transform 300ms ease;
+  }
+
+  .chip:hover .icon {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+@media (max-width: 767px) {
+  .chips {
+    gap: 10px;
+  }
+
+  .chip {
+    min-height: 56px;
+    gap: 8px;
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .icon {
+    width: 28px;
+    height: 28px;
+  }
+}
