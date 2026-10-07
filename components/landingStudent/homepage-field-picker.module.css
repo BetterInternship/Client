@@ -1,15 +1,15 @@
 .trigger {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   width: 100%;
-  min-height: 64px;
-  padding: 16px 20px;
+  min-height: 76px;
+  padding: 20px 24px;
   border: 1px solid #e1eafa;
   border-radius: 12px;
   background: #fff;
-  color: #101044;
-  font-size: 17px;
+  color: #5d719b;
+  font-size: 20px;
   font-weight: 550;
   text-align: left;
   box-shadow: 0 2px 5px rgb(38 72 122 / 4%);
@@ -19,10 +19,6 @@
 .trigger svg {
   color: #0064ed;
   flex-shrink: 0;
-}
-
-.trigger svg:last-child {
-  margin-left: auto;
 }
 
 /* Portal layers: overlay 50, dialog 51, matching the app's modal layer. */
@@ -221,9 +217,9 @@
 
 @media (max-width: 767px) {
   .trigger {
-    min-height: 50px;
-    padding: 12px;
-    font-size: 15px;
+    min-height: 60px;
+    padding: 16px;
+    font-size: 18px;
   }
 }
 
@@ -276,14 +272,12 @@
     box-shadow: 0 6px 20px rgb(31 45 68 / 7%);
   }
 
-  .trigger svg:last-child,
   .label svg,
   .art img {
     transition: transform 200ms
       var(--home-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   }
 
-  .trigger:hover svg:last-child,
   .card:hover .label svg {
     transform: translateX(3px);
   }

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, LayoutGrid, X } from "lucide-react";
+import { ArrowRight, Search, X } from "lucide-react";
 import { topCategoryArtworkBySlug } from "@/components/features/student/top/top-category-artwork";
 import type { HomepageField } from "./homepage-data";
 import styles from "./homepage-field-picker.module.css";
@@ -24,16 +24,15 @@ export function HomepageFieldPicker({ fields }: { fields: HomepageField[] }) {
   return (
     <Dialog.Root>
       <Dialog.Trigger className={styles.trigger}>
-        <LayoutGrid size={21} aria-hidden="true" />
-        <span>Explore a field</span>
-        <ArrowRight size={20} aria-hidden="true" />
+        <Search size={24} aria-hidden="true" />
+        <span>Search</span>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content className={styles.modal} aria-describedby={undefined}>
           <div className={styles.header}>
             <Dialog.Title className={styles.title}>
-              Explore a field
+              Search by field
             </Dialog.Title>
             <Dialog.Close
               className={styles.close}

@@ -36,6 +36,41 @@ const hireHref =
   "https://hire.betterinternship.com";
 const loginHref = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
 
+const heroSprites = [
+  {
+    name: "badge",
+    width: 640,
+    height: 564,
+    sizes: "(max-width: 767px) 130px, (max-width: 1379px) 340px, 500px",
+  },
+  {
+    name: "profile",
+    width: 640,
+    height: 434,
+    sizes: "(max-width: 767px) 100px, (max-width: 1379px) 220px, 320px",
+  },
+  {
+    name: "cap",
+    width: 640,
+    height: 428,
+    sizes: "(max-width: 767px) 95px, (max-width: 1379px) 120px, 200px",
+  },
+  { name: "squiggle", width: 640, height: 264, sizes: "90px" },
+  {
+    name: "plane",
+    width: 640,
+    height: 409,
+    sizes: "(max-width: 767px) 45px, (max-width: 1379px) 60px, 100px",
+  },
+  { name: "sparkle", width: 640, height: 667, sizes: "26px" },
+  {
+    name: "briefcase",
+    width: 640,
+    height: 585,
+    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 140px, 200px",
+  },
+];
+
 // Supplied example copy. Replace with approved student testimonials.
 const testimonials = [
   {
@@ -85,15 +120,19 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
         <TopPageBackdrop />
       </div>
       <div className="home-hero">
-        <Image
-          src="/homepage-campus.webp"
-          fill
-          priority
-          sizes="100vw"
-          alt=""
-          className="home-hero-image"
-        />
-        <div className="home-hero-scrim" aria-hidden="true" />
+        <div className="home-hero-art" aria-hidden="true">
+          {heroSprites.map(({ name, width, height, sizes }) => (
+            <Image
+              key={name}
+              src={`/homepage/hero-${name}.webp`}
+              width={width}
+              height={height}
+              sizes={sizes}
+              alt=""
+              className={`home-hero-sprite home-hero-sprite-${name}`}
+            />
+          ))}
+        </div>
         <header className="home-header home-container">
           <Brand />
           <nav aria-label="Main navigation">
@@ -110,10 +149,8 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
           aria-labelledby="home-heading"
         >
           <h1 id="home-heading">
-            <span className="home-headline-line">Find internships.</span>{" "}
-            <span className="home-headline-line">
-              <span className="home-apply-word">Apply</span> in one click.
-            </span>
+            <span className="home-headline-line">Better internships</span>{" "}
+            <span className="home-apply-word">start here</span>
           </h1>
           <p>Discover opportunities across the Philippines.</p>
           <div className="home-field-picker">
@@ -122,6 +159,7 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
               className="home-quick-filters"
               aria-label="Quick internship searches"
             >
+              <span className="home-search-suggestions-label">Try:</span>
               {quickFilters.map((filter) => (
                 <Link href={filter.href} key={filter.label}>
                   {filter.label}
