@@ -172,10 +172,10 @@ export const EmployerService = {
     ) as unknown as Promise<EmployerResponse>;
   },
 
-  async updateMyPfp(file: Blob | null) {
+  async updateMyPfp(file: FormData | Blob | null) {
     // The old FetchClient sent whatever was passed as the raw body in
-    // "form-data" mode, unwrapped — including when a caller cast a FormData
-    // past this Blob|null signature (company-tab.tsx, via @ts-ignore). The
+    // "form-data" mode, unwrapped — including FormData, which callers
+    // (company-tab.tsx, the hire register verify page) build themselves. The
     // generated employersControllerUpdateLogo always wraps its argument in a
     // *new* FormData under a "logo" field, which isn't the same wire body, so
     // this bypasses it and calls the mutator directly to keep the body as-is.

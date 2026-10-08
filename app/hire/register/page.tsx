@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "../authctx";
 import { useRouter } from "next/navigation";
 import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
+import {
+  LOGO_REQUIREMENTS,
+  readLogoFile,
+  storePendingLogo,
+} from "@/lib/utils/registration-logo";
 import { Employer } from "@/lib/db/db.types";
-import { createEditForm, FormCheckbox, FormInput } from "@/components/EditForm";
+import {
+  createEditForm,
+  FormCheckbox,
+  FormInput,
+  LabelWithTooltip,
+} from "@/components/EditForm";
 import { ErrorLabel } from "@/components/ui/labels";
 import { Button } from "@betterinternship/components";
 import { isValidPHNumber } from "@/lib/utils";
@@ -74,8 +84,33 @@ const EmployerEditor = () => {
     {} as AdditionalFields,
   );
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const blurTransition = useBlurTransition();
+
+  const handleLogoChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    // Reset so picking the same file again after removing it still fires.
+    event.target.value = "";
+    if (!file) return;
+
+    const result = await readLogoFile(file);
+    if ("error" in result) {
+      setLogoError(result.error);
+      return;
+    }
+    setLogoError(null);
+    setLogoDataUrl(result.dataUrl);
+  };
+
+  const removeLogo = () => {
+    setLogoDataUrl(null);
+    setLogoError(null);
+  };
 
   const continueRegistration = () => {
     // Validate required fields before submitting
@@ -123,6 +158,9 @@ const EmployerEditor = () => {
       contact_name: additionalFields.contact_name,
     };
     setIsContinuing(true);
+    // The account doesn't exist yet, so the verify step uploads this once the
+    // email is confirmed. Clears any logo left over from an earlier attempt.
+    storePendingLogo(logoDataUrl);
     sessionStorage.removeItem("hire-registration-email");
     sessionStorage.setItem(
       "hire-registration-profile",
@@ -273,6 +311,52 @@ const EmployerEditor = () => {
                     : "",
                 )}
               />
+              <div>
+                <LabelWithTooltip
+                  label="Company Logo (optional)"
+                  required={false}
+                />
+                <div className="flex items-center gap-4">
+                  <img
+                    src={logoDataUrl ?? "/hire/images/default-pfp.jpg"}
+                    alt="Company logo preview"
+                    className="h-16 w-16 shrink-0 rounded-full border border-gray-300 object-cover"
+                  />
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logoInputRef.current?.click()}
+                      >
+                        {logoDataUrl ? "Change" : "Upload image"}
+                      </Button>
+                      {logoDataUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeLogo}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {LOGO_REQUIREMENTS}
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    onChange={(event) => void handleLogoChange(event)}
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                  />
+                </div>
+                <ErrorLabel value={logoError} />
+              </div>
             </div>
             <div className="flex items-start gap-3 mb-8">
               <FormCheckbox
