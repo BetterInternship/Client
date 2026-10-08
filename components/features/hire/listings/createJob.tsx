@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AnimatedCount,
   Button,
   PageContainer,
   PageHeader,
@@ -13,10 +14,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@betterinternship/components";
-import { BasicStep } from "./create-job-steps/BasicStep";
-import { SetupStep } from "./create-job-steps/SetupStep";
-import { DetailsStep } from "./create-job-steps/DetailsStep";
 import { useModalRegistry } from "@/components/modals/modal-registry";
+import { CreateJobForm } from "./create-job-form";
 
 interface CreateJobPageProps {
   createJob?: (job: Partial<Job>) => Promise<any>;
@@ -33,7 +32,7 @@ const CreateJobPage = ({
   const [isMissing, setMissing] = useState(false);
   const [challengeTitle, setChallengeTitle] = useState("");
   const [challengeDescription, setChallengeDescription] = useState("");
-  const { formData, setField, fieldSetter } = useFormData<Job>();
+  const { formData, setField } = useFormData<Job>();
   const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
@@ -153,6 +152,9 @@ const CreateJobPage = ({
       salary_freq: formData.allowance === 0 ? formData.salary_freq : undefined,
       is_unlisted: formData.is_unlisted ?? false,
       internship_preferences: listingInternshipPreferences(),
+      ...(formData.application_deadline
+        ? { application_deadline: formData.application_deadline }
+        : {}),
     };
 
     set_creating(true);
@@ -316,29 +318,17 @@ const CreateJobPage = ({
         </div>
       )}
 
-      {/* Main Content - one-page stacked Cards */}
-      <PageContainer className={cn("mt-20", isMobile ? "pb-20" : "")}>
-        <div className="space-y-24">
-          <BasicStep
-            formData={formData}
-            fieldSetter={fieldSetter}
-            setField={setField}
-            categoryOptions={category_items as any}
-            isSuperListing={isSuperListing}
-            challengeTitle={challengeTitle}
-            challengeDescription={challengeDescription}
-            setChallengeTitle={setChallengeTitle}
-            setChallengeDescription={setChallengeDescription}
-          />
-          <SetupStep
-            formData={formData}
-            setField={setField}
-            fieldSetter={fieldSetter}
-            job_pay_freq={job_pay_freq as any}
-          />
-          <DetailsStep formData={formData} setField={setField} />
-        </div>
-      </PageContainer>
+      <CreateJobForm
+        formData={formData}
+        setField={setField}
+        categoryOptions={category_items as any}
+        job_pay_freq={job_pay_freq}
+        isSuperListing={isSuperListing}
+        challengeTitle={challengeTitle}
+        challengeDescription={challengeDescription}
+        setChallengeTitle={setChallengeTitle}
+        setChallengeDescription={setChallengeDescription}
+      />
     </>
   );
 };
