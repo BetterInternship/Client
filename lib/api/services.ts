@@ -597,6 +597,7 @@ export const UserService = {
             id: string;
             title: string;
             email: string;
+            emailOptions?: string[];
           }[];
         };
       }

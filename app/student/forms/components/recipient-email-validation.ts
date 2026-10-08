@@ -1,4 +1,8 @@
 import { isValidEmail } from "@/lib/utils/string-utils";
+import {
+  getRecipientEmailValidator,
+  type IFormSigningParty,
+} from "@betterinternship/core/forms";
 
 export const RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS = 300;
 
@@ -6,6 +10,7 @@ const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 type RecipientEmailValidationOptions = {
   studentEmail?: string | null;
+  recipients?: IFormSigningParty[];
 };
 
 export const getRecipientEmailErrors = (
@@ -16,6 +21,22 @@ export const getRecipientEmailErrors = (
     ? normalizeEmail(options.studentEmail)
     : undefined;
   const fieldNamesByEmail = new Map<string, string[]>();
+  const choiceErrors: Record<string, string> = {};
+  for (const recipient of options.recipients ?? []) {
+    if (
+      recipient.signatory_source?._id !== "initiator" ||
+      recipient.signatory_email_options === undefined
+    )
+      continue;
+    const fieldName = `__${recipient._id}-email:default`;
+    if (
+      !getRecipientEmailValidator(recipient).safeParse(
+        recipientEmails[fieldName],
+      ).success
+    ) {
+      choiceErrors[fieldName] = "Select a configured recipient email.";
+    }
+  }
 
   return Object.entries(recipientEmails).reduce<Record<string, string>>(
     (errors, [fieldName, emailValue]) => {
@@ -57,6 +78,6 @@ export const getRecipientEmailErrors = (
 
       return errors;
     },
-    {},
+    choiceErrors,
   );
 };
