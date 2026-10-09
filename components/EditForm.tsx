@@ -4,7 +4,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/landingStudent/ui/select";
+} from "@/components/ui/select";
 import {
   cn,
   Button,

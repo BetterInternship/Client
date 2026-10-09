@@ -1,4 +1,4 @@
-import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 
 export function LandingFeaturePipeline() {
   return (

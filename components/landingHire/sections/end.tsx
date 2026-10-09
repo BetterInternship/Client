@@ -4,7 +4,7 @@ import MagneticButton from "@/components/ui/magnetic-button";
 import { ArrowRight, Facebook, Mail } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import Link from "next/link";
-import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import {
   SUPPORT_EMAIL_LINK,
   SUPPORT_EMAIL,
