@@ -322,11 +322,6 @@ const CreateJobPage = ({
         setField={setField}
         categoryOptions={category_items as any}
         job_pay_freq={job_pay_freq}
-        isSuperListing={isSuperListing}
-        challengeTitle={challengeTitle}
-        challengeDescription={challengeDescription}
-        setChallengeTitle={setChallengeTitle}
-        setChallengeDescription={setChallengeDescription}
       />
     </>
   );
