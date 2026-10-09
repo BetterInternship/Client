@@ -1,16 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { topCategoryArtworkBySlug } from "@/components/features/student/top/top-category-artwork";
-import motionStyles from "@/components/features/student/top/top-motion.module.css";
 import {
   homepageFieldArtworkSlugs,
   homepageHeroCategories,
   type HomepageField,
-} from "./homepage-data";
-import styles from "./homepage-category-chips.module.css";
+} from "../homepage-data";
+import { LinkButton } from "@/components/ui/temp/button";
+import { FilterChip } from "@/components/ui/temp/filter-chip";
 
 function CategoryChip({
   field,
@@ -29,12 +28,11 @@ function CategoryChip({
     topCategoryArtworkBySlug[homepageFieldArtworkSlugs[field.label]];
   return (
     <li>
-      <button
+      <FilterChip
         type="button"
-        className={`${styles.chip} ${motionStyles.action}`}
         aria-label={field.label}
         title={field.label}
-        aria-pressed={selected}
+        selected={selected}
         aria-controls={controls}
         onClick={() => onSelect(field)}
       >
@@ -44,12 +42,12 @@ function CategoryChip({
             width={64}
             height={64}
             sizes="(max-width: 767px) 28px, 36px"
-            className={styles.icon}
+            className="h-9 w-9 shrink-0 object-contain [filter:saturate(.55)_brightness(1.07)_contrast(.94)] opacity-[.72] transition-[filter,opacity] duration-[180ms] pointer-fine:group-hover:filter-none pointer-fine:group-hover:opacity-100 group-aria-pressed:filter-none group-aria-pressed:opacity-100 motion-safe:pointer-fine:transition-transform motion-safe:pointer-fine:duration-300 motion-safe:pointer-fine:group-hover:-translate-y-1 motion-safe:pointer-fine:group-hover:rotate-2 max-md:h-7 max-md:w-7"
             alt=""
           />
         )}
         <span>{displayLabel}</span>
-      </button>
+      </FilterChip>
     </li>
   );
 }
@@ -83,26 +81,30 @@ export function HomepageCategoryChips({
 
   return (
     <nav
-      className={styles.categories}
+      className="grid w-full gap-3"
       aria-label="Explore internship categories"
     >
-      <ul className={styles.chips}>{chips.slice(0, 5).map(renderChip)}</ul>
-      <ul className={styles.chips}>
+      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:gap-2.5">
+        {chips.slice(0, 5).map(renderChip)}
+      </ul>
+      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:gap-2.5">
         {chips.slice(5).map(renderChip)}
-        <li className={styles.allItem}>
-          <Link
+        <li className="list-none">
+          <LinkButton
             href="/search"
-            className={`${styles.chip} ${styles.primary} ${motionStyles.action}`}
+            variant="primary"
+            size="chip"
+            className="max-md:min-h-14 max-md:gap-2 max-md:px-3 max-md:text-sm"
             aria-label="Browse all internships"
           >
             <span>All</span>
             <ArrowRight
               size={18}
               strokeWidth={1.75}
-              className={motionStyles.arrow}
+              className="transition-transform duration-[160ms] ease-landing-out motion-safe:pointer-fine:group-hover:translate-x-0.5 motion-reduce:transition-none"
               aria-hidden="true"
             />
-          </Link>
+          </LinkButton>
         </li>
       </ul>
     </nav>

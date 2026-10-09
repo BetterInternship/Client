@@ -1,59 +1,17 @@
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, MessageCircle, Facebook, Mail } from "lucide-react";
-import {
-  BI_DISCORD_INVITE,
-  STUDENT_FORM_GUIDE,
-  SUPPORT_EMAIL_LINK,
-  SUPPORT_FACEBOOK,
-} from "@/constants";
-import type { RefsData } from "@/lib/db/db.types";
 import { getHomepageFields } from "./homepage-data";
-import styles from "./homepage.module.css";
-import { DiscordMark } from "@/components/features/student/top/DiscordMark";
+import type { RefsData } from "@/lib/db/db.types";
+import { HomepageArtwork, HomepageSectionSprite } from "./homepage-artwork";
+import { HomepageCommunity } from "./sections/homepage-community";
+import { HomepageFaq } from "./sections/homepage-faq";
+import { HomepageFooter } from "./homepage-footer";
+import { HomepageHeader } from "./homepage-header";
+import { HomepageOpportunityBrowser } from "./sections/homepage-opportunity-browser";
+import { HomepageTestimonials } from "./sections/homepage-testimonials";
+import { SectionHeading } from "@/components/ui/temp/section-heading";
 import { HomepageMotion } from "./homepage-motion";
-import { HomepageTestimonials } from "./homepage-testimonials";
-import { HomepageFaq } from "./homepage-faq";
-import { HomepageOpportunityBrowser } from "./homepage-opportunity-browser";
-import {
-  TopPageBackdrop,
-  TopDiscordArtwork,
-} from "@/components/features/student/top/TopArtwork";
 import { topAccentStyle } from "@/lib/utils/top-page-presentation";
-
-const hireHref =
-  process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
-  "https://hire.betterinternship.com";
-const loginHref = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-
-const heroSprites = [
-  {
-    name: "badge",
-    width: 640,
-    height: 564,
-    sizes: "(max-width: 767px) 110px, (max-width: 1379px) 280px, 420px",
-  },
-  {
-    name: "profile",
-    width: 640,
-    height: 434,
-    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 176px, 256px",
-  },
-  {
-    name: "cap",
-    width: 640,
-    height: 428,
-    sizes: "(max-width: 767px) 80px, (max-width: 1379px) 100px, 170px",
-  },
-  { name: "squiggle", width: 640, height: 264, sizes: "56px" },
-  {
-    name: "plane",
-    width: 640,
-    height: 409,
-    sizes: "(max-width: 767px) 36px, (max-width: 1379px) 48px, 72px",
-  },
-  { name: "sparkle", width: 640, height: 667, sizes: "20px" },
-];
+import { cn } from "@betterinternship/components";
+import { landingContainerClassName as homepageContainerClassName } from "@/components/landing/layout";
 
 // Supplied example copy. Replace with approved student testimonials.
 const testimonials = [
@@ -86,149 +44,62 @@ const testimonials = [
   },
 ];
 
-function Brand() {
-  return (
-    <Link href="/" className="home-brand" aria-label="BetterInternship home">
-      <Image src="/homepage-logo.png" width={36} height={36} alt="" />
-      <span>BetterInternship</span>
-    </Link>
-  );
-}
-
 export function StudentHomepage({ refs }: { refs: RefsData }) {
   const fields = getHomepageFields(refs.job_categories);
+
   return (
-    <HomepageMotion className={styles.homepage} style={topAccentStyle()}>
-      <div className="home-page-backdrop" aria-hidden="true">
-        <TopPageBackdrop />
-      </div>
-      <div className="home-landing-art" aria-hidden="true">
-        {heroSprites.map(({ name, width, height, sizes }) => (
-          <Image
-            key={name}
-            src={`/homepage/hero-${name}.webp`}
-            width={width}
-            height={height}
-            sizes={sizes}
-            alt=""
-            className={`home-hero-sprite home-hero-sprite-${name}`}
-          />
-        ))}
-      </div>
-      <header className="home-header home-container">
-        <Brand />
-        <nav aria-label="Main navigation">
-          <a href={hireHref}>For Companies</a>
-          <a href={STUDENT_FORM_GUIDE}>Guides</a>
-          <a href={loginHref} className="home-login">
-            Log in
-            <ArrowRight size={15} aria-hidden="true" />
-          </a>
-        </nav>
-      </header>
-      <main className="home-main">
+    <HomepageMotion
+      className="relative isolate min-h-full w-full shrink-0 overflow-x-clip text-landing-navy [&_a]:cursor-pointer [&_button:not(:disabled)]:cursor-pointer [&_[role=button]]:cursor-pointer"
+      style={{
+        ...topAccentStyle(),
+        background: "linear-gradient(#fff, var(--top-surface) 50rem)",
+      }}
+    >
+      <HomepageArtwork />
+      <HomepageHeader />
+
+      <main className="relative z-10 pb-12">
         <section
-          className="home-intro home-container"
+          className={cn(
+            homepageContainerClassName,
+            "flex flex-col items-center pt-32 text-center md:max-lg:pt-26 max-md:pt-18",
+          )}
           aria-labelledby="home-heading"
         >
-          <h1 id="home-heading">
-            <span className="home-headline-line">Better internships</span>{" "}
-            <span className="home-headline-line">start here</span>
+          <h1
+            className="m-0 text-[clamp(3.25rem,5.8vw,5.375rem)] font-[750] leading-[.98] tracking-[-.225rem] text-landing-navy motion-safe:animate-landing-introduce max-md:text-[clamp(2rem,6.2vw,3rem)] max-md:leading-[1.02] max-md:tracking-[-.0875rem]"
+            id="home-heading"
+          >
+            <span className="block">Better internships</span>
+            <span className="block">start here</span>
           </h1>
-          <p>Discover opportunities across the Philippines.</p>
+          <p className="mb-8 mt-5 text-lg leading-[1.5] text-landing-nav motion-safe:animate-landing-introduce motion-safe:[animation-delay:60ms] max-md:mb-7 max-md:mt-4.5 max-md:text-[15px]">
+            Discover opportunities across the Philippines.
+          </p>
           <HomepageOpportunityBrowser fields={fields} />
         </section>
-        <div className="home-container">
+
+        <div className={homepageContainerClassName}>
           <HomepageTestimonials testimonials={testimonials} />
+          <HomepageCommunity />
 
           <section
-            className="home-discord home-discord-top home-section home-reveal"
-            aria-labelledby="home-discord-heading"
-          >
-            <div className="home-discord-art" aria-hidden="true">
-              <div className="home-discord-shared-art">
-                <TopDiscordArtwork />
-              </div>
-            </div>
-            <div className="home-discord-copy">
-              <h2 id="home-discord-heading">
-                Get notified when <span>new internships drop</span> and{" "}
-                <span>apply with one click</span>
-              </h2>
-              <a className="home-discord-button" href={BI_DISCORD_INVITE}>
-                <DiscordMark width={24} height={24} />
-                Join the Discord
-                <ArrowRight aria-hidden="true" size={20} />
-              </a>
-            </div>
-          </section>
-
-          <section
-            className="home-section home-faq home-reveal"
+            className="relative isolate mt-25 transition-[opacity,transform] duration-[360ms] ease-landing-out data-[reveal=pending]:translate-y-2 data-[reveal=pending]:opacity-0 motion-reduce:transition-none max-md:mt-14"
             id="faq"
             aria-labelledby="home-faq-heading"
+            data-home-reveal
           >
-            <div className="home-section-art" aria-hidden="true">
-              <Image
-                src="/homepage/landing-bulb.webp"
-                width={480}
-                height={513}
-                sizes="(max-width: 1023px) 80px, 120px"
-                className="home-page-sprite home-page-sprite-bulb"
-                alt=""
-              />
-            </div>
-            <div className="home-section-heading">
-              <h2 id="home-faq-heading">Frequently asked questions</h2>
-            </div>
+            <HomepageSectionSprite name="bulb" placement="faq" />
+            <SectionHeading
+              title="Frequently asked questions"
+              id="home-faq-heading"
+            />
             <HomepageFaq />
           </section>
         </div>
       </main>
 
-      <footer className="home-footer">
-        <div className="home-container home-footer-top">
-          <div className="home-footer-brand">
-            <Brand />
-            <nav
-              className="home-footer-icons"
-              aria-label="Social and contact links"
-            >
-              <a href={BI_DISCORD_INVITE} aria-label="BetterInternship Discord">
-                <MessageCircle size={20} aria-hidden="true" />
-              </a>
-              <a
-                href={SUPPORT_FACEBOOK}
-                aria-label="BetterInternship on Facebook"
-              >
-                <Facebook size={20} aria-hidden="true" />
-              </a>
-              <a href={SUPPORT_EMAIL_LINK} aria-label="Email BetterInternship">
-                <Mail size={20} aria-hidden="true" />
-              </a>
-            </nav>
-          </div>
-          <nav className="home-footer-group" aria-label="For students">
-            <h3>For Students</h3>
-            <Link href="/search">Find Internships</Link>
-            <a href={STUDENT_FORM_GUIDE}>Guides</a>
-          </nav>
-          <div className="home-footer-company">
-            <nav className="home-footer-group" aria-label="For companies">
-              <h3>For Companies</h3>
-              <a href={hireHref}>Post Opportunities</a>
-              <a href={SUPPORT_EMAIL_LINK}>Contact Us</a>
-            </nav>
-          </div>
-        </div>
-        <div className="home-container home-footer-bottom">
-          <nav className="home-footer-links" aria-label="Legal">
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-          </nav>
-          <p>© {new Date().getFullYear()} BetterInternship.</p>
-        </div>
-      </footer>
+      <HomepageFooter />
     </HomepageMotion>
   );
 }

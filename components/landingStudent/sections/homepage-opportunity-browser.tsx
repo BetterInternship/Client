@@ -1,18 +1,18 @@
 "use client";
 
 import { useId, useState } from "react";
-import Link from "next/link";
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
   type Variants,
 } from "framer-motion";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import motionStyles from "@/components/features/student/top/top-motion.module.css";
 import { HomepageCategoryChips } from "./homepage-category-chips";
-import { homepageHeroCategories, type HomepageField } from "./homepage-data";
-import styles from "./homepage-opportunity-browser.module.css";
+import { homepageHeroCategories, type HomepageField } from "../homepage-data";
+import { JobCard } from "@/components/ui/temp/job-card";
+import { LinkButton } from "@/components/ui/temp/button";
 
 const dummyTitles: Record<string, string[]> = {
   All: [
@@ -171,8 +171,8 @@ export function HomepageOpportunityBrowser({
   };
 
   return (
-    <div className={styles.browser} data-category={label}>
-      <div className="home-category-picker">
+    <div className="w-full" data-category={label}>
+      <div className="w-full">
         <HomepageCategoryChips
           fields={fields}
           selectedCategory={selected?.label ?? null}
@@ -181,7 +181,7 @@ export function HomepageOpportunityBrowser({
         />
       </div>
       <section
-        className={styles.opportunities}
+        className="mt-18 w-full text-left max-sm:mt-12"
         id={regionId}
         aria-label={selected ? `${label} internships` : "Latest internships"}
       >
@@ -196,64 +196,47 @@ export function HomepageOpportunityBrowser({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={selected?.label ?? "all"}
-            className={styles.grid}
+            className="grid auto-rows-[minmax(13rem,1fr)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
             variants={gridVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             {titles.map((title, index) => (
-              <motion.article
+              <motion.div
                 key={title}
-                className={`${styles.listing} ${motionStyles.action}`}
+                className={`${motionStyles.action} h-full`}
                 variants={cardVariants}
                 whileHover={reduceMotion ? undefined : { y: -2 }}
                 transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                aria-label={`${title} at Example company`}
-                data-demo="true"
               >
-                <h3 className={styles.listingTitle}>{title}</h3>
-                <p className={styles.companyName}>Example company</p>
-                <div className={styles.facts}>
-                  <span>
-                    <MapPin size={15} strokeWidth={1.75} aria-hidden="true" />
-                    {dummyDetails[index].location}
-                  </span>
-                </div>
-                <div className={styles.tags}>
-                  <span>{dummyDetails[index].mode}</span>
-                  <span>{selected ? label : dummyDetails[index].category}</span>
-                  <span>Paid</span>
-                </div>
-                <div className={styles.listingFooter}>
-                  <span>Posted recently</span>
-                  <Link
-                    href={
+                <JobCard
+                  job={{
+                    title,
+                    companyName: "Example company",
+                    location: dummyDetails[index].location,
+                    workMode: dummyDetails[index].mode,
+                    category: selected ? label : dummyDetails[index].category,
+                    compensation: "Paid",
+                    postedLabel: "Posted recently",
+                    href:
                       selected?.href ??
                       fields.find(
                         (field) => field.label === dummyDetails[index].field,
                       )?.href ??
-                      "/search"
-                    }
-                    className={styles.viewLink}
-                    aria-label={`View ${title}`}
-                  >
-                    View
-                    <ArrowRight
-                      className={motionStyles.arrow}
-                      size={14}
-                      strokeWidth={1.75}
-                      aria-hidden="true"
-                    />
-                  </Link>
-                </div>
-              </motion.article>
+                      "/search",
+                  }}
+                  data-demo="true"
+                />
+              </motion.div>
             ))}
           </motion.div>
         </AnimatePresence>
-        <Link
+        <LinkButton
           href={viewMoreHref}
-          className={`${styles.viewMoreButton} ${motionStyles.action}`}
+          variant="chip"
+          size="chip"
+          className="mx-auto mt-5 flex w-fit gap-2 text-landing-blue"
           aria-label={
             selected
               ? `View more ${label} internships`
@@ -262,12 +245,12 @@ export function HomepageOpportunityBrowser({
         >
           View more internships
           <ArrowRight
-            className={motionStyles.arrow}
+            className="transition-transform duration-[160ms] ease-landing-out motion-safe:pointer-fine:group-hover:translate-x-0.5 motion-reduce:transition-none"
             size={18}
             strokeWidth={1.75}
             aria-hidden="true"
           />
-        </Link>
+        </LinkButton>
       </section>
     </div>
   );

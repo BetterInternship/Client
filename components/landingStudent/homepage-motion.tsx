@@ -19,7 +19,8 @@ export function HomepageMotion({
     const element = root.current;
     if (!element || !window.IntersectionObserver) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sections = element.querySelectorAll<HTMLElement>(".home-reveal");
+    const sections =
+      element.querySelectorAll<HTMLElement>("[data-home-reveal]");
     const show = (section: HTMLElement) => {
       section.dataset.reveal = "visible";
     };
@@ -48,7 +49,7 @@ export function HomepageMotion({
     // Never make keyboard users wait for an offscreen animation to finish.
     const onFocus = (event: FocusEvent) => {
       if (!(event.target instanceof HTMLElement)) return;
-      const section = event.target.closest<HTMLElement>(".home-reveal");
+      const section = event.target.closest<HTMLElement>("[data-home-reveal]");
       if (section) {
         section.dataset.revealInstant = "true";
         show(section);
