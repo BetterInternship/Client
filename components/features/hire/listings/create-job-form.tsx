@@ -209,7 +209,7 @@ export const CreateJobForm = ({
                 <span className="flex flex-wrap items-baseline gap-x-3">
                   <span className="">Optional details</span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    Pay, requirements, deadline
+                    Pay and requirements
                   </span>
                 </span>
               </span>
@@ -291,16 +291,6 @@ export const CreateJobForm = ({
                       />
                     </div>
                   </div>
-
-                  {/* Deadline */}
-                  <FormDatePicker
-                    label="Application deadline"
-                    date={formData.application_deadline ?? undefined}
-                    setter={(v) => setField("application_deadline", v)}
-                    placeholder="No deadline"
-                    disabledDays={{ before: new Date() }}
-                    className="w-full sm:w-56"
-                  />
                 </div>
               </div>
             </AccordionContent>
