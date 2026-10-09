@@ -103,11 +103,11 @@ export const CreateJobForm = ({
   };
 
   return (
-    <PageContainer className={cn("mt-20 pb-20 lg:pb-0", className)}>
+    <PageContainer className={cn("pt-20", className)}>
       <div className="flex flex-col gap-4">
         {/* Essentials */}
         <div>
-          <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-[3fr_1fr_1fr] lg:grid-rows-[auto_auto]">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-3">
             <div className="sm:col-span-2 lg:col-span-1">
               <FormInput
                 label="Title"
