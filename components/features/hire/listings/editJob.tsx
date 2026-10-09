@@ -49,8 +49,7 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
     const [isMissing, setMissing] = useState(false);
     const [challengeTitle, setChallengeTitle] = useState("");
     const [challengeDescription, setChallengeDescription] = useState("");
-    const { formData, setField, setFields } =
-      useFormData<Job>(job);
+    const { formData, setField, setFields } = useFormData<Job>(job);
     const router = useRouter();
     const profile = useProfile();
     const searchParams = useSearchParams();
@@ -246,9 +245,6 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
         onConfirm: () => router.push(`/dashboard/manage?jobId=${job.id}`),
       });
 
-    // Desktop's Cancel/Save controls now live in the parent page's JobHeader
-    // (see EditJobPageRouteContent) so there's a single header instead of two
-    // stacked ones. The parent triggers a save through this handle.
     useImperativeHandle(ref, () => ({ submit: () => void handleSaveEdit() }));
 
     return (
@@ -258,17 +254,7 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
           setField={setField}
           categoryOptions={category_items as any}
           job_pay_freq={job_pay_freq}
-          className={cn("mt-6", isMobile ? "pb-24" : "pb-8")}
-          challenge={
-            isSuperListing
-              ? {
-                  title: challengeTitle,
-                  description: challengeDescription,
-                  setTitle: setChallengeTitle,
-                  setDescription: setChallengeDescription,
-                }
-              : undefined
-          }
+          className={cn("pt-0", isMobile ? "pb-24" : "pb-8")}
         />
         {isMobile && (
           <div className="bg-white border-t border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50">
