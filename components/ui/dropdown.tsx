@@ -116,10 +116,10 @@ const DropdownOptionButton = ({
       // @ts-ignore
       ref={dropdown_button_ref}
       className={cn(
-        "w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
+        "w-full text-left px-4 py-2 text-muted-foreground hover:bg-gray-100 transition-colors flex items-center gap-2",
         is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "",
         `text-${size}`,
-        children.props.highlighted ? "text-blue-500" : "",
+        children.props.highlighted ? "bg-blue-50" : "",
       )}
       onClick={(e) => !scrolling && handleClick(e)}
     >
@@ -277,15 +277,15 @@ export const GroupableRadioDropdown = <ID extends number | string>({
           <div
             className={cn(
               isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-[0.33em] border border-b-0 border-gray-200 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 top-full mt-1 bg-white rounded-[0.33em] shadow-xl overflow-hidden border border-gray-100 z-[9999] duration-200 ease-out transition-all max-w-full",
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-[0.33em] border border-b-0 border-gray-300 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 top-full mt-1 bg-white rounded-[0.33em] py-1 shadow-lg overflow-hidden border border-gray-300 z-[9999] duration-200 ease-out transition-all max-w-full",
             )}
             role="listbox"
           >
             <div
               className={cn(
                 "relative z-[100] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-                isMobile ? "max-h-[calc(70vh-0.5rem)]" : "max-h-40",
+                isMobile ? "max-h-[calc(70vh-0.5rem)]" : "max-h-[400px]",
               )}
             >
               {options.map((option, index) => (
@@ -467,7 +467,7 @@ export const GroupableNavDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-[1000]",
+            "absolute right-0 mt-2 bg-white border border-gray-300 rounded-[0.33em] shadow-lg z-[1000]",
             is_mobile ? "w-56" : "w-48", // Slightly wider on mobile for better touch targets
             className,
           )}
