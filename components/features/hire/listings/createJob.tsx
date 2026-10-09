@@ -295,7 +295,7 @@ const CreateJobPage = ({
       {/* Header */}
       <div
         className={cn(
-          "bg-white border-b fixed top-0 right-0 left-0 z-30",
+          "bg-white fixed top-0 right-0 left-0 z-30",
           isMobile ? "pt-20" : "mt-20",
         )}
       >
