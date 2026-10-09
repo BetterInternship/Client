@@ -48,7 +48,7 @@ export const EditableInput = ({
       placeholder={placeholder}
       maxLength={maxLength}
       className={cn(
-        " border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto",
+        " border-gray-300 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto",
         className,
       )}
     />

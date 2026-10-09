@@ -4,9 +4,9 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "@betterinternship/components";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@betterinternship/components";
-import { ChevronDown, PlusCircleIcon, Search, X } from "lucide-react";
+import { Check, ChevronDown, PlusCircleIcon, Search, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
-import { Button } from "@betterinternship/components";
+import { Button, Checkbox } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 
 export interface IAutocompleteOption<ID extends number | string> {
@@ -46,7 +46,7 @@ function AutocompleteBase<ID extends number | string>({
   className?: string;
   multiple?: boolean;
   label?: React.ReactNode;
-  labelAddon?: string;
+  labelAddon?: React.ReactNode;
   allowCustomValue?: boolean;
   preserveOptionOrder?: boolean;
   emptyText?: string;
@@ -300,20 +300,19 @@ function AutocompleteBase<ID extends number | string>({
       }}
     >
       {label ? (
-        <div className="flex items-center gap-2 mb-1">
-          <label htmlFor={inputId} className="text-xs text-gray-600">
-            {label} {required && <span className="text-red-500">*</span>}
-          </label>
-          {labelAddon && <div>{labelAddon}</div>}
-        </div>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          labelAddon={labelAddon}
+        />
       ) : null}
 
       {multiple ? (
         // ---------- MULTI: chips inline inside the box ----------
         <div
           className={cn(
-            "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
-            "px-2 py-1 flex flex-wrap items-center gap-1",
+            "relative min-h-8 w-full rounded-[0.33em] border border-gray-300 bg-background",
+            "py-[0.25em] pr-9 flex flex-wrap items-center gap-1",
             "focus-within:border-primary focus-within:border-opacity-50",
           )}
           onClick={() => {
@@ -372,10 +371,18 @@ function AutocompleteBase<ID extends number | string>({
             readOnly={suppressMobileKeyboard}
             placeholder={(value?.length ?? 0) === 0 ? placeholder : ""}
             className={cn(
-              "flex-1 min-w-[8ch] h-7 text-sm",
+              "flex-1 min-w-[8ch] h-6 text-sm",
               "bg-transparent outline-none border-none focus:ring-0",
+              "placeholder:text-muted-foreground focus:placeholder:text-primary/70",
             )}
             {...props}
+          />
+          <ChevronDown
+            className={cn(
+              "pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-transform",
+              isOpen && "rotate-180",
+            )}
+            aria-hidden="true"
           />
         </div>
       ) : (
@@ -451,9 +458,9 @@ function AutocompleteBase<ID extends number | string>({
           )}
           <ul
             className={cn(
-              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg border border-gray-300",
               useMobileSheet
-                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-300 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={
@@ -524,12 +531,25 @@ function AutocompleteBase<ID extends number | string>({
                       }
                     }}
                     className={cn(
-                      "w-full text-left px-4 py-2 text-sm text-gray-700 transition-colors flex items-center gap-2 cursor-pointer hover:bg-gray-100",
+                      "w-full text-left px-4 py-2 text-sm text-muted-foreground transition-colors flex items-center gap-2 cursor-pointer hover:bg-gray-100",
                       active && "bg-blue-50",
                     )}
                   >
                     {multiple ? (
-                      <input type="checkbox" readOnly checked={active} />
+                      <Checkbox
+                        checked={active}
+                        tabIndex={-1}
+                        className={cn(
+                          "pointer-events-none inline-flex items-center justify-center rounded-[0.33em] border aspect-square w-5 h-5",
+                          active
+                            ? "border-primary border-opacity-85 bg-blue-200"
+                            : "border-gray-300 bg-gray-50",
+                        )}
+                      >
+                        {active ? (
+                          <Check className="text-primary h-4 w-4" />
+                        ) : null}
+                      </Checkbox>
                     ) : null}
                     {option.name}
                   </li>
@@ -538,6 +558,21 @@ function AutocompleteBase<ID extends number | string>({
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700 text-primary text-opacity-50">
                 {emptyText}
+              </li>
+            )}
+            {useMobileSheet && (
+              <li className="sticky bottom-0 z-10 border-t border-gray-300 bg-white px-4 pb-1 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setQuery("");
+                    setIsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
               </li>
             )}
           </ul>
@@ -919,9 +954,9 @@ export function AutocompleteTreeMulti({
           )}
           <ul
             className={cn(
-              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg border border-gray-300",
               useMobileSheet
-                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                ? "fixed left-0 right-0 z-[1100] mt-0 rounded-t-[0.33em] border border-b-0 border-gray-300 pb-3 shadow-2xl"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
             )}
             style={
@@ -1007,6 +1042,21 @@ export function AutocompleteTreeMulti({
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
                 ...
+              </li>
+            )}
+            {useMobileSheet && (
+              <li className="sticky bottom-0 z-10 border-t border-gray-300 bg-white px-4 pb-1 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setQuery("");
+                    setIsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
               </li>
             )}
           </ul>
