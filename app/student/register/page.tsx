@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
 import { SUPPORT_FACEBOOK } from "@/constants";
 import { consumePostLoginRedirect } from "@/lib/post-login-redirect";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 export interface FormInputs {
   first_name?: string;
@@ -113,7 +114,7 @@ function RegisterPageContent() {
           return;
         }
         sessionStorage.setItem("register_oauth_bounce", "1");
-        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+        window.location.href = googleLoginUrl();
       } catch {
         // API unreachable — show the form rather than trap the user
         if (!cancelled) setCheckingRegAccess(false);

@@ -11,6 +11,7 @@ import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import useApplicationActions from "@/hooks/use-application-actions";
+import { fileUrls } from "@/lib/api/urls";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -46,9 +47,15 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
         ),
       [selectedApplication?.user_id, selectedApplication?.resume_id],
     ),
-    route: selectedApplication
-      ? `/users/${selectedApplication.user_id}/resume/${selectedApplication.resume_id}`
-      : "",
+    route: useCallback(
+      (hash: string) =>
+        fileUrls.userResume(
+          hash,
+          selectedApplication?.user_id ?? "",
+          selectedApplication?.resume_id ?? "",
+        ),
+      [selectedApplication?.user_id, selectedApplication?.resume_id],
+    ),
   });
 
   // Refresh presigned URL whenever the selected applicant changes

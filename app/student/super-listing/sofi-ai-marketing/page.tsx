@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
@@ -20,6 +20,7 @@ import type {
   SofiAiSubmissionForm,
   SuperListingUnlockForm,
 } from "./components/types";
+import { SuperListingService } from "@/lib/api/super-listings.api";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -106,12 +107,6 @@ export default function SofiAiSuperListingPage() {
 
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
-
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/sofi-ai-marketing";
-    return `${base}/super-listings/submission/sofi-ai-marketing`;
-  }, []);
 
   useEffect(() => {
     if (!showClosedModal) {
@@ -276,20 +271,14 @@ export default function SofiAiSuperListingPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email.trim(),
-          submissionLink: form.submissionLink.trim(),
-          submissionNotes: combinedNotes,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
+      const data = (await SuperListingService.submit("sofi-ai-marketing", {
+        email: form.email.trim(),
+        submissionLink: form.submissionLink.trim(),
+        submissionNotes: combinedNotes,
+        "cf-token": isDevelopment ? "dev-bypass" : token,
+      })) as SofiAiSubmissionResponse;
 
-      const data = (await response.json()) as SofiAiSubmissionResponse;
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.message || "Could not send your application.");
       }
 

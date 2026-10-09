@@ -6,6 +6,7 @@ import { Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
+import { googleLoginUrl } from "@/lib/api/urls";
 
 /**
  * CTA that toggles the student's waitlist ("job alert") membership on a
@@ -42,7 +43,7 @@ export const ListingAlertButton = ({
     event.stopPropagation();
 
     if (!auth.isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+      window.location.href = googleLoginUrl();
       return;
     }
     if (!job.id) return;

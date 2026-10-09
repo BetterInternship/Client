@@ -10,6 +10,7 @@
 import { useCallback, useEffect } from "react";
 import { useFile } from "@/hooks/use-file";
 import { EmployerService, UserService } from "@/lib/api/services";
+import { fileUrls } from "@/lib/api/urls";
 
 /** Dispatched after a pfp upload so every mounted pfp re-syncs its hash. */
 export const PFP_UPDATED_EVENT = "bi:pfp-updated";
@@ -49,7 +50,13 @@ export const usePfpUrl = ({
   );
 
   const { url, loading, sync } = useFile({
-    route: `/${source}/${id}/pic`,
+    route: useCallback(
+      (hash: string) =>
+        source === "employer"
+          ? fileUrls.employerLogo(hash, id)
+          : fileUrls.userPfp(hash, id),
+      [id, source],
+    ),
     fetcher,
     defaultURL,
   });

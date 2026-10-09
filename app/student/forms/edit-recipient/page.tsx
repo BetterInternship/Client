@@ -18,6 +18,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RecipientSigningPartyTimeline } from "../components/RecipientSigningPartyTimeline";
 import { getRecipientEmailErrors } from "../components/recipient-email-validation";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { getRecipientEmailValidator } from "@betterinternship/core/forms";
 
 export default function EditRecipientPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -50,6 +51,9 @@ export default function EditRecipientPage() {
   const signingPartyTitle = context?.signingPartyTitle || "Recipient";
   const targetSigningPartyId = context?.targetSigningPartyId || "";
   const signingParties = context?.signingParties || [];
+  const emailOptions = context?.signingParties.find(
+    (party) => party.id === targetSigningPartyId,
+  )?.emailOptions;
   const [recipientEmail, setRecipientEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -64,6 +68,15 @@ export default function EditRecipientPage() {
     ["student", "initiator"].includes(title.trim().toLowerCase());
   const editableError = useMemo(() => {
     if (!targetSigningPartyId) return "";
+    if (
+      emailOptions !== undefined &&
+      normalizedRecipientEmail &&
+      !getRecipientEmailValidator({
+        signatory_email_options: emailOptions,
+      }).safeParse(recipientEmail).success
+    ) {
+      return "Select a configured recipient email.";
+    }
 
     if (
       normalizedRecipientEmail &&
@@ -84,6 +97,7 @@ export default function EditRecipientPage() {
     profile.data?.email,
     recipientEmail,
     targetSigningPartyId,
+    emailOptions,
   ]);
 
   redirectIfNotLoggedIn();
@@ -211,6 +225,7 @@ export default function EditRecipientPage() {
                     id: party.id,
                     title: party.title,
                     email: party.email,
+                    emailOptions: party.emailOptions,
                     isMe: isCurrentUserSigningParty(party.title),
                     isEditable: party.id === targetSigningPartyId,
                   }))}
@@ -223,7 +238,12 @@ export default function EditRecipientPage() {
               </div>
             )}
 
-            <form className="mt-4 space-y-3" onSubmit={onSubmit}>
+            <form
+              className="mt-4 space-y-3"
+              onSubmit={(event) => {
+                void onSubmit(event);
+              }}
+            >
               {isConfirming && (
                 <div className="space-y-4">
                   <div className="mb-3 flex items-start gap-2">

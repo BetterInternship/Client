@@ -219,7 +219,6 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
         !formData.title?.trim() ||
         !formData.location?.trim() ||
         !formData.description?.trim() ||
-        formData.allowance === undefined ||
         !formData.internship_preferences?.internship_types?.length ||
         !formData.internship_preferences?.job_commitment_ids?.length ||
         !formData.internship_preferences?.job_setup_ids?.length ||

@@ -9,9 +9,34 @@
 @source "../node_modules/@betterinternship/components/dist/**/*.js";
 
 @theme {
+  --color-landing-navy: #101044;
+  --color-landing-blue: #0064ed;
+  --color-landing-muted: #5d719b;
+  --color-landing-border: #e1e7ef;
+  --color-landing-tint: #f0f6ff;
+  --color-landing-control: #d9e2ef;
+  --color-landing-control-hover: #c4cfdf;
+  --color-landing-border-hover: #cfd5df;
+  --color-landing-blue-hover: #0053c7;
+  --color-landing-nav: #374151;
+  --color-landing-nav-hover: #111827;
+  --color-landing-community: #0060e5;
+  --color-landing-footer: #fbfdff;
+  --color-landing-social: #66758c;
+  --color-landing-tag: #f1f4f8;
+  --color-landing-secondary: #c39035;
+  --color-landing-secondary-deep: #80571d;
+  --color-landing-secondary-tint: #fcf6e8;
+  --color-landing-secondary-border: #dfc58d;
+  --shadow-landing-card: 0 8px 24px rgb(15 23 42 / 5%);
+  --shadow-landing-interactive: 0 10px 28px rgb(31 45 68 / 8%);
+  --ease-landing-out: cubic-bezier(0.23, 1, 0.32, 1);
+
   --animate-marquee-horizontal: marquee-x var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-y var(--duration) linear infinite;
   --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-landing-introduce: landing-introduce 360ms var(--ease-landing-out)
+    both;
   --animate-slide-up: slide-up 0.4s ease-out;
   --animate-scale-in: scale-in 0.3s ease-out;
   --animate-jitter: jitter 1.5s ease-in-out infinite;
@@ -87,6 +112,16 @@
       transform: translateY(10px);
     }
     100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes landing-introduce {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
       opacity: 1;
       transform: translateY(0);
     }

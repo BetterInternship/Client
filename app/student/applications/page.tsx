@@ -54,6 +54,7 @@ import {
   SavedJobCard,
   SavedJobItem,
 } from "@/components/features/student/job/saved-job-card";
+import { fileUrls } from "@/lib/api/urls";
 
 type TabValue = "applications" | "saved" | "alerts";
 
@@ -97,7 +98,8 @@ function MyJobsPageInner() {
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
-    route: (resumeId: string) => `/users/me/resume/${resumeId}`,
+    route: (hash: string, resumeId: string) =>
+      fileUrls.myResume(hash, resumeId),
   });
   const { open: openResumeModal, Modal: ResumeModal } = useModal(
     "application-resume-modal",

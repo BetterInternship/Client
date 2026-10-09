@@ -7,6 +7,8 @@
  * erroring, and a temporary redirect means a mis-pointed slug can still be
  * fixed later instead of staying cached in every browser that clicked it (D10).
  */
+import { LinkService } from "@/lib/api/services";
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -15,11 +17,7 @@ export async function GET(
   const origin = new URL(request.url).origin;
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/links/${slug}`,
-      { cache: "no-store" },
-    );
-    const data = (await res.json()) as { url?: string | null };
+    const data = await LinkService.resolve(slug, { cache: "no-store" });
     return Response.redirect(data?.url ?? origin, 307);
   } catch {
     return Response.redirect(origin, 307);
