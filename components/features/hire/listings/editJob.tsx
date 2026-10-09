@@ -1,10 +1,8 @@
 "use client";
 
-import { Button, PageContainer } from "@betterinternship/components";
+import { Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
-import { BasicStep } from "./create-job-steps/BasicStep";
-import { SetupStep } from "./create-job-steps/SetupStep";
-import { DetailsStep } from "./create-job-steps/DetailsStep";
+import { CreateJobForm } from "./create-job-form";
 import { useModalRegistry } from "@/components/modals/modal-registry";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
@@ -51,7 +49,7 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
     const [isMissing, setMissing] = useState(false);
     const [challengeTitle, setChallengeTitle] = useState("");
     const [challengeDescription, setChallengeDescription] = useState("");
-    const { formData, setField, setFields, fieldSetter } =
+    const { formData, setField, setFields } =
       useFormData<Job>(job);
     const router = useRouter();
     const profile = useProfile();
@@ -255,33 +253,23 @@ const EditJobPage = forwardRef<EditJobPageHandle, EditJobPageProps>(
 
     return (
       <>
-        <PageContainer
-          className={cn(
-            "pb-24 sm:pb-8 flex flex-col gap-8 py-0",
-            isMobile ? "pb-20" : "",
-          )}
-        >
-          <div className="space-y-24">
-            <BasicStep
-              formData={formData}
-              fieldSetter={fieldSetter}
-              setField={setField}
-              categoryOptions={category_items as any}
-              isSuperListing={isSuperListing}
-              challengeTitle={challengeTitle}
-              challengeDescription={challengeDescription}
-              setChallengeTitle={setChallengeTitle}
-              setChallengeDescription={setChallengeDescription}
-            />
-            <SetupStep
-              formData={formData}
-              setField={setField}
-              fieldSetter={fieldSetter}
-              job_pay_freq={job_pay_freq as any}
-            />
-            <DetailsStep formData={formData} setField={setField} />
-          </div>
-        </PageContainer>
+        <CreateJobForm
+          formData={formData}
+          setField={setField}
+          categoryOptions={category_items as any}
+          job_pay_freq={job_pay_freq}
+          className={cn("mt-6", isMobile ? "pb-24" : "pb-8")}
+          challenge={
+            isSuperListing
+              ? {
+                  title: challengeTitle,
+                  description: challengeDescription,
+                  setTitle: setChallengeTitle,
+                  setDescription: setChallengeDescription,
+                }
+              : undefined
+          }
+        />
         {isMobile && (
           <div className="bg-white border-t border-gray-200 px-6 py-4 fixed bottom-0 right-0 left-0 z-50">
             <div className="max-w-5xl mx-auto flex justify-between items-center gap-4">
