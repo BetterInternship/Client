@@ -1,0 +1,202 @@
+.backdrop {
+  position: absolute;
+  z-index: -1;
+  inset: clamp(42rem, 55vw, 50rem) 0 auto;
+  height: clamp(38rem, 62vw, 56rem);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.25;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 15%,
+    rgb(0 0 0 / 55%) 50%,
+    transparent 90%
+  );
+}
+
+.canvas {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sprite {
+  position: absolute;
+  display: block;
+  max-width: none;
+  height: auto;
+  user-select: none;
+}
+
+.badge {
+  top: clamp(8rem, 11.1vw, 10rem);
+  left: clamp(-14rem, -15vw, -5.5rem);
+  width: clamp(16rem, 29.2vw, 26.25rem);
+  transform: rotate(-12deg);
+  filter: saturate(0.55) brightness(1.08) contrast(0.94);
+  opacity: 0.76;
+}
+
+.profile {
+  top: clamp(6rem, 7vw, 7rem);
+  right: clamp(-7rem, -5vw, -3rem);
+  width: clamp(10rem, 17.8vw, 16rem);
+  transform: rotate(-6deg);
+  filter: saturate(0.48) brightness(1.1) contrast(0.93);
+  opacity: 0.7;
+}
+
+.cap {
+  top: clamp(58rem, 83.3vw, 75rem);
+  left: clamp(-7rem, -1.5vw, -1rem);
+  width: clamp(7rem, 11.8vw, 10.625rem);
+  transform: rotate(-18deg);
+  filter: saturate(0.55) brightness(1.07) contrast(0.94);
+  opacity: 0.72;
+}
+
+.squiggle {
+  top: clamp(10rem, 13.2vw, 12rem);
+  left: calc(50% - clamp(18rem, 28.3vw, 25.5rem));
+  width: clamp(3rem, 3.9vw, 3.5rem);
+  filter: saturate(0.6) brightness(1.05) contrast(0.94);
+  opacity: 0.55;
+}
+
+.plane {
+  top: clamp(40rem, 48.6vw, 44rem);
+  right: clamp(-3rem, calc(50vw - 46.875rem), 0rem);
+  width: clamp(3rem, 5vw, 4.5rem);
+  transform: rotate(-15deg);
+  filter: saturate(0.65) brightness(1.04) contrast(0.95);
+  opacity: 0.7;
+}
+
+.sparkle {
+  top: clamp(14rem, 20.8vw, 19rem);
+  right: calc(50% - clamp(14rem, 16.7vw, 15rem));
+  width: clamp(1rem, 1.4vw, 1.25rem);
+  transform: rotate(12deg);
+  filter: saturate(0.75) brightness(1.03) contrast(0.96);
+  opacity: 0.6;
+}
+
+.sectionArt {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.testimonials {
+  top: clamp(4rem, 8vw, 7rem);
+  left: clamp(-6rem, -8vw, -2rem);
+  width: clamp(5rem, 9vw, 8.5rem);
+  transform: rotate(-12deg);
+  filter: saturate(0.58) brightness(1.06) contrast(0.94);
+  opacity: 0.68;
+}
+
+.faq {
+  top: -2rem;
+  right: clamp(-4rem, -6vw, -1rem);
+  width: clamp(4rem, 7.8vw, 7rem);
+  transform: rotate(-8deg);
+  filter: saturate(0.52) brightness(1.09) contrast(0.93);
+  opacity: 0.68;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .badge {
+    top: clamp(8rem, 12vw, 9rem);
+    left: clamp(-15rem, -18vw, -6rem);
+    width: clamp(14rem, 27vw, 17.5rem);
+  }
+
+  .profile {
+    top: clamp(7rem, 10vw, 8rem);
+    right: clamp(-8rem, -12vw, -5rem);
+    width: clamp(11rem, 17vw, 13.75rem);
+  }
+
+  .cap {
+    top: clamp(54rem, 108vw, 64rem);
+    left: -4.5rem;
+    width: 7rem;
+  }
+
+  .plane {
+    top: clamp(40rem, 96vw, 48rem);
+    right: -1.5rem;
+    width: 3rem;
+  }
+
+  .squiggle,
+  .sparkle {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .backdrop {
+    inset-block-start: 36rem;
+    height: 42rem;
+  }
+
+  .badge {
+    top: 7.5rem;
+    left: -5.5rem;
+    width: clamp(6rem, 28vw, 7rem);
+  }
+
+  .profile {
+    top: 6.75rem;
+    right: -3.25rem;
+    width: clamp(5rem, 20vw, 6rem);
+  }
+
+  .cap {
+    display: none;
+  }
+
+  .plane {
+    top: clamp(30rem, 154vw, 38rem);
+    right: 0.75rem;
+    width: 2.5rem;
+  }
+
+  .squiggle {
+    display: none;
+  }
+
+  .sparkle {
+    display: none;
+  }
+
+  .testimonials {
+    top: -3rem;
+    left: -2rem;
+    width: 4.5rem;
+  }
+
+  .faq {
+    top: -2.5rem;
+    right: 0;
+    width: 2.5rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .cap {
+    display: none;
+  }
+
+  .faq {
+    top: -2.5rem;
+    right: 0;
+    width: 2.5rem;
+  }
+}
