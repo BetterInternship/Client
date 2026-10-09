@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { StudentHomepage } from "@/components/landingStudent/homepage";
+import { fetchHomepageListings } from "@/components/landingStudent/homepage-listings.server";
 import { getRefsData } from "@/lib/db/use-refs-backend";
 import { baseUrl } from "@/lib/site-url";
-import { UserService } from "@/lib/api/services";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
-const title = "Find Internships in the Philippines | BetterInternship";
+// Cache the rendered homepage like the Top pages. Category-tag invalidation
+// refreshes it sooner; a week is only the fallback lifetime.
+export const revalidate = 604800; // TOP_PAGES_REVALIDATE_SECONDS
+
+const title = "BetterInternship | Find internships in the Philippines";
 const description =
   "Discover internships across the Philippines. Explore opportunities by field, find remote and paid internships, and apply in one click with BetterInternship.";
 
@@ -37,30 +39,9 @@ export const metadata: Metadata = {
   },
 };
 
-async function isLoggedIn() {
-  const cookieHeader = (await cookies()).toString();
-  if (!cookieHeader) return false;
-
-  try {
-    const response = await UserService.getMyProfile({
-      cache: "no-store",
-      headers: {
-        cookie: cookieHeader,
-      },
-    });
-
-    return !!response.user;
-  } catch {
-    return false;
-  }
-}
-
 export default async function HomePage() {
-  if (await isLoggedIn()) {
-    redirect("/search");
-  }
-
   const refs = await getRefsData();
+  const listings = await fetchHomepageListings(refs);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -88,7 +69,7 @@ export default async function HomePage() {
           __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
         }}
       />
-      <StudentHomepage refs={refs} />
+      <StudentHomepage refs={refs} listings={listings} />
     </>
   );
 }

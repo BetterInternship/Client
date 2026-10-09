@@ -14,7 +14,8 @@ export const homepageHeroCategories = [
   { field: "Engineering & Architecture", label: "Engineering" },
 ];
 
-export const homepageFieldArtworkSlugs: Record<string, string> = {
+/** Shared slugs for the curated Top categories and their artwork. */
+export const homepageFieldSlugs: Record<string, string> = {
   "Data & Analytics": "data-analytics",
   Software: "software",
   IT: "it",

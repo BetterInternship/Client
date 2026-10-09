@@ -58,9 +58,9 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
         </span>
       </div>
       <div className="mb-2.5 flex w-fit flex-wrap gap-2 text-xs font-medium leading-[1.4] text-landing-muted max-md:mb-2">
-        <Badge variant="secondary">{workMode}</Badge>
+        {workMode && <Badge variant="secondary">{workMode}</Badge>}
         <Badge>{category}</Badge>
-        <Badge>{compensation}</Badge>
+        {compensation && <Badge>{compensation}</Badge>}
       </div>
       <div className="mt-auto flex items-center justify-between gap-3 text-xs leading-[1.5] text-landing-muted">
         <span>{postedLabel}</span>

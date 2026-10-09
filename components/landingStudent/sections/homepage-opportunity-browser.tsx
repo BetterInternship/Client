@@ -11,130 +11,17 @@ import { ArrowRight } from "lucide-react";
 import motionStyles from "@/components/features/student/top/top-motion.module.css";
 import { HomepageCategoryChips } from "./homepage-category-chips";
 import { homepageHeroCategories, type HomepageField } from "../homepage-data";
+import type { HomepageListings } from "../homepage-listings.server";
 import { JobCard } from "@/components/ui/temp/job-card";
 import { LinkButton } from "@/components/ui/temp/button";
-
-const dummyTitles: Record<string, string[]> = {
-  All: [
-    "Software Engineering Intern",
-    "Digital Marketing Intern",
-    "IT Support Intern",
-    "Graphic Design Intern",
-    "Finance Intern",
-    "Data Analyst Intern",
-  ],
-  Software: [
-    "Software Engineering Intern",
-    "Frontend Development Intern",
-    "Backend Development Intern",
-    "QA Testing Intern",
-    "Mobile Development Intern",
-    "Data Engineering Intern",
-  ],
-  Marketing: [
-    "Marketing Intern",
-    "Social Media Intern",
-    "Content Marketing Intern",
-    "Brand Strategy Intern",
-    "Digital Marketing Intern",
-    "Marketing Analytics Intern",
-  ],
-  IT: [
-    "IT Support Intern",
-    "Systems Administration Intern",
-    "Network Support Intern",
-    "IT Operations Intern",
-    "Technical Support Intern",
-    "Cybersecurity Intern",
-  ],
-  "Creative & Multimedia": [
-    "Graphic Design Intern",
-    "Multimedia Intern",
-    "UI/UX Design Intern",
-    "Creative Content Intern",
-    "Motion Design Intern",
-    "Copywriting Intern",
-  ],
-  "Data & Analytics": [
-    "Data Analyst Intern",
-    "Business Intelligence Intern",
-    "Data Science Intern",
-    "Research Analytics Intern",
-    "Reporting Intern",
-    "Product Analytics Intern",
-  ],
-  "Accounting & Finance": [
-    "Finance Intern",
-    "Accounting Intern",
-    "Financial Planning Intern",
-    "Audit Intern",
-    "Treasury Intern",
-    "Tax Intern",
-  ],
-  "Operations & Human Resources": [
-    "Human Resources Intern",
-    "People Operations Intern",
-    "Talent Acquisition Intern",
-    "Operations Intern",
-    "Recruitment Intern",
-    "HR Operations Intern",
-  ],
-  Legal: [
-    "Legal Intern",
-    "Compliance Intern",
-    "Legal Research Intern",
-    "Corporate Legal Intern",
-    "Policy Intern",
-    "Contracts Intern",
-  ],
-  "Engineering & Architecture": [
-    "Engineering Intern",
-    "Architecture Intern",
-    "Civil Engineering Intern",
-    "Design Engineering Intern",
-    "Project Engineering Intern",
-    "Environmental Engineering Intern",
-  ],
-};
-
-const dummyDetails = [
-  {
-    category: "Software",
-    field: "Software",
-    location: "Makati City",
-    mode: "Hybrid",
-  },
-  {
-    category: "Marketing",
-    field: "Marketing",
-    location: "Taguig City",
-    mode: "On-site",
-  },
-  { category: "IT", field: "IT", location: "Quezon City", mode: "Hybrid" },
-  {
-    category: "Creative",
-    field: "Creative & Multimedia",
-    location: "Metro Manila",
-    mode: "Remote",
-  },
-  {
-    category: "Finance",
-    field: "Accounting & Finance",
-    location: "Pasig City",
-    mode: "On-site",
-  },
-  {
-    category: "Data",
-    field: "Data & Analytics",
-    location: "Makati City",
-    mode: "Hybrid",
-  },
-];
+import { Card } from "@/components/ui/temp/card";
 
 export function HomepageOpportunityBrowser({
   fields,
+  listings,
 }: {
   fields: HomepageField[];
+  listings: HomepageListings;
 }) {
   const [selected, setSelected] = useState<HomepageField | null>(null);
   const reduceMotion = useReducedMotion();
@@ -145,7 +32,7 @@ export function HomepageOpportunityBrowser({
       )?.label ?? selected.label)
     : "All";
   const viewMoreHref = selected?.href ?? "/search";
-  const titles = dummyTitles[selected?.label ?? "All"] ?? dummyTitles.All;
+  const jobs = listings[selected?.label ?? "All"];
 
   const gridVariants: Variants = {
     hidden: { opacity: reduceMotion ? 1 : 0 },
@@ -183,7 +70,7 @@ export function HomepageOpportunityBrowser({
       <section
         className="mt-18 w-full text-left max-md:mt-7"
         id={regionId}
-        aria-label={selected ? `${label} internships` : "Latest internships"}
+        aria-label={selected ? `${label} internships` : "Featured internships"}
       >
         <p
           className="sr-only"
@@ -191,7 +78,9 @@ export function HomepageOpportunityBrowser({
           aria-live="polite"
           aria-atomic="true"
         >
-          Showing {label === "All" ? "all" : label} internships.
+          {jobs?.length
+            ? `Showing ${label === "All" ? "featured" : label} internships.`
+            : `No ${label === "All" ? "featured" : label} internships available right now.`}
         </p>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
@@ -202,34 +91,26 @@ export function HomepageOpportunityBrowser({
             animate="visible"
             exit="exit"
           >
-            {titles.map((title, index) => (
-              <motion.div
-                key={title}
-                className={`${motionStyles.action} h-full ${index > 2 ? "max-md:hidden" : ""}`}
-                variants={cardVariants}
-                whileHover={reduceMotion ? undefined : { y: -2 }}
-                transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-              >
-                <JobCard
-                  job={{
-                    title,
-                    companyName: "Example company",
-                    location: dummyDetails[index].location,
-                    workMode: dummyDetails[index].mode,
-                    category: selected ? label : dummyDetails[index].category,
-                    compensation: "Paid",
-                    postedLabel: "Posted recently",
-                    href:
-                      selected?.href ??
-                      fields.find(
-                        (field) => field.label === dummyDetails[index].field,
-                      )?.href ??
-                      "/search",
-                  }}
-                  data-demo="true"
-                />
-              </motion.div>
-            ))}
+            {jobs?.length ? (
+              jobs.map((job, index) => (
+                <motion.div
+                  key={job.id}
+                  className={`${motionStyles.action} h-full ${index > 2 ? "max-md:hidden" : ""}`}
+                  variants={cardVariants}
+                  whileHover={reduceMotion ? undefined : { y: -2 }}
+                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  <JobCard job={job} data-job-id={job.id} />
+                </motion.div>
+              ))
+            ) : (
+              <Card className="col-span-full flex min-h-42 items-center justify-center p-5 text-center text-sm leading-[1.5] text-landing-muted">
+                <p className="m-0">
+                  There are no featured internships in this category right now.
+                  Browse more opportunities below.
+                </p>
+              </Card>
+            )}
           </motion.div>
         </AnimatePresence>
         <LinkButton

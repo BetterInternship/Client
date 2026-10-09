@@ -1,4 +1,5 @@
 import { getHomepageFields } from "./homepage-data";
+import type { HomepageListings } from "./homepage-listings.server";
 import type { RefsData } from "@/lib/db/db.types";
 import { HomepageArtwork, HomepageSectionSprite } from "./homepage-artwork";
 import { HomepageCommunity } from "./sections/homepage-community";
@@ -44,7 +45,13 @@ const testimonials = [
   },
 ];
 
-export function StudentHomepage({ refs }: { refs: RefsData }) {
+export function StudentHomepage({
+  refs,
+  listings,
+}: {
+  refs: RefsData;
+  listings: HomepageListings;
+}) {
   const fields = getHomepageFields(refs.job_categories);
 
   return (
@@ -76,7 +83,7 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
           <p className="mb-8 mt-5 text-lg leading-[1.5] text-landing-nav motion-safe:animate-landing-introduce motion-safe:[animation-delay:60ms] max-md:mb-7 max-md:mt-4.5 max-md:text-[15px]">
             Discover opportunities across the Philippines.
           </p>
-          <HomepageOpportunityBrowser fields={fields} />
+          <HomepageOpportunityBrowser fields={fields} listings={listings} />
         </section>
 
         <div className={homepageContainerClassName}>

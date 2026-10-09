@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { topCategoryArtworkBySlug } from "@/components/features/student/top/top-category-artwork";
 import {
-  homepageFieldArtworkSlugs,
+  homepageFieldSlugs,
   homepageHeroCategories,
   type HomepageField,
 } from "../homepage-data";
@@ -24,8 +24,7 @@ function CategoryChip({
   onSelect: (field: HomepageField) => void;
   controls: string;
 }) {
-  const artwork =
-    topCategoryArtworkBySlug[homepageFieldArtworkSlugs[field.label]];
+  const artwork = topCategoryArtworkBySlug[homepageFieldSlugs[field.label]];
   return (
     <li className="max-md:min-w-0">
       <FilterChip
