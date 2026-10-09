@@ -312,7 +312,7 @@ function AutocompleteBase<ID extends number | string>({
         <div
           className={cn(
             "relative min-h-8 w-full rounded-[0.33em] border border-gray-300 bg-background",
-            "py-[0.25em] pl-[0.75em] pr-9 flex flex-wrap items-center gap-1",
+            "py-[0.25em] pr-9 flex flex-wrap items-center gap-1",
             "focus-within:border-primary focus-within:border-opacity-50",
           )}
           onClick={() => {
@@ -373,7 +373,7 @@ function AutocompleteBase<ID extends number | string>({
             className={cn(
               "flex-1 min-w-[8ch] h-6 text-sm",
               "bg-transparent outline-none border-none focus:ring-0",
-              "placeholder:text-muted-foreground placeholder:italic focus:placeholder:text-primary/70",
+              "placeholder:text-muted-foreground focus:placeholder:text-primary/70",
             )}
             {...props}
           />
@@ -546,7 +546,9 @@ function AutocompleteBase<ID extends number | string>({
                             : "border-gray-300 bg-gray-50",
                         )}
                       >
-                        {active ? <Check className="text-primary h-4 w-4" /> : null}
+                        {active ? (
+                          <Check className="text-primary h-4 w-4" />
+                        ) : null}
                       </Checkbox>
                     ) : null}
                     {option.name}
