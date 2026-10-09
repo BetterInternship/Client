@@ -560,6 +560,21 @@ function AutocompleteBase<ID extends number | string>({
                 {emptyText}
               </li>
             )}
+            {useMobileSheet && (
+              <li className="sticky bottom-0 z-10 border-t border-gray-300 bg-white px-4 pb-1 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setQuery("");
+                    setIsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </li>
+            )}
           </ul>
         </>
       )}
@@ -1027,6 +1042,21 @@ export function AutocompleteTreeMulti({
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
                 ...
+              </li>
+            )}
+            {useMobileSheet && (
+              <li className="sticky bottom-0 z-10 border-t border-gray-300 bg-white px-4 pb-1 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setQuery("");
+                    setIsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
               </li>
             )}
           </ul>

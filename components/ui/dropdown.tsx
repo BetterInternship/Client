@@ -285,7 +285,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
             <div
               className={cn(
                 "relative z-[100] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-                isMobile ? "max-h-[calc(70vh-0.5rem)]" : "max-h-[400px]",
+                isMobile ? "max-h-[calc(70vh-5.5rem)]" : "max-h-[400px]",
               )}
             >
               {options.map((option, index) => (
@@ -305,6 +305,18 @@ export const GroupableRadioDropdown = <ID extends number | string>({
                 </DropdownOptionButton>
               ))}
             </div>
+            {isMobile && (
+              <div className="border-t border-gray-300 px-4 pb-1 pt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         </>
       )}
