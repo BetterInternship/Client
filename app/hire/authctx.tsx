@@ -3,7 +3,14 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { AuthResponse, EmployerAuthService } from "@/lib/api/hire.api";
+import {
+  AuthResponse,
+  BaseResponse,
+  EmployerAuthService,
+  GodAuthService,
+  GodLoginResponse,
+  GodSelf,
+} from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
@@ -12,14 +19,19 @@ type AuthUser = Partial<EmployerSelf> & { god?: boolean };
 
 interface IAuthContext {
   user: AuthUser | null;
-  god: boolean;
+  /** The signed-in god (their own session, apart from any employer one). */
+  god: GodSelf | null;
+  /** True until the first god session check has come back. */
+  godLoading: boolean;
   proxy: string;
   loading: boolean;
   register: (employer: Partial<Employer> | FormData) => Promise<AuthResponse>;
   requestLoginOtp: (email: string) => Promise<AuthResponse>;
   verifyLoginOtp: (email: string, otp: string) => Promise<AuthResponse>;
+  requestGodLoginOtp: (email: string) => Promise<BaseResponse>;
+  verifyGodLoginOtp: (email: string, otp: string) => Promise<GodLoginResponse>;
   loginAs: (employer_id: string) => Promise<AuthUser | null>;
-  exitProxy: () => Promise<AuthUser | null>;
+  exitProxy: () => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
   refreshAuthentication: () => Promise<AuthUser | null>;
@@ -46,7 +58,8 @@ export const AuthContextProvider = ({
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
-  const [god, setGod] = useState(false);
+  const [god, setGod] = useState<GodSelf | null>(null);
+  const [godLoading, setGodLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
@@ -65,9 +78,9 @@ export const AuthContextProvider = ({
 
   const refreshAuthentication = async (): Promise<AuthUser | null> => {
     // /hire/loggedin, not /employer-users/me — this is the one call that
-    // must survive a full page load and still know both who is signed in
-    // and whether they're a god (merged onto the user object itself, plan
-    // §6.2). The persisted React Query cache spans 24h across full page
+    // must survive a full page load and still know who is signed in. (Gods
+    // are a separate session; see refreshGod.) The persisted React Query
+    // cache spans 24h across full page
     // loads, so every query key below must be invalidated here — skipping
     // one is exactly how stale identity/team data survives a login.
     const response = await EmployerAuthService.loggedIn();
@@ -75,7 +88,6 @@ export const AuthContextProvider = ({
     if (!response.success || !response.user) {
       setIsAuthenticated(false);
       setUser(null);
-      setGod(false);
       sessionStorage.removeItem("isAuthenticated");
       sessionStorage.removeItem("user");
       setLoading(false);
@@ -89,11 +101,36 @@ export const AuthContextProvider = ({
     ]);
 
     setUser(response.user);
-    if (response.user.god) setGod(true);
 
     setIsAuthenticated(true);
     setLoading(false);
     return response.user;
+  };
+
+  // Asks the server whether there is a live god session. The god cookie is
+  // separate from the employer one, so this runs on every load, alongside
+  // refreshAuthentication, and never depends on it.
+  const refreshGod = async (): Promise<GodSelf | null> => {
+    try {
+      const response = await GodAuthService.loggedIn();
+      const self = response.success && response.god ? response.god : null;
+      setGod(self);
+      return self;
+    } catch {
+      setGod(null);
+      return null;
+    } finally {
+      setGodLoading(false);
+    }
+  };
+
+  const requestGodLoginOtp = (email: string) =>
+    GodAuthService.requestOtp(email);
+
+  const verifyGodLoginOtp = async (email: string, otp: string) => {
+    const response = await GodAuthService.verifyOtp(email, otp);
+    if (response.success && response.god) setGod(response.god);
+    return response;
   };
 
   const register = async (employer: Partial<Employer> | FormData) => {
@@ -118,8 +155,6 @@ export const AuthContextProvider = ({
     setUser(response.user);
     setIsAuthenticated(true);
 
-    if (response.user.god) setGod(true);
-
     return response;
   };
 
@@ -137,32 +172,44 @@ export const AuthContextProvider = ({
     ]);
     setProxy(getFullName(response.user));
     setUser(response.user ?? null);
+    // A god has no employer account of their own, so this is what makes the
+    // employer pages treat the proxied session as signed in.
+    setIsAuthenticated(true);
     return response.user ?? null;
   };
 
   const exitProxy = async () => {
     const response = await EmployerAuthService.exitProxy();
     if (!response.success) {
-      alert("Error returning to your own account.");
-      return null;
+      alert("Error leaving the employer account.");
+      return false;
     }
 
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
-      queryClient.invalidateQueries({ queryKey: ["me"] }),
-      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
-    ]);
+    // Only the employer cookie is dropped; the god's own session stays, so
+    // there is no account to restore. Forget the proxied employer entirely.
+    for (const queryKey of [
+      ["my-employer-profile"],
+      ["me"],
+      ["my-employer-team"],
+    ])
+      queryClient.removeQueries({ queryKey });
     setProxy("");
-    setUser(response.user ?? null);
-    return response.user ?? null;
+    setUser(null);
+    setIsAuthenticated(false);
+    return true;
   };
 
   const logout = async () => {
     await EmployerAuthService.logout();
+    // Signing out of the portal ends a god session too; the two cookies are
+    // independent on the server.
+    const wasGod = god !== null;
+    if (wasGod) await GodAuthService.logout();
     queryClient.clear();
-    router.push("/login");
+    router.push(wasGod ? "/god-login" : "/login");
     setUser(null);
-    setGod(false);
+    setGod(null);
+    setProxy("");
     setIsAuthenticated(false);
   };
 
@@ -187,6 +234,7 @@ export const AuthContextProvider = ({
 
   useEffect(() => {
     void refreshAuthentication();
+    void refreshGod();
   }, []);
 
   return (
@@ -194,10 +242,13 @@ export const AuthContextProvider = ({
       value={{
         user,
         god,
+        godLoading,
         proxy,
         register,
         requestLoginOtp,
         verifyLoginOtp,
+        requestGodLoginOtp,
+        verifyGodLoginOtp,
         loginAs,
         exitProxy,
         loading,

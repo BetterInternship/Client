@@ -9,6 +9,7 @@
  */
 
 import { apiUrl } from "./api-origin";
+import { isGodApiPath, redirectToGodLogin } from "./god-session";
 import { redirectIfMaintenanceMode } from "./maintenance";
 
 const isBinaryBody = (body: BodyInit | null | undefined) =>
@@ -39,6 +40,7 @@ export const careerFetch = async <T>(
     });
 
     if (!response.ok && response.status !== 304) {
+      if (response.status === 401 && isGodApiPath(path)) redirectToGodLogin();
       const errorData = (await response.json().catch(() => ({}))) as {
         message?: string;
         [key: string]: unknown;

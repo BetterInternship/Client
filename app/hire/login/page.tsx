@@ -10,7 +10,6 @@ import { HireOtpInput } from "@/components/features/hire/hire-otp-input";
 import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { isValidEmail } from "@/lib/utils";
-import { type AuthResponse } from "@/lib/api/hire.api";
 import { useAppContext } from "@/lib/ctx-app";
 import { useAuthContext } from "../authctx";
 
@@ -23,7 +22,7 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const { isAuthenticated, loading, requestLoginOtp, user, verifyLoginOtp } =
+  const { isAuthenticated, loading, requestLoginOtp, verifyLoginOtp } =
     useAuthContext();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -39,16 +38,11 @@ function LoginContent() {
 
   useEffect(() => {
     if (!loading && isAuthenticated()) {
-      router.replace(user?.god ? "/god" : continuationPath);
+      router.replace(continuationPath);
     }
-  }, [continuationPath, isAuthenticated, loading, router, user]);
+  }, [continuationPath, isAuthenticated, loading, router]);
 
-  const completeLogin = (response: AuthResponse | undefined) => {
-    if (response?.user?.god) {
-      router.replace("/god");
-      return;
-    }
-
+  const completeLogin = () => {
     if (autoLinkToken) {
       router.replace(continuationPath);
       return;
@@ -75,8 +69,7 @@ function LoginContent() {
       enabled: hasSentCode,
       failureMessage: "Invalid or expired code.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
-      onSuccess: (result) =>
-        completeLogin(result.response as AuthResponse | undefined),
+      onSuccess: completeLogin,
     },
   });
 
@@ -98,9 +91,7 @@ function LoginContent() {
       failureMessage: "Invalid or expired code.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
     });
-    if (result?.success) {
-      completeLogin(result.response as AuthResponse | undefined);
-    }
+    if (result?.success) completeLogin();
   };
 
   return (
