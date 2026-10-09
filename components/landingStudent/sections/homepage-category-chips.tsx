@@ -27,12 +27,13 @@ function CategoryChip({
   const artwork =
     topCategoryArtworkBySlug[homepageFieldArtworkSlugs[field.label]];
   return (
-    <li>
+    <li className="max-md:min-w-0">
       <FilterChip
         type="button"
         aria-label={field.label}
         title={field.label}
         selected={selected}
+        className="max-md:min-h-18 max-md:w-full max-md:flex-col max-md:gap-1.5 max-md:rounded-xl max-md:px-2 max-md:py-2.5 max-md:text-sm"
         aria-controls={controls}
         onClick={() => onSelect(field)}
       >
@@ -46,7 +47,9 @@ function CategoryChip({
             alt=""
           />
         )}
-        <span>{displayLabel}</span>
+        <span className="max-md:max-w-full max-md:truncate">
+          {displayLabel}
+        </span>
       </FilterChip>
     </li>
   );
@@ -79,33 +82,47 @@ export function HomepageCategoryChips({
     />
   );
 
+  const allChip = (
+    <li className="list-none max-md:min-w-0">
+      <LinkButton
+        href="/search"
+        variant="primary"
+        size="chip"
+        className="max-md:min-h-18 max-md:w-full max-md:flex-col-reverse max-md:gap-1.5 max-md:rounded-xl max-md:px-2 max-md:py-2.5 max-md:text-sm"
+        aria-label="Browse all internships"
+      >
+        <span>All</span>
+        <ArrowRight
+          size={18}
+          strokeWidth={1.75}
+          className="transition-transform duration-[160ms] ease-landing-out motion-safe:pointer-fine:group-hover:translate-x-0.5 motion-reduce:transition-none max-md:h-7 max-md:w-7"
+          aria-hidden="true"
+        />
+      </LinkButton>
+    </li>
+  );
+
   return (
     <nav
-      className="grid w-full gap-3"
+      className="grid w-full gap-3 max-md:gap-2"
       aria-label="Explore internship categories"
     >
-      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:gap-2.5">
+      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:hidden">
         {chips.slice(0, 5).map(renderChip)}
       </ul>
-      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:gap-2.5">
+      <ul className="m-0 flex list-none flex-wrap justify-center gap-3 p-0 max-md:hidden">
         {chips.slice(5).map(renderChip)}
-        <li className="list-none">
-          <LinkButton
-            href="/search"
-            variant="primary"
-            size="chip"
-            className="max-md:min-h-14 max-md:gap-2 max-md:px-3 max-md:text-sm"
-            aria-label="Browse all internships"
-          >
-            <span>All</span>
-            <ArrowRight
-              size={18}
-              strokeWidth={1.75}
-              className="transition-transform duration-[160ms] ease-landing-out motion-safe:pointer-fine:group-hover:translate-x-0.5 motion-reduce:transition-none"
-              aria-hidden="true"
-            />
-          </LinkButton>
-        </li>
+        {allChip}
+      </ul>
+      <ul className="m-0 grid grid-cols-3 list-none gap-2 p-0 md:hidden">
+        {chips.slice(0, 3).map(renderChip)}
+      </ul>
+      <ul className="m-0 grid grid-cols-3 list-none gap-2 p-0 md:hidden">
+        {chips.slice(3, 6).map(renderChip)}
+      </ul>
+      <ul className="m-0 grid grid-cols-3 list-none gap-2 p-0 md:hidden">
+        {chips.slice(6, 8).map(renderChip)}
+        {allChip}
       </ul>
     </nav>
   );

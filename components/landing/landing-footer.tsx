@@ -26,17 +26,17 @@ export function LandingFooter({
   return (
     <footer
       className={cn(
-        "relative z-10 border-t border-landing-border bg-landing-footer pt-10 pb-6",
+        "relative z-10 border-t border-landing-border bg-landing-footer pt-10 pb-6 max-md:pt-7",
         className,
       )}
     >
       <div
         className={cn(
           landingContainerClassName,
-          "grid grid-cols-[minmax(0,1fr)_150px_150px] items-baseline gap-8 pb-4 max-[900px]:grid-cols-[1.4fr_1fr_1fr] max-[480px]:grid-cols-2",
+          "grid grid-cols-[minmax(0,1fr)_150px_150px] items-baseline gap-8 pb-4 max-[900px]:grid-cols-[1.4fr_1fr_1fr] max-md:grid-cols-2 max-md:gap-x-4 max-md:gap-y-5",
         )}
       >
-        <div className="max-[480px]:col-span-full">
+        <div className="max-md:col-span-full">
           <Brand href={brandHref} size="compact" />
           <nav
             className="mt-2 flex gap-1"
@@ -75,7 +75,7 @@ export function LandingFooter({
       <div
         className={cn(
           landingContainerClassName,
-          "flex items-center justify-start gap-6 pt-2 text-xs leading-[1.7] text-landing-muted max-[480px]:flex-col max-[480px]:items-start",
+          "flex items-center justify-start gap-6 pt-2 text-xs leading-[1.7] text-landing-muted max-md:flex-col max-md:items-start max-md:gap-3",
         )}
       >
         <nav
@@ -92,7 +92,7 @@ export function LandingFooter({
             </Link>
           ))}
         </nav>
-        <p className="m-0 ml-auto text-xs leading-[1.7] text-landing-muted">
+        <p className="m-0 ml-auto text-xs leading-[1.7] text-landing-muted max-md:ml-0">
           {copyright}
         </p>
       </div>

@@ -28,20 +28,20 @@ export function LandingHeader({
     <header
       className={cn(
         landingContainerClassName,
-        "relative z-10 flex min-h-[76px] items-center justify-between gap-6 max-md:min-h-[72px] max-md:flex-wrap max-md:gap-3 max-md:py-3 max-[420px]:gap-1",
+        "relative z-10 flex min-h-[76px] items-center justify-between gap-6 max-md:grid max-md:min-h-[72px] max-md:grid-cols-[1fr_auto] max-md:gap-x-3 max-md:gap-y-1 max-md:py-3",
         className,
       )}
     >
       <Brand href={brandHref} />
       <nav
-        className="flex items-center gap-7 text-[15px] font-[550] leading-[1.5] text-landing-nav max-md:gap-3.5 max-md:text-xs max-[420px]:w-full max-[420px]:justify-end"
+        className="flex items-center gap-7 text-[15px] font-[550] leading-[1.5] text-landing-nav max-md:contents max-md:text-xs"
         aria-label="Main navigation"
       >
         {links.map((link) => (
           <Link
             key={link.label}
             href={link.href}
-            className="cursor-pointer text-landing-nav transition-colors duration-[180ms] hover:text-landing-blue focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-landing-blue"
+            className="cursor-pointer text-landing-nav transition-colors duration-[180ms] hover:text-landing-blue focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-landing-blue max-md:hidden"
           >
             {link.label}
           </Link>
@@ -50,7 +50,7 @@ export function LandingHeader({
           href={action.href}
           variant="outline"
           size="sm"
-          className="min-h-0 gap-2 px-4.5 py-2 text-base font-[550] leading-[1.5] hover:border-landing-blue hover:bg-landing-tint hover:text-landing-blue max-md:px-4 max-md:py-1.75"
+          className="min-h-0 gap-2 px-4.5 py-2 text-base font-[550] leading-[1.5] hover:border-landing-blue hover:bg-landing-tint hover:text-landing-blue max-md:order-2 max-md:px-4 max-md:py-1.75"
         >
           {action.label}
           <ArrowRight

@@ -181,7 +181,7 @@ export function HomepageOpportunityBrowser({
         />
       </div>
       <section
-        className="mt-18 w-full text-left max-sm:mt-12"
+        className="mt-18 w-full text-left max-md:mt-7"
         id={regionId}
         aria-label={selected ? `${label} internships` : "Latest internships"}
       >
@@ -196,7 +196,7 @@ export function HomepageOpportunityBrowser({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={selected?.label ?? "all"}
-            className="grid auto-rows-[minmax(13rem,1fr)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid auto-rows-[minmax(13rem,1fr)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 max-md:auto-rows-[minmax(10.5rem,1fr)] max-md:gap-3 sm:max-md:grid-cols-1"
             variants={gridVariants}
             initial="hidden"
             animate="visible"
@@ -205,7 +205,7 @@ export function HomepageOpportunityBrowser({
             {titles.map((title, index) => (
               <motion.div
                 key={title}
-                className={`${motionStyles.action} h-full`}
+                className={`${motionStyles.action} h-full ${index > 2 ? "max-md:hidden" : ""}`}
                 variants={cardVariants}
                 whileHover={reduceMotion ? undefined : { y: -2 }}
                 transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}

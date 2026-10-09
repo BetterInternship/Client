@@ -159,9 +159,7 @@
   }
 
   .cap {
-    top: clamp(118rem, 510vw, 142rem);
-    left: -3rem;
-    width: 5rem;
+    display: none;
   }
 
   .plane {
@@ -171,15 +169,11 @@
   }
 
   .squiggle {
-    top: 11rem;
-    left: 8%;
-    width: 2.75rem;
+    display: none;
   }
 
   .sparkle {
-    top: 15rem;
-    right: 18%;
-    width: 1rem;
+    display: none;
   }
 
   .testimonials {
@@ -189,8 +183,20 @@
   }
 
   .faq {
-    top: -2rem;
-    right: -1.5rem;
-    width: 4rem;
+    top: -2.5rem;
+    right: 0;
+    width: 2.5rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .cap {
+    display: none;
+  }
+
+  .faq {
+    top: -2.5rem;
+    right: 0;
+    width: 2.5rem;
   }
 }

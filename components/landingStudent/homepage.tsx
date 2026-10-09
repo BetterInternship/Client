@@ -62,12 +62,12 @@ export function StudentHomepage({ refs }: { refs: RefsData }) {
         <section
           className={cn(
             homepageContainerClassName,
-            "flex flex-col items-center pt-32 text-center md:max-lg:pt-26 max-md:pt-18",
+            "flex flex-col items-center pt-32 text-center md:max-lg:pt-26 max-md:pt-9",
           )}
           aria-labelledby="home-heading"
         >
           <h1
-            className="m-0 text-[clamp(3.25rem,5.8vw,5.375rem)] font-[750] leading-[.98] tracking-[-.225rem] text-landing-navy motion-safe:animate-landing-introduce max-md:text-[clamp(2rem,6.2vw,3rem)] max-md:leading-[1.02] max-md:tracking-[-.0875rem]"
+            className="m-0 text-[clamp(3.25rem,5.8vw,5.375rem)] font-[750] leading-[.98] tracking-[-.225rem] text-landing-navy motion-safe:animate-landing-introduce max-md:text-[clamp(2.25rem,9vw,3.5rem)] max-md:leading-[1.02] max-md:tracking-[-.0875rem]"
             id="home-heading"
           >
             <span className="block">Better internships</span>

@@ -53,9 +53,28 @@
   }
 }
 
+@media (max-width: 767px) {
+  .marquee {
+    --marquee-item-width: calc(100cqw - 40px);
+  }
+
+  .viewport {
+    overflow-x: auto;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .group > * {
+    scroll-snap-align: start;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .viewport {
     overflow-x: auto;
+    scroll-snap-type: x mandatory;
   }
 
   .track {

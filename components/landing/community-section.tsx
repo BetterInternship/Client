@@ -35,21 +35,26 @@ export function CommunitySection({
       {...props}
     >
       <div
-        className="relative min-h-[360px] max-md:min-h-[260px]"
+        className="relative min-h-[360px] max-md:order-1 max-md:min-h-[180px]"
         aria-hidden="true"
       >
-        <div className="absolute -bottom-2 left-1/2 h-[24.5625rem] w-[min(calc(100%_+_2rem),33rem)] -translate-x-1/2 transition-transform duration-[550ms] delay-[60ms] ease-landing-out group-data-[reveal=pending]:translate-y-2 group-data-[reveal=pending]:rotate-[-1deg] motion-reduce:transition-none max-md:-bottom-5 max-md:h-[19.9375rem] max-md:w-[min(calc(100%_-_1rem),20.125rem)]">
+        <div className="absolute -bottom-2 left-1/2 h-[24.5625rem] w-[min(calc(100%_+_2rem),33rem)] -translate-x-1/2 transition-transform duration-[550ms] delay-[60ms] ease-landing-out group-data-[reveal=pending]:translate-y-2 group-data-[reveal=pending]:rotate-[-1deg] motion-reduce:transition-none max-md:bottom-0 max-md:h-[150px] max-md:w-[200px]">
           {artwork}
         </div>
       </div>
-      <div className="min-w-0 self-center py-11 pl-6 pr-12 max-md:p-6">
+      <div className="min-w-0 self-center py-11 pl-6 pr-12 max-md:order-2 max-md:p-6 max-md:pt-4 max-md:text-center">
         <h2
-          className="m-0 mb-6 max-w-none text-[clamp(1.875rem,3vw,2.5rem)] font-[750] leading-[1.15] tracking-[-.0875rem] text-white max-md:tracking-[-.0625rem]"
+          className="m-0 mb-6 max-w-none text-[clamp(1.875rem,3vw,2.5rem)] font-[750] leading-[1.15] tracking-[-.0875rem] text-white max-md:mb-5 max-md:text-[27px] max-md:leading-[1.2] max-md:tracking-[-.0625rem]"
           id={headingId}
         >
           {heading}
         </h2>
-        <LinkButton href={action.href} variant="community" size="community">
+        <LinkButton
+          href={action.href}
+          variant="community"
+          size="community"
+          className="max-md:w-full"
+        >
           {action.icon}
           {action.label}
           <ArrowRight

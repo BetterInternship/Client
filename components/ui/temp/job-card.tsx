@@ -39,25 +39,25 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
       as="article"
       variant="listing"
       className={cn(
-        "group/job-card flex h-full min-w-0 flex-col p-5 max-sm:p-4.5",
+        "group/job-card flex h-full min-w-0 flex-col p-5 max-md:p-4",
         className,
       )}
       aria-label={`${title} at ${companyName}`}
       {...props}
     >
-      <h3 className="m-0 mb-1 text-xl font-semibold leading-[1.3] tracking-[-.021875rem] text-landing-navy">
+      <h3 className="m-0 mb-1 text-xl font-semibold leading-[1.3] tracking-[-.021875rem] text-landing-navy max-md:text-lg max-md:leading-[1.3]">
         {title}
       </h3>
-      <p className="m-0 mb-3.5 text-sm font-medium leading-[1.5] text-landing-muted">
+      <p className="m-0 mb-3.5 text-sm font-medium leading-[1.5] text-landing-muted max-md:mb-2">
         {companyName}
       </p>
-      <div className="mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] leading-[1.5] text-landing-muted">
+      <div className="mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] leading-[1.5] text-landing-muted max-md:mb-2">
         <span className="inline-flex items-center gap-1.5">
           <MapPin size={15} strokeWidth={1.75} aria-hidden="true" />
           {location}
         </span>
       </div>
-      <div className="mb-2.5 flex w-fit flex-wrap gap-2 text-xs font-medium leading-[1.4] text-landing-muted">
+      <div className="mb-2.5 flex w-fit flex-wrap gap-2 text-xs font-medium leading-[1.4] text-landing-muted max-md:mb-2">
         <Badge variant="secondary">{workMode}</Badge>
         <Badge>{category}</Badge>
         <Badge>{compensation}</Badge>
@@ -93,7 +93,7 @@ export function JobCardSkeleton({
       as="article"
       variant="surface"
       className={cn(
-        "flex h-full min-h-52 min-w-0 flex-col p-5 max-sm:p-4.5",
+        "flex h-full min-h-52 min-w-0 flex-col p-5 max-md:min-h-42 max-md:p-4",
         className,
       )}
       aria-label="Loading job"
