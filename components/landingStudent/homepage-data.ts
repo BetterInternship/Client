@@ -88,7 +88,7 @@ export const homepageFaqs = [
   {
     question: "How do I check whether a company has an MOA with my university?",
     answer:
-      "On your university’s Top page, use ‘Show companies with MOA’ to see opportunities from companies with an MOA on record for your university. Confirm the agreement’s validity and your program’s requirements with your internship coordinator.",
+      "If your university has uploaded their MOAs to BetterInternship, you should be able to see companies with MOAs after signing in. If they have not, we can help you see a real-time list of companies with MOAs if you connect us with your university.",
   },
   {
     question: "What happens after I apply?",

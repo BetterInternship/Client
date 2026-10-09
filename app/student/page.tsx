@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${baseUrl}/og.png`,
+        url: `${baseUrl}/homepage/og.png`,
         width: 1200,
         height: 630,
         alt: "BetterInternship — discover internships across the Philippines",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: [`${baseUrl}/og.png`],
+    images: [`${baseUrl}/homepage/og.png`],
   },
 };
 

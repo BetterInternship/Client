@@ -39,7 +39,7 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
       as="article"
       variant="listing"
       className={cn(
-        "group/job-card flex h-full min-w-0 flex-col p-5 max-md:p-4",
+        "group/job-card relative flex h-full min-w-0 flex-col p-5 max-md:p-4",
         className,
       )}
       aria-label={`${title} at ${companyName}`}
@@ -68,7 +68,7 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
           href={href}
           variant="text"
           size="text"
-          className="hover:no-underline"
+          className="static hover:no-underline after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-landing-blue"
           aria-label={`View ${title}`}
         >
           View
