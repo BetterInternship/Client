@@ -8,10 +8,6 @@
 import type { EmployerTeamMemberRecordStatus } from "./employerTeamMemberRecordStatus";
 
 export interface EmployerTeamMemberRecord {
-  status: EmployerTeamMemberRecordStatus;
-  is_owner: boolean;
-  /** @nullable */
-  last_active: string | null;
   created_at: string;
   email: string;
   employer_id: string;
@@ -29,4 +25,8 @@ export interface EmployerTeamMemberRecord {
   receives_applicant_digest: boolean;
   role: string;
   updated_at: string;
+  status: EmployerTeamMemberRecordStatus;
+  is_owner: boolean;
+  /** @nullable */
+  last_active: string | null;
 }

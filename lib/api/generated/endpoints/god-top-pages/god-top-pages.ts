@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 import type {
+  BaseResponse,
   CreateTopPageDto,
   GodTopPageListResponse,
   GodTopPagePreviewResponse,
@@ -51,6 +52,19 @@ export const godTopPagesControllerCreate = async (
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
     body: JSON.stringify(createTopPageDto),
+  });
+};
+
+export const getGodTopPagesControllerRegenerateUrl = () => {
+  return `/api/god/top-pages/regenerate`;
+};
+
+export const godTopPagesControllerRegenerate = async (
+  options?: RequestInit,
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(getGodTopPagesControllerRegenerateUrl(), {
+    ...options,
+    method: "POST",
   });
 };
 
