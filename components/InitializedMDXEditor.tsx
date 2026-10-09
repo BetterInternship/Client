@@ -1,6 +1,6 @@
 'use client'
 // InitializedMDXEditor.tsx
-import type { ForwardedRef } from 'react'
+import { useRef, type ForwardedRef } from 'react'
 import '@mdxeditor/editor/style.css'
 import {
   headingsPlugin,
@@ -23,7 +23,27 @@ export default function InitializedMDXEditor({
   editorRef,
   ...props
 }: { editorRef: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps) {
+  const innerRef = useRef<MDXEditorMethods | null>(null)
+
+  const setRefs = (node: MDXEditorMethods | null) => {
+    innerRef.current = node
+    if (typeof editorRef === 'function') editorRef(node)
+    else if (editorRef) editorRef.current = node
+  }
+
   return (
+    // `contents` keeps layout unchanged; the wrapper only catches bubbling clicks.
+    <div
+      className='contents'
+      onMouseDown={(e) => {
+        // The editable area only spans its content, so clicks on the empty
+        // space around it should still focus the editor.
+        const target = e.target as HTMLElement
+        if (target.closest('[contenteditable="true"], [role="toolbar"], button, [role="combobox"], [role="listbox"], [role="option"], [role="menu"]')) return
+        e.preventDefault()
+        innerRef.current?.focus(undefined, { defaultSelection: 'rootEnd' })
+      }}
+    >
     <MDXEditor
       contentEditableClassName='prose'
       plugins={[
@@ -46,7 +66,8 @@ export default function InitializedMDXEditor({
         })
       ]}
       {...props}
-      ref={editorRef}
+      ref={setRefs}
     />
+    </div>
   )
 }

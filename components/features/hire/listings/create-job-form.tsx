@@ -1,8 +1,6 @@
 "use client";
 
 import { usePostHog } from "@posthog/react";
-import { useRef } from "react";
-import type { MDXEditorMethods } from "@mdxeditor/editor";
 import {
   Accordion,
   AccordionContent,
@@ -71,7 +69,6 @@ export const CreateJobForm = ({
   const { universityIds } = useMoaUniversities();
   const activeMoaCount = universityIds?.length ?? 0;
 
-  const descriptionRef = useRef<MDXEditorMethods>(null);
   const prefs = formData.internship_preferences;
   const titleLength = (formData.title || "").length;
   const categoryValue = prefs?.job_category_ids;
@@ -188,20 +185,8 @@ export const CreateJobForm = ({
             Describe the role, tasks, and any requirements (course, skills,
             qualifications).
           </p>
-          <div
-            className="relative h-[clamp(240px,36vh,460px)] cursor-text"
-            onMouseDown={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.closest('[contenteditable="true"], [role="toolbar"]'))
-                return;
-              e.preventDefault();
-              descriptionRef.current?.focus(undefined, {
-                defaultSelection: "rootEnd",
-              });
-            }}
-          >
+          <div className="relative h-[clamp(240px,36vh,460px)]">
             <MDXEditor
-              ref={descriptionRef}
               className="h-full overflow-y-auto rounded-[0.33em] border border-gray-300"
               markdown={formData.description ?? ""}
               onChange={(value) => setField("description", value)}
