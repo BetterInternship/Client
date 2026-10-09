@@ -14,7 +14,6 @@ import {
 } from "@betterinternship/components";
 import {
   FormCheckbox,
-  FormDatePicker,
   FormInput,
   LabelWithTooltip,
 } from "@/components/EditForm";
@@ -24,6 +23,7 @@ import {
   type IAutocompleteOption,
 } from "@/components/ui/autocomplete";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
+import { Textarea } from "@/components/ui/textarea";
 import { useMoaUniversities } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 
@@ -32,6 +32,14 @@ interface CreateJobProps {
   setField: (key: keyof Job, value: any) => void;
   categoryOptions: { id: string | number; name: string }[];
   job_pay_freq: { id: string | number; name: string }[];
+  className?: string;
+  /** Super listings only: the challenge applicants must complete. */
+  challenge?: {
+    title: string;
+    description: string;
+    setTitle: (v: string) => void;
+    setDescription: (v: string) => void;
+  };
 }
 
 type InternshipType = "credited" | "voluntary";
@@ -64,6 +72,7 @@ export const CreateJobForm = ({
   setField,
   categoryOptions,
   job_pay_freq,
+  className,
 }: CreateJobProps) => {
   const posthog = usePostHog();
   const { universityIds } = useMoaUniversities();
@@ -94,11 +103,11 @@ export const CreateJobForm = ({
   };
 
   return (
-    <PageContainer className="mt-20 pb-20 lg:pb-0">
+    <PageContainer className={cn("pt-20", className)}>
       <div className="flex flex-col gap-4">
         {/* Essentials */}
         <div>
-          <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-[3fr_1fr_1fr] lg:grid-rows-[auto_auto]">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-3">
             <div className="sm:col-span-2 lg:col-span-1">
               <FormInput
                 label="Title"

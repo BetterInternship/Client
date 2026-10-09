@@ -312,7 +312,7 @@ function AutocompleteBase<ID extends number | string>({
         <div
           className={cn(
             "relative min-h-8 w-full rounded-[0.33em] border border-gray-300 bg-background",
-            "py-[0.25em] pr-9 flex flex-wrap items-center gap-1",
+            "py-[0.25em] pl-1 pr-9 flex flex-wrap items-center gap-1",
             "focus-within:border-primary focus-within:border-opacity-50",
           )}
           onClick={() => {
