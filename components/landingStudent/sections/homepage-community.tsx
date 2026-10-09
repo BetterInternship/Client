@@ -1,6 +1,7 @@
 import { CommunitySection } from "@/components/landing/community-section";
 import { DiscordMark } from "@/components/features/student/top/DiscordMark";
 import { TopDiscordArtwork } from "@/components/features/student/top/TopArtwork";
+import discordPhone from "@/public/homepage/discord-phone.webp";
 import { BI_DISCORD_INVITE } from "@/constants";
 
 export function HomepageCommunity() {
@@ -17,7 +18,12 @@ export function HomepageCommunity() {
           </span>
         </>
       }
-      artwork={<TopDiscordArtwork />}
+      artwork={
+        <TopDiscordArtwork
+          phoneSrc={discordPhone}
+          phoneSizes="(max-width: 767px) 140px, (max-width: 1023px) 30vw, 370px"
+        />
+      }
       action={{
         label: "Join the Discord",
         href: BI_DISCORD_INVITE,
