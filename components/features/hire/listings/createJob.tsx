@@ -6,16 +6,31 @@ import {
   PageContainer,
   PageHeader,
 } from "@betterinternship/components";
-import { useProfile } from "@/hooks/use-employer-api";
+import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { CreateJobChallengeListingPayload, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@betterinternship/components";
 import { useModalRegistry } from "@/components/modals/modal-registry";
 import { CreateJobForm } from "./create-job-form";
+
+// most common field values
+const mostCommon = <T,>(values: T[]): T | undefined => {
+  const counts = new Map<string, { value: T; count: number }>();
+  for (const value of values) {
+    const key = JSON.stringify(value);
+    const entry = counts.get(key);
+    if (entry) entry.count++;
+    else counts.set(key, { value, count: 1 });
+  }
+  let best: { value: T; count: number } | undefined;
+  for (const entry of counts.values())
+    if (!best || entry.count > best.count) best = entry;
+  return best?.value;
+};
 
 interface CreateJobPageProps {
   createJob?: (job: Partial<Job>) => Promise<any>;
@@ -36,6 +51,8 @@ const CreateJobPage = ({
   const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
+  const { ownedJobs, loading: ownedJobsLoading } = useOwnedJobs();
+  const prefilled = useRef(false);
   const { isMobile } = useMobile();
 
   const isSalaryFilled = typeof formData.salary === "number" && formData.salary;
@@ -196,6 +213,51 @@ const CreateJobPage = ({
   useEffect(() => {
     setField("location", profile.data?.location);
   }, []);
+
+  // prefill empty fields with what this employer usually picks
+  useEffect(() => {
+    if (prefilled.current || ownedJobsLoading || ownedJobs.length < 2) return;
+    prefilled.current = true;
+
+    const history = ownedJobs.map((job) => job.internship_preferences);
+    const pick = <K extends keyof NonNullable<Job["internship_preferences"]>>(
+      key: K,
+    ) =>
+      mostCommon(
+        history
+          .map((prefs) => prefs?.[key])
+          .filter((v) =>
+            Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null,
+          ),
+      );
+
+    const current = formData.internship_preferences;
+    const fill: NonNullable<Job["internship_preferences"]> = {};
+    const isEmpty = (v: unknown) => (Array.isArray(v) ? !v.length : v == null);
+
+    for (const key of [
+      "job_category_ids",
+      "internship_types",
+      "job_setup_ids",
+      "job_commitment_ids",
+    ] as const) {
+      const value = pick(key);
+      if (value !== undefined && isEmpty(current?.[key]))
+        (fill as Record<string, unknown>)[key] = value;
+    }
+
+    if (Object.keys(fill).length)
+      setField("internship_preferences", { ...current, ...fill });
+
+    if (formData.allowance === undefined) {
+      const allowance = mostCommon(
+        ownedJobs
+          .map((job) => job.allowance)
+          .filter((v): v is number => v === 0 || v === 1),
+      );
+      if (allowance !== undefined) setField("allowance", allowance);
+    }
+  }, [ownedJobs, ownedJobsLoading]);
 
   useEffect(() => {
     const missing = !!(
