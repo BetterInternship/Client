@@ -1,0 +1,91 @@
+.marquee {
+  --marquee-item-width: calc((100cqw - 32px) / 3);
+  container-type: inline-size;
+}
+
+.viewport {
+  overflow: hidden;
+  padding-block: 8px;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: marquee-roll var(--marquee-duration, 130s) linear infinite;
+}
+
+.group {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding-right: 16px;
+}
+
+.marquee[data-paused="true"] .track,
+.marquee:focus-within .track {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee-roll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .marquee {
+    --marquee-item-width: calc((100cqw - 16px) / 2);
+  }
+}
+
+@media (max-width: 639px) {
+  .marquee {
+    --marquee-item-width: calc(100cqw - 40px);
+  }
+}
+
+@media (max-width: 767px) {
+  .marquee {
+    --marquee-item-width: calc(100cqw - 40px);
+  }
+
+  .viewport {
+    overflow-x: auto;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .group > * {
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .group {
+    padding-right: 0;
+  }
+
+  .group[aria-hidden="true"] {
+    display: none;
+  }
+}

@@ -104,6 +104,9 @@ export interface Job extends Omit<
   employers?: Partial<Employer>;
   challenge?: Partial<JobChallenge> | null;
   internship_preferences?: ListingInternshipPreferences;
+  // Last day applications are accepted (ms timestamp). Not a column on `jobs`
+  // yet — the create form sends it only when the employer sets one.
+  application_deadline?: number | null;
   // Merged in by the API from career.job_pauses — not columns on `jobs` itself.
   // Owner-only (from GET /jobs/owned): the reason/date behind the pause.
   paused?: boolean;

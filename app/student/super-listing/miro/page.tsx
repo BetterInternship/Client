@@ -9,7 +9,7 @@ const miroIcon = miroIconRaw as { src: string };
 import { Button } from "@betterinternship/components";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/shared/header";
-import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import { ArrowRight, Circle } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { CheckeredFinishFlag } from "@/components/shared/checkered-finish-flag";

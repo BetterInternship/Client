@@ -9,7 +9,14 @@ import { HireOtpInput } from "@/components/features/hire/hire-otp-input";
 import { Loader } from "@/components/ui/loader";
 import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { EmployerAuthService } from "@/lib/api/hire.api";
+import { EmployerService } from "@/lib/api/services";
+import { PFP_UPDATED_EVENT } from "@/hooks/use-pfp";
+import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { isValidEmail } from "@/lib/utils";
+import {
+  storePendingLogo,
+  takePendingLogo,
+} from "@/lib/utils/registration-logo";
 import { useAuthContext } from "../../authctx";
 import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 
@@ -48,9 +55,26 @@ export default function VerifyHireRegistrationPage() {
     }
   }, []);
 
+  // The logo picked on the register page. It can only be uploaded now, once
+  // the activated session cookie exists; failing here must never block
+  // sign-in, since it can be set again from the account page.
+  const uploadPendingLogo = async () => {
+    const logo = takePendingLogo();
+    if (!logo) return;
+
+    try {
+      const form = FileUploadFormBuilder.new("logo").file(logo).build();
+      const result = await EmployerService.updateMyPfp(form);
+      if (result.success) window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
+    } catch {
+      // Intentionally ignored, see above.
+    }
+  };
+
   const completeActivation = async () => {
     sessionStorage.removeItem("hire-registration-email");
     sessionStorage.removeItem(OTP_SENT_AT_KEY);
+    await uploadPendingLogo();
     await refreshAuthentication();
     router.replace("/dashboard");
   };
@@ -123,6 +147,8 @@ export default function VerifyHireRegistrationPage() {
         const response = await register(formData);
         if (!response.success) {
           if (response.account_exists) {
+            // Don't let this logo get applied to whichever account logs in next.
+            storePendingLogo(null);
             router.push(`/login?email=${encodeURIComponent(normalizedEmail)}`);
             return;
           }

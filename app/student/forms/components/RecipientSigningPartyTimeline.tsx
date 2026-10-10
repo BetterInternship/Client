@@ -10,6 +10,7 @@ export type RecipientTimelineParty = {
   email?: string;
   isMe?: boolean;
   isEditable?: boolean;
+  emailOptions?: string[];
 };
 
 export function RecipientSigningPartyTimeline({
@@ -70,19 +71,48 @@ export function RecipientSigningPartyTimeline({
                     <span className="block text-xs text-amber-900 tracking-wide">
                       Current email: {party.email || "No email set"}
                     </span>
-                    <input
-                      type="email"
-                      className={cn(
-                        "w-full rounded-[0.33em] border bg-white px-3 py-2 text-sm outline-none ring-0",
-                        editableError
-                          ? "border-destructive text-destructive focus:border-destructive"
-                          : "border-amber-300 focus:border-amber-500",
-                      )}
-                      value={editableEmail || ""}
-                      onChange={(e) => onEditableEmailChange?.(e.target.value)}
-                      placeholder="name@company.com"
-                      disabled={editableDisabled}
-                    />
+                    {party.emailOptions !== undefined ? (
+                      <select
+                        aria-label={`${party.title} email`}
+                        aria-invalid={!!editableError}
+                        className={cn(
+                          "w-full rounded-[0.33em] border bg-white px-3 py-2 text-sm",
+                          editableError
+                            ? "border-destructive"
+                            : "border-amber-300",
+                        )}
+                        value={editableEmail || ""}
+                        onChange={(event) =>
+                          onEditableEmailChange?.(event.target.value)
+                        }
+                        disabled={editableDisabled}
+                      >
+                        <option value="" disabled>
+                          Select an email…
+                        </option>
+                        {party.emailOptions.map((email) => (
+                          <option key={email} value={email}>
+                            {email}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="email"
+                        className={cn(
+                          "w-full rounded-[0.33em] border bg-white px-3 py-2 text-sm outline-none ring-0",
+                          editableError
+                            ? "border-destructive text-destructive focus:border-destructive"
+                            : "border-amber-300 focus:border-amber-500",
+                        )}
+                        value={editableEmail || ""}
+                        onChange={(e) =>
+                          onEditableEmailChange?.(e.target.value)
+                        }
+                        placeholder="name@company.com"
+                        disabled={editableDisabled}
+                      />
+                    )}
                     {editableError && (
                       <span className="block text-xs text-destructive">
                         {editableError}
@@ -91,7 +121,9 @@ export function RecipientSigningPartyTimeline({
                   </div>
                 ) : !recipientInputAPI?.recipientEmails ? (
                   <span className="text-warning text-xs tracking-normal text-semibold">
-                    you will specify this email
+                    {party.emailOptions !== undefined
+                      ? "you will select this email"
+                      : "you will specify this email"}
                   </span>
                 ) : isConfirmingRecipients ? (
                   <Badge type="supportive" className="text-xs">
@@ -99,26 +131,58 @@ export function RecipientSigningPartyTimeline({
                   </Badge>
                 ) : (
                   <div className="mt-1">
-                    <FormInput
-                      onInput={() =>
-                        recipientInputAPI?.recipientErrorActions?.clearOne(
-                          fieldName,
-                        )
-                      }
-                      value={recipientValue}
-                      placeholder={"Enter email..."}
-                      className={cn(
-                        recipientError
-                          ? "border-destructive text-destructive"
-                          : "",
-                      )}
-                      setter={(value) =>
-                        recipientInputAPI?.recipientEmailActions.setOne(
-                          fieldName,
-                          value,
-                        )
-                      }
-                    />
+                    {party.emailOptions !== undefined ? (
+                      <select
+                        aria-label={`${party.title} email`}
+                        aria-invalid={!!recipientError}
+                        className={cn(
+                          "w-full rounded-[0.33em] border bg-white px-3 py-2 text-sm",
+                          recipientError
+                            ? "border-destructive text-destructive"
+                            : "border-gray-300",
+                        )}
+                        value={recipientValue}
+                        onChange={(event) => {
+                          recipientInputAPI.recipientErrorActions?.clearOne(
+                            fieldName,
+                          );
+                          recipientInputAPI.recipientEmailActions.setOne(
+                            fieldName,
+                            event.target.value,
+                          );
+                        }}
+                      >
+                        <option value="" disabled>
+                          Select an email…
+                        </option>
+                        {party.emailOptions.map((email) => (
+                          <option key={email} value={email}>
+                            {email}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <FormInput
+                        onInput={() =>
+                          recipientInputAPI?.recipientErrorActions?.clearOne(
+                            fieldName,
+                          )
+                        }
+                        value={recipientValue}
+                        placeholder={"Enter email..."}
+                        className={cn(
+                          recipientError
+                            ? "border-destructive text-destructive"
+                            : "",
+                        )}
+                        setter={(value) =>
+                          recipientInputAPI?.recipientEmailActions.setOne(
+                            fieldName,
+                            value,
+                          )
+                        }
+                      />
+                    )}
                     {recipientError && (
                       <span className="mt-1 block text-xs text-destructive">
                         {recipientError}

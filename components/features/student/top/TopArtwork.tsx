@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import discordPhone from "@/public/top/layers/prepared/discord-phone.webp";
 import discordApply from "@/public/top/layers/prepared/discord-apply.webp";
 import styles from "./top-artwork.module.css";
@@ -131,7 +131,13 @@ export function TopHeroArtwork({ pageSlug }: { pageSlug: string }) {
   );
 }
 
-export function TopDiscordArtwork() {
+export function TopDiscordArtwork({
+  phoneSrc = discordPhone,
+  phoneSizes = "(min-width: 640px) 154px, 140px",
+}: {
+  phoneSrc?: ImageProps["src"];
+  phoneSizes?: string;
+} = {}) {
   const motion = useArtworkMotion();
   return (
     <div
@@ -142,10 +148,10 @@ export function TopDiscordArtwork() {
     >
       <div className={`${styles.layer} ${styles.phone}`} aria-hidden="true">
         <Image
-          src={discordPhone}
+          src={phoneSrc}
           alt=""
           className="h-auto w-full"
-          sizes="(min-width: 640px) 154px, 140px"
+          sizes={phoneSizes}
           loading="eager"
         />
       </div>

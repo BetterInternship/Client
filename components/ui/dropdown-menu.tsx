@@ -215,7 +215,7 @@ export const DropdownMenu = ({
                       }
                 }
                 className={cn(
-                  "border border-gray-200 bg-white shadow-lg",
+                  "border border-gray-300 bg-white shadow-lg",
                   isMobile
                     ? "fixed inset-x-0 bottom-0 z-[9999] max-h-[70vh] overflow-y-auto rounded-t-[0.33em] rounded-b-none pb-6"
                     : "z-[9999] min-w-max overflow-hidden rounded-[0.33em]",

@@ -463,8 +463,9 @@ export function FormSigningLayout({
     () =>
       getRecipientEmailErrors(recipientEmails, {
         studentEmail: profile.data?.email,
+        recipients: noEsign ? undefined : recipients,
       }),
-    [recipientEmails, profile.data?.email],
+    [recipientEmails, profile.data?.email, recipients, noEsign],
   );
 
   const nextEnabled = useMemo(() => {
@@ -595,6 +596,16 @@ export function FormSigningLayout({
 
   const handleSubmit = useCallback(async () => {
     setNextLoading(true);
+    if (Object.keys(recipientEmailErrors).length) {
+      recipientErrorActions.overwrite(recipientEmailErrors);
+      toast.error(
+        "Some recipient information is missing or incorrect",
+        toastPresets.destructive,
+      );
+      if (!noRecipientStep) goToStep("timeline");
+      setNextLoading(false);
+      return;
+    }
     const finalValuesFromFiller = formFiller.getFinalValues({
       ...autofillValues,
       ...recipientEmails,
@@ -605,7 +616,10 @@ export function FormSigningLayout({
           ...latestValuesRef.current,
         }
       : finalValuesFromFiller;
-    const submittedValues = await withSubmittedSignatureImages(finalValues);
+    const submittedValues = await withSubmittedSignatureImages({
+      ...finalValues,
+      ...recipientEmails,
+    });
     const firstRecipient = getFirstRecipient();
     const shouldGenerateForm = !!noEsign || !firstRecipient;
 
@@ -685,6 +699,11 @@ export function FormSigningLayout({
     onBack,
     recipientEmails,
     trackFilloutJob,
+    recipientEmailErrors,
+    recipientErrorActions,
+    noRecipientStep,
+    goToStep,
+    formFiller,
   ]);
 
   // Clean up when switching form
