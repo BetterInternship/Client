@@ -5,10 +5,8 @@ import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import {
   AuthResponse,
-  BaseResponse,
   EmployerAuthService,
   GodAuthService,
-  GodLoginResponse,
   GodSelf,
 } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
@@ -28,8 +26,6 @@ interface IAuthContext {
   register: (employer: Partial<Employer> | FormData) => Promise<AuthResponse>;
   requestLoginOtp: (email: string) => Promise<AuthResponse>;
   verifyLoginOtp: (email: string, otp: string) => Promise<AuthResponse>;
-  requestGodLoginOtp: (email: string) => Promise<BaseResponse>;
-  verifyGodLoginOtp: (email: string, otp: string) => Promise<GodLoginResponse>;
   loginAs: (employer_id: string) => Promise<AuthUser | null>;
   exitProxy: () => Promise<boolean>;
   logout: () => Promise<void>;
@@ -124,15 +120,6 @@ export const AuthContextProvider = ({
     }
   };
 
-  const requestGodLoginOtp = (email: string) =>
-    GodAuthService.requestOtp(email);
-
-  const verifyGodLoginOtp = async (email: string, otp: string) => {
-    const response = await GodAuthService.verifyOtp(email, otp);
-    if (response.success && response.god) setGod(response.god);
-    return response;
-  };
-
   const register = async (employer: Partial<Employer> | FormData) => {
     const response = await EmployerAuthService.register(employer);
     return response;
@@ -144,6 +131,12 @@ export const AuthContextProvider = ({
 
   const verifyLoginOtp = async (email: string, otp: string) => {
     const response = await EmployerAuthService.verifyLoginOtp(email, otp);
+    // Temporary, until the tools site: a god email signs in as a god on this
+    // same page. The reply then has no employer user; the god session does.
+    if (response.success && !response.user) {
+      await refreshGod();
+      return response;
+    }
     if (!response.success || !response.user) return response;
 
     await Promise.all([
@@ -203,10 +196,9 @@ export const AuthContextProvider = ({
     await EmployerAuthService.logout();
     // Signing out of the portal ends a god session too; the two cookies are
     // independent on the server.
-    const wasGod = god !== null;
-    if (wasGod) await GodAuthService.logout();
+    if (god !== null) await GodAuthService.logout();
     queryClient.clear();
-    router.push(wasGod ? "/god-login" : "/login");
+    router.push("/login");
     setUser(null);
     setGod(null);
     setProxy("");
@@ -247,8 +239,6 @@ export const AuthContextProvider = ({
         register,
         requestLoginOtp,
         verifyLoginOtp,
-        requestGodLoginOtp,
-        verifyGodLoginOtp,
         loginAs,
         exitProxy,
         loading,

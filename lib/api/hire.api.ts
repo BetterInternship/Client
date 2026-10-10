@@ -17,9 +17,7 @@ import {
   authControllerGodLoggedIn,
   authControllerGodSignOut,
   authControllerRequestHireActivation,
-  authControllerRequestGodLoginOtp,
   authControllerRequestHireLoginOtp,
-  authControllerVerifyGodLoginOtp,
   authControllerVerifyHireLoginOtp,
   getAuthControllerEmployerRegisterUrl,
 } from "./generated/endpoints/auth/auth";
@@ -31,11 +29,7 @@ import {
   godsControllerGenerateMagicLink,
 } from "./generated/endpoints/gods/gods";
 
-export type {
-  BaseResponse,
-  GodLoginResponse,
-  GodSelf,
-} from "./generated/models";
+export type { GodSelf } from "./generated/models";
 
 interface EmployerResponse extends FetchResponse {
   success: boolean;
@@ -130,16 +124,10 @@ export const EmployerAuthService = {
 };
 
 // The god realm: its own session cookie, separate from the employer one
-// (OPAQUE_SESSIONS_MIGRATION_PLAN.md §4.6).
+// (OPAQUE_SESSIONS_MIGRATION_PLAN.md §4.6). Gods sign in through
+// EmployerAuthService.verifyLoginOtp, which the server answers as a god login
+// for a god email (temporary, until the tools site).
 export const GodAuthService = {
-  async requestOtp(email: string) {
-    return authControllerRequestGodLoginOtp({ email });
-  },
-
-  async verifyOtp(email: string, otp: string) {
-    return authControllerVerifyGodLoginOtp({ email, otp });
-  },
-
   // Backs authctx's refreshGod(); 401 when there is no live god session.
   async loggedIn() {
     return authControllerGodLoggedIn();

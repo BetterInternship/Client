@@ -12,10 +12,7 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
-  const isAuthRoute =
-    pathname === "/login" ||
-    pathname === "/god-login" ||
-    pathname.startsWith("/register");
+  const isAuthRoute = pathname === "/login" || pathname.startsWith("/register");
   const hideHeader = isStudentLanding || isAuthRoute;
   const isListingCreationPage = pathname.endsWith("/listings/create");
 

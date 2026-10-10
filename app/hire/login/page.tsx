@@ -10,8 +10,13 @@ import { HireOtpInput } from "@/components/features/hire/hire-otp-input";
 import { HireAuthShell } from "@/components/features/hire/hire-auth-shell";
 import { useOtpVerification } from "@/hooks/use-otp-verification";
 import { isValidEmail } from "@/lib/utils";
+import { type AuthResponse } from "@/lib/api/hire.api";
 import { useAppContext } from "@/lib/ctx-app";
 import { useAuthContext } from "../authctx";
+
+/** Only ever send a god back into the god area, never to another site. */
+const godNext = (next: string | null) =>
+  next && next.startsWith("/god") && !next.startsWith("//") ? next : "/god";
 
 export default function LoginPage() {
   return (
@@ -42,7 +47,14 @@ function LoginContent() {
     }
   }, [continuationPath, isAuthenticated, loading, router]);
 
-  const completeLogin = () => {
+  const completeLogin = (response: AuthResponse | undefined) => {
+    // A god email signs in as a god (no employer user in the reply).
+    // Temporary, until the tools site takes over god login.
+    if (response && !response.user) {
+      router.replace(godNext(searchParams.get("next")));
+      return;
+    }
+
     if (autoLinkToken) {
       router.replace(continuationPath);
       return;
@@ -69,7 +81,8 @@ function LoginContent() {
       enabled: hasSentCode,
       failureMessage: "Invalid or expired code.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
-      onSuccess: completeLogin,
+      onSuccess: (result) =>
+        completeLogin(result.response as AuthResponse | undefined),
     },
   });
 
@@ -91,7 +104,8 @@ function LoginContent() {
       failureMessage: "Invalid or expired code.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
     });
-    if (result?.success) completeLogin();
+    if (result?.success)
+      completeLogin(result.response as AuthResponse | undefined);
   };
 
   return (

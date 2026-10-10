@@ -12,10 +12,10 @@ export default function GodLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   // The god pages are only for a signed-in god; everyone else goes to the
-  // god login and comes back here afterwards.
+  // login page and comes back here afterwards.
   useEffect(() => {
     if (!godLoading && !god)
-      router.replace(`/god-login?next=${encodeURIComponent(pathname)}`);
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
   }, [god, godLoading, pathname, router]);
 
   if (godLoading || !god) return <Loader>Checking your access...</Loader>;
