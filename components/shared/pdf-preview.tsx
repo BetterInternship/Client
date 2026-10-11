@@ -25,15 +25,25 @@ export const PDFPreview = ({ url }: { url: string }) => {
   const [scale, setScale] = useState(isMobile ? 0.5 : 0.9);
   const [visiblePage, setVisiblePage] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Zooming resizes the canvas, which resizes fit-content modals and fires the
+  // observer below; without this flag the auto-fit would undo every zoom.
+  const hasManualZoomRef = useRef(false);
+
+  const handleScaleChange = (nextScale: number) => {
+    hasManualZoomRef.current = true;
+    setScale(nextScale);
+  };
 
   useEffect(() => {
     if (!pdfDoc || !containerRef.current) return;
 
+    hasManualZoomRef.current = false;
     let cancelled = false;
     const fitToWidth = async () => {
       try {
         const page = await pdfDoc.getPage(1);
-        if (cancelled || !containerRef.current) return;
+        if (cancelled || hasManualZoomRef.current || !containerRef.current)
+          return;
 
         const pageWidth = page.getViewport({ scale: 1 }).width;
         const availableWidth = containerRef.current.clientWidth - 32;
@@ -87,7 +97,7 @@ export const PDFPreview = ({ url }: { url: string }) => {
             pdfDoc={pdfDoc}
             pageCount={pageCount}
             scale={scale}
-            onScaleChange={setScale}
+            onScaleChange={handleScaleChange}
             visiblePage={visiblePage}
             onVisiblePageChange={setVisiblePage}
             showToolbar
