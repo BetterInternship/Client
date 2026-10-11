@@ -14,34 +14,20 @@ import {
   authControllerActivateHireAccount,
   authControllerEmployerLoggedIn,
   authControllerEmployerSignOut,
-  authControllerGodLoggedIn,
-  authControllerGodSignOut,
   authControllerRequestHireActivation,
   authControllerRequestHireLoginOtp,
   authControllerVerifyHireLoginOtp,
   getAuthControllerEmployerRegisterUrl,
 } from "./generated/endpoints/auth/auth";
-import {
-  godsControllerSignInAs,
-  godsControllerExitProxy,
-  godsControllerVerifyEmployer,
-  godsControllerUnverifyEmployer,
-  godsControllerGenerateMagicLink,
-} from "./generated/endpoints/gods/gods";
 
-export type { GodSelf } from "./generated/models";
-
-interface EmployerResponse extends FetchResponse {
-  success: boolean;
-  employer: Employer;
-}
-
-// `god` on the employer user is a constant false now: a god is signed in by
-// their own session (GodAuthService), never by the employer one. The field
-// stays only because the server still sends it.
+// `god` on the employer user is a constant false now: gods use the tools site
+// (tools.betterinternship.com), never an employer session. The field stays
+// only because the server still sends it.
 export interface AuthResponse extends FetchResponse {
   success: boolean;
   user?: Partial<EmployerSelf> & { god?: boolean };
+  /** /hire/loggedin only: a god is signed in as this account from the tools site. */
+  impersonated?: boolean;
   pending_verification?: boolean;
   account_exists?: boolean;
   login_url?: string;
@@ -83,16 +69,6 @@ export const EmployerAuthService = {
     }) as unknown as Promise<AuthResponse>;
   },
 
-  async loginAsEmployer(employer_id: string) {
-    return godsControllerSignInAs(employer_id) as unknown as Promise<AuthResponse>;
-  },
-
-  // Undoes loginAsEmployer: drops the employer cookie. The god's own session
-  // is separate and untouched, so there is no account to restore.
-  async exitProxy() {
-    return godsControllerExitProxy();
-  },
-
   async logout() {
     await authControllerEmployerSignOut();
   },
@@ -101,39 +77,5 @@ export const EmployerAuthService = {
   // a full page load and still know who is signed in as an employer.
   async loggedIn() {
     return authControllerEmployerLoggedIn() as unknown as Promise<AuthResponse>;
-  },
-
-  // A god mints a one-click sign-in link for an employer's owner.
-  async generateMagicLink(employer_id: string) {
-    return godsControllerGenerateMagicLink({
-      employer_id,
-    }) as unknown as Promise<FetchResponse & { magicLink: string }>;
-  },
-
-  async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return godsControllerVerifyEmployer(
-      employer_id,
-    ) as unknown as Promise<EmployerResponse>;
-  },
-
-  async unverifyEmployer(employer_id: string): Promise<EmployerResponse> {
-    return godsControllerUnverifyEmployer(
-      employer_id,
-    ) as unknown as Promise<EmployerResponse>;
-  },
-};
-
-// The god realm: its own session cookie, separate from the employer one
-// (OPAQUE_SESSIONS_MIGRATION_PLAN.md §4.6). Gods sign in through
-// EmployerAuthService.verifyLoginOtp, which the server answers as a god login
-// for a god email (temporary, until the tools site).
-export const GodAuthService = {
-  // Backs authctx's refreshGod(); 401 when there is no live god session.
-  async loggedIn() {
-    return authControllerGodLoggedIn();
-  },
-
-  async logout() {
-    return authControllerGodSignOut();
   },
 };

@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Job } from "@/lib/db/db.types";
 import { TopPageView } from "@/components/features/student/top/TopPageView";
-import { useGodTopPage, useTopPagePreviewJobs } from "@/lib/api/god.api";
+import { TopPageService } from "@/lib/api/services";
 import { Loader } from "@/components/ui/loader";
 import { GuestAuthContextProvider } from "@/lib/ctx-auth";
 import type { PublicTopUniversity } from "@/lib/api/top-page.server";
-
-interface PreviewSnapshot {
-  name: string;
-  job_ids: string[];
-}
 
 /** Stands in for whichever university's link the category is opened from. */
 const PLACEHOLDER_UNIVERSITY: PublicTopUniversity = {
@@ -24,10 +20,11 @@ const PLACEHOLDER_UNIVERSITY: PublicTopUniversity = {
 };
 
 /**
- * Opened in a new tab from the god editor's "Preview" button. Deliberately
- * lives outside app/hire/god/ — that folder's layout.tsx renders TabsNav
- * unconditionally over every child route, and this page needs to look like
- * the real public page, not a god-mode screen with a tab bar on it.
+ * Opened in a new tab by the tools site's Top page editor ("Preview"),
+ * with the editor's staged — possibly unsaved — name and listing order in the
+ * URL: `?name=…&slug=…&job_ids=a,b,c`. It needs no sign-in: the listings come
+ * from Career's public preview route, which only returns listings the public
+ * pages already show.
  *
  * Renders the actual TopPageView — the same component the public
  * /<university>/top/<slug> page uses — rather than a hand-built lookalike, so
@@ -42,54 +39,29 @@ const PLACEHOLDER_UNIVERSITY: PublicTopUniversity = {
  * has no student session and no real university. The page is wrapped in a
  * logged-out student auth context because the hire layout only provides the
  * hire one, and the student components read the student one.
- *
- * Reads the editor's staged (possibly unsaved) name/order out of
- * sessionStorage — set by the opener right before window.open, same
- * origin/tab so the browser carries it over — and falls back to the
- * last-saved page if that's missing (a manual reload of this tab).
  */
-export default function TopPagePreviewPage() {
+function TopPagePreview() {
   const params = useParams<{ id: string }>();
-  const id = params.id;
-  const [snapshot, setSnapshot] = useState<PreviewSnapshot | null>(null);
-  const [checkedStorage, setCheckedStorage] = useState(false);
+  const searchParams = useSearchParams();
+  const name = searchParams.get("name") ?? "";
+  const slug = searchParams.get("slug") ?? "";
+  const jobIds = (searchParams.get("job_ids") ?? "")
+    .split(",")
+    .map((jobId) => jobId.trim())
+    .filter(Boolean);
 
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(`top-page-preview:${id}`);
-      if (raw) {
-        setSnapshot(JSON.parse(raw) as PreviewSnapshot);
-        sessionStorage.removeItem(`top-page-preview:${id}`);
-      }
-    } catch {
-      // falls back to the saved page below
-    }
-    setCheckedStorage(true);
-  }, [id]);
-
-  const { data: saved, isPending: savedPending } = useGodTopPage(
-    checkedStorage && !snapshot ? id : undefined,
-  );
-
-  const effective: PreviewSnapshot | null =
-    snapshot ??
-    (saved?.page
-      ? {
-          name: saved.page.name,
-          job_ids: saved.page.members.map((m) => m.job_id),
-        }
-      : null);
-
-  const jobIds = effective?.job_ids ?? [];
-  const jobsQuery = useTopPagePreviewJobs(jobIds);
+  const jobsQuery = useQuery({
+    queryKey: ["top-page-preview-jobs", jobIds],
+    queryFn: () => TopPageService.previewJobs(jobIds),
+    enabled: jobIds.length > 0,
+  });
   const jobs: Job[] = jobsQuery.data?.jobs ?? [];
 
-  if (!checkedStorage || (!snapshot && savedPending)) {
-    return <Loader>Loading preview…</Loader>;
-  }
-  if (!effective) {
+  if (!name) {
     return (
-      <div className="p-6 text-sm text-red-600">Could not load a preview.</div>
+      <div className="p-6 text-sm text-red-600">
+        Could not load a preview. Open it again from the editor.
+      </div>
     );
   }
   if (jobIds.length > 0 && jobsQuery.isPending) {
@@ -102,24 +74,26 @@ export default function TopPagePreviewPage() {
         <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-2 text-xs text-slate-500">
           Preview only — the buttons are disabled here. &quot;
           {PLACEHOLDER_UNIVERSITY.name}&quot; stands in for the university; each
-          university&apos;s own link shows its name and colour.{" "}
-          {snapshot
-            ? "Showing your unsaved edits."
-            : "Showing the last saved version."}
+          university&apos;s own link shows its name and colour. Showing the
+          editor&apos;s current version, saved or not.
         </div>
       </div>
       <GuestAuthContextProvider>
         <TopPageView
-          page={{
-            id,
-            name: effective.name,
-            slug: saved?.page?.slug ?? "",
-          }}
+          page={{ id: params.id, name, slug }}
           university={PLACEHOLDER_UNIVERSITY}
           initialJobs={jobs}
           disabled
         />
       </GuestAuthContextProvider>
     </div>
+  );
+}
+
+export default function TopPagePreviewPage() {
+  return (
+    <Suspense fallback={<Loader>Loading preview…</Loader>}>
+      <TopPagePreview />
+    </Suspense>
   );
 }

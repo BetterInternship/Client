@@ -54,6 +54,7 @@ import {
 } from "./generated/endpoints/employer/employer";
 import { careerFetch } from "./career-fetch";
 import { linksControllerResolve } from "./generated/endpoints/links/links";
+import { topPagesControllerPreviewJobs } from "./generated/endpoints/top-pages/top-pages";
 import {
   authControllerActivateAccount,
   authControllerRegister,
@@ -732,6 +733,16 @@ export interface ShareLinkResponse extends FetchResponse {
 export const LinkService = {
   async resolve(slug: string, options: RequestInit = {}) {
     return linksControllerResolve(slug, options);
+  },
+};
+
+export const TopPageService = {
+  // The tools editor's "Preview" tab: the listings these ids would show on a
+  // published Top page, in this order (hidden ones dropped). Public.
+  async previewJobs(jobIds: string[]) {
+    return topPagesControllerPreviewJobs({
+      job_ids: jobIds.join(","),
+    }) as unknown as Promise<FetchResponse & { jobs?: Job[] }>;
   },
 };
 

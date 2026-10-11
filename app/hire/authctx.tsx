@@ -3,13 +3,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, EmployerSelf } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import {
-  AuthResponse,
-  EmployerAuthService,
-  GodAuthService,
-  GodSelf,
-} from "@/lib/api/hire.api";
-import { getFullName } from "@/lib/profile";
+import { AuthResponse, EmployerAuthService } from "@/lib/api/hire.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 
@@ -17,17 +11,17 @@ type AuthUser = Partial<EmployerSelf> & { god?: boolean };
 
 interface IAuthContext {
   user: AuthUser | null;
-  /** The signed-in god (their own session, apart from any employer one). */
-  god: GodSelf | null;
-  /** True until the first god session check has come back. */
-  godLoading: boolean;
-  proxy: string;
+  /**
+   * A god is signed in as this account from the tools site. Read from the
+   * server on every load, so a reload never forgets it (TOOLS_SITE_PLAN.md T16).
+   */
+  impersonating: boolean;
   loading: boolean;
   register: (employer: Partial<Employer> | FormData) => Promise<AuthResponse>;
   requestLoginOtp: (email: string) => Promise<AuthResponse>;
   verifyLoginOtp: (email: string, otp: string) => Promise<AuthResponse>;
-  loginAs: (employer_id: string) => Promise<AuthUser | null>;
-  exitProxy: () => Promise<boolean>;
+  /** Ends the impersonation and returns to the tools site. */
+  stopImpersonating: () => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
   refreshAuthentication: () => Promise<AuthUser | null>;
@@ -36,6 +30,10 @@ interface IAuthContext {
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
+
+const TOOLS_CLIENT_URL = (
+  process.env.NEXT_PUBLIC_TOOLS_CLIENT_URL ?? ""
+).replace(/\/$/, "");
 
 export const useAuthContext = () => useContext(AuthContext);
 
@@ -50,12 +48,10 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [proxy, setProxy] = useState("");
+  const [impersonating, setImpersonating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
-  const [god, setGod] = useState<GodSelf | null>(null);
-  const [godLoading, setGodLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
@@ -74,8 +70,8 @@ export const AuthContextProvider = ({
 
   const refreshAuthentication = async (): Promise<AuthUser | null> => {
     // /hire/loggedin, not /employer-users/me — this is the one call that
-    // must survive a full page load and still know who is signed in. (Gods
-    // are a separate session; see refreshGod.) The persisted React Query
+    // must survive a full page load and still know who is signed in, and
+    // whether a god is signed in as them. The persisted React Query
     // cache spans 24h across full page
     // loads, so every query key below must be invalidated here — skipping
     // one is exactly how stale identity/team data survives a login.
@@ -83,6 +79,7 @@ export const AuthContextProvider = ({
 
     if (!response.success || !response.user) {
       setIsAuthenticated(false);
+      setImpersonating(false);
       setUser(null);
       sessionStorage.removeItem("isAuthenticated");
       sessionStorage.removeItem("user");
@@ -97,27 +94,11 @@ export const AuthContextProvider = ({
     ]);
 
     setUser(response.user);
+    setImpersonating(!!response.impersonated);
 
     setIsAuthenticated(true);
     setLoading(false);
     return response.user;
-  };
-
-  // Asks the server whether there is a live god session. The god cookie is
-  // separate from the employer one, so this runs on every load, alongside
-  // refreshAuthentication, and never depends on it.
-  const refreshGod = async (): Promise<GodSelf | null> => {
-    try {
-      const response = await GodAuthService.loggedIn();
-      const self = response.success && response.god ? response.god : null;
-      setGod(self);
-      return self;
-    } catch {
-      setGod(null);
-      return null;
-    } finally {
-      setGodLoading(false);
-    }
   };
 
   const register = async (employer: Partial<Employer> | FormData) => {
@@ -131,12 +112,6 @@ export const AuthContextProvider = ({
 
   const verifyLoginOtp = async (email: string, otp: string) => {
     const response = await EmployerAuthService.verifyLoginOtp(email, otp);
-    // Temporary, until the tools site: a god email signs in as a god on this
-    // same page. The reply then has no employer user; the god session does.
-    if (response.success && !response.user) {
-      await refreshGod();
-      return response;
-    }
     if (!response.success || !response.user) return response;
 
     await Promise.all([
@@ -146,62 +121,30 @@ export const AuthContextProvider = ({
     ]);
 
     setUser(response.user);
+    setImpersonating(false);
     setIsAuthenticated(true);
 
     return response;
   };
 
-  const loginAs = async (employer_id: string) => {
-    const response = await EmployerAuthService.loginAsEmployer(employer_id);
-    if (!response.success) {
-      alert("Error logging in by proxy.");
-      return null;
-    }
-
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] }),
-      queryClient.invalidateQueries({ queryKey: ["me"] }),
-      queryClient.invalidateQueries({ queryKey: ["my-employer-team"] }),
-    ]);
-    setProxy(getFullName(response.user));
-    setUser(response.user ?? null);
-    // A god has no employer account of their own, so this is what makes the
-    // employer pages treat the proxied session as signed in.
-    setIsAuthenticated(true);
-    return response.user ?? null;
-  };
-
-  const exitProxy = async () => {
-    const response = await EmployerAuthService.exitProxy();
-    if (!response.success) {
-      alert("Error leaving the employer account.");
-      return false;
-    }
-
-    // Only the employer cookie is dropped; the god's own session stays, so
-    // there is no account to restore. Forget the proxied employer entirely.
-    for (const queryKey of [
-      ["my-employer-profile"],
-      ["me"],
-      ["my-employer-team"],
-    ])
-      queryClient.removeQueries({ queryKey });
-    setProxy("");
+  // The impersonation banner's "Stop": the hire logout ends the employer
+  // session (and logs impersonation_ended), then the god goes back to the
+  // tools site, where their own session is untouched.
+  const stopImpersonating = async () => {
+    await EmployerAuthService.logout();
+    queryClient.clear();
     setUser(null);
+    setImpersonating(false);
     setIsAuthenticated(false);
-    return true;
+    window.location.assign(`${TOOLS_CLIENT_URL}/employers`);
   };
 
   const logout = async () => {
     await EmployerAuthService.logout();
-    // Signing out of the portal ends a god session too; the two cookies are
-    // independent on the server.
-    if (god !== null) await GodAuthService.logout();
     queryClient.clear();
     router.push("/login");
     setUser(null);
-    setGod(null);
-    setProxy("");
+    setImpersonating(false);
     setIsAuthenticated(false);
   };
 
@@ -226,21 +169,17 @@ export const AuthContextProvider = ({
 
   useEffect(() => {
     void refreshAuthentication();
-    void refreshGod();
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        god,
-        godLoading,
-        proxy,
+        impersonating,
         register,
         requestLoginOtp,
         verifyLoginOtp,
-        loginAs,
-        exitProxy,
+        stopImpersonating,
         loading,
         logout,
         refreshAuthentication,

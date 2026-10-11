@@ -11,7 +11,11 @@ import { defineConfig } from "orval";
 // path relative to itself, which is what doubled the path in Docs-Client.
 export default defineConfig({
   career: {
-    input: { target: "./lib/api/generated/spec.json" },
+    input: {
+      target: "./lib/api/generated/spec.json",
+      // Server-to-server routes for Tools-Server; never called from here.
+      filters: { mode: "exclude", tags: ["internal-tools"] },
+    },
     output: {
       mode: "tags-split",
       target: "./lib/api/generated/endpoints",

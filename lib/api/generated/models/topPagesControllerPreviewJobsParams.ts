@@ -6,7 +6,6 @@
  * OpenAPI spec version: 2.0
  */
 
-export interface GodEmployerLastSession {
-  owner_id: string;
-  timestamp: string;
-}
+export type TopPagesControllerPreviewJobsParams = {
+  job_ids?: string;
+};

@@ -6,7 +6,9 @@
  * OpenAPI spec version: 2.0
  */
 
-export interface GodUniversityRecord {
-  id: string;
-  name: string;
+export interface ImpersonationCodeResponse {
+  success: boolean;
+  message?: string;
+  code: string;
+  redeem_url: string;
 }

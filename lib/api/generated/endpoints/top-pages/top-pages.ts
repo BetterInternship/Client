@@ -6,8 +6,10 @@
  * OpenAPI spec version: 2.0
  */
 import type {
+  GodTopPagePreviewResponse,
   PublicTopCategoryResponse,
   PublicTopUniversityResponse,
+  TopPagesControllerPreviewJobsParams,
   TopSitemapResponse,
 } from "../../models";
 
@@ -55,6 +57,37 @@ export const topPagesControllerResolveCategory = async (
 ): Promise<PublicTopCategoryResponse> => {
   return careerFetch<PublicTopCategoryResponse>(
     getTopPagesControllerResolveCategoryUrl(pageSlug),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getTopPagesControllerPreviewJobsUrl = (
+  params?: TopPagesControllerPreviewJobsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/top-pages/preview-jobs?${stringifiedParams}`
+    : `/api/top-pages/preview-jobs`;
+};
+
+export const topPagesControllerPreviewJobs = async (
+  params?: TopPagesControllerPreviewJobsParams,
+  options?: RequestInit,
+): Promise<GodTopPagePreviewResponse> => {
+  return careerFetch<GodTopPagePreviewResponse>(
+    getTopPagesControllerPreviewJobsUrl(params),
     {
       ...options,
       method: "GET",

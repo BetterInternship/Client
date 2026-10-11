@@ -3,7 +3,6 @@
 import { useAuthContext } from "@/app/hire/authctx";
 import { useProfile } from "@/hooks/use-employer-api";
 import { usePfpUrl } from "@/hooks/use-pfp";
-import { usePathname, useRouter } from "next/navigation";
 import {
   AppHeader,
   type NavItem,
@@ -14,7 +13,7 @@ import {
   ChevronRight,
   HelpCircle,
   Plus,
-  ShieldCheck,
+  ShieldAlert,
   UserCircle,
 } from "lucide-react";
 
@@ -24,9 +23,7 @@ import {
  * @component
  */
 export function HireAppHeader() {
-  const pathname = usePathname() ?? "";
-  const router = useRouter();
-  const { god, proxy, exitProxy, user, logout } = useAuthContext();
+  const { impersonating, stopImpersonating, user, logout } = useAuthContext();
   const { data: profile } = useProfile();
 
   // The hire-side "profile picture" is the company logo (uploaded in
@@ -38,54 +35,44 @@ export function HireAppHeader() {
     enabled: !!user,
   });
 
-  // Proxying puts an employer cookie next to the god's own session. Leaving
-  // for /god drops the employer one first, or every page after this stays
-  // "as" that employer. The god session itself is never touched.
-  const handleGodClick = async () => {
-    if (proxy) await exitProxy();
-    router.push("/god");
-  };
-
   const nav: NavItem[] = [
     { href: "/listings/create", label: "Add listing", icon: Plus },
     { href: "/dashboard", label: "Dashboard", icon: Briefcase },
     { href: "/help", label: "Get help", icon: HelpCircle },
   ];
 
-  const isGodActive = pathname.startsWith("/god");
-
-  const adminButton = god ? (
+  // The one piece of god UI left on the hire site (TOOLS_SITE_PLAN.md T16):
+  // while a god is signed in as this employer from the tools site, say so,
+  // and offer the way back. Driven by the server, so a reload keeps it.
+  const stopLabel = `Viewing as ${profile?.name ?? "this employer"}`;
+  const impersonationControl = impersonating ? (
     <>
       <button
         type="button"
         onClick={() => {
-          void handleGodClick();
+          void stopImpersonating();
         }}
-        className={cn(
-          "flex w-full items-center justify-between rounded-[0.33em] border border-transparent px-3 py-2 text-sm transition-colors hover:border-gray-200 hover:bg-gray-50 md:hidden",
-          isGodActive ? "text-primary" : "text-gray-700",
-        )}
+        className="flex w-full items-center justify-between rounded-[0.33em] border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/15 md:hidden"
       >
-        <div className="flex items-center gap-2 ">
-          <ShieldCheck className="h-4 w-4 text-gray-500" />
-          <span>Administrator</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <ShieldAlert className="h-4 w-4 shrink-0" />
+          <span className="truncate">{stopLabel} · Stop</span>
         </div>
-        <ChevronRight className="h-4 w-4 text-gray-300" />
+        <ChevronRight className="h-4 w-4 shrink-0" />
       </button>
       <Button
         variant="ghost"
+        title={stopLabel}
         className={cn(
-          "relative hidden h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive! md:flex",
-          isGodActive
-            ? "text-primary"
-            : "opacity-80 hover:bg-gray-100 hover:opacity-100",
+          "relative hidden h-auto min-w-0 flex-col items-center justify-center gap-1 rounded-[0.33em] px-3 py-1 md:flex",
+          "bg-destructive/10 text-destructive hover:bg-destructive/15! hover:text-destructive!",
         )}
         onClick={() => {
-          void handleGodClick();
+          void stopImpersonating();
         }}
       >
-        <ShieldCheck className="h-6! w-6!" strokeWidth={1.7} />
-        <span className="text-xs">Administrator</span>
+        <ShieldAlert className="h-6! w-6!" strokeWidth={1.7} />
+        <span className="text-xs">Stop viewing</span>
       </Button>
     </>
   ) : undefined;
@@ -103,7 +90,7 @@ export function HireAppHeader() {
       logout={logout}
       postLogoutPath="/"
       accountNav={[{ href: "/account", label: "Account", icon: UserCircle }]}
-      actions={adminButton}
+      actions={impersonationControl}
     />
   );
 }

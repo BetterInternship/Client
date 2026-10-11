@@ -5,10 +5,9 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
-import type { GodUniversityRecord } from "./godUniversityRecord";
 
 export interface MoaUniversitiesResponse {
   success: boolean;
   message?: string;
-  universities: GodUniversityRecord[];
+  universityIds: string[];
 }

@@ -10,5 +10,6 @@ import type { EmployerUserFullSelf } from "./employerUserFullSelf";
 export interface EmployerLoggedInResponse {
   success: boolean;
   message?: string;
+  impersonated: boolean;
   user: EmployerUserFullSelf;
 }

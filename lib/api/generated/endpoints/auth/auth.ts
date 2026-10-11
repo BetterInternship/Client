@@ -14,8 +14,6 @@ import type {
   EmployerLoggedInResponse,
   EmployerLoginResponse,
   EmployerRegisterResponse,
-  GodLoggedInResponse,
-  GodLoginResponse,
   HireRegistrationDto,
   LoggedInResponse,
   RegisterResponse,
@@ -58,81 +56,6 @@ export const authControllerHandleSecureLink = async (
       method: "GET",
     },
   );
-};
-
-export const getAuthControllerHandleGodAccessUrl = (hash: string) => {
-  return `/api/auth/god-access/${hash}`;
-};
-
-export const authControllerHandleGodAccess = async (
-  hash: string,
-  options?: RequestInit,
-): Promise<void> => {
-  return careerFetch<void>(getAuthControllerHandleGodAccessUrl(hash), {
-    ...options,
-    method: "GET",
-  });
-};
-
-export const getAuthControllerRequestGodLoginOtpUrl = () => {
-  return `/api/auth/god/otp/request`;
-};
-
-export const authControllerRequestGodLoginOtp = async (
-  emailDto: EmailDto,
-  options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerRequestGodLoginOtpUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(emailDto),
-  });
-};
-
-export const getAuthControllerVerifyGodLoginOtpUrl = () => {
-  return `/api/auth/god/otp/verify`;
-};
-
-export const authControllerVerifyGodLoginOtp = async (
-  activateEmailDto: ActivateEmailDto,
-  options?: RequestInit,
-): Promise<GodLoginResponse> => {
-  return careerFetch<GodLoginResponse>(
-    getAuthControllerVerifyGodLoginOtpUrl(),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(activateEmailDto),
-    },
-  );
-};
-
-export const getAuthControllerGodLoggedInUrl = () => {
-  return `/api/auth/god/loggedin`;
-};
-
-export const authControllerGodLoggedIn = async (
-  options?: RequestInit,
-): Promise<GodLoggedInResponse> => {
-  return careerFetch<GodLoggedInResponse>(getAuthControllerGodLoggedInUrl(), {
-    ...options,
-    method: "POST",
-  });
-};
-
-export const getAuthControllerGodSignOutUrl = () => {
-  return `/api/auth/god/logout`;
-};
-
-export const authControllerGodSignOut = async (
-  options?: RequestInit,
-): Promise<BaseResponse> => {
-  return careerFetch<BaseResponse>(getAuthControllerGodSignOutUrl(), {
-    ...options,
-    method: "POST",
-  });
 };
 
 export const getAuthControllerGoogleOAuthUrl = () => {
