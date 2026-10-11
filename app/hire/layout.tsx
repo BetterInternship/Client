@@ -18,15 +18,19 @@ const baseUrl =
   "https://hire.betterinternship.com";
 const ogImage = `${baseUrl}/og.png`;
 
+const title = "BetterInternship | Recruiter Dashboard";
+const description =
+  "Hire the best interns in the Philippines with BetterInternship.";
+
 export const metadata: Metadata = {
-  title: "Recruiter Dashboard - BetterInternship",
-  description: "Manage applications and candidates",
+  title,
+  description,
   icons: {
     icon: "/BetterInternshipLogo.ico",
   },
   openGraph: {
-    title: "Recruiter Dashboard - BetterInternship",
-    description: "Manage applications and candidates",
+    title,
+    description,
     url: baseUrl,
     images: [
       {
@@ -42,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Recruiter Dashboard - BetterInternship",
-    description: "Manage applications and candidates",
+    title,
+    description,
     images: [ogImage],
   },
 };

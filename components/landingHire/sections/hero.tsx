@@ -6,7 +6,7 @@ import MagneticButton from "@/components/ui/magnetic-button";
 import Link from "next/link";
 import { easeOut, motion, useReducedMotion, Variants } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
-import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 
 export function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
