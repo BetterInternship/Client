@@ -10,7 +10,6 @@ import type { EmployerLoginResponseUser } from "./employerLoginResponseUser";
 export interface EmployerLoginResponse {
   success: boolean;
   message?: string;
-  token: string;
   /** @nullable */
   user: EmployerLoginResponseUser;
 }
