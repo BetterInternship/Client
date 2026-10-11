@@ -284,6 +284,7 @@ export const ProfileEditor = forwardRef<
         >
           <EditAccordionItem
             value="resume"
+            isOpen={openSections.includes("resume")}
             icon={<FileText className="h-5 w-5" />}
             title="Resume"
           >
@@ -292,6 +293,7 @@ export const ProfileEditor = forwardRef<
 
           <EditAccordionItem
             value="internship"
+            isOpen={openSections.includes("internship")}
             icon={<BriefcaseBusiness className="h-5 w-5" />}
             title="Internship Details"
             hasError={hasPrefsErrors}
@@ -436,6 +438,7 @@ export const ProfileEditor = forwardRef<
 
           <EditAccordionItem
             value="personal"
+            isOpen={openSections.includes("personal")}
             icon={<UserRound className="h-5 w-5" />}
             title="Personal Information"
             hasError={hasProfileErrors}
@@ -593,17 +596,24 @@ ProfileEditor.displayName = "ProfileEditor";
 
 function EditAccordionItem({
   value,
+  isOpen,
   icon,
   title,
   hasError,
   children,
 }: {
   value: EditSectionKey;
+  isOpen: boolean;
   icon: ReactNode;
   title: string;
   hasError?: boolean;
   children: ReactNode;
 }) {
+  // AccordionContent clips its children so the height animation works, which
+  // also cuts off dropdowns near the bottom of a section. Let them overflow
+  // once the section has finished opening; sections open on mount don't animate.
+  const [hasSettledOpen, setHasSettledOpen] = useState(isOpen);
+
   return (
     <AccordionItem value={value}>
       <AccordionTrigger className="px-4 py-4 hover:no-underline sm:px-5">
@@ -613,7 +623,16 @@ function EditAccordionItem({
           {hasError && <span className="h-2 w-2 rounded-full bg-destructive" />}
         </span>
       </AccordionTrigger>
-      <AccordionContent className="px-4 pb-5 sm:px-5">
+      <AccordionContent
+        className="px-4 pb-5 sm:px-5"
+        style={isOpen && hasSettledOpen ? { overflow: "visible" } : undefined}
+        onAnimationStart={(e) => {
+          if (e.target === e.currentTarget) setHasSettledOpen(false);
+        }}
+        onAnimationEnd={(e) => {
+          if (e.target === e.currentTarget) setHasSettledOpen(isOpen);
+        }}
+      >
         {children}
       </AccordionContent>
     </AccordionItem>

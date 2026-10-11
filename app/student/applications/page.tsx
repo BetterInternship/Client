@@ -307,7 +307,7 @@ function MyJobsPageInner() {
         </TabsContent>
       </Tabs>
 
-      <ResumeModal className="max-w-[80vw]">
+      <ResumeModal className="w-[min(80vw,48rem)] max-w-[80vw]">
         <PDFPreview url={resumeURL} />
       </ResumeModal>
     </PageContainer>

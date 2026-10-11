@@ -371,7 +371,7 @@ export default function ProfilePage() {
           </div>
         </PageContainer>
 
-        <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] max-w-[80vw] sm:mt-20">
+        <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] w-[min(80vw,48rem)] max-w-[80vw] sm:mt-20">
           <PDFPreview url={resumeURL} />
         </ResumeModal>
       </div>
