@@ -1,6 +1,7 @@
 ---
 title: How to Write an Internship Resume With No Experience
-description: No work experience yet? Build your internship resume with school projects, org work, and skills you already have. Includes before-and-after examples and a sample resume PDF.
+seoTitle: Internship & OJT Resume With No Experience in the Philippines
+description: Write your first internship or OJT resume in the Philippines using school projects, org work, and skills. Includes before-and-after examples and a sample PDF.
 category: Resume
 takeaway: Not sure what to put on your first resume? Start with what you already have.
 order: 1
@@ -31,6 +32,8 @@ If you're staring at a blank page wondering what could possibly go under “Expe
 Think about what you've already done: a class project you worked hard on, an event you helped organize, a small freelance job, or something you built just to try it. Those are places to start.
 
 We'll turn them into a resume that helps someone understand your skills. You don't need to make your experience sound bigger than it was.
+
+If you're applying for OJT in the Philippines, the same starting point works. Your resume introduces you to the company; your school's endorsement letter and other requirements are separate documents.
 
 > **Quick answer:** Start with one readable page. Include your contact details, education, relevant projects or experience, and skills. Choose evidence that fits the role, not everything you've ever done.
 
@@ -72,6 +75,8 @@ Can't think of a useful summary yet? Leave it out for now. You don't need a sent
 Include your course, university, and expected graduation date. Make it clear you're still studying.
 
 Add relevant coursework or an academic award if it helps. You don't need to list every subject or your elementary-school history.
+
+Use the course name your university uses, such as BS Information Technology or BA Communication. If the listing asks for your year level, include it too. There's no need to make your degree sound more complicated than it is.
 
 ### Projects
 
@@ -159,6 +164,8 @@ Before you spend another hour moving the margins, check the basics below. An hon
 ## Questions you might still have
 
 ## Before you send it
+
+For required OJT, check whether the company asks for your available start date or required hours. Include confirmed details where requested, but ask your coordinator first if you're unsure. These vary by course and school, so another student's requirements may not be yours.
 
 - Your email, phone number, and links work.
 - Your course and expected graduation date are correct.

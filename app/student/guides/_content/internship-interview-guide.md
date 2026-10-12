@@ -1,7 +1,7 @@
 ---
 title: How to Prepare for an Internship Interview
-seoTitle: "Internship Interview Guide: Questions, Answers & Tips"
-description: Prepare for your first internship interview with simple answer frameworks, practical checklists, and an editable worksheet. No memorized scripts needed.
+seoTitle: "Internship & OJT Interview Questions: A Guide for Philippine Students"
+description: Prepare for an internship or OJT interview in the Philippines with common questions, honest answer examples, and a practical checklist. No memorized scripts needed.
 category: Interviews
 takeaway: Nervous about the interview? Let's prepare what to say, what to ask, and what to bring.
 order: 3
@@ -29,6 +29,8 @@ You don't need to memorize perfect answers. You need to be ready to talk clearly
 
 You might still feel nervous after preparing. That doesn't mean the preparation didn't work. Let's get a few things ready so you have something to lean on when your mind goes blank.
 
+For an OJT interview, you may also need to explain your course, available dates, and school requirements. Keep the details you've confirmed nearby. You don't have to guess an answer just because you're being asked on the spot.
+
 > **Quick answer:** Read the role, review your resume, prepare a short introduction and a few project stories, and write down questions for the interviewer. Then check the time, location or link, outfit, and equipment.
 
 ## Start with the company and the role
@@ -51,6 +53,12 @@ Open the resume you actually sent. It's easy to forget a bullet you wrote weeks 
 For group work, know which part you handled. For a tool you listed, think of a task you actually used it for. If something changed since applying, explain that honestly.
 
 If you're still preparing your application, our [no-experience resume guide](/guides/internship-resume-no-experience) can help you choose clear examples.
+
+### Know what you can confirm about your OJT
+
+If the internship is for school credit, check your required hours, eligible start date, and any class commitments before the interview. The company may ask about an endorsement letter or an MOA with your university.
+
+If you don't know the process yet, say, “I'll confirm that with our internship coordinator and get back to you.” That's clearer than promising a document or approval date you can't control. Requirements vary by school and program.
 
 ## Prepare a few stories, not a script
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import type { Guide } from "@/lib/guides/guide-content-loader";
 import { Card } from "@/components/ui/temp/card";
 
@@ -24,8 +24,9 @@ export function GuideCard({ guide }: { guide: Guide }) {
             {guide.takeaway}
           </p>
           <div className="flex items-center justify-between gap-4 text-[13px] text-[#53637b]">
-            <span>
-              {guide.category} · {guide.readingMinutes} min read
+            <span className="inline-flex items-center gap-1.5">
+              <Clock size={14} aria-hidden="true" />
+              {guide.readingMinutes} min read
             </span>
             <span className="inline-flex items-center gap-2 font-semibold text-landing-blue-hover">
               Read guide{" "}

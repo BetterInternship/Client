@@ -1,6 +1,7 @@
 ---
 title: How to Find the Right Internship for You
-description: Not sure which internships to apply for? Find work you'd like to try, compare listings, and choose roles that fit your skills, schedule, and school requirements.
+seoTitle: How to Find the Right Internship in the Philippines
+description: Looking for an internship or OJT in the Philippines? Compare roles, school requirements, allowances, and remote, hybrid, or onsite setups before applying.
 category: Applying
 takeaway: Not sure what role to apply for? Let's narrow it down to work you'd like to try and a setup you can manage.
 order: 2
@@ -33,6 +34,8 @@ If your classmates already seem to know exactly where they're applying, that can
 Start with what you enjoy doing, what skills you want to practise, and what kind of work you're curious about. We'll narrow it down from there.
 
 You might try a kind of work and realize it isn't for you. That doesn't make the internship a wasted choice. Finding that out is useful too.
+
+Whether you're looking for required OJT or a voluntary internship in the Philippines, start with the work and your practical needs. The same title can mean different tasks at different companies.
 
 > **Quick answer:** Choose a few kinds of work you'd like to try. Read the tasks in each listing, check the important requirements, and compare the schedule and setup. Then browse and apply to roles that are worth exploring, even if you aren't completely sure yet.
 
@@ -100,6 +103,8 @@ Check whether the role is onsite, hybrid, or remote. For onsite work, check the 
 
 For hybrid work, find out how often you'll need to attend and whether those days are fixed. Remote work may still require specific working hours.
 
+Looking at internships in Makati, Taguig, or another part of Metro Manila? Check the office address and travel time from where you'll actually stay. If you're based in Cebu, Davao, or elsewhere, start with locations you can reach or remote roles your school allows. You don't need to move to Manila just because classmates are applying there.
+
 ### Schedule and duration
 
 Compare the working days, start date, and internship duration with your classes and school requirements.
@@ -111,6 +116,8 @@ If your program requires a particular number of hours, confirm that the proposed
 It's okay for the allowance to matter to you. Transport, meals, and internet cost money. If an allowance is listed, check the amount, when it's paid, and any conditions.
 
 If it isn't listed, don't assume the role is paid or unpaid. Make a note to ask. Include transport, meals, internet, and equipment in your own budget.
+
+If you're specifically looking for a paid internship, check the allowance details in each listing. A familiar company name or an onsite setup doesn't tell you whether an allowance is offered.
 
 ### Company
 
