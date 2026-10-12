@@ -9,6 +9,8 @@ import { landingContainerClassName } from "./layout";
 export type LandingLink = {
   label: string;
   href: ComponentProps<typeof Link>["href"];
+  mobile?: boolean;
+  current?: boolean;
 };
 
 export type LandingHeaderProps = {
@@ -41,7 +43,13 @@ export function LandingHeader({
           <Link
             key={link.label}
             href={link.href}
-            className="cursor-pointer text-landing-nav transition-colors duration-[180ms] hover:text-landing-blue focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-landing-blue max-md:hidden"
+            aria-current={link.current ? "page" : undefined}
+            className={cn(
+              "cursor-pointer text-landing-nav transition-colors duration-[180ms] hover:text-landing-blue focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-landing-blue aria-[current=page]:text-landing-blue",
+              link.mobile
+                ? "max-md:col-span-2 max-md:row-start-2 max-md:py-2"
+                : "max-md:hidden",
+            )}
           >
             {link.label}
           </Link>

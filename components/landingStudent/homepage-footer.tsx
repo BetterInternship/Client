@@ -2,7 +2,6 @@ import { Facebook, Mail, MessageCircle } from "lucide-react";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import {
   BI_DISCORD_INVITE,
-  STUDENT_FORM_GUIDE,
   SUPPORT_EMAIL_LINK,
   SUPPORT_FACEBOOK,
 } from "@/constants";
@@ -19,7 +18,7 @@ export function HomepageFooter() {
           title: "For Students",
           links: [
             { label: "Find Internships", href: "/search" },
-            { label: "Guides", href: STUDENT_FORM_GUIDE },
+            { label: "Guides", href: "/guides" },
           ],
         },
         {

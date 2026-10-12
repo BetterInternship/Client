@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { baseUrl } from "@/lib/site-url";
 import { fetchTopSitemap } from "@/lib/api/top-page.server";
 import { JobService } from "@/lib/api/services";
+import { getPublishedGuideMetadata } from "@/lib/guides/guide-content-loader";
 
 export const revalidate = 3600;
 
@@ -101,5 +102,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...staticEntries, ...jobEntries, ...topPageEntries];
+  const guides = await getPublishedGuideMetadata();
+  const guideEntries: MetadataRoute.Sitemap = guides.length
+    ? [
+        { url: `${baseUrl}/guides`, changeFrequency: "weekly", priority: 0.7 },
+        ...guides.map((guide) => ({
+          url: `${baseUrl}/guides/${guide.slug}`,
+          lastModified: guide.updatedAt ?? guide.publishedAt ?? undefined,
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        })),
+      ]
+    : [];
+  return [...staticEntries, ...jobEntries, ...topPageEntries, ...guideEntries];
 }

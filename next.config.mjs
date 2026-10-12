@@ -58,6 +58,9 @@ const cspHeader = `
 `.replace(/\n/g, "");
 
 const nextConfig = {
+  outputFileTracingIncludes: {
+    "/student/guides/**": ["./app/student/guides/_content/*.md"],
+  },
   experimental: {
     // The shared package's barrel also exports application providers and UI.
     // Resolve named imports directly so a landing-page `cn` import stays small.
@@ -148,7 +151,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms|robots\\.txt)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|guide-resources|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms|robots\\.txt)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });

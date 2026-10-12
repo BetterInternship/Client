@@ -5,6 +5,7 @@ import StudentAppHeader from "@/components/features/student/app-header";
 import { useIsTopRoute } from "@/lib/use-session-gate";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
+import { isGuidesRoute } from "@/lib/student-public-routes";
 
 export default function AllowLanding({
   children,
@@ -15,6 +16,11 @@ export default function AllowLanding({
   const isStudentLanding = pathname === "/";
   // Top pages draw their own navbar.
   const isTopPage = useIsTopRoute();
+  if (isGuidesRoute(pathname)) {
+    return (
+      <div className="flex min-h-0 grow flex-col bg-white">{children}</div>
+    );
+  }
   const isChallengePage =
     pathname.startsWith("/challenges/") ||
     pathname.startsWith("/student/challenges/");
