@@ -4,7 +4,13 @@ import {
   usePdfPageRenderer,
 } from "@betterinternship/core/pdf-viewer";
 import { useAppContext } from "@/lib/ctx-app";
+import { Download, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+const MIN_SCALE = 0.2;
+const MAX_SCALE = 3;
+const TOOLBAR_BUTTON_CLASS =
+  "cursor-pointer rounded p-1.5 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30";
 
 function PdfPage({
   pdf,
@@ -19,7 +25,115 @@ function PdfPage({
   return <canvas ref={canvasRef} className="block bg-white shadow-sm" />;
 }
 
-export const PDFPreview = ({ url }: { url: string }) => {
+/**
+ * Download button for the toolbar. The signed URL lives on the bucket's
+ * origin, where `<a download>` is ignored, so this saves the bytes pdf.js
+ * already fetched through a same-origin blob URL instead.
+ */
+function DownloadButton({
+  pdf,
+  fileName,
+}: {
+  pdf: Parameters<typeof usePdfPageRenderer>[0];
+  fileName: string;
+}) {
+  const handleDownload = async () => {
+    if (!pdf) return;
+    const data = await pdf.getData();
+    const blobUrl = URL.createObjectURL(
+      new Blob([data as BlobPart], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    link.click();
+    // Revoking right away can cancel the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 40_000);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void handleDownload()}
+      className={TOOLBAR_BUTTON_CLASS}
+      title="Download"
+      aria-label="Download"
+    >
+      <Download className="h-3.5 w-3.5" />
+    </button>
+  );
+}
+
+/**
+ * The shared viewer's toolbar only takes extra controls on its left, so when
+ * a download is offered this toolbar replaces it to sit beside the zoom ones.
+ */
+function PreviewToolbar({
+  pdf,
+  pageCount,
+  visiblePage,
+  scale,
+  onScaleChange,
+  downloadFileName,
+}: {
+  pdf: Parameters<typeof usePdfPageRenderer>[0];
+  pageCount: number;
+  visiblePage: number;
+  scale: number;
+  onScaleChange: (scale: number) => void;
+  downloadFileName: string;
+}) {
+  const zoom = (delta: number) =>
+    onScaleChange(
+      Math.min(
+        MAX_SCALE,
+        Math.max(MIN_SCALE, parseFloat((scale + delta).toFixed(2))),
+      ),
+    );
+
+  return (
+    <div className="flex h-12 flex-shrink-0 items-center justify-end gap-2 border-b border-slate-300 bg-white px-3">
+      <span className="text-xs font-medium text-slate-700">
+        {visiblePage}/{pageCount || 1}
+      </span>
+      <div className="ml-1 inline-flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => zoom(-0.1)}
+          disabled={scale <= MIN_SCALE}
+          className={TOOLBAR_BUTTON_CLASS}
+          title="Zoom out"
+          aria-label="Zoom out"
+        >
+          <ZoomOut className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => zoom(0.1)}
+          disabled={scale >= MAX_SCALE}
+          className={TOOLBAR_BUTTON_CLASS}
+          title="Zoom in"
+          aria-label="Zoom in"
+        >
+          <ZoomIn className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <span className="w-10 text-center text-[11px] font-medium text-slate-700">
+        {Math.round(scale * 100)}%
+      </span>
+      <DownloadButton pdf={pdf} fileName={downloadFileName} />
+    </div>
+  );
+}
+
+export const PDFPreview = ({
+  url,
+  downloadFileName,
+}: {
+  url: string;
+  /** Shows a download button in the toolbar, saving under this name. */
+  downloadFileName?: string;
+}) => {
   const { isMobile } = useAppContext();
   const { pdfDoc, pageCount, isLoading, error } = usePdfDocumentFromUrl(url);
   const [scale, setScale] = useState(isMobile ? 0.5 : 0.9);
@@ -91,6 +205,33 @@ export const PDFPreview = ({ url }: { url: string }) => {
         ) : isLoading || !pdfDoc ? (
           <div className="flex min-h-48 items-center justify-center text-sm text-gray-500">
             Loading document...
+          </div>
+        ) : downloadFileName ? (
+          <div className="flex h-full flex-col overflow-hidden rounded-[0.33em] bg-slate-50">
+            <PreviewToolbar
+              pdf={pdfDoc}
+              pageCount={pageCount}
+              visiblePage={visiblePage}
+              scale={scale}
+              onScaleChange={handleScaleChange}
+              downloadFileName={downloadFileName}
+            />
+            <div className="min-h-0 flex-1">
+              <BasePdfViewer
+                pdfDoc={pdfDoc}
+                pageCount={pageCount}
+                scale={scale}
+                onScaleChange={handleScaleChange}
+                visiblePage={visiblePage}
+                onVisiblePageChange={setVisiblePage}
+                showToolbar={false}
+                squareFrame
+                minScale={MIN_SCALE}
+                renderPage={(pageNumber) => (
+                  <PdfPage pdf={pdfDoc} pageNumber={pageNumber} scale={scale} />
+                )}
+              />
+            </div>
           </div>
         ) : (
           <BasePdfViewer
