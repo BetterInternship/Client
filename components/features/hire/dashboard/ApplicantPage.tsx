@@ -652,7 +652,15 @@ export function ApplicantPage({
           {/* resume */}
           {application?.resume_id ? (
             <div className="flex h-full min-w-0 w-full flex-col items-center justify-center overflow-hidden md:w-[45%]">
-              <PDFPreview url={resumeURL} />
+              <PDFPreview
+                url={resumeURL}
+                downloadFileName={`${
+                  getFullName(application.user).replace(
+                    /[\s\\/:*?"<>|]+/g,
+                    "_",
+                  ) || "Applicant"
+                }_Resume.pdf`}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center px-8 w-full">

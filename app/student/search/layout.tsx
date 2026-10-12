@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  title: "Browse Internships in the Philippines | BetterInternship",
   alternates: { canonical: "/search" },
 };
 
