@@ -22,6 +22,7 @@ export function HomepageCommunity() {
         <TopDiscordArtwork
           phoneSrc={discordPhone}
           phoneSizes="(max-width: 767px) 140px, (max-width: 1023px) 30vw, 370px"
+          loading="lazy"
         />
       }
       action={{

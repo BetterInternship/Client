@@ -58,6 +58,11 @@ const cspHeader = `
 `.replace(/\n/g, "");
 
 const nextConfig = {
+  experimental: {
+    // The shared package's barrel also exports application providers and UI.
+    // Resolve named imports directly so a landing-page `cn` import stays small.
+    optimizePackageImports: ["@betterinternship/components"],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
