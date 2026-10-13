@@ -37,7 +37,7 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
   return (
     <Card
       as="article"
-      variant="listing"
+      variant="interactive"
       className={cn(
         "group/job-card relative flex h-full min-w-0 flex-col p-5 max-md:p-4",
         className,

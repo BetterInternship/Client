@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { isLightweightStudentRoute } from "@/lib/student-public-routes";
 
 const StudentAppShell = dynamic(() => import("./student-app-shell"), {
   loading: () => (
@@ -18,14 +19,14 @@ export default function StudentRouteShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const isHomepage = pathname === "/" || pathname === "/student";
-  const [appActivated, setAppActivated] = useState(!isHomepage);
+  const isPublicPage = isLightweightStudentRoute(pathname);
+  const [appActivated, setAppActivated] = useState(!isPublicPage);
 
   // Once entered, keep the app mounted even on return to the homepage:
   // in-flight form jobs, query state, and authentication must survive navigation.
-  if (!isHomepage && !appActivated) setAppActivated(true);
+  if (!isPublicPage && !appActivated) setAppActivated(true);
 
-  if (appActivated || !isHomepage) {
+  if (appActivated || !isPublicPage) {
     return <StudentAppShell>{children}</StudentAppShell>;
   }
 
