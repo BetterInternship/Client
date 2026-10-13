@@ -1,5 +1,6 @@
 ---
 title: How to Find the Right Internship for You
+tags: [Philippines, Finding internships, OJT, Choosing an internship]
 seoTitle: How to Find the Right Internship in the Philippines
 description: Looking for an internship or OJT in the Philippines? Compare roles, school requirements, allowances, and remote, hybrid, or onsite setups before applying.
 category: Applying

@@ -1,5 +1,6 @@
 ---
 title: How to Write an Internship Resume With No Experience
+tags: [Philippines, Internship resume, OJT resume, No work experience]
 seoTitle: Internship & OJT Resume With No Experience in the Philippines
 description: Write your first internship or OJT resume in the Philippines using school projects, org work, and skills. Includes before-and-after examples and a sample PDF.
 category: Resume

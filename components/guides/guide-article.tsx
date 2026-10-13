@@ -39,6 +39,7 @@ export function GuideArticle({
         url,
         image: `${baseUrl}/og.png`,
         inLanguage: "en-PH",
+        keywords: guide.tags.join(", "),
         author: { "@type": "Organization", name: guide.author, url: baseUrl },
         publisher: {
           "@type": "Organization",

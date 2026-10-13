@@ -1,5 +1,6 @@
 ---
 title: How to Prepare for an Internship Interview
+tags: [Philippines, Internship interviews, OJT interviews, Interview preparation]
 seoTitle: "Internship & OJT Interview Questions: A Guide for Philippine Students"
 description: Prepare for an internship or OJT interview in the Philippines with common questions, honest answer examples, and a practical checklist. No memorized scripts needed.
 category: Interviews

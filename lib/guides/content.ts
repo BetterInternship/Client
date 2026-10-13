@@ -17,6 +17,7 @@ const guideSchema = z
     seoTitle: z.string().trim().min(1).optional(),
     description: z.string().trim().min(1),
     category: z.string().trim().min(1),
+    tags: z.array(z.string().trim().min(1)).default([]),
     order: z.number().int().nonnegative().default(0),
     image: z
       .string()

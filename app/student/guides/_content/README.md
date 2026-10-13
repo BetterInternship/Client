@@ -48,6 +48,8 @@ The source articles are files in this repository, not database records. Next.js 
 
 ## Preview and review
 
+`tags` is an optional list of article topics (for example, `[Philippines, OJT resume]`). These populate Open Graph article tags and Article structured-data keywords; they are not displayed as badges on the cards. Tags describe content, not a ranking guarantee.
+
 Optional frontmatter fields: `seoTitle` overrides the search/social title, `nextStep` customizes the closing advice, and `archived: true` hides an article from both preview and production. Archived articles should not be linked from visible articles.
 
 `ctaTitle` and `ctaLabel` optionally customize the closing heading and marketplace button. The destination stays the existing `/search` route.
