@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Input } from "@betterinternship/components";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@betterinternship/components";
@@ -18,6 +19,28 @@ export interface IAutocompleteOption<ID extends number | string> {
 
 type MobileDropdownMode = "sheet" | "inline";
 type InputIcons = boolean | "search";
+
+function MobileSheetPortal({
+  enabled,
+  children,
+}: {
+  enabled: boolean;
+  children: React.ReactNode;
+}) {
+  if (!enabled) return <>{children}</>;
+
+  // Escape clipping/stacking contexts from accordions and animated panels.
+  // Keep portal interactions from reaching the document's outside-click handler.
+  return createPortal(
+    <div
+      onClick={(event) => event.stopPropagation()}
+      onTouchStart={(event) => event.stopPropagation()}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+}
 
 /* -------------------------------------------------------
  * Base component (array-based). Single uses length 0..1.
@@ -421,7 +444,7 @@ function AutocompleteBase<ID extends number | string>({
       )}
 
       {isOpen && (
-        <>
+        <MobileSheetPortal enabled={useMobileSheet}>
           {useMobileSheet && (
             <button
               type="button"
@@ -550,7 +573,7 @@ function AutocompleteBase<ID extends number | string>({
               </li>
             )}
           </ul>
-        </>
+        </MobileSheetPortal>
       )}
     </div>
   );
@@ -891,7 +914,7 @@ export function AutocompleteTreeMulti({
       </div>
 
       {isOpen && (
-        <>
+        <MobileSheetPortal enabled={useMobileSheet}>
           {useMobileSheet && (
             <button
               type="button"
@@ -1008,7 +1031,7 @@ export function AutocompleteTreeMulti({
               </li>
             )}
           </ul>
-        </>
+        </MobileSheetPortal>
       )}
     </div>
   );
