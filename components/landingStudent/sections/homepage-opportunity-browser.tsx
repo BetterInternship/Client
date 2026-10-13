@@ -97,7 +97,6 @@ export function HomepageOpportunityBrowser({
                   key={job.id}
                   className={`${motionStyles.action} h-full ${index > 2 ? "max-md:hidden" : ""}`}
                   variants={cardVariants}
-                  whileHover={reduceMotion ? undefined : { y: -2 }}
                   transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                 >
                   <JobCard job={job} data-job-id={job.id} />

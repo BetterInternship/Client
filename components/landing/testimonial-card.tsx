@@ -20,9 +20,9 @@ export function TestimonialCard({
   return (
     <Card
       as="figure"
-      variant="testimonial"
+      variant="surface"
       className={cn(
-        "m-0 flex min-h-[15rem] shrink-0 flex-col p-6 max-lg:p-5",
+        "m-0 flex min-h-[15rem] shrink-0 flex-col p-6 text-landing-navy max-lg:p-5",
         className,
       )}
       {...props}

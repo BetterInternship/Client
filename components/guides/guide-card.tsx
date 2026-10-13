@@ -9,15 +9,15 @@ export function GuideCard({ guide }: { guide: Guide }) {
   return (
     <Card
       as="article"
-      variant="listing"
-      className="overflow-hidden rounded-2xl shadow-landing-card md:row-span-3 md:grid md:grid-rows-subgrid"
+      variant="interactive"
+      className="overflow-hidden md:row-span-3 md:grid md:grid-rows-subgrid"
     >
       <Link
         href={`/guides/${guide.slug}`}
-        className="group block h-full text-inherit no-underline md:row-span-3 md:grid md:grid-rows-subgrid"
+        className="group block h-full rounded-xl text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-blue focus-visible:ring-inset md:row-span-3 md:grid md:grid-rows-subgrid"
       >
         <div className="p-6 max-lg:p-5 md:row-span-3 md:grid md:grid-rows-subgrid">
-          <h2 className="m-0 max-w-[29ch] text-balance text-2xl font-bold leading-[1.18] tracking-[-.035em] group-hover:text-landing-blue-hover max-lg:text-[21px] max-md:text-[25px]">
+          <h2 className="m-0 max-w-[29ch] text-balance text-2xl font-bold leading-[1.18] tracking-[-.035em] max-lg:text-[21px] max-md:text-[25px]">
             {guide.title}
           </h2>
           <p className="mb-6 mt-4 text-[15px] leading-[1.7] text-[#4a5870]">
@@ -33,7 +33,7 @@ export function GuideCard({ guide }: { guide: Guide }) {
               <ArrowRight
                 size={16}
                 aria-hidden="true"
-                className="motion-safe:transition-transform motion-safe:duration-[160ms] motion-safe:group-hover:translate-x-[3px]"
+                className="transition-transform duration-[160ms] ease-landing-out motion-safe:pointer-fine:group-hover:translate-x-0.5 motion-reduce:transition-none"
               />
             </span>
           </div>
