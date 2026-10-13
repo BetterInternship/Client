@@ -8,6 +8,7 @@ import { Check, ChevronDown, PlusCircleIcon, Search, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
 import { Button, Checkbox } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
+import { useMobileSheetViewport } from "@/lib/use-mobile-sheet-viewport";
 
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
@@ -64,10 +65,6 @@ function AutocompleteBase<ID extends number | string>({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const sheetInputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
-  const [sheetViewport, setSheetViewport] = useState<{
-    top: number;
-    height: number;
-  } | null>(null);
 
   const inputId = useId();
 
@@ -153,6 +150,7 @@ function AutocompleteBase<ID extends number | string>({
 
   const singleDisplay = !multiple && (selectedLabels[0] ?? "");
   const useMobileSheet = isMobile && mobileDropdownMode === "sheet";
+  const sheetViewport = useMobileSheetViewport(isOpen && useMobileSheet);
   const useInlineMobileDropdown = isMobile && mobileDropdownMode === "inline";
 
   useEffect(() => {
@@ -198,30 +196,6 @@ function AutocompleteBase<ID extends number | string>({
     }, 80);
 
     return () => window.clearTimeout(focusTimer);
-  }, [isOpen, useMobileSheet]);
-
-  // track visual viewport for autocomplete mobile popup
-  useEffect(() => {
-    if (!isOpen || !useMobileSheet) {
-      setSheetViewport(null);
-      return;
-    }
-
-    const updateViewport = () => {
-      const top = window.visualViewport?.offsetTop ?? 0;
-      const height = window.visualViewport?.height ?? window.innerHeight;
-      setSheetViewport({ top, height });
-    };
-
-    updateViewport();
-
-    window.visualViewport?.addEventListener("resize", updateViewport);
-    window.visualViewport?.addEventListener("scroll", updateViewport);
-
-    return () => {
-      window.visualViewport?.removeEventListener("resize", updateViewport);
-      window.visualViewport?.removeEventListener("scroll", updateViewport);
-    };
   }, [isOpen, useMobileSheet]);
 
   const suppressMobileKeyboard =
@@ -719,10 +693,6 @@ export function AutocompleteTreeMulti({
   });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLButtonElement | null>(null);
-  const [sheetViewport, setSheetViewport] = useState<{
-    top: number;
-    height: number;
-  } | null>(null);
 
   // Build ID -> label map (child shows "Parent · Child")
   const labelMap = useMemo(() => {
@@ -829,6 +799,8 @@ export function AutocompleteTreeMulti({
   const useMobileSheet = isMobile && mobileDropdownMode === "sheet";
   const useInlineMobileDropdown = isMobile && mobileDropdownMode === "inline";
 
+  const sheetViewport = useMobileSheetViewport(isOpen && useMobileSheet);
+
   useEffect(() => {
     if (!isOpen || !useInlineMobileDropdown) {
       setDropdownMaxHeight(undefined);
@@ -863,30 +835,6 @@ export function AutocompleteTreeMulti({
       );
     };
   }, [isOpen, useInlineMobileDropdown]);
-
-  // track visual viewport for autocomplete mobile popup
-  useEffect(() => {
-    if (!isOpen || !useMobileSheet) {
-      setSheetViewport(null);
-      return;
-    }
-
-    const updateViewport = () => {
-      const top = window.visualViewport?.offsetTop ?? 0;
-      const height = window.visualViewport?.height ?? window.innerHeight;
-      setSheetViewport({ top, height });
-    };
-
-    updateViewport();
-
-    window.visualViewport?.addEventListener("resize", updateViewport);
-    window.visualViewport?.addEventListener("scroll", updateViewport);
-
-    return () => {
-      window.visualViewport?.removeEventListener("resize", updateViewport);
-      window.visualViewport?.removeEventListener("scroll", updateViewport);
-    };
-  }, [isOpen, useMobileSheet]);
 
   return (
     <div

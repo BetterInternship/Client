@@ -9,6 +9,7 @@
 
 import { Button } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
+import { useMobileSheetViewport } from "@/lib/use-mobile-sheet-viewport";
 import { cn } from "@betterinternship/components";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -183,6 +184,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   const { activeDropdown, setActiveDropdown } =
     useContext(DropdownGroupContext);
   const [isOpen, setIsOpen] = useState(false);
+  const sheetViewport = useMobileSheetViewport(isOpen && isMobile);
   const [value, setValue] = useState(defaultValue);
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
 
@@ -277,15 +279,27 @@ export const GroupableRadioDropdown = <ID extends number | string>({
           <div
             className={cn(
               isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-[0.33em] border border-b-0 border-gray-300 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 flex flex-col max-h-[70dvh] overflow-hidden rounded-t-[0.33em] border border-b-0 border-gray-300 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
                 : "absolute left-0 right-0 top-full mt-1 bg-white rounded-[0.33em] py-1 shadow-lg overflow-hidden border border-gray-300 z-[9999] duration-200 ease-out transition-all max-w-full",
             )}
             role="listbox"
+            style={
+              isMobile && sheetViewport
+                ? {
+                    bottom: sheetViewport.bottom,
+                    maxHeight: Math.min(
+                      sheetViewport.height,
+                      (window.visualViewport?.height ?? window.innerHeight) *
+                        0.7,
+                    ),
+                  }
+                : undefined
+            }
           >
             <div
               className={cn(
                 "relative z-[100] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-                isMobile ? "max-h-[calc(70vh-5.5rem)]" : "max-h-[400px]",
+                isMobile ? "min-h-0 flex-1" : "max-h-[400px]",
               )}
             >
               {options.map((option, index) => (
@@ -306,7 +320,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
               ))}
             </div>
             {isMobile && (
-              <div className="border-t border-gray-300 px-4 pb-1 pt-3">
+              <div className="shrink-0 border-t border-gray-300 px-4 pb-1 pt-3">
                 <Button
                   type="button"
                   variant="outline"
