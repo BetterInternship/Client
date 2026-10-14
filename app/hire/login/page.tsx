@@ -14,6 +14,10 @@ import { type AuthResponse } from "@/lib/api/hire.api";
 import { useAppContext } from "@/lib/ctx-app";
 import { useAuthContext } from "../authctx";
 
+/** Only ever send a god back into the god area, never to another site. */
+const godNext = (next: string | null) =>
+  next && next.startsWith("/god") && !next.startsWith("//") ? next : "/god";
+
 export default function LoginPage() {
   return (
     <Suspense fallback={<Loader>Loading login...</Loader>}>
@@ -23,7 +27,7 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const { isAuthenticated, loading, requestLoginOtp, user, verifyLoginOtp } =
+  const { isAuthenticated, loading, requestLoginOtp, verifyLoginOtp } =
     useAuthContext();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -39,13 +43,15 @@ function LoginContent() {
 
   useEffect(() => {
     if (!loading && isAuthenticated()) {
-      router.replace(user?.god ? "/god" : continuationPath);
+      router.replace(continuationPath);
     }
-  }, [continuationPath, isAuthenticated, loading, router, user]);
+  }, [continuationPath, isAuthenticated, loading, router]);
 
   const completeLogin = (response: AuthResponse | undefined) => {
-    if (response?.user?.god) {
-      router.replace("/god");
+    // A god email signs in as a god (no employer user in the reply).
+    // Temporary, until the tools site takes over god login.
+    if (response && !response.user) {
+      router.replace(godNext(searchParams.get("next")));
       return;
     }
 
@@ -98,9 +104,8 @@ function LoginContent() {
       failureMessage: "Invalid or expired code.",
       networkErrorMessage: "Couldn't verify your code. Try again.",
     });
-    if (result?.success) {
+    if (result?.success)
       completeLogin(result.response as AuthResponse | undefined);
-    }
   };
 
   return (
