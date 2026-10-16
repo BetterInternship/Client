@@ -18,6 +18,7 @@ import {
   applicationsControllerCreate,
   applicationsControllerGetOwn,
   applicationsControllerMarkViewed,
+  applicationsControllerRedditReviewClick,
   applicationsControllerUpdate,
 } from "./generated/endpoints/applications/applications";
 import {
@@ -862,6 +863,11 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
+  notifyRedditReviewClick(applicationId: string) {
+    return applicationsControllerRedditReviewClick(applicationId, {
+      keepalive: true,
+    });
+  },
   // GET /applications reads no query parameters, so the paging and status
   // filters this used to accept were never applied and are no longer sent.
   async getApplications(

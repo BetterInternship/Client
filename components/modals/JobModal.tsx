@@ -27,6 +27,8 @@ import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
+import { RedditReviewBanner } from "../features/student/job/reddit-review-banner";
+import { FindCompanyReviews } from "../features/student/job/find-company-reviews";
 import type { ApplyPayload } from "./components/ApplyModal";
 
 // Direction-aware slide for the modal's inner content only, mirroring
@@ -157,6 +159,7 @@ export const JobModal = ({
                   )}
                 >
                   {/* Header (compact; no actions on mobile) */}
+                  <RedditReviewBanner key={job.id} job={job} />
                   <HeaderCompact job={job} />
                   <CreditedBadge job={job} />
 
@@ -177,6 +180,8 @@ export const JobModal = ({
                     <JobDetailsSummary job={job} />
                   </Section>
                   {isSuperListing && <SuperChallengeDetails job={job} mobile />}
+
+                  <FindCompanyReviews companyName={job.employer?.name} />
 
                   <Divider />
 

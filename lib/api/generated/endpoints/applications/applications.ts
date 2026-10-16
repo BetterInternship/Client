@@ -83,3 +83,20 @@ export const applicationsControllerMarkViewed = async (
     method: "POST",
   });
 };
+
+export const getApplicationsControllerRedditReviewClickUrl = (id: string) => {
+  return `/api/applications/${id}/reddit-review-click`;
+};
+
+export const applicationsControllerRedditReviewClick = async (
+  id: string,
+  options?: RequestInit,
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(
+    getApplicationsControllerRedditReviewClickUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};

@@ -42,6 +42,7 @@ import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
 import { RebuildTopPagesModal } from "./components/RebuildTopPagesModal";
 import { Button } from "@betterinternship/components";
+import { RedditDiscussionModal } from "./components/RedditDiscussionModal";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -60,6 +61,25 @@ export const useModalRegistry = () => {
 
   const modalRegistry = useMemo(
     () => ({
+      redditDiscussion: {
+        open: ({ job }: { job: Job }) =>
+          open(
+            "reddit-discussion",
+            DefaultModalLayout,
+            <RedditDiscussionModal
+              key={job.id}
+              job={job}
+              onComplete={() => close("reddit-discussion")}
+            />,
+            {
+              title: "What would you like to ask?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("reddit-discussion"),
+      },
       // modal for deleting a resume.
       deleteResume: {
         open: ({

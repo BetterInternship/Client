@@ -743,6 +743,8 @@ export function JobDetails({
   applyDisabledText = "Complete required items to apply.",
   className,
   showCredited,
+  topBanner,
+  beforeOverview,
 }: {
   job: Job;
   user?: {
@@ -753,6 +755,8 @@ export function JobDetails({
   applyDisabledText?: string;
   className?: string;
   showCredited?: boolean;
+  topBanner?: React.ReactNode;
+  beforeOverview?: React.ReactNode;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -768,6 +772,7 @@ export function JobDetails({
     <>
       <div className={cn("flex-1 overflow-y-auto space-y-5", className)}>
         {job.hibernating && <HibernatingListingBanner job={job} />}
+        {topBanner}
         <HeaderWithActions
           job={job}
           actions={job.hibernating ? [] : actions}
@@ -779,6 +784,7 @@ export function JobDetails({
           <JobDetailsSummary job={job} />
         </Section>
         {isSuperListing && <SuperChallengeDetails job={job} />}
+        {beforeOverview}
         <Divider />
 
         {/* sections */}
