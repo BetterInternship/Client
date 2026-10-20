@@ -203,16 +203,8 @@ export type ListingInternshipPreferences = {
   require_portfolio?: boolean | null;
 };
 
-export interface RefDomain {
-  id: string;
-  name: string;
-  university_id: string;
-}
-
-export interface RefsData {
-  colleges: College[];
-  departments: Department[];
-  universities: University[];
+// Server-rendered into every page by the student and hire layouts.
+export interface JobRefsData {
   job_types: JobType[];
   job_modes: JobMode[];
   job_allowances: JobAllowance[];
@@ -220,8 +212,16 @@ export interface RefsData {
   job_pay_freq: JobPayFreq[];
   app_statuses: AppStatus[];
   industries: Industry[];
-  domains: RefDomain[];
 }
+
+// Fetched in the browser from /api/refs/schools.
+export interface SchoolsRefsData {
+  colleges: College[];
+  departments: Department[];
+  universities: University[];
+}
+
+export type RefsData = JobRefsData & SchoolsRefsData;
 
 export interface IRefsContext extends RefsData {
   refLoading: boolean;
@@ -298,8 +298,5 @@ export interface IRefsContext extends RefsData {
   ) => string | null;
   getDepartmentByName: (name: string | null | undefined) => Department | null;
 
-  get_departments_by_college: (college_id: string) => string[];
-  get_colleges_by_university: (university_id: string) => string[];
-  getUniversityFromDomain: (domain: string) => string[];
   isNotNull: (ref: any) => boolean;
 }
