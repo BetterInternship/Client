@@ -20,18 +20,12 @@ export function buildRedditCompanySearchUrl(
 export function buildRedditDiscussionUrl({
   companyName,
   jobTitle,
-  listingUrl,
   question,
 }: {
   companyName?: string | null;
   jobTitle?: string | null;
-  listingUrl: string;
   question: string;
 }): string {
-  const listing = new URL(listingUrl);
-  if (listing.protocol !== "https:" && listing.protocol !== "http:") {
-    throw new Error("Invalid listing link");
-  }
   const prompt = question.trim();
   if (!prompt) throw new Error("A discussion question is required");
 
@@ -41,11 +35,7 @@ export function buildRedditDiscussionUrl({
     selftext: "true",
     flair_id: SEEKING_ADVICE_FLAIR_ID,
     title: `[Seeking Advice] ${company} - ${position}`.slice(0, 300),
-    text: [
-      prompt,
-      "",
-      `[BetterInternship job listing link](${listing.href.replace(/\(/g, "%28").replace(/\)/g, "%29")})`,
-    ].join("\n"),
+    text: prompt,
   });
 
   return `${REDDIT_COMMUNITY_URL}/submit?${params.toString()}`;
