@@ -66,7 +66,7 @@ const JobDetailsPage = ({ job }: JobDetailsPageProps) => {
               still a student-domain link (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D14). */}
             <JobDetails
               job={job}
-              actions={[<ShareJobButton key="share" job={job} />]}
+              actions={[<ShareJobButton key="share" job={job} pubmat />]}
             />
           </Card>
         </section>
