@@ -139,7 +139,7 @@ export function ApplicantPage({
 
   redirectIfNotLoggedIn();
 
-  const { to_university_name } = useDbRefs();
+  const { toUniversityName } = useDbRefs();
 
   const {
     url: resumeURL,
@@ -411,7 +411,7 @@ export function ApplicantPage({
                           Education
                         </span>
                         <span className="text-sm font-medium">
-                          {to_university_name(user?.university)}
+                          {toUniversityName(user?.university)}
                         </span>
                       </div>
                       <div className="flex flex-col justify-between">
@@ -515,7 +515,7 @@ export function ApplicantPage({
                     <div>
                       <p className="text-sm text-gray-500">Education</p>
                       <p className="text-sm font-medium text-gray-900">
-                        {to_university_name(user?.university)}
+                        {toUniversityName(user?.university)}
                       </p>
                     </div>
                     <div>

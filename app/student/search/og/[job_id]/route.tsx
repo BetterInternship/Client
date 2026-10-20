@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { fetchJobPreview, JobPreviewData } from "@/lib/api/job-preview.server";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { createRefHelpers } from "@/lib/db/ref-lookup";
 import { JobAllowance, JobMode, JobPayFreq, JobType } from "@/lib/db/db.types";
 
@@ -94,7 +94,7 @@ export async function GET(
     const [job, refs, spaceGroteskMedium, spaceGroteskBold] = await Promise.all(
       [
         fetchJobPreview(job_id),
-        getRefsData(),
+        getJobRefs(),
         fetch(spaceGroteskMediumUrl).then((response) => response.arrayBuffer()),
         fetch(spaceGroteskBoldUrl).then((response) => response.arrayBuffer()),
       ],

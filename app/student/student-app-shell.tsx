@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import TanstackProvider from "../tanstack-provider";
+import { SchoolsRefsLoader } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,27 +18,29 @@ import AllowLanding from "./allowLanding";
 export default function StudentAppShell({ children }: { children: ReactNode }) {
   return (
     <TanstackProvider>
-      <AppContextProvider>
-        <AuthContextProvider>
-          <TooltipProvider>
-            <HeaderContextProvider>
-              <AppMQJobsProvider>
-                <FilloutJobsProvider>
-                  <ModalProvider>
-                    <div className="fixed inset-x-0 top-0 flex h-[100svh] flex-col overflow-hidden bg-background md:relative md:h-[100dvh]">
-                      <div className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col">
-                        <AllowLanding>{children}</AllowLanding>
+      <SchoolsRefsLoader>
+        <AppContextProvider>
+          <AuthContextProvider>
+            <TooltipProvider>
+              <HeaderContextProvider>
+                <AppMQJobsProvider>
+                  <FilloutJobsProvider>
+                    <ModalProvider>
+                      <div className="fixed inset-x-0 top-0 flex h-[100svh] flex-col overflow-hidden bg-background md:relative md:h-[100dvh]">
+                        <div className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col">
+                          <AllowLanding>{children}</AllowLanding>
+                        </div>
+                        <MobileNavWrapper />
                       </div>
-                      <MobileNavWrapper />
-                    </div>
-                  </ModalProvider>
-                </FilloutJobsProvider>
-              </AppMQJobsProvider>
-              <SonnerToaster />
-            </HeaderContextProvider>
-          </TooltipProvider>
-        </AuthContextProvider>
-      </AppContextProvider>
+                    </ModalProvider>
+                  </FilloutJobsProvider>
+                </AppMQJobsProvider>
+                <SonnerToaster />
+              </HeaderContextProvider>
+            </TooltipProvider>
+          </AuthContextProvider>
+        </AppContextProvider>
+      </SchoolsRefsLoader>
     </TanstackProvider>
   );
 }

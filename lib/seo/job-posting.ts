@@ -1,4 +1,4 @@
-import { Job, RefsData } from "@/lib/db/db.types";
+import { Job, JobRefsData } from "@/lib/db/db.types";
 import { createRefHelpers } from "@/lib/db/ref-lookup";
 import { markdownToHtml } from "@/lib/utils/markdown-utils";
 
@@ -52,7 +52,7 @@ function toSalaryUnitText(freqName: string): string {
  */
 export function buildJobListingSchema(
   job: Job,
-  refs: RefsData,
+  refs: JobRefsData,
 ): Record<string, unknown> | null {
   if (job.hibernating || job.is_unlisted) return null;
 

@@ -78,7 +78,7 @@ const EmployerEditor = () => {
   }
   const { isMobile } = useAppContext();
   const router = useRouter();
-  const { universities } = useDbRefs();
+  const { universities, refLoading } = useDbRefs();
   const [isContinuing, setIsContinuing] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields,
@@ -146,6 +146,10 @@ const EmployerEditor = () => {
     if (newMissing.length > 0) {
       return;
     }
+
+    // accepted_universities is built from the full list, which loads in the
+    // browser. Submitting before it arrives would save the employer with none.
+    if (refLoading) return;
 
     const newProfile = {
       ...cleanFormData(),
@@ -407,7 +411,9 @@ const EmployerEditor = () => {
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={!additionalFields.terms_accepted || isContinuing}
+                disabled={
+                  !additionalFields.terms_accepted || isContinuing || refLoading
+                }
               >
                 {isContinuing ? "Continuing..." : "Continue"}
               </Button>

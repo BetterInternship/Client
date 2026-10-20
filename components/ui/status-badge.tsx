@@ -35,7 +35,7 @@ export const STATUS_HOVER_CLASSES: Record<string, string> = {
 export default function StatusBadge({ statusId, className }: StatusBadgeProps) {
   const filterKey = getStatusFilterKey(statusId);
   const status = UI_STATUS_MAP.get(filterKey);
-  const { to_app_status_name } = useDbRefs();
+  const { toAppStatusName } = useDbRefs();
 
   if (!status) {
     return null;
@@ -55,7 +55,7 @@ export default function StatusBadge({ statusId, className }: StatusBadgeProps) {
     >
       <span>
         <status.icon />
-        {to_app_status_name(statusId)}
+        {toAppStatusName(statusId)}
       </span>
     </Button>
   );
