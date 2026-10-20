@@ -45,6 +45,12 @@ export function GuideArticle({
           "@type": "Organization",
           name: "BetterInternship",
           url: baseUrl,
+          logo: {
+            "@type": "ImageObject",
+            url: `${baseUrl}/BetterInternshipLogo.png`,
+            width: 400,
+            height: 400,
+          },
         },
         ...(guide.publishedAt
           ? {
