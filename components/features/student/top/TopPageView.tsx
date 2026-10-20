@@ -76,9 +76,9 @@ export function TopPageView({
 }) {
   const { isMobile } = useMobile();
   const profile = useProfileData();
-  const { get_university } = useDbRefs();
+  const { getUniversity } = useDbRefs();
   const modalRegistry = useModalRegistry();
-  const universityName = get_university(profile.data?.university)?.name;
+  const universityName = getUniversity(profile.data?.university)?.name;
   const applicationActions = useApplicationActions();
   const bulkApply = useMassApplySelection(page.id, university?.id);
   const prefersReducedMotion = useReducedMotion();

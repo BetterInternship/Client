@@ -224,87 +224,79 @@ export interface RefsData {
 }
 
 export interface IRefsContext extends RefsData {
-  ref_loading: boolean;
+  refLoading: boolean;
 
-  get_college: (id: string | null | undefined) => College | null;
-  to_college_name: (
+  getCollege: (id: string | null | undefined) => College | null;
+  toCollegeName: (
     id: string | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_college_by_name: (name: string | null | undefined) => College | null;
+  getCollegeByName: (name: string | null | undefined) => College | null;
 
-  get_university: (id: string | null | undefined) => University | null;
-  to_university_name: (
+  getUniversity: (id: string | null | undefined) => University | null;
+  toUniversityName: (
     id: string | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_university_by_name: (
-    name: string | null | undefined,
-  ) => University | null;
+  getUniversityByName: (name: string | null | undefined) => University | null;
 
-  get_job_type: (id: number | null | undefined) => JobType | null;
-  to_job_type_name: (
+  getJobType: (id: number | null | undefined) => JobType | null;
+  toJobTypeName: (
     id: number | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_job_type_by_name: (name: string | null | undefined) => JobType | null;
+  getJobTypeByName: (name: string | null | undefined) => JobType | null;
 
-  get_job_mode: (id: number | null | undefined) => JobMode | null;
-  to_job_mode_name: (
+  getJobMode: (id: number | null | undefined) => JobMode | null;
+  toJobModeName: (
     id: number | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
+  getJobModeByName: (name: string | null | undefined) => JobMode | null;
 
-  get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
-  to_job_allowance_name: (
+  getJobAllowance: (id: number | null | undefined) => JobAllowance | null;
+  toJobAllowanceName: (
     id: number | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_job_allowance_by_name: (
+  getJobAllowanceByName: (
     name: string | null | undefined,
   ) => JobAllowance | null;
 
-  get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
-  to_job_pay_freq_name: (
+  getJobPayFreq: (id: number | null | undefined) => JobPayFreq | null;
+  toJobPayFreqName: (
     id: number | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_job_pay_freq_by_name: (
-    name: string | null | undefined,
-  ) => JobPayFreq | null;
+  getJobPayFreqByName: (name: string | null | undefined) => JobPayFreq | null;
 
-  get_app_status: (id: number | null | undefined) => AppStatus | null;
-  to_app_status_name: (
+  getAppStatus: (id: number | null | undefined) => AppStatus | null;
+  toAppStatusName: (
     id: number | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
+  getAppStatusByName: (name: string | null | undefined) => AppStatus | null;
 
-  get_industry: (id: string | null | undefined) => Industry | null;
-  to_industry_name: (
+  getIndustry: (id: string | null | undefined) => Industry | null;
+  toIndustryName: (
     id: string | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_industry_by_name: (name: string | null | undefined) => Industry | null;
+  getIndustryByName: (name: string | null | undefined) => Industry | null;
 
-  get_job_category: (id: string | null | undefined) => JobCategory | null;
-  to_job_category_name: (
+  getJobCategory: (id: string | null | undefined) => JobCategory | null;
+  toJobCategoryName: (
     id: string | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_job_category_by_name: (
-    name: string | null | undefined,
-  ) => JobCategory | null;
+  getJobCategoryByName: (name: string | null | undefined) => JobCategory | null;
 
-  get_department: (id: string | null | undefined) => Department | null;
-  to_department_name: (
+  getDepartment: (id: string | null | undefined) => Department | null;
+  toDepartmentName: (
     id: string | null | undefined,
     def?: string | null,
   ) => string | null;
-  get_department_by_name: (
-    name: string | null | undefined,
-  ) => Department | null;
+  getDepartmentByName: (name: string | null | undefined) => Department | null;
 
   get_departments_by_college: (college_id: string) => string[];
   get_colleges_by_university: (university_id: string) => string[];
