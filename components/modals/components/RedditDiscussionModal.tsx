@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@betterinternship/components";
-import { ArrowUpRight } from "lucide-react";
+import { CircleDollarSign, FileText, List, UsersRound } from "lucide-react";
 import { shareLinkQueryOptions } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import type { Job } from "@/lib/db/db.types";
@@ -40,13 +40,28 @@ export function RedditDiscussionModal({
   }, []);
 
   const company = job.employer?.name?.trim() || "this company";
-  const role = job.title?.trim() || "this internship";
   const questions = [
-    `Has anyone applied for ${role} at ${company}? What was the application process like?`,
-    `What should I expect during the interview for ${role} at ${company}? Any preparation tips?`,
-    `Has anyone interned at ${company}? What were the work culture and mentorship like?`,
-    `What are the day-to-day responsibilities for ${role} at ${company}?`,
-    `How long does ${company} usually take to respond after an internship application or interview?`,
+    {
+      label: "Work culture",
+      icon: UsersRound,
+      prompt: `Hi! I'd love to learn more about the work culture at ${company}. What's the work environment like, and how do team members typically work together? Any past experiences?`,
+    },
+    {
+      label: "Application process",
+      icon: FileText,
+      prompt: `Hi! Has anyone tried applying to ${company}? What's the application process like? Is there anything I should prepare? What should I expect after submitting my application?`,
+    },
+    {
+      label: "Compensation",
+      icon: CircleDollarSign,
+      prompt:
+        "Hi! May I ask if this internship offers an allowance or other benefits? I'd appreciate any details you guys could share, especially if you've worked with them before!",
+    },
+    {
+      label: "Role expectations",
+      icon: List,
+      prompt: `Hi! Has anyone worked for ${company}? Could you share more about the day-to-day responsibilities of this role? What were the expectations they had for you as an intern?`,
+    },
   ];
 
   const openDraft = async (question: string) => {
@@ -101,24 +116,23 @@ export function RedditDiscussionModal({
   };
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600">
-        Choose a question about {company}. You can edit your draft on Reddit
-        before posting.
-      </p>
-      <div className="space-y-2">
-        {questions.map((question) => (
+    <div className="space-y-3">
+      <p className="text-sm font-medium text-primary">Ask about...</p>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {questions.map(({ label, icon: Icon, prompt }) => (
           <Button
-            key={question}
+            key={label}
             type="button"
             variant="outline"
             scheme="default"
-            className="h-auto w-full justify-between gap-3 whitespace-normal px-4 py-3 text-left font-normal"
+            className="h-12 w-full justify-start gap-3 rounded-full border-primary/20 bg-primary/5 px-3 py-1 text-left font-normal text-gray-700 transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
             disabled={opening}
-            onClick={() => void openDraft(question)}
+            onClick={() => void openDraft(prompt)}
           >
-            <span>{question}</span>
-            <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Icon className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span className="truncate">{label}</span>
           </Button>
         ))}
       </div>

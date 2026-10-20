@@ -76,6 +76,7 @@ export const useModalRegistry = () => {
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
               showHeaderDivider: false,
+              panelClassName: "sm:w-[520px] sm:max-w-[520px]",
             },
           ),
         close: () => close("reddit-discussion"),

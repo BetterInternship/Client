@@ -1,5 +1,4 @@
-import { Button } from "@betterinternship/components";
-import { Search } from "lucide-react";
+import { ArrowRight, MessageSquare } from "lucide-react";
 import { buildRedditCompanySearchUrl } from "@/lib/reddit-discussion";
 import { Divider } from "@/components/ui/divider";
 
@@ -14,31 +13,33 @@ export function FindCompanyReviews({
   return (
     <section>
       <Divider />
-      <div className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-900 sm:text-lg">
-          Company reviews
-        </h2>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
-            <p>
-              Curious about this company? See what students are saying on
-              r/InternshipsPH.
-            </p>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            scheme="default"
-            size="sm"
-            className="shrink-0 rounded-[0.33em]"
-          >
-            <a href={searchUrl} target="_blank" rel="noopener noreferrer">
-              <Search className="h-4 w-4" aria-hidden="true" />
-              Find reviews
-            </a>
-          </Button>
-        </div>
-      </div>
+      <a
+        href={searchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group -mt-5 -mb-5 flex w-full items-center gap-3 rounded-[0.33em] px-3 py-5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:gap-4"
+      >
+        <MessageSquare
+          className="h-7 w-7 shrink-0 text-primary sm:h-8 sm:w-8"
+          strokeWidth={1.8}
+          aria-hidden="true"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold text-gray-900">
+            Student reviews
+          </span>
+          <span className="mt-0.5 block text-sm leading-relaxed text-gray-600">
+            See what other interns have said about this company.
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-primary">
+          Read reviews
+          <ArrowRight
+            className="h-4 w-4 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+            aria-hidden="true"
+          />
+        </span>
+      </a>
     </section>
   );
 }
