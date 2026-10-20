@@ -14,7 +14,7 @@ export function PersonalInformationSection({
 }: {
   profile: PublicUser;
 }) {
-  const { to_university_name } = useDbRefs();
+  const { toUniversityName } = useDbRefs();
 
   return (
     <div className="space-y-5">
@@ -28,9 +28,7 @@ export function PersonalInformationSection({
         <InfoRow
           label="University"
           value={
-            profile.university
-              ? to_university_name(profile.university)
-              : "\u2014"
+            profile.university ? toUniversityName(profile.university) : "\u2014"
           }
         />
         <InfoRow label="Degree / Program" value={profile.degree} />

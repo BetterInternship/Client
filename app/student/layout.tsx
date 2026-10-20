@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import { inter } from "../fonts";
 import { RefsContextProvider } from "@/lib/db/use-refs";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { PostHogProvider } from "../posthog-provider";
 import StudentRouteShell from "./student-route-shell";
 import { baseUrl } from "@/lib/site-url";
@@ -56,12 +56,12 @@ const RootLayout = async ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const refsData = await getRefsData();
+  const jobRefs = await getJobRefs();
 
   return (
     <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-        <RefsContextProvider data={refsData}>
+        <RefsContextProvider jobRefs={jobRefs}>
           <PostHogProvider>
             <StudentRouteShell>{children}</StudentRouteShell>
           </PostHogProvider>

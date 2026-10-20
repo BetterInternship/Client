@@ -4,7 +4,7 @@ import {
   fetchHomepageListings,
   type HomepageListing,
 } from "@/components/landingStudent/homepage-listings.server";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import SearchClient from "./SearchClient";
 
 /**
@@ -21,7 +21,7 @@ const CLOSED_LABEL = "Just missed";
 
 async function fetchFeaturedListings(): Promise<HomepageListing[]> {
   try {
-    const refs = await getRefsData();
+    const refs = await getJobRefs();
     const listings = await fetchHomepageListings(refs);
     return (listings.All ?? []).filter(
       (listing) => listing.postedLabel !== CLOSED_LABEL,

@@ -6,7 +6,6 @@ import { AppContextProvider } from "@/lib/ctx-app";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
-import { getRefsData } from "@/lib/db/use-refs-backend";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import StudentAppHeader from "@/components/features/student/app-header";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
@@ -30,17 +29,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default async function MaintenanceLayout({
+export default function MaintenanceLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const refsData = await getRefsData();
-
   return (
     <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="h-full m-0 overflow-hidden p-0 antialiased">
-        <RefsContextProvider data={refsData}>
+        <RefsContextProvider>
           <PostHogProvider>
             <TanstackProvider>
               <AppContextProvider>

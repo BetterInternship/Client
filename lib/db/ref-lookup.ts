@@ -1,7 +1,7 @@
 /**
  * Plain, non-hook ref-name lookups. Extracted out of use-refs.tsx (a
  * "use client" module) so server-only callers — Route Handlers, Server
- * Components — can resolve ref ids to names too, fed by getRefsData()
+ * Components — can resolve ref ids to names too, fed by getJobRefs()
  * (use-refs-backend.ts) instead of the RefsContext provider tree, which
  * only exists inside the client boundary.
  */
