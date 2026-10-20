@@ -18,23 +18,22 @@ export function buildRedditCompanySearchUrl(
 
 /** Build an editable Reddit draft without publishing anything on the user's behalf. */
 export function buildRedditDiscussionUrl({
-  companyName,
-  jobTitle,
+  title,
   question,
 }: {
-  companyName?: string | null;
-  jobTitle?: string | null;
+  title: string;
   question: string;
 }): string {
+  const postTitle = title.trim();
+  if (!postTitle) throw new Error("A discussion title is required");
+
   const prompt = question.trim();
   if (!prompt) throw new Error("A discussion question is required");
 
-  const company = companyName?.trim() || "Company";
-  const position = jobTitle?.trim() || "Internship";
   const params = new URLSearchParams({
     selftext: "true",
     flair_id: SEEKING_ADVICE_FLAIR_ID,
-    title: `[Seeking Advice] ${company} - ${position}`.slice(0, 300),
+    title: postTitle.slice(0, 300),
     text: prompt,
   });
 
