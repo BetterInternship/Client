@@ -92,6 +92,15 @@ const nextConfig = {
   // content security policy headers
   async headers() {
     return [
+      // these two are already indexed on google if you search site:betterinternship.com.
+      // need to send a noindex header to request google to remove it from indexing.
+      ...["dev.betterinternship.com", "hire.dev.betterinternship.com"].map(
+        (host) => ({
+          source: "/(.*)",
+          has: [{ type: "host", value: host }],
+          headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+        }),
+      ),
       {
         source: "/(.*)",
         headers: [
