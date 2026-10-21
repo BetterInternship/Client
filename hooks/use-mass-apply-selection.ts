@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus, useProfileData } from "@/lib/api/student.data.api";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";

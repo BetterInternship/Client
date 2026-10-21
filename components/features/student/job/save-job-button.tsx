@@ -1,4 +1,4 @@
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus } from "@/lib/api/student.data.api";
 import { Button } from "@betterinternship/components";
 import { Heart } from "lucide-react";

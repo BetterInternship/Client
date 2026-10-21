@@ -47,7 +47,7 @@ export const useMyAutofill = () => {
 
     // Populate with prefillers as well
     for (const field of form.fields) {
-      if (field.prefiller) {
+      if (field.prefiller && profile.data) {
         const s = field.prefiller({
           user: profile.data,
         });

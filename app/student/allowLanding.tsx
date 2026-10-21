@@ -1,10 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import StudentAppHeader from "@/components/features/student/app-header";
-import { useIsTopRoute } from "@/lib/use-session-gate";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
+import { StudentSessionGate } from "@/components/providers/student-session-gate";
 import { isGuidesRoute } from "@/lib/student-public-routes";
 
 export default function AllowLanding({
@@ -13,9 +13,14 @@ export default function AllowLanding({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const params = useParams();
+  const path = pathname.replace(/^\/student(?=\/|$)/, "") || "/";
+  const requiresSession =
+    /^\/(?:profile|forms|applications|saved|discord)(?:\/|$)/.test(path) ||
+    path === "/register/verify";
   const isStudentLanding = pathname === "/";
   // Top pages draw their own navbar.
-  const isTopPage = useIsTopRoute();
+  const isTopPage = typeof params?.university === "string";
   if (isGuidesRoute(pathname)) {
     return (
       <div className="flex min-h-0 grow flex-col bg-white">{children}</div>
@@ -48,7 +53,13 @@ export default function AllowLanding({
       <Suspense>
         <StudentAppHeader />
       </Suspense>
-      <div className="flex min-h-0 grow flex-col">{children}</div>
+      <div className="flex min-h-0 grow flex-col">
+        {requiresSession ? (
+          <StudentSessionGate>{children}</StudentSessionGate>
+        ) : (
+          children
+        )}
+      </div>
       <div className="mt-auto hidden md:block">
         <Footer />
       </div>

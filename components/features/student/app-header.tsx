@@ -13,7 +13,7 @@ import { BookA, Home, Newspaper, Search } from "lucide-react";
 
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useHeaderContext } from "@/lib/ctx-header";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import { useProfileData } from "@/lib/api/student.data.api";

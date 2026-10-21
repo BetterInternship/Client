@@ -12,7 +12,7 @@ import {
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { useProfileData } from "@/lib/api/student.data.api";
 import type { PublicUser } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 
 interface MobileBottomNavProps {
   profileData?: PublicUser | null;

@@ -7,7 +7,7 @@ import { Button, Badge, Input } from "@betterinternship/components";
 import { AlertTriangle, ArrowLeft, Repeat } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useRequireStudentSession } from "@/lib/ctx-student-auth";
 import { Loader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
@@ -27,7 +27,7 @@ const resolveVerificationRedirect = (redirect: string | null) => {
 export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { redirectIfNotLoggedIn } = useAuthContext();
+  useRequireStudentSession();
   const nextUrl = useMemo(
     () => resolveVerificationRedirect(searchParams.get("redirect")),
     [searchParams],
@@ -44,7 +44,6 @@ export default function VerifyPage() {
     setMounted(true);
   }, []);
 
-  redirectIfNotLoggedIn();
 
   const finishVerification = useCallback(() => {
     if (nextUrl) router.replace(nextUrl);

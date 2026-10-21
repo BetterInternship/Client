@@ -37,7 +37,7 @@ import {
   useWaitlistsData,
 } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useRequireStudentSession } from "@/lib/ctx-student-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
@@ -84,8 +84,7 @@ export default function MyJobsPage() {
 }
 
 function MyJobsPageInner() {
-  const { redirectIfNotLoggedIn } = useAuthContext();
-  redirectIfNotLoggedIn();
+  useRequireStudentSession();
 
   const router = useRouter();
   const pathname = usePathname();

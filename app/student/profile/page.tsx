@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { useAuthContext } from "../../../lib/ctx-auth";
+import { useRequireStudentSession } from "@/lib/ctx-student-auth";
 import { useModal } from "@/hooks/use-modal";
 import { PublicUser } from "@/lib/db/db.types";
 import { UserService, ResumeDTO } from "@/lib/api/services";
@@ -32,7 +32,7 @@ import bg2 from "../../../public/bg2.png";
 import { fileUrls } from "@/lib/api/urls";
 
 export default function ProfilePage() {
-  const { redirectIfNotLoggedIn } = useAuthContext();
+  useRequireStudentSession();
   const profile = useProfileData();
   const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
@@ -185,7 +185,6 @@ export default function ProfilePage() {
     });
   };
 
-  redirectIfNotLoggedIn();
 
   const {
     fileInputRef: pfpFileInputRef,

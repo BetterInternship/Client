@@ -3,7 +3,7 @@ import { Bell, CheckCircle2, HeartCrack } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { googleLoginUrl } from "@/lib/api/urls";

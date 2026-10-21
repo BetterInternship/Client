@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@betterinternship/components";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { usePfpUrl } from "@/hooks/use-pfp";

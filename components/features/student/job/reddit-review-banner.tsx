@@ -4,7 +4,7 @@ import { Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { ArrowUpRight, MessageSquare } from "lucide-react";
 import { useApplicationsData } from "@/lib/api/student.data.api";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import type { Job } from "@/lib/db/db.types";
 import { useModalRegistry } from "@/components/modals/modal-registry";

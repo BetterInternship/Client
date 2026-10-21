@@ -10,7 +10,7 @@ import {
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
 import { useEffect, useState } from "react";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext, useRequireStudentSession } from "@/lib/ctx-student-auth";
 import FormDashboard from "./components/FormDashboard";
 import { FormsAccessGate } from "./components/FormsAccessGate";
 import {
@@ -33,7 +33,8 @@ export default function FormsPage() {
   const router = useRouter();
   const myForms = useMyForms();
   const queryClient = useQueryClient();
-  const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
+  useRequireStudentSession();
   const isStudentAuthenticated = isAuthenticated();
   const canUseUniversityForms = hasFormsEnabledUniversity(profile.data);
   const [hasFormsAccess, setHasFormsAccess] = useState<boolean | null>(() =>
@@ -49,8 +50,6 @@ export default function FormsPage() {
     });
   }, [profile.data?.form_group_id, profile.isPending]);
 
-  // Auth redirect at body level (runs first)
-  redirectIfNotLoggedIn();
 
   // Profile check only runs if authenticated
   useEffect(() => {

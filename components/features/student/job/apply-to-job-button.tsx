@@ -3,7 +3,7 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
 import { ArrowRight, CheckCircle } from "lucide-react";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";

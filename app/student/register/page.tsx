@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { AuthService } from "@/lib/api/services";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
