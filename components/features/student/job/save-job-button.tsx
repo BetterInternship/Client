@@ -7,7 +7,7 @@ import { cn } from "@betterinternship/components";
 import { useJobActions } from "@/lib/api/student.actions.api";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
-import { googleLoginUrl } from "@/lib/api/urls";
+import { consumeJobLoginIntent, startStudentLogin } from "@/lib/student-login";
 
 export const SaveJobButton = ({
   job,
@@ -33,6 +33,38 @@ export const SaveJobButton = ({
     sequence: number;
   } | null>(null);
   const playedSequence = useRef(0);
+  useEffect(() => {
+    if (
+      disabled ||
+      !job.id ||
+      !auth.isAuthenticated() ||
+      jobs.isPending ||
+      jobs.error ||
+      jobActions.toggleSave.isPending
+    )
+      return;
+    if (!consumeJobLoginIntent("save", job.id)) return;
+    // The endpoint toggles: never turn an already-saved listing into an unsave.
+    if (saved) return;
+    void jobActions.toggleSave
+      .mutateAsync(job.id)
+      .then((response) => {
+        if (response.success === false)
+          throw new Error(response.message ?? "Save failed");
+        toast.success("Listing saved.");
+      })
+      .catch(() =>
+        toast.error("Couldn't save your listing. Please select Save to retry."),
+      );
+  }, [
+    auth,
+    disabled,
+    job.id,
+    jobs.isPending,
+    jobs.error,
+    saved,
+    jobActions.toggleSave,
+  ]);
 
   useEffect(() => {
     if (
@@ -58,7 +90,7 @@ export const SaveJobButton = ({
 
   const handleSave = async () => {
     if (!auth.isAuthenticated()) {
-      window.location.href = googleLoginUrl();
+      startStudentLogin({ action: "save", jobId: job.id });
       return;
     }
     // Start the delight only after our own request succeeds and the saved
@@ -87,7 +119,7 @@ export const SaveJobButton = ({
       }}
       size={iconOnly ? "icon" : "md"}
       className={cn(iconOnly ? "h-11 w-11 shrink-0 !p-0" : "!p-4", className)}
-      disabled={disabled || (iconOnly && jobActions.toggleSave.isPending)}
+      disabled={disabled || jobActions.toggleSave.isPending}
       aria-label={
         iconOnly
           ? jobs.isJobSaved(job.id ?? "")

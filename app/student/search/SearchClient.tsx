@@ -131,6 +131,8 @@ export default function SearchClient() {
   // filter/page state) — fall back to fetching it directly rather than
   // silently falling through to "select the first row" (D9b).
   const jobIdParam = searchParams.get("jobId");
+  const selectedDeepLink = useRef<string | null>(null);
+  const openedDeepLink = useRef<string | null>(null);
   const jobIdOnPage = jobIdParam
     ? jobsPage.find((job) => job.id === jobIdParam)
     : undefined;
@@ -140,12 +142,33 @@ export default function SearchClient() {
 
   useEffect(() => {
     if (jobIdParam) {
+      if (selectedDeepLink.current === jobIdParam) return;
       const target = jobIdOnPage ?? deepLinkJob.data ?? undefined;
-      if (target && target.id !== selectedJob?.id) setSelectedJob(target);
-    } else if (jobsPage.length > 0 && !selectedJob?.id) {
-      setSelectedJob(jobsPage[0]);
+      if (target) {
+        // Restore once per URL job, rather than overriding later card clicks.
+        selectedDeepLink.current = jobIdParam;
+        setSelectedJob(target);
+      }
+    } else {
+      selectedDeepLink.current = null;
+      if (jobsPage.length > 0 && !selectedJob?.id) setSelectedJob(jobsPage[0]);
     }
   }, [jobIdParam, jobIdOnPage, deepLinkJob.data, jobsPage, selectedJob]);
+
+  // A returned job link should open its details on mobile, not just select a hidden panel.
+  useEffect(() => {
+    if (!jobIdParam) openedDeepLink.current = null;
+    if (
+      !isMobile ||
+      !jobIdParam ||
+      selectedJob?.id !== jobIdParam ||
+      openedDeepLink.current === jobIdParam ||
+      !jobModalRef.current
+    )
+      return;
+    openedDeepLink.current = jobIdParam;
+    jobModalRef.current.open();
+  }, [isMobile, jobIdParam, selectedJob?.id, jobModalRef]);
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
