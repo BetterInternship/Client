@@ -38,10 +38,3 @@ export type PubmatFormat = keyof typeof PUBMAT_FORMATS;
 export const PUBMAT_FORMAT_IDS = Object.keys(PUBMAT_FORMATS) as PubmatFormat[];
 
 export const DEFAULT_PUBMAT_FORMAT: PubmatFormat = "square";
-
-/** An unknown or missing value falls back to the default rather than failing. */
-export function parsePubmatFormat(value: string | null | undefined) {
-  return (PUBMAT_FORMAT_IDS as string[]).includes(value ?? "")
-    ? (value as PubmatFormat)
-    : DEFAULT_PUBMAT_FORMAT;
-}

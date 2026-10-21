@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, ImageOff, Pencil, RotateCw } from "lucide-react";
 import { Button, cn } from "@betterinternship/components";
 import { useTilt } from "@/hooks/use-tilt";
@@ -13,7 +13,8 @@ import {
   type PubmatFormat,
 } from "@/lib/pubmat/formats";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
-import { pubmatSearchParams } from "@/lib/pubmat/params";
+import { clampPubmatData } from "@/lib/pubmat/params";
+import { renderPubmat } from "@/lib/pubmat/render";
 
 /**
  * A listing's pubmat: see it, download it, and pick a layout for where it's
@@ -25,11 +26,18 @@ import { pubmatSearchParams } from "@/lib/pubmat/params";
  *  - without it, the full one inside that modal, with the layout options
  *    always showing.
  *
- * The image is the /api/pubmat route itself: the preview is an <img> on its
- * URL, and Download is the same URL with `download=1`, which the route answers
- * with an attachment — so what's saved is what's shown, with nothing rendered
- * client-side.
+ * The image is drawn in the browser (lib/pubmat/render.ts) into a PNG blob:
+ * the preview is an <img> on its object URL and Download saves that same blob,
+ * so what's saved is what's shown, and nothing is sent to a server.
  */
+
+const slug = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+
 export function PubmatCreator({
   job,
   link,
@@ -46,28 +54,64 @@ export function PubmatCreator({
   const refs = useDbRefs();
   const tilt = useTilt();
   const [format, setFormat] = useState<PubmatFormat>(DEFAULT_PUBMAT_FORMAT);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
+  const [image, setImage] = useState<{ url: string; key: string }>();
+  const [failedKey, setFailedKey] = useState<string>();
   const [attempt, setAttempt] = useState(0);
 
-  const query = useMemo(
-    () => pubmatSearchParams(pubmatDataFromJob(job, refs, link)).toString(),
+  const data = useMemo(
+    () => clampPubmatData(pubmatDataFromJob(job, refs, link)),
     [job, refs, link],
   );
   const { label, width, height } = PUBMAT_FORMATS[format];
-  const imageUrl = `/api/pubmat?${query}&format=${format}`;
+
+  // Re-draws whenever the listing, the layout or a retry changes `key`. The
+  // previous image stays up until the new one is ready, and a draw that's been
+  // superseded is dropped instead of landing late.
+  const key = `${format}-${attempt}-${JSON.stringify(data)}`;
+  useEffect(() => {
+    let cancelled = false;
+    let url: string | undefined;
+    renderPubmat(data, format)
+      .then((blob) => {
+        if (cancelled) return;
+        url = URL.createObjectURL(blob);
+        setImage({ url, key });
+        setFailedKey(undefined);
+      })
+      .catch((error) => {
+        console.error("[pubmat] render failed", error);
+        if (!cancelled) setFailedKey(key);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [key, data, format]);
+
+  // Object URLs outlive the component unless released.
+  useEffect(() => {
+    const url = image?.url;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [image?.url]);
+
+  const status =
+    failedKey === key ? "error" : image?.key === key ? "ready" : "loading";
+
+  const download = () => {
+    if (!image) return;
+    const a = document.createElement("a");
+    a.href = image.url;
+    a.download = `${slug(`${data.title}-${data.company}`) || "listing"}-${format}-pubmat.png`;
+    a.click();
+  };
 
   const selectFormat = (next: PubmatFormat) => {
     if (next === format) return;
     setFormat(next);
-    setStatus("loading");
   };
 
-  const retry = () => {
-    setStatus("loading");
-    setAttempt((n) => n + 1);
-  };
+  const retry = () => setAttempt((n) => n + 1);
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
@@ -87,7 +131,12 @@ export function PubmatCreator({
           className="relative size-full overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-md transition-[transform,box-shadow] duration-150 ease-out will-change-transform hover:shadow-xl motion-reduce:transition-none"
         >
           {status === "loading" && (
-            <div className="absolute inset-0 animate-pulse bg-gray-100" />
+            <div
+              className={cn(
+                "absolute inset-0 z-10 animate-pulse",
+                image ? "bg-gray-100/60" : "bg-gray-100",
+              )}
+            />
           )}
           {status === "error" ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
@@ -101,30 +150,26 @@ export function PubmatCreator({
               </Button>
             </div>
           ) : (
-            <img
-              key={`${format}-${attempt}`}
-              src={`${imageUrl}&attempt=${attempt}`}
-              alt={`${label} pubmat for ${job.title ?? "your listing"}`}
-              onLoad={() => setStatus("ready")}
-              onError={() => setStatus("error")}
-              className="size-full object-contain"
-            />
+            image && (
+              <img
+                src={image.url}
+                alt={`${label} pubmat for ${job.title ?? "your listing"}`}
+                className="size-full object-contain"
+              />
+            )
           )}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button
-          disabled={status !== "ready"}
-          onClick={() => window.location.assign(`${imageUrl}&download=1`)}
-        >
+        <Button disabled={status !== "ready"} onClick={download}>
           <Download />
-          Download {label.toLowerCase()} ({width}×{height})
+          Download
         </Button>
         {onEdit && (
           <Button variant="outline" onClick={onEdit}>
             <Pencil />
-            Edit pubmat
+            Edit
           </Button>
         )}
       </div>

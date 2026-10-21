@@ -21,7 +21,7 @@ export function qrCode(text: string, color = "#000000") {
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path fill="${color}" d="${d}"/></svg>`;
   return {
-    src: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
+    src: `data:image/svg+xml;base64,${btoa(svg)}`,
     modules: n,
   };
 }

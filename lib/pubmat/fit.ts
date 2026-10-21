@@ -1,12 +1,12 @@
 /**
- * Text measuring for the pubmat layouts. next/og (satori) draws text but can't
+ * Text measuring for the pubmat layouts. satori draws text but can't
  * report how wide it came out, so a layout that wants "the biggest size that
  * still fits in two lines" has to work that out itself — here, from Inter's
  * real advance widths rather than a flat per-character guess, which is off by
  * a lot between "WWW" and "iii".
  *
  * The tables are advance / unitsPerEm for printable ASCII (space to ~), read
- * from the merged Inter files in lib/pubmat/fonts with fontTools (hmtx,
+ * from the merged Inter files in public/fonts/pubmat with fontTools (hmtx,
  * unitsPerEm 2048). Kerning is ignored, which only ever overestimates a little
  * — the safe side. Anything outside ASCII is treated as a wide "n".
  */

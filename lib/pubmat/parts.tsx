@@ -1,13 +1,12 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { PubmatData } from "./params";
+import { LOGO_DATA_URI } from "./logo";
 import type { qrCode } from "./qr";
 
 /**
  * Pieces the pubmat layouts share: the palette, the decorative shapes and the
  * few blocks (pill, details, QR frame, brand) that every layout draws, each
  * taking its sizes so a story and a LinkedIn card can scale them differently.
- * Rendered by next/og (satori), which can't measure text — sizes come from
+ * Rendered in the browser by satori, which can't measure text — sizes come from
  * character counts, with line clamps as the backstop.
  */
 
@@ -19,12 +18,9 @@ export const DIVIDER = "#e4e6ed";
 
 export type Qr = ReturnType<typeof qrCode>;
 
-const logo = `data:image/png;base64,${fs
-  .readFileSync(path.join(process.cwd(), "public/BetterInternshipLogo.png"))
-  .toString("base64")}`;
+const logo = LOGO_DATA_URI;
 
-const svgUri = (svg: string) =>
-  `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+const svgUri = (svg: string) => `data:image/svg+xml;base64,${btoa(svg)}`;
 
 /**
  * The corner shapes. The top-right one is fixed to the top of the canvas; the

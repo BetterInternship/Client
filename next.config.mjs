@@ -60,11 +60,6 @@ const cspHeader = `
 const nextConfig = {
   outputFileTracingIncludes: {
     "/student/guides/**": ["./app/student/guides/_content/*.md"],
-    // Read with fs at request time, so the tracer can't see them on its own.
-    "/hire/api/pubmat": [
-      "./lib/pubmat/fonts/inter-*.woff",
-      "./public/BetterInternshipLogo.png",
-    ],
   },
   experimental: {
     // The shared package's barrel also exports application providers and UI.
