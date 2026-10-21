@@ -4,8 +4,12 @@ import { useParams, usePathname } from "next/navigation";
 import StudentAppHeader from "@/components/features/student/app-header";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { StudentSessionGate } from "@/components/providers/student-session-gate";
-import { isGuidesRoute } from "@/lib/student-public-routes";
+import {
+  isGuidesRoute,
+  isPrivateStudentRoute,
+} from "@/lib/student-public-routes";
 
 export default function AllowLanding({
   children,
@@ -14,10 +18,10 @@ export default function AllowLanding({
 }) {
   const pathname = usePathname();
   const params = useParams();
+  const { user } = useAuthContext();
   const path = pathname.replace(/^\/student(?=\/|$)/, "") || "/";
-  const requiresSession =
-    /^\/(?:profile|forms|applications|saved|discord)(?:\/|$)/.test(path) ||
-    path === "/register/verify";
+  const isPrivatePage = isPrivateStudentRoute(pathname);
+  const requiresSession = isPrivatePage || path === "/register/verify";
   const isStudentLanding = pathname === "/";
   // Top pages draw their own navbar.
   const isTopPage = typeof params?.university === "string";
@@ -53,7 +57,10 @@ export default function AllowLanding({
       <Suspense>
         <StudentAppHeader />
       </Suspense>
-      <div className="flex min-h-0 grow flex-col">
+      <div
+        key={isPrivatePage ? (user?.id ?? "unverified") : "public-content"}
+        className="flex min-h-0 grow flex-col"
+      >
         {requiresSession ? (
           <StudentSessionGate>{children}</StudentSessionGate>
         ) : (

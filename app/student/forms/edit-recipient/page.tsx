@@ -2,7 +2,6 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRequireStudentSession } from "@/lib/ctx-student-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { UserService } from "@/lib/api/services";
 import { Card } from "@/components/ui/card";
@@ -21,7 +20,6 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { getRecipientEmailValidator } from "@betterinternship/core/forms";
 
 export default function EditRecipientPage() {
-  useRequireStudentSession();
   const router = useRouter();
   const modalRegistry = useModalRegistry();
   const queryClient = useQueryClient();
@@ -99,7 +97,6 @@ export default function EditRecipientPage() {
     targetSigningPartyId,
     emailOptions,
   ]);
-
 
   const validateRecipientEmail = () => {
     if (!eventId) {

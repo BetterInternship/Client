@@ -10,7 +10,7 @@ import {
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
 import { useEffect, useState } from "react";
-import { useAuthContext, useRequireStudentSession } from "@/lib/ctx-student-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import FormDashboard from "./components/FormDashboard";
 import { FormsAccessGate } from "./components/FormsAccessGate";
 import {
@@ -34,7 +34,6 @@ export default function FormsPage() {
   const myForms = useMyForms();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthContext();
-  useRequireStudentSession();
   const isStudentAuthenticated = isAuthenticated();
   const canUseUniversityForms = hasFormsEnabledUniversity(profile.data);
   const [hasFormsAccess, setHasFormsAccess] = useState<boolean | null>(() =>
@@ -49,7 +48,6 @@ export default function FormsPage() {
       return !!profile.data?.form_group_id;
     });
   }, [profile.data?.form_group_id, profile.isPending]);
-
 
   // Profile check only runs if authenticated
   useEffect(() => {
@@ -78,7 +76,7 @@ export default function FormsPage() {
 
   const { data: { formTemplates, formGroupDescription } = {}, isLoading } =
     useQuery({
-      queryKey: ["my-form-templates"],
+      queryKey: ["my-form-templates", profile.data?.id],
       queryFn: () => FormService.getMyFormTemplates(),
       enabled: canUseUniversityForms && hasFormsAccess === true,
       staleTime: FORM_TEMPLATES_STALE_TIME,

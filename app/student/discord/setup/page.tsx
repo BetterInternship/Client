@@ -11,7 +11,7 @@ import { Loader } from "@/components/ui/loader";
 import { DiscordService } from "@/lib/api/discord.api";
 import { toDiscordAppAuthorizationUrl } from "@/lib/discord/mobile-oauth";
 import { JobService, UserService } from "@/lib/api/services";
-import { useRequireStudentSession } from "@/lib/ctx-student-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import useModalRegistry from "@/components/modals/modal-registry";
 
 type SetupState = "idle" | "applying" | "success" | "error";
@@ -19,7 +19,7 @@ type SetupState = "idle" | "applying" | "success" | "error";
 function DiscordSetupContent() {
   const params = useSearchParams();
   const jobId = params.get("job_id") || "";
-  useRequireStudentSession();
+  const { user } = useAuthContext();
   const queryClient = useQueryClient();
   const modalRegistry = useModalRegistry();
   const attemptedRef = useRef(false);
@@ -30,16 +30,17 @@ function DiscordSetupContent() {
   const [canRetry, setCanRetry] = useState(false);
   const [isSettingDefault, setIsSettingDefault] = useState(false);
 
-
   const status = useQuery({
-    queryKey: ["discord-link"],
+    queryKey: ["discord-link", user?.id],
     queryFn: () => DiscordService.getLinkStatus(),
     staleTime: 0,
     refetchOnMount: "always",
+    enabled: !!user?.id,
   });
   const resumes = useQuery({
-    queryKey: ["my-resumes"],
+    queryKey: ["my-resumes", user?.id],
     queryFn: () => UserService.getMyResumes(),
+    enabled: !!user?.id,
   });
   const job = useQuery({
     queryKey: ["job", jobId],
