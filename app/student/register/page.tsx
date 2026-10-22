@@ -15,7 +15,7 @@ import { RegisterCarousel } from "@/components/features/student/register/Registe
 import { isNoUniversity } from "../../../lib/student-forms-access";
 import { motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
-import { SUPPORT_FACEBOOK } from "@/constants";
+import { SUPPORT_FACEBOOK } from "@/lib/consts/site-links";
 import { consumePostLoginRedirect } from "@/lib/post-login-redirect";
 import { googleLoginUrl } from "@/lib/api/urls";
 

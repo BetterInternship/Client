@@ -5,7 +5,7 @@ import { Button } from "@betterinternship/components";
 import { HeaderTitle } from "@/components/ui/text";
 import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
-import { SUPPORT_FACEBOOK } from "@/constants";
+import { SUPPORT_FACEBOOK } from "@/lib/consts/site-links";
 
 export default function Error({
   error,

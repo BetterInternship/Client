@@ -2,7 +2,7 @@ import { CommunitySection } from "@/components/landing/community-section";
 import { DiscordMark } from "@/components/features/student/top/DiscordMark";
 import { TopDiscordArtwork } from "@/components/features/student/top/TopArtwork";
 import discordPhone from "@/public/homepage/discord-phone.webp";
-import { BI_DISCORD_INVITE } from "@/constants";
+import { BI_DISCORD_INVITE } from "@/lib/consts/site-links";
 
 export function HomepageCommunity() {
   return (

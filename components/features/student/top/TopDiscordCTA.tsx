@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { BI_DISCORD_INVITE } from "@/constants";
+import { BI_DISCORD_INVITE } from "@/lib/consts/site-links";
 import { TopDiscordArtwork } from "./TopArtwork";
 import { Button, cn } from "@betterinternship/components";
 import { DiscordMark } from "./DiscordMark";
