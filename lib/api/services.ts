@@ -1,4 +1,5 @@
 import { FormTemplate } from "../db/forms-db.types";
+import type { CareerRequestOptions } from "./career-fetch";
 import { endStudentSession, fetchStudentSession } from "./student-session";
 import {
   CreateJobChallengeListingPayload,
@@ -769,8 +770,8 @@ export const JobService = {
     return jobsControllerFindOne(jobId) as unknown as Promise<JobResponse>;
   },
 
-  async getSavedJobs() {
-    return jobsControllerGetSaved() as unknown as Promise<SavedJobsResponse>;
+  async getSavedJobs(options: CareerRequestOptions = {}) {
+    return jobsControllerGetSaved(options) as unknown as Promise<SavedJobsResponse>;
   },
 
   async getOwnedJobs() {
@@ -829,8 +830,8 @@ export const JobService = {
     ) as unknown as Promise<FetchResponse>;
   },
 
-  async getWaitlistedJobs() {
-    return jobsControllerGetWaitlisted() as unknown as Promise<WaitlistedJobsResponse>;
+  async getWaitlistedJobs(options: CareerRequestOptions = {}) {
+    return jobsControllerGetWaitlisted(options) as unknown as Promise<WaitlistedJobsResponse>;
   },
 
   async mintShareLink(jobId: string) {
@@ -867,11 +868,12 @@ export const ApplicationService = {
       limit?: number;
       status?: string;
     } = {},
+    options: CareerRequestOptions = {},
   ) {
     // The generated model types dates as the strings they are on the wire;
     // UserApplication (db.types) types them as Date. The facade keeps its old
     // return type until callers move to the generated models.
-    return applicationsControllerGetOwn() as unknown as Promise<UserApplicationsResponse>;
+    return applicationsControllerGetOwn(options) as unknown as Promise<UserApplicationsResponse>;
   },
 
   async createApplication(data: {

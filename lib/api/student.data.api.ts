@@ -95,18 +95,21 @@ export function useJobStatus() {
 
   const _savedJobs = useQuery({
     queryKey: ["my-saved-jobs", accountId],
-    queryFn: () => JobService.getSavedJobs(),
+    queryFn: async () => {
+      const response = await JobService.getSavedJobs({ throwOnError: true });
+      if (!Array.isArray(response.jobs))
+        throw new Error("Invalid saved jobs response.");
+      return response.jobs;
+    },
     enabled,
   });
 
-  const savedJobs = useMemo(
-    () => _savedJobs.data?.jobs ?? [],
-    [_savedJobs.data],
-  );
+  const savedJobs = useMemo(() => _savedJobs.data ?? [], [_savedJobs.data]);
 
   return {
     isPending: enabled && _savedJobs.isPending,
     error: _savedJobs.error,
+    refetch: _savedJobs.refetch,
     savedJobs,
     isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
     isJobApplied: (jobId: string) =>
@@ -219,7 +222,14 @@ export function useWaitlistsData() {
   const accountId = user?.id;
   const query = useQuery({
     queryKey: ["my-waitlists", accountId],
-    queryFn: () => JobService.getWaitlistedJobs(),
+    queryFn: async () => {
+      const response = await JobService.getWaitlistedJobs({
+        throwOnError: true,
+      });
+      if (!Array.isArray(response.waitlisted))
+        throw new Error("Invalid job alerts response.");
+      return response.waitlisted;
+    },
     staleTime: 30 * 1000,
     enabled,
   });
@@ -227,7 +237,7 @@ export function useWaitlistsData() {
   const isPending = enabled && query.isPending;
 
   const deduped = useMemo(() => {
-    const rows = data?.waitlisted ?? [];
+    const rows = data ?? [];
     const byJob = new Map<string, JobWaitlist>();
 
     for (const row of rows) {
@@ -261,6 +271,7 @@ export function useWaitlistsData() {
     isPending,
     error,
     data: deduped,
+    refetch: query.refetch,
     alerts: deduped.filter((row) => row.removed_at === null),
     notified: deduped.filter((row) => row.removal_reason === "notified"),
     isWaitlisted: (jobId?: string | null) =>
@@ -280,7 +291,15 @@ export function useApplicationsData() {
   const accountId = user?.id;
   const applications = useQuery({
     queryKey: ["my-applications", accountId],
-    queryFn: () => ApplicationService.getApplications(),
+    queryFn: async () => {
+      const response = await ApplicationService.getApplications(
+        {},
+        { throwOnError: true },
+      );
+      if (!Array.isArray(response.applications))
+        throw new Error("Invalid applications response.");
+      return response.applications;
+    },
     staleTime: 30 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -290,6 +309,7 @@ export function useApplicationsData() {
   return {
     isPending: enabled && applications.isPending,
     error: applications.error,
-    data: applications.data?.applications ?? [],
+    data: applications.data ?? [],
+    refetch: applications.refetch,
   };
 }
