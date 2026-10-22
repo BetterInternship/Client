@@ -21,7 +21,8 @@ import {
 import { isProfileVerified } from "@/lib/profile";
 import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader } from "@/components/ui/loader";
+import { FormsSkeleton } from "@/components/features/student/forms/forms-skeleton";
+import { Button } from "@betterinternship/components";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -74,15 +75,25 @@ export default function FormsPage() {
     router,
   ]);
 
-  const { data: { formTemplates, formGroupDescription } = {}, isLoading } =
-    useQuery({
-      queryKey: ["my-form-templates", profile.data?.id],
-      queryFn: () => FormService.getMyFormTemplates(),
-      enabled: canUseUniversityForms && hasFormsAccess === true,
-      staleTime: FORM_TEMPLATES_STALE_TIME,
-      gcTime: FORM_TEMPLATES_GC_TIME,
-      refetchOnWindowFocus: true, // Refetch when user switches back to tab
-    });
+  const {
+    data: templateData,
+    isLoading,
+    error: templatesError,
+    refetch: refetchTemplates,
+  } = useQuery({
+    queryKey: ["my-form-templates", profile.data?.id],
+    queryFn: async () => {
+      const response = await FormService.getMyFormTemplates();
+      if (!Array.isArray(response.formTemplates))
+        throw new Error("Could not load form templates.");
+      return response;
+    },
+    enabled: canUseUniversityForms && hasFormsAccess === true,
+    staleTime: FORM_TEMPLATES_STALE_TIME,
+    gcTime: FORM_TEMPLATES_GC_TIME,
+    refetchOnWindowFocus: true, // Refetch when user switches back to tab
+  });
+  const { formTemplates, formGroupDescription } = templateData ?? {};
 
   // ? I think I can abstract this somehow in the future
   // ? How it works right now:
@@ -143,7 +154,25 @@ export default function FormsPage() {
     !canUseUniversityForms;
 
   if (isResolvingDestination || hasFormsAccess === null) {
-    return <Loader>Loading forms...</Loader>;
+    return <FormsSkeleton />;
+  }
+
+  if (hasFormsAccess && templatesError && !templateData) {
+    return (
+      <div className="m-4 rounded-[0.33em] border p-6" role="alert">
+        <p>We couldn’t load your form templates. Please try again.</p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          onClick={() => {
+            void refetchTemplates();
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -170,6 +199,10 @@ export default function FormsPage() {
             formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
             formGroupDescription={formGroupDescription || ""}
             isLoading={isLoading || profile.isPending}
+            historyLoading={myForms.loading}
+            historyError={
+              myForms.forms.length === 0 ? myForms.error : undefined
+            }
           />
         </motion.div>
       )}

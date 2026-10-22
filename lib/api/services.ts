@@ -486,7 +486,9 @@ export const FormService = {
           };
         }[];
       };
-    return forms ?? [];
+    // An error envelope has no forms array; don't display it as empty history.
+    if (!Array.isArray(forms)) throw new Error("Could not load form history.");
+    return forms;
   },
 
   async getForm(formName: string) {

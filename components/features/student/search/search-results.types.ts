@@ -33,6 +33,8 @@ export interface SearchResultsBaseProps {
 
 export interface SearchResultsDesktopProps extends SearchResultsBaseProps {
   selectedJob: Job | null;
+  detailsLoading?: boolean;
+  detailsError?: string;
   profileData: ReturnType<typeof useProfileData>["data"];
   onSingleApply: (payload: ApplyPayload) => Promise<void>;
 }

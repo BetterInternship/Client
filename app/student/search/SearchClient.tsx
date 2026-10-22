@@ -14,7 +14,7 @@ import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
-import { Loader } from "@/components/ui/loader";
+import { SearchSkeleton } from "@/components/features/student/search/search-skeleton";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
@@ -217,7 +217,7 @@ export default function SearchClient() {
 
       <div className="flex-1 flex overflow-hidden border-primary">
         {jobs.isPending ? (
-          <Loader>Loading...</Loader>
+          <SearchSkeleton />
         ) : isMobile ? (
           <SearchResultsMobile
             jobs={jobs}
@@ -246,6 +246,21 @@ export default function SearchClient() {
             isSelected={isSelected}
             onJobCardClick={handleJobCardClick}
             selectedJob={selectedJob}
+            detailsLoading={
+              !!jobIdParam &&
+              selectedJob?.id !== jobIdParam &&
+              !jobIdOnPage &&
+              deepLinkJob.isPending
+            }
+            detailsError={
+              !selectedJob &&
+              jobIdParam &&
+              !deepLinkJob.isPending &&
+              !jobIdOnPage &&
+              !deepLinkJob.data
+                ? "We couldn’t load the selected listing."
+                : undefined
+            }
             profileData={profile.data}
             onSingleApply={handleSingleApply}
           />

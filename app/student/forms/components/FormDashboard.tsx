@@ -6,7 +6,11 @@ import { FileSearch, FileText, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@betterinternship/components";
 import { FormTemplate } from "@/lib/db/forms-db.types";
-import { Loader } from "@/components/ui/loader";
+import {
+  FormsSkeleton,
+  FormDetailsSkeleton,
+  FormHistorySkeleton,
+} from "@/components/features/student/forms/forms-skeleton";
 import {
   FormRendererContextBridge,
   useFormRendererContext,
@@ -40,6 +44,7 @@ import {
 } from "../fresh-history";
 import { STUDENT_FORM_GUIDE, SUPPORT_FACEBOOK } from "@/lib/consts/site-links";
 import { Button } from "@betterinternship/components";
+import { useQueryClient } from "@tanstack/react-query";
 
 type GeneratedFormItem = {
   form_process_id?: string;
@@ -65,11 +70,15 @@ export default function FormDashboard({
   formTemplates,
   formGroupDescription,
   isLoading,
+  historyLoading = false,
+  historyError,
 }: {
   generatedForms: GeneratedFormItem[];
   formTemplates: FormTemplate[];
   formGroupDescription: string;
   isLoading: boolean;
+  historyLoading?: boolean;
+  historyError?: string;
 }) {
   const { isMobile } = useMobile();
   const { setDesktopHeaderHidden, setNavigationHidden } = useHeaderContext();
@@ -266,7 +275,7 @@ export default function FormDashboard({
     };
   }, [closeMobileSheet, isMobile]);
 
-  if (isLoading) return <Loader>Loading form templates...</Loader>;
+  if (isLoading) return <FormsSkeleton />;
 
   return (
     <div className="relative h-full min-h-0 w-full overflow-hidden">
@@ -380,9 +389,11 @@ export default function FormDashboard({
                     : "opacity-100 translate-y-0 pointer-events-auto",
                 )}
               >
-                {form.loading ||
-                form.document.name !== selectedTemplate.formName ? (
-                  <Loader>Loading form template...</Loader>
+                {form.loadError ? (
+                  <FormTemplateError onRetry={form.retryLoad} />
+                ) : form.loading ||
+                  form.document.name !== selectedTemplate.formName ? (
+                  <FormDetailsSkeleton />
                 ) : (
                   <div className="flex min-h-full w-full flex-col gap-8 p-6 lg:p-8 xl:mx-auto xl:max-w-6xl">
                     <div className="space-y-2">
@@ -390,7 +401,11 @@ export default function FormDashboard({
                         {selectedTemplate?.formLabel}
                       </h3>
                     </div>
-                    {hasHistoryLogs ? (
+                    {historyLoading ? (
+                      <FormHistorySkeleton />
+                    ) : historyError ? (
+                      <FormHistoryError />
+                    ) : hasHistoryLogs ? (
                       <FormActionAccordion
                         handleSignViaBetterInternship={
                           handleSignViaBetterInternship
@@ -419,7 +434,7 @@ export default function FormDashboard({
                         </div>
                       </>
                     )}
-                    {hasHistoryLogs && (
+                    {!historyLoading && !historyError && hasHistoryLogs && (
                       <>
                         <div className="space-y-1 pt-2">
                           <h4 className="text-xl font-semibold text-gray-900">
@@ -467,6 +482,8 @@ export default function FormDashboard({
                   <MobileFormTemplateDetailsContent
                     selectedTemplate={selectedTemplate}
                     generatedForms={filteredGeneratedForms}
+                    historyLoading={historyLoading}
+                    historyError={historyError}
                     isSigningFlow={isMobileSigningFlow}
                     setIsSigningFlow={setIsMobileSigningFlow}
                     showExitConfirmation={isMobileExitConfirmationOpen}
@@ -478,6 +495,43 @@ export default function FormDashboard({
           </MobileFormTemplateSheet>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function FormTemplateError({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div className="m-4 rounded-[0.33em] border p-4 text-sm" role="alert">
+      <p>We couldn’t load this form template.</p>
+      {onRetry && (
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          onClick={onRetry}
+        >
+          Try again
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function FormHistoryError() {
+  const client = useQueryClient();
+  return (
+    <div className="rounded-[0.33em] border p-4 text-sm" role="alert">
+      <p>We couldn’t load your form history.</p>
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-3"
+        onClick={() => {
+          void client.invalidateQueries({ queryKey: ["my-forms"] });
+        }}
+      >
+        Try again
+      </Button>
     </div>
   );
 }
@@ -525,6 +579,8 @@ function MobileFormTemplateSheet({
 function MobileFormTemplateDetailsContent({
   selectedTemplate,
   generatedForms,
+  historyLoading,
+  historyError,
   isSigningFlow,
   setIsSigningFlow,
   showExitConfirmation,
@@ -532,6 +588,8 @@ function MobileFormTemplateDetailsContent({
 }: {
   selectedTemplate: FormTemplate;
   generatedForms: GeneratedFormItem[];
+  historyLoading: boolean;
+  historyError?: string;
   isSigningFlow: boolean;
   setIsSigningFlow: (value: boolean | ((prev: boolean) => boolean)) => void;
   showExitConfirmation: boolean;
@@ -600,12 +658,18 @@ function MobileFormTemplateDetailsContent({
             exit={{ opacity: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
-            {form.loading ||
-            form.document.name !== selectedTemplate.formName ? (
-              <Loader>Loading form template...</Loader>
+            {form.loadError ? (
+              <FormTemplateError onRetry={form.retryLoad} />
+            ) : form.loading ||
+              form.document.name !== selectedTemplate.formName ? (
+              <FormDetailsSkeleton />
             ) : (
               <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-6 bg-white px-4 py-6 sm:px-8 sm:py-10">
-                {hasHistoryLogs ? (
+                {historyLoading ? (
+                  <FormHistorySkeleton />
+                ) : historyError ? (
+                  <FormHistoryError />
+                ) : hasHistoryLogs ? (
                   <FormActionAccordion
                     handleSignViaBetterInternship={
                       handleSignViaBetterInternship
@@ -632,7 +696,7 @@ function MobileFormTemplateDetailsContent({
                     </div>
                   </>
                 )}
-                {hasHistoryLogs && (
+                {!historyLoading && !historyError && hasHistoryLogs && (
                   <>
                     <div className="space-y-1 pt-2">
                       <h4 className="text-xl font-semibold text-gray-900">

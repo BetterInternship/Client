@@ -8,6 +8,9 @@ import { studentNavigationPolicy } from "@/components/features/student/navigatio
 import { useAuthContext } from "@/lib/ctx-student-auth";
 import { StudentSessionGate } from "@/components/providers/student-session-gate";
 import { isPrivateStudentRoute } from "@/lib/student-public-routes";
+import { ProfileSkeleton } from "@/components/features/student/profile/profile-skeleton";
+import { MyJobsSkeleton } from "@/components/features/student/job/my-jobs-skeleton";
+import { FormsSkeleton } from "@/components/features/student/forms/forms-skeleton";
 
 /**
  * Chooses the layout around student pages.
@@ -28,6 +31,14 @@ export default function StudentPageLayout({
   const policy = studentNavigationPolicy(pathname, isTopPage);
   const isPrivatePage = isPrivateStudentRoute(pathname);
   const requiresSession = isPrivatePage || policy.path === "/register/verify";
+  const sessionFallback =
+    policy.path === "/profile" ? (
+      <ProfileSkeleton />
+    ) : policy.path === "/applications" || policy.path === "/saved" ? (
+      <MyJobsSkeleton />
+    ) : policy.path === "/forms" ? (
+      <FormsSkeleton />
+    ) : undefined;
   const isStudentLanding = policy.landing;
   // Guides provide their own surrounding layout.
   if (policy.guides) {
@@ -62,7 +73,9 @@ export default function StudentPageLayout({
         className="flex min-h-0 grow flex-col"
       >
         {requiresSession ? (
-          <StudentSessionGate>{children}</StudentSessionGate>
+          <StudentSessionGate fallback={sessionFallback}>
+            {children}
+          </StudentSessionGate>
         ) : (
           children
         )}

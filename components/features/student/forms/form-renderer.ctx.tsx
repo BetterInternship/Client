@@ -51,6 +51,8 @@ export interface IFormRendererContext<T extends any[]> {
   keyedFields: (ServerField & { _id: string })[];
   previews: Record<number, React.ReactNode[]>;
   loading: boolean;
+  loadError?: string;
+  retryLoad?: () => void;
   selectedPreviewId: string | null;
   setSelectedPreviewId: (id: string | null) => void;
 
@@ -126,9 +128,19 @@ export const FormRendererContextProvider = ({
   const [selectedPreviewId, setSelectedPreviewId] = useState<string>("");
 
   // Cache forms
-  const { data: form, isLoading } = useQuery({
+  const {
+    data: form,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: useMemo(() => ["my-form-template", formName], [formName]),
-    queryFn: useCallback(() => FormService.getForm(formName), [formName]),
+    queryFn: useCallback(async () => {
+      const response = await FormService.getForm(formName);
+      if (!response.formMetadata || !response.formTemplate)
+        throw new Error("Could not load form template.");
+      return response;
+    }, [formName]),
     enabled: !!formName,
     staleTime: FORM_RENDERER_STALE_TIME,
     gcTime: FORM_RENDERER_GC_TIME,
@@ -222,6 +234,11 @@ export const FormRendererContextProvider = ({
     keyedFields,
     previews,
     loading: isLoading,
+    loadError:
+      error && !form ? "We couldn’t load this form template." : undefined,
+    retryLoad: () => {
+      void refetch();
+    },
     selectedPreviewId: selectedPreviewId || null,
     setSelectedPreviewId: (id: string | null) => setSelectedPreviewId(id ?? ""),
     document: { name: documentName, url: documentUrl },

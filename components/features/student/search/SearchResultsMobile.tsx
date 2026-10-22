@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
-import { Loader } from "@/components/ui/loader";
 import { PageError } from "@/components/ui/error";
 import { JobCard } from "@/components/shared/jobs";
 import { FormCheckbox } from "@/components/EditForm";
@@ -31,7 +30,7 @@ export function SearchResultsMobile({
   return (
     <div className="relative w-full flex flex-col h-full">
       <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
-        {jobs.error ? (
+        {jobs.error && jobsPage.length === 0 ? (
           <PageError
             title="Failed to load jobs."
             description="Please check your internet connection."
@@ -94,8 +93,11 @@ export function SearchResultsMobile({
         )}
       </div>
       {jobs.isFetching && !jobs.isPending && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
-          <Loader />
+        <div
+          role="status"
+          className="pointer-events-none absolute right-3 top-2 rounded border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500 shadow-sm"
+        >
+          Updating results…
         </div>
       )}
     </div>

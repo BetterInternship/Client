@@ -39,7 +39,11 @@ import {
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
-import { Loader } from "@/components/ui/loader";
+import {
+  JobListSkeleton,
+  MyJobsSkeleton,
+} from "@/components/features/student/job/my-jobs-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { JobWaitlist, UserApplication } from "@/lib/db/db.types";
@@ -76,7 +80,7 @@ const tabTriggerClassName = cn(
 
 export default function MyJobsPage() {
   return (
-    <Suspense fallback={<Loader>Loading your jobs...</Loader>}>
+    <Suspense fallback={<MyJobsSkeleton />}>
       <MyJobsPageInner />
     </Suspense>
   );
@@ -171,23 +175,37 @@ function MyJobsPageInner() {
           <TabsTrigger value="applications" className={tabTriggerClassName}>
             Applications
             <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-              {`(${applications.data.length})`}
+              {applications.isPending ? (
+                <Skeleton className="inline-block h-3 w-5" />
+              ) : applications.error ? null : (
+                `(${applications.data.length})`
+              )}
             </span>
           </TabsTrigger>
           <TabsTrigger value="saved" className={tabTriggerClassName}>
             Saved
             <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-              {`(${savedJobs.length})`}
+              {jobs.isPending ? (
+                <Skeleton className="inline-block h-3 w-5" />
+              ) : jobs.error ? null : (
+                `(${savedJobs.length})`
+              )}
             </span>
           </TabsTrigger>
           <TabsTrigger value="alerts" className={tabTriggerClassName}>
             Alerts
-            {alertsCount > 0 && (
-              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
-                {`(${alertsCount})`}
-              </span>
+            {waitlists.isPending || applications.isPending ? (
+              <Skeleton className="ml-1 inline-block h-3 w-5" />
+            ) : (
+              !waitlists.error &&
+              !applications.error &&
+              alertsCount > 0 && (
+                <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+                  {`(${alertsCount})`}
+                </span>
+              )
             )}
-            {hasItsBack && (
+            {!waitlists.isPending && !applications.isPending && hasItsBack && (
               <span
                 aria-hidden="true"
                 className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-supportive align-middle"
@@ -198,8 +216,8 @@ function MyJobsPageInner() {
 
         <TabsContent value="applications">
           {applications.isPending ? (
-            <Loader>Loading your applications...</Loader>
-          ) : applications.error ? (
+            <JobListSkeleton label="Loading your applications" />
+          ) : applications.error && applications.data.length === 0 ? (
             <PageError
               title="Failed to load applications"
               description={applications.error.message}
@@ -236,8 +254,8 @@ function MyJobsPageInner() {
 
         <TabsContent value="saved">
           {jobs.isPending ? (
-            <Loader>Loading saved jobs...</Loader>
-          ) : jobs.error ? (
+            <JobListSkeleton label="Loading saved jobs" tab="saved" />
+          ) : jobs.error && savedJobs.length === 0 ? (
             <PageError
               title="Failed to load saved jobs."
               description={jobs.error.message}
@@ -272,7 +290,19 @@ function MyJobsPageInner() {
         </TabsContent>
 
         <TabsContent value="alerts">
-          {!waitlists.alerts.length && !visibleNotified.length ? (
+          {waitlists.isPending || applications.isPending ? (
+            <JobListSkeleton label="Loading job alerts" tab="alerts" />
+          ) : (waitlists.error || applications.error) &&
+            !waitlists.alerts.length &&
+            !visibleNotified.length ? (
+            <PageError
+              title="Failed to load job alerts"
+              description={
+                (waitlists.error || applications.error)?.message ||
+                "Please try again."
+              }
+            />
+          ) : !waitlists.alerts.length && !visibleNotified.length ? (
             <div className="text-center py-16 animate-fade-in">
               <Card className="max-w-md m-auto">
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">

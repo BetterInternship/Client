@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { cn } from "@betterinternship/components";
 import { Paginator } from "@/components/ui/paginator";
-import { Loader } from "@/components/ui/loader";
+import { JobDetailsSkeleton } from "./search-skeleton";
 import { PageError } from "@/components/ui/error";
 import { JobCard, JobDetails } from "@/components/shared/jobs";
 import { FormCheckbox } from "@/components/EditForm";
@@ -33,6 +33,8 @@ export function SearchResultsDesktop({
   isSelected,
   onJobCardClick,
   selectedJob,
+  detailsLoading,
+  detailsError,
   profileData,
   onSingleApply,
 }: SearchResultsDesktopProps) {
@@ -47,7 +49,7 @@ export function SearchResultsDesktop({
             jobs.error ? "p-2" : "p-6",
           )}
         >
-          {jobs.error ? (
+          {jobs.error && jobsPage.length === 0 ? (
             <PageError
               title="Failed to load jobs."
               description="Please check your internet connection."
@@ -123,15 +125,25 @@ export function SearchResultsDesktop({
           )}
         </div>
         {jobs.isFetching && !jobs.isPending && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70">
-            <Loader />
+          <div
+            role="status"
+            className="pointer-events-none absolute right-3 top-2 rounded border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500 shadow-sm"
+          >
+            Updating results…
           </div>
         )}
       </div>
 
       {/* Right: Details */}
       <div className="w-2/3 flex flex-col overflow-hidden">
-        {selectedJob?.id ? (
+        {detailsLoading ? (
+          <JobDetailsSkeleton />
+        ) : detailsError ? (
+          <PageError
+            title="Could not load listing"
+            description={detailsError}
+          />
+        ) : selectedJob?.id ? (
           <JobDetails
             className="p-6"
             user={{

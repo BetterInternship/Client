@@ -6,8 +6,14 @@ import {
   useRequireStudentSession,
 } from "@/lib/ctx-student-auth";
 
-/** Keep protected page content hidden until the student session is verified. */
-export function StudentSessionGate({ children }: { children: ReactNode }) {
+/** Keep protected content hidden; pages may supply their own matching loading outline. */
+export function StudentSessionGate({
+  children,
+  fallback,
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   const { status, refreshAuthentication } = useAuthContext();
   useRequireStudentSession();
 
@@ -27,6 +33,8 @@ export function StudentSessionGate({ children }: { children: ReactNode }) {
       </div>
     );
   }
+
+  if (status === "checking" && fallback) return fallback;
 
   return (
     <div className="flex flex-1 items-center justify-center p-6" role="status">

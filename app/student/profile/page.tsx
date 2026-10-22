@@ -8,7 +8,7 @@ import { UserService, ResumeDTO } from "@/lib/api/services";
 import { Button, PageContainer } from "@betterinternship/components";
 import { useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import { Loader } from "@/components/ui/loader";
+import { ProfileSkeleton } from "@/components/features/student/profile/profile-skeleton";
 import { PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useProfileActions } from "@/lib/api/student.actions.api";
@@ -50,7 +50,12 @@ export default function ProfilePage() {
   });
   const resumes = useQuery({
     queryKey: ["my-resumes", profile.data?.id],
-    queryFn: () => UserService.getMyResumes(),
+    queryFn: async () => {
+      const response = await UserService.getMyResumes();
+      if (response.success === false || !Array.isArray(response.resumes))
+        throw new Error("Could not load resumes.");
+      return response;
+    },
     enabled: !!profile.data?.id,
   });
 
@@ -255,6 +260,13 @@ export default function ProfilePage() {
     resumes: resumes.data?.resumes ?? [],
     defaultResume: resumes.data?.default_resume ?? null,
     loading: resumes.isPending,
+    error:
+      resumes.isError && !resumes.data
+        ? "We couldn’t load your resumes."
+        : undefined,
+    retry: () => {
+      void resumes.refetch();
+    },
     maxAllowed: maxResumesAllowed,
     isRenaming: isRenamingResume,
     isSettingDefault: isSettingDefaultResume,
@@ -279,11 +291,7 @@ export default function ProfilePage() {
   useBlockPageRefreshEffect(isEditing);
 
   if (profile.isPending) {
-    return (
-      <div className="min-h-screen grid place-items-center">
-        <Loader>Loading profile...</Loader>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (profile.error) {
