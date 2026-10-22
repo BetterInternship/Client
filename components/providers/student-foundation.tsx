@@ -3,9 +3,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthContextProvider } from "@/lib/ctx-student-auth";
+import { NavigationBehaviorProvider } from "@/components/features/student/navigation/navigation-behavior";
 
 /**
- * Gives every student page a shared data cache and login state.
+ * Gives every student page a shared data cache, login state, and navigation behavior.
  * Heavier features, like form-job tracking and modals, stay in StudentAppShell.
  */
 export function StudentFoundation({ children }: { children: ReactNode }) {
@@ -28,7 +29,9 @@ export function StudentFoundation({ children }: { children: ReactNode }) {
   }, []);
   return (
     <QueryClientProvider client={client}>
-      <AuthContextProvider>{children}</AuthContextProvider>
+      <AuthContextProvider>
+        <NavigationBehaviorProvider>{children}</NavigationBehaviorProvider>
+      </AuthContextProvider>
     </QueryClientProvider>
   );
 }

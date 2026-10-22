@@ -1,18 +1,18 @@
-import { LandingHeader } from "@/components/landing/landing-header";
-import { googleLoginUrl } from "@/lib/api/urls";
-
-const hireHref =
-  process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
-  "https://hire.betterinternship.com";
+import { StudentNavigation } from "@/components/features/student/navigation/student-navigation";
 
 export function HomepageHeader() {
   return (
-    <LandingHeader
+    <StudentNavigation
+      preset="public"
       links={[
         { label: "Guides", href: "/guides" },
-        { label: "For Companies", href: hireHref },
+        {
+          label: "For Companies",
+          href:
+            process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
+            "https://hire.betterinternship.com",
+        },
       ]}
-      action={{ label: "Log in", href: googleLoginUrl() }}
     />
   );
 }
