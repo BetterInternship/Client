@@ -60,12 +60,6 @@ export const SHARE_TARGETS = [
     href: ({ url, text }: SharePost) =>
       `https://t.me/share/url?url=${q(url)}&text=${q(text)}`,
   },
-  {
-    id: "email",
-    label: "Email",
-    href: ({ url, text, subject }: SharePost) =>
-      `mailto:?subject=${q(subject)}&body=${q(`${text}\n\n${url}`)}`,
-  },
 ] as const;
 
 export type ShareTargetId = (typeof SHARE_TARGETS)[number]["id"];

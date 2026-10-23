@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState, type ComponentType, type SVGProps } from "react";
-import {
-  Download,
-  Facebook,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  Send,
-  Share2,
-} from "lucide-react";
+import { useEffect, useState, type ComponentType } from "react";
+import { Download, Share2 } from "lucide-react";
 import { Button, cn } from "@betterinternship/components";
+import {
+  FacebookLogo,
+  LinkedInLogo,
+  TelegramLogo,
+  WhatsAppLogo,
+  XLogo,
+} from "@/components/ui/brand-icons";
 import type { Job } from "@/lib/db/db.types";
 import {
   SHARE_TARGETS,
@@ -19,23 +18,15 @@ import {
 } from "@/lib/share-targets";
 import { pubmatFileName, type usePubmatImage } from "./use-pubmat-image";
 
-// lucide has no X logo.
-const XLogo = (props: SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
 const TARGET_ICONS: Record<
   ShareTargetId,
   ComponentType<{ className?: string }>
 > = {
-  facebook: Facebook,
-  linkedin: Linkedin,
+  facebook: FacebookLogo,
+  linkedin: LinkedInLogo,
   x: XLogo,
-  whatsapp: MessageCircle,
-  telegram: Send,
-  email: Mail,
+  whatsapp: WhatsAppLogo,
+  telegram: TelegramLogo,
 };
 
 const iconButton =
@@ -72,9 +63,8 @@ export function PubmatActions({
   const post = sharePostFromJob(job, link);
   const platformsReady = status !== "loading";
 
-  // Email can't take a pasted image, so only the others get it copied.
-  const handleTarget = (id: ShareTargetId) => {
-    if (!image || id === "email") return;
+  const handleTarget = () => {
+    if (!image) return;
     navigator.clipboard
       .write([new ClipboardItem({ "image/png": image.blob })])
       .then(() => setImageCopy("copied"))
@@ -114,18 +104,18 @@ export function PubmatActions({
               key={target.id}
               // No href until the draw is done, which leaves the button inert.
               href={platformsReady ? target.href(post) : undefined}
-              target={target.id === "email" ? undefined : "_blank"}
+              target="_blank"
               rel="noopener noreferrer"
               aria-label={`Share on ${target.label}`}
               title={target.label}
               aria-disabled={!platformsReady}
-              onClick={() => handleTarget(target.id)}
+              onClick={handleTarget}
               className={cn(
                 iconButton,
                 !platformsReady && "pointer-events-none opacity-50",
               )}
             >
-              <Icon className="size-4" />
+              <Icon className="size-5" />
             </a>
           );
         })}
