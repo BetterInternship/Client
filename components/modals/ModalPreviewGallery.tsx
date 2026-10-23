@@ -268,19 +268,8 @@ export function ModalPreviewGallery() {
     },
     {
       category: "Hire & listings",
-      title: "Share listing (employer)",
-      description: "Share dialog with the Create pubmat action.",
-      open: () =>
-        openPreview(
-          "share-job-employer",
-          <ShareJobModal job={PREVIEW_JOB} onCreatePubmat={() => {}} />,
-          { title: `Share listing — ${PREVIEW_JOB.title}` },
-        ),
-    },
-    {
-      category: "Hire & listings",
       title: "Listing pubmat",
-      description: "Pubmat preview and download for a listing.",
+      description: "Pubmat preview, download and share for a listing.",
       open: () =>
         openPreview(
           "pubmat",

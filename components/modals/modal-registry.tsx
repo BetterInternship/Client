@@ -10,7 +10,7 @@ import {
   DefaultModalLayout,
   SlideUpModalLayout,
 } from "../providers/modal-provider/ModalLayout";
-import { ReactNode, useCallback, useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import {
   MassApplyResults,
   MassApplyResultsData,
@@ -59,25 +59,6 @@ const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
  */
 export const useModalRegistry = () => {
   const { openModal: open, closeModal: close } = useGlobalModal();
-
-  // Opened from two places — the empty-listing prompt and the share sheet —
-  // so it's defined once, here, rather than inline in either entry below.
-  const openPubmat = useCallback(
-    ({ job, link }: { job: Job; link: string }) =>
-      open(
-        "pubmat",
-        DefaultModalLayout,
-        <PubmatModal job={job} link={link} />,
-        {
-          title: "Listing pubmat",
-          closeOnBackdropClick: true,
-          closeOnEscapeKey: true,
-          showHeaderDivider: false,
-          panelClassName: "sm:w-[560px] sm:max-w-[560px]",
-        },
-      ),
-    [open],
-  );
 
   const modalRegistry = useMemo(
     () => ({
@@ -265,38 +246,32 @@ export const useModalRegistry = () => {
       },
       // modal for sharing a job listing's short link
       // (Docs/plans/JOB_SHORT_LINKS_IMPLEMENTATION_PLAN.md D12).
-      // `pubmat` adds a "Create pubmat" action for employers; students sharing
-      // the same dialog don't get it.
       shareJob: {
-        open: ({ job, pubmat }: { job: Job; pubmat?: boolean }) =>
+        open: ({ job }: { job: Job }) =>
+          open("share-job", DefaultModalLayout, <ShareJobModal job={job} />, {
+            title: job.title ? `Share listing — ${job.title}` : "Share listing",
+            closeOnBackdropClick: true,
+            closeOnEscapeKey: true,
+            showHeaderDivider: false,
+          }),
+        close: () => close("share-job"),
+      },
+      // modal for a listing's pubmat: preview, download, and share to a
+      // platform. It's what the listing header's Share button opens.
+      pubmat: {
+        open: ({ job, link }: { job: Job; link: string }) =>
           open(
-            "share-job",
+            "pubmat",
             DefaultModalLayout,
-            <ShareJobModal
-              job={job}
-              onCreatePubmat={
-                pubmat
-                  ? (link) => {
-                      close("share-job");
-                      openPubmat({ job, link });
-                    }
-                  : undefined
-              }
-            />,
+            <PubmatModal job={job} link={link} />,
             {
-              title: job.title
-                ? `Share listing — ${job.title}`
-                : "Share listing",
+              title: "Listing pubmat",
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
               showHeaderDivider: false,
+              panelClassName: "sm:w-[560px] sm:max-w-[560px]",
             },
           ),
-        close: () => close("share-job"),
-      },
-      // modal for previewing and downloading a listing's pubmat.
-      pubmat: {
-        open: openPubmat,
         close: () => close("pubmat"),
       },
       // modal for any action performed on a job application.
@@ -876,7 +851,7 @@ export const useModalRegistry = () => {
 
       closeAll: () => close(),
     }),
-    [close, open, openPubmat],
+    [close, open],
   );
 
   return modalRegistry;

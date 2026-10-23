@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ImagePlus, Loader2, Send } from "lucide-react";
+import { Check, Copy, Loader2, Send } from "lucide-react";
 import { Button, Input } from "@betterinternship/components";
 import { useShareLink } from "@/lib/api/student.data.api";
 import { Job } from "@/lib/db/db.types";
 
 interface ShareJobModalProps {
   job: Job;
-  // Employers only: hands the minted link over so the registry can swap this
-  // dialog for the pubmat preview. Absent for students, who get no pubmat row.
-  onCreatePubmat?: (link: string) => void;
 }
 
 /**
@@ -20,7 +17,7 @@ interface ShareJobModalProps {
  * stays synchronous so it works on Safari too (D12): by the time it's
  * clicked, the string is already sitting in `url`.
  */
-export function ShareJobModal({ job, onCreatePubmat }: ShareJobModalProps) {
+export function ShareJobModal({ job }: ShareJobModalProps) {
   const { url, isPending, isError, refetch } = useShareLink(job.id);
   const [copied, setCopied] = useState(false);
 
@@ -81,24 +78,6 @@ export function ShareJobModal({ job, onCreatePubmat }: ShareJobModalProps) {
           )}
         </Button>
       </div>
-
-      {onCreatePubmat && (
-        <div className="flex flex-col gap-1.5">
-          <Button
-            variant="outline"
-            disabled={isPending || !url}
-            onClick={() => url && onCreatePubmat(url)}
-            className="w-full"
-          >
-            <ImagePlus />
-            Create pubmat
-          </Button>
-          <p className="text-center text-xs text-gray-500">
-            An image for Instagram, Facebook or LinkedIn, with a QR code to this
-            listing.
-          </p>
-        </div>
-      )}
 
       {/* Breaks out of the modal's own px-4/pb-4 to read as a footer bar
           flush with the panel's bottom (and, on desktop, its bottom

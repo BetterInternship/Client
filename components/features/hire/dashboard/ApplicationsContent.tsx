@@ -46,6 +46,7 @@ import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ActionButton } from "@/components/ui/action-button";
 import { ShareJobButton } from "../../student/job/share-job-button";
 import { EmptyListingPubmat } from "../pubmat/empty-listing-pubmat";
+import { ShareListingNotice } from "../pubmat/share-listing-notice";
 
 /**
  * Shown where applicants would be. A listing that nobody has applied to at
@@ -66,7 +67,7 @@ const NoApplicantsNotice = ({
       icon={Ghost}
       title="No applicants under this category yet."
       description="Share your job listing to attract applicants."
-      action={<ShareJobButton job={job} pubmat />}
+      action={<ShareJobButton job={job} />}
     />
   );
 
@@ -209,6 +210,11 @@ export const ApplicationsContent = forwardRef<
     (application) => application.status !== undefined,
   );
 
+  // Nudge to share once there are applicants to look at — but not for a
+  // listing that isn't taking any.
+  const showShareNotice =
+    visibleApplications.length > 0 && job.is_active && !job.paused;
+
   const {
     selectedApplications,
     selectedApplicationsData,
@@ -350,6 +356,7 @@ export const ApplicationsContent = forwardRef<
 
   return isMobile ? (
     <div className="flex flex-col gap-2 min-h-screen mb-28">
+      {showShareNotice && <ShareListingNotice job={job} />}
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
@@ -403,6 +410,7 @@ export const ApplicationsContent = forwardRef<
     </div>
   ) : (
     <div className="flex flex-col gap-2 mb-28">
+      {showShareNotice && <ShareListingNotice job={job} />}
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}

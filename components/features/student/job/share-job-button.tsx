@@ -13,11 +13,9 @@ export const ShareJobButton = ({
   className,
   onOpen,
   disabled,
-  pubmat,
 }: {
   job: Job;
   className?: string;
-  pubmat?: boolean; // for pubmat generation on recruiter site
   onOpen?: () => void;
   disabled?: boolean;
 }) => {
@@ -40,7 +38,7 @@ export const ShareJobButton = ({
       setMinting(false);
     }
     onOpen?.();
-    modals.shareJob.open({ job, pubmat });
+    modals.shareJob.open({ job });
   };
 
   return (

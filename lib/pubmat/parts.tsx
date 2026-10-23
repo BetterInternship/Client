@@ -20,7 +20,7 @@ export type Qr = ReturnType<typeof qrCode>;
 
 const logo = LOGO_DATA_URI;
 
-const svgUri = (svg: string) => `data:image/svg+xml;base64,${btoa(svg)}`;
+export const svgUri = (svg: string) => `data:image/svg+xml;base64,${btoa(svg)}`;
 
 /**
  * The corner shapes. The top-right one is fixed to the top of the canvas; the
