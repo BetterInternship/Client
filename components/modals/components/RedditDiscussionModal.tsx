@@ -6,6 +6,8 @@ import { CircleDollarSign, FileText, List, UsersRound } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import type { Job } from "@/lib/db/db.types";
 import { buildRedditDiscussionUrl } from "@/lib/reddit-discussion";
+import { useApplicationsData } from "@/lib/api/student.data.api";
+import { useApplicationActions } from "@/lib/api/student.actions.api";
 
 export function RedditDiscussionModal({
   job,
@@ -15,6 +17,8 @@ export function RedditDiscussionModal({
   onComplete: () => void;
 }) {
   const auth = useAuthContext();
+  const applications = useApplicationsData();
+  const actions = useApplicationActions();
   const [error, setError] = useState<string | null>(null);
 
   const company = job.employer?.name?.trim() || "this company";
@@ -64,6 +68,15 @@ export function RedditDiscussionModal({
         question,
       });
       tab.location.replace(url);
+      const application = applications.data.find(
+        (entry) => entry.job_id === job.id,
+      );
+      if (application?.id) {
+        actions.redditReviewClick.mutate({
+          applicationId: application.id,
+          title,
+        });
+      }
       onComplete();
     } catch {
       tab.close();

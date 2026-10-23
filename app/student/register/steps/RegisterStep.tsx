@@ -83,7 +83,7 @@ export function RegisterStep({
 
       <Autocomplete
         label="University"
-        placeholder="University"
+        placeholder={refs.refLoading ? "Loading universities..." : "University"}
         setter={(val) => {
           regForm.setValue("university", val === null ? "" : String(val));
         }}
@@ -91,6 +91,7 @@ export function RegisterStep({
         value={university}
         required={true}
         preserveOptionOrder={true}
+        emptyText={refs.refLoading ? "Loading universities..." : undefined}
       />
 
       <Accordion type="single" collapsible className="-mt-3">

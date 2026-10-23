@@ -36,7 +36,7 @@ export function CompanyTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { to_industry_name } = useDbRefs();
+  const { toIndustryName } = useDbRefs();
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -131,8 +131,8 @@ export function CompanyTab() {
                   onValue="Verified"
                   offValue="Not Verified"
                 />
-                {to_industry_name(profile.industry, null) && (
-                  <Badge>{to_industry_name(profile.industry)}</Badge>
+                {toIndustryName(profile.industry, null) && (
+                  <Badge>{toIndustryName(profile.industry)}</Badge>
                 )}
               </div>
             </div>

@@ -73,7 +73,7 @@ export function ShowMoaButton({
   const auth = useAuthContext();
   const authenticated = auth.isAuthenticated();
   const profile = useProfileData();
-  const { get_university } = useDbRefs();
+  const { getUniversity } = useDbRefs();
   const modalRegistry = useModalRegistry();
   const invitationShown = useRef(false);
 
@@ -91,7 +91,7 @@ export function ShowMoaButton({
       if (!pending) {
         const matchingJobs = filterTopMoaJobs(pageJobs, jobIds);
         onFilterChange(matchingJobs);
-        const university = get_university(profile.data?.university);
+        const university = getUniversity(profile.data?.university);
         if (
           matchingJobs.length === 0 &&
           university &&
@@ -108,7 +108,7 @@ export function ShowMoaButton({
       pageJobs,
       onFilterChange,
       onActiveChange,
-      get_university,
+      getUniversity,
       profile.data?.university,
       modalRegistry,
     ],
@@ -221,7 +221,7 @@ export function ShowMoaButton({
         disabled={disabled}
         onClick={handleToggle}
         aria-pressed={active}
-        aria-label={`${active ? "Show all internships instead of companies partnered with" : "Show companies partnered with"} ${get_university(profile.data?.university)?.name ?? "your university"}`}
+        aria-label={`${active ? "Show all internships instead of companies partnered with" : "Show companies partnered with"} ${getUniversity(profile.data?.university)?.name ?? "your university"}`}
         aria-busy={active && isPending}
         className={cn(
           motionStyles.action,
@@ -237,7 +237,7 @@ export function ShowMoaButton({
         )}
         {isPending && active
           ? "Loading partners…"
-          : (get_university(profile.data?.university)?.name ??
+          : (getUniversity(profile.data?.university)?.name ??
             "Your university")}
       </Button>
     </div>

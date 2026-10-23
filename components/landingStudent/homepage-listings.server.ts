@@ -1,6 +1,6 @@
 import "server-only";
 import { fetchTopCategory, TopPageFetchError } from "@/lib/api/top-page.server";
-import type { Job, RefsData } from "@/lib/db/db.types";
+import type { Job, JobRefsData } from "@/lib/db/db.types";
 import { formatListingAge } from "@/lib/utils/relative-age";
 import type { JobCardData } from "@/components/ui/temp/job-card";
 import { homepageFieldSlugs, homepageHeroCategories } from "./homepage-data";
@@ -13,7 +13,7 @@ const LISTING_LIMIT = 6;
 function toHomepageListing(
   job: Job & { id: string },
   category: string,
-  refs: RefsData,
+  refs: JobRefsData,
 ): HomepageListing {
   const modeIds = job.internship_preferences?.job_setup_ids ?? [];
   const workMode = refs.job_modes
@@ -48,7 +48,7 @@ function toHomepageListing(
 /** Reuse the Top pages' tagged cache. Fetch failures propagate so ISR keeps
  * the previous page instead of caching an outage as an empty listing set. */
 export async function fetchHomepageListings(
-  refs: RefsData,
+  refs: JobRefsData,
 ): Promise<HomepageListings> {
   const categories = await Promise.all(
     homepageHeroCategories.map(

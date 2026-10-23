@@ -324,12 +324,12 @@ export function FormSigningLayout({
       if (!value) continue;
       const trimmed = String(value).trim();
       const keyLower = key.toLowerCase();
-      if (keyLower.includes("university") && refs.to_university_name) {
-        resolved[key] = refs.to_university_name(trimmed, trimmed) ?? trimmed;
-      } else if (keyLower.includes("college") && refs.to_college_name) {
-        resolved[key] = refs.to_college_name(trimmed, trimmed) ?? trimmed;
-      } else if (keyLower.includes("department") && refs.to_department_name) {
-        resolved[key] = refs.to_department_name(trimmed, trimmed) ?? trimmed;
+      if (keyLower.includes("university") && refs.toUniversityName) {
+        resolved[key] = refs.toUniversityName(trimmed, trimmed) ?? trimmed;
+      } else if (keyLower.includes("college") && refs.toCollegeName) {
+        resolved[key] = refs.toCollegeName(trimmed, trimmed) ?? trimmed;
+      } else if (keyLower.includes("department") && refs.toDepartmentName) {
+        resolved[key] = refs.toDepartmentName(trimmed, trimmed) ?? trimmed;
       }
     }
     return resolved;

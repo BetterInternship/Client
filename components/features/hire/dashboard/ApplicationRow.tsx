@@ -60,7 +60,7 @@ export function ApplicationRow({
   onAction,
   statuses,
 }: ApplicationRowProps) {
-  const { to_university_name } = useDbRefs();
+  const { toUniversityName } = useDbRefs();
   const { isMobile } = useAppContext();
   const preferences = (application.user?.internship_preferences ||
     {}) as InternshipPreferences;
@@ -146,7 +146,7 @@ export function ApplicationRow({
             <div className="flex items-center gap-2">
               <School size={16} />
               <span className="text-sm">
-                {to_university_name(application.user?.university) || ""}{" "}
+                {toUniversityName(application.user?.university) || ""}{" "}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export function ApplicationRow({
       </TableCell>
       <TableCell className="px-4 py-2 border-t">
         <div className="flex flex-col">
-          <span>{to_university_name(application.user?.university) || ""}</span>
+          <span>{toUniversityName(application.user?.university) || ""}</span>
           <span className="text-gray-500">{application.user?.degree}</span>
         </div>
       </TableCell>

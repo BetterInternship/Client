@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2026-04-30 22:56:23
+ * @ Modified time: 2026-10-18 00:00:00
  * @ Description:
  *
  * Server-only data loaders for refs tables.
@@ -21,8 +21,8 @@ import {
   Industry,
   JobCategory,
   Department,
-  RefDomain,
-  RefsData,
+  JobRefsData,
+  SchoolsRefsData,
 } from "./db.types";
 import { DB } from "@betterinternship/schema";
 import { Kysely, PostgresDialect } from "kysely";
@@ -40,13 +40,14 @@ const db = new Kysely<DB>({
   }),
 });
 
+export const JOB_REFS_TAG = "refs:job";
+export const SCHOOLS_REFS_TAG = "refs:schools";
+
 /**
- * Fetches all refs tables on the server and returns serializable data for clients.
+ * Fetches the job refs tables. These are server-rendered by the layouts.
  */
-const getRefsDataUncached = async (): Promise<RefsData> => {
+const getJobRefsUncached = async (): Promise<JobRefsData> => {
   const [
-    colleges,
-    universities,
     job_types,
     job_modes,
     job_allowances,
@@ -54,15 +55,7 @@ const getRefsDataUncached = async (): Promise<RefsData> => {
     app_statuses,
     industries,
     job_categories,
-    departments,
-    domains,
   ] = await Promise.all([
-    db.selectFrom("career.ref_colleges").selectAll().execute() as Promise<
-      College[]
-    >,
-    db.selectFrom("career.ref_universities").selectAll().execute() as Promise<
-      University[]
-    >,
     db.selectFrom("career.ref_job_types").selectAll().execute() as Promise<
       JobType[]
     >,
@@ -84,18 +77,9 @@ const getRefsDataUncached = async (): Promise<RefsData> => {
     db.selectFrom("career.ref_job_categories").selectAll().execute() as Promise<
       JobCategory[]
     >,
-    db.selectFrom("career.ref_departments").selectAll().execute() as Promise<
-      Department[]
-    >,
-    db.selectFrom("career.ref_domains").selectAll().execute() as Promise<
-      RefDomain[]
-    >,
   ]);
 
   return {
-    colleges,
-    departments,
-    universities,
     job_types,
     job_modes,
     job_allowances,
@@ -103,22 +87,49 @@ const getRefsDataUncached = async (): Promise<RefsData> => {
     job_pay_freq,
     app_statuses,
     industries,
-    domains,
   };
 };
 
-// Cache refs data for seven days and catch repeat calls to reduce db calls.
-// Seven days (not the old one hour) so it matches the Top pages' own
-// `revalidate` (TOP_PAGES_REVALIDATE_SECONDS = 604800): Next caps a page's
-// ISR lifetime at the shortest revalidate among its data dependencies, and
-// this runs in every student/hire layout, so a shorter value here would drag
-// the Top pages down with it. Trade-off: refs tables (universities, colleges,
-// job types, …) are stale for up to a week — fine, they change rarely and
-// only by hand. Revisit with a revalidateTag("refs-data") trigger if that
-// ever becomes a problem.
-export const getRefsData = cache(
-  unstable_cache(getRefsDataUncached, ["refs-data"], {
+/**
+ * Fetches the schools refs tables. These are served by /api/refs/schools.
+ */
+const getSchoolsRefsUncached = async (): Promise<SchoolsRefsData> => {
+  const [colleges, universities, departments] = await Promise.all([
+    db.selectFrom("career.ref_colleges").selectAll().execute() as Promise<
+      College[]
+    >,
+    db.selectFrom("career.ref_universities").selectAll().execute() as Promise<
+      University[]
+    >,
+    db.selectFrom("career.ref_departments").selectAll().execute() as Promise<
+      Department[]
+    >,
+  ]);
+
+  return { colleges, departments, universities };
+};
+
+// Cache job refs for seven days and catch repeat calls to reduce db calls.
+// Seven days so it matches the Top pages' own `revalidate`
+// (TOP_PAGES_REVALIDATE_SECONDS = 604800): Next caps a page's ISR lifetime at
+// the shortest revalidate among its data dependencies, and this runs in every
+// student/hire layout, so a shorter value here would drag the Top pages down
+// with it. Job refs change rarely and only by hand; clear JOB_REFS_TAG if one
+// ever needs to show up sooner.
+export const getJobRefs = cache(
+  unstable_cache(getJobRefsUncached, ["refs:job"], {
     revalidate: 604800,
-    tags: ["refs-data"],
+    tags: [JOB_REFS_TAG],
+  }),
+);
+
+// Schools refs are only read by the /api/refs/schools route, so no page
+// depends on this entry. One hour covers manual DB edits; the god-site
+// Universities page clears SCHOOLS_REFS_TAG through
+// POST /api/refs/schools/revalidate after every save.
+export const getSchoolsRefs = cache(
+  unstable_cache(getSchoolsRefsUncached, ["refs:schools"], {
+    revalidate: 3600,
+    tags: [SCHOOLS_REFS_TAG],
   }),
 );

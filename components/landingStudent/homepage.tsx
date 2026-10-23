@@ -1,6 +1,6 @@
 import { getHomepageFields } from "./homepage-data";
 import type { HomepageListings } from "./homepage-listings.server";
-import type { RefsData } from "@/lib/db/db.types";
+import type { JobRefsData } from "@/lib/db/db.types";
 import { HomepageArtwork, HomepageSectionSprite } from "./homepage-artwork";
 import { HomepageCommunity } from "./sections/homepage-community";
 import { HomepageGuides } from "./sections/homepage-guides";
@@ -50,7 +50,7 @@ export function StudentHomepage({
   refs,
   listings,
 }: {
-  refs: RefsData;
+  refs: JobRefsData;
   listings: HomepageListings;
 }) {
   const fields = getHomepageFields(refs.job_categories);

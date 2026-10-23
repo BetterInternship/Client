@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { fetchJobFull } from "@/lib/api/job-preview.server";
 import { JobPageView } from "./JobPageView";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { buildJobListingSchema } from "@/lib/seo/job-posting";
 
 /**
@@ -20,7 +20,7 @@ export default async function JobPage({
 
   if (job === null) notFound();
 
-  const refs = await getRefsData();
+  const refs = await getJobRefs();
   const schema = buildJobListingSchema(job, refs);
 
   return (

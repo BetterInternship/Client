@@ -77,27 +77,19 @@ export const JobLocation = ({
 };
 
 export const JobType = ({ type }: { type: number | null | undefined }) => {
-  const { isNotNull: ref_is_not_null, to_job_type_name } = useDbRefs();
-  return ref_is_not_null(type) ? (
-    <Badge>{to_job_type_name(type)}</Badge>
-  ) : (
-    <></>
-  );
+  const { isNotNull: refIsNotNull, toJobTypeName } = useDbRefs();
+  return refIsNotNull(type) ? <Badge>{toJobTypeName(type)}</Badge> : <></>;
 };
 
 export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
-  const { isNotNull: ref_is_not_null, to_job_mode_name } = useDbRefs();
-  return ref_is_not_null(mode) ? (
-    <Badge>{to_job_mode_name(mode)}</Badge>
-  ) : (
-    <></>
-  );
+  const { isNotNull: refIsNotNull, toJobModeName } = useDbRefs();
+  return refIsNotNull(mode) ? <Badge>{toJobModeName(mode)}</Badge> : <></>;
 };
 
 export const JobCategory = ({ category }: { category: string | undefined }) => {
-  const { isNotNull: ref_is_not_null, to_job_category_name } = useDbRefs();
-  return ref_is_not_null(category) ? (
-    <Badge>{to_job_category_name(category)}</Badge>
+  const { isNotNull: refIsNotNull, toJobCategoryName } = useDbRefs();
+  return refIsNotNull(category) ? (
+    <Badge>{toJobCategoryName(category)}</Badge>
   ) : (
     <></>
   );
@@ -110,10 +102,10 @@ export const JobSalary = ({
   salary: number | string | null | undefined;
   salary_freq: number | null | undefined;
 }) => {
-  const { to_job_pay_freq_name } = useDbRefs();
+  const { toJobPayFreqName } = useDbRefs();
   return salary ? (
     <Badge>
-      ₱{salary}/{to_job_pay_freq_name(salary_freq)}
+      ₱{salary}/{toJobPayFreqName(salary_freq)}
     </Badge>
   ) : (
     <></>
@@ -196,14 +188,14 @@ export const EmployerMOA = ({
   university_id: string | null | undefined;
   hasMoa: boolean | null | undefined;
 }) => {
-  const { get_university } = useDbRefs();
+  const { getUniversity } = useDbRefs();
 
   if (!hasMoa || !university_id) return <></>;
 
   return (
     <Badge variant="solid" type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
-      {toAbbreviation(get_university(university_id)?.name)} MOA
+      {toAbbreviation(getUniversity(university_id)?.name)} MOA
     </Badge>
   );
 };
@@ -550,18 +542,17 @@ function HeaderWithActions({
 }
 
 export const JobDetailsSummary = ({ job }: { job: Job }) => {
-  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useDbRefs();
+  const { toJobModeName, toJobTypeName, toJobPayFreqName } = useDbRefs();
 
   const workModes =
     (job.internship_preferences?.job_setup_ids ?? [])
-      .map((id) => to_job_mode_name(id))
+      .map((id) => toJobModeName(id))
       .filter(Boolean)
       .join(", ") || "";
 
   const workLoads =
     (job.internship_preferences?.job_commitment_ids ?? [])
-      .map((id) => to_job_type_name(id))
+      .map((id) => toJobTypeName(id))
       .filter(Boolean)
       .join(", ") || "";
 
@@ -615,9 +606,8 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                     key="salary"
                     value={
                       job.salary
-                        ? to_job_pay_freq_name(job.salary_freq) !==
-                          "Not specified"
-                          ? `${formatCurrency(job.salary)}/${to_job_pay_freq_name(job.salary_freq)}`
+                        ? toJobPayFreqName(job.salary_freq) !== "Not specified"
+                          ? `${formatCurrency(job.salary)}/${toJobPayFreqName(job.salary_freq)}`
                           : `${formatCurrency(job.salary)}`
                         : "With pay"
                     }
