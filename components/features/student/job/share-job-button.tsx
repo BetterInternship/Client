@@ -13,13 +13,11 @@ export const ShareJobButton = ({
   className,
   onOpen,
   disabled,
+  pubmat,
 }: {
   job: Job;
   className?: string;
-  // Called right before the dialog opens — e.g. to dismiss a mobile actions
-  // sheet the button sits in, the way onCopied used to. Fires *after* the
-  // mint settles (not on click) so the sheet — and this button's loader —
-  // stays visible for the whole wait instead of closing immediately.
+  pubmat?: boolean; // for pubmat generation on recruiter site
   onOpen?: () => void;
   disabled?: boolean;
 }) => {
@@ -42,7 +40,7 @@ export const ShareJobButton = ({
       setMinting(false);
     }
     onOpen?.();
-    modals.shareJob.open({ job });
+    modals.shareJob.open({ job, pubmat });
   };
 
   return (
