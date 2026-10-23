@@ -1,4 +1,5 @@
 import { createElement } from "react";
+import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "./designs";
 import { PUBMAT_FORMATS, type PubmatFormat } from "./formats";
 import { loadPubmatFonts } from "./fonts";
 import type { PubmatData } from "./params";
@@ -29,20 +30,20 @@ function initResvg(): Promise<void> {
 export async function renderPubmat(
   data: PubmatData,
   format: PubmatFormat,
+  design: PubmatDesign = DEFAULT_PUBMAT_DESIGN,
 ): Promise<Blob> {
   const { width, height } = PUBMAT_FORMATS[format];
   const [{ default: satori }, { Resvg }, fonts] = await Promise.all([
     import("satori"),
     import("@resvg/resvg-wasm"),
-    loadPubmatFonts(),
+    loadPubmatFonts(design),
     initResvg(),
   ]);
 
-  const svg = await satori(createElement(PubmatTemplate, { data, format }), {
-    width,
-    height,
-    fonts,
-  });
+  const svg = await satori(
+    createElement(PubmatTemplate, { data, format, design }),
+    { width, height, fonts },
+  );
   const png = new Resvg(svg, { fitTo: { mode: "width", value: width } })
     .render()
     .asPng();

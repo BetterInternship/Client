@@ -35,16 +35,53 @@ const W800 = [
   0.594, 0.618, 0.581, 0.486, 0.388, 0.486, 0.686,
 ];
 
-type Weight = 700 | 800;
+// Unbounded, same way (unitsPerEm 1000, from public/fonts/pubmat). Far wider
+// than Inter: it averages ~0.85em a character against Inter's ~0.6.
+const U700 = [
+  0.248, 0.323, 0.506, 0.857, 0.812, 1.294, 0.94, 0.275, 0.39, 0.39, 0.536,
+  0.62, 0.302, 0.371, 0.3, 0.459, 0.925, 0.52, 0.835, 0.839, 0.861, 0.807,
+  0.857, 0.753, 0.892, 0.857, 0.328, 0.33, 0.62, 0.62, 0.62, 0.705, 1.046,
+  0.957, 0.883, 0.934, 0.926, 0.794, 0.771, 0.964, 0.938, 0.347, 0.806, 0.87,
+  0.764, 1.236, 0.972, 0.965, 0.814, 0.965, 0.85, 0.843, 0.818, 0.878, 0.935,
+  1.36, 0.87, 0.923, 0.808, 0.433, 0.459, 0.433, 0.62, 0.482, 0.374, 0.826,
+  0.814, 0.762, 0.828, 0.734, 0.589, 0.813, 0.779, 0.317, 0.317, 0.743, 0.317,
+  1.208, 0.789, 0.792, 0.815, 0.815, 0.553, 0.748, 0.603, 0.777, 0.769, 1.14,
+  0.719, 0.777, 0.694, 0.472, 0.313, 0.472, 0.62,
+];
 
-/** Width of `text` in px at `size`, with `tracking` px of letter-spacing a char. */
+const U900 = [
+  0.236, 0.352, 0.562, 0.877, 0.843, 1.349, 0.982, 0.306, 0.43, 0.43, 0.548,
+  0.62, 0.33, 0.384, 0.328, 0.485, 0.946, 0.552, 0.865, 0.862, 0.899, 0.828,
+  0.878, 0.785, 0.918, 0.878, 0.35, 0.35, 0.62, 0.62, 0.62, 0.739, 1.066, 0.996,
+  0.907, 0.949, 0.946, 0.812, 0.791, 0.976, 0.956, 0.378, 0.824, 0.895, 0.781,
+  1.275, 0.995, 0.976, 0.837, 0.977, 0.876, 0.87, 0.84, 0.889, 0.968, 1.39,
+  0.922, 0.957, 0.83, 0.468, 0.485, 0.468, 0.62, 0.482, 0.412, 0.852, 0.834,
+  0.787, 0.855, 0.75, 0.623, 0.836, 0.807, 0.35, 0.35, 0.782, 0.35, 1.244, 0.82,
+  0.81, 0.834, 0.834, 0.585, 0.786, 0.635, 0.807, 0.806, 1.168, 0.767, 0.818,
+  0.723, 0.514, 0.332, 0.514, 0.62,
+];
+
+type Weight = 700 | 800 | 900;
+type Face = "inter" | "unbounded";
+
+const TABLES: Record<Face, Partial<Record<Weight, number[]>>> = {
+  inter: { 700: W700, 800: W800 },
+  unbounded: { 700: U700, 900: U900 },
+};
+
+/**
+ * Width of `text` in px at `size`, with `tracking` px of letter-spacing a char.
+ * `weight` has to be one the face has a table for (Inter 700/800, Unbounded
+ * 700/900).
+ */
 export function textWidth(
   text: string,
   size: number,
   weight: Weight,
   tracking = 0,
+  face: Face = "inter",
 ) {
-  const table = weight === 800 ? W800 : W700;
+  const table = TABLES[face][weight] ?? TABLES[face][700]!;
   let width = 0;
   for (const char of text) {
     const code = char.codePointAt(0) ?? 0;
@@ -64,12 +101,13 @@ export function wrapLines(
   weight: Weight,
   maxWidth: number,
   tracking = 0,
+  face: Face = "inter",
 ) {
-  const space = textWidth(" ", size, weight, tracking);
+  const space = textWidth(" ", size, weight, tracking, face);
   let lines = 1;
   let line = 0;
   for (const word of text.split(" ").filter(Boolean)) {
-    const width = textWidth(word, size, weight, tracking);
+    const width = textWidth(word, size, weight, tracking, face);
     if (line === 0) line = width;
     else if (line + space + width <= maxWidth) line += space + width;
     else {
@@ -96,6 +134,8 @@ export function fitTitle(
     maxHeight,
     tracking = -0.035,
     lineHeight = 1.1,
+    face = "inter",
+    weight = 800,
   }: {
     width: number;
     maxLines: number;
@@ -105,6 +145,9 @@ export function fitTitle(
     /** Letter-spacing, in em — the layouts set the title at -0.035em. */
     tracking?: number;
     lineHeight?: number;
+    /** The typeface and weight the title is set in. */
+    face?: Face;
+    weight?: Weight;
   },
 ) {
   // A little under the box, to cover satori wrapping a hair differently.
@@ -112,9 +155,11 @@ export function fitTitle(
   const words = title.split(" ").filter(Boolean);
   for (let size = Math.round(maxSize); size > minSize; size -= 2) {
     const px = tracking * size;
-    const longest = Math.max(...words.map((w) => textWidth(w, size, 800, px)));
+    const longest = Math.max(
+      ...words.map((w) => textWidth(w, size, weight, px, face)),
+    );
     if (longest > usable) continue;
-    const lines = wrapLines(title, size, 800, usable, px);
+    const lines = wrapLines(title, size, weight, usable, px, face);
     if (lines <= maxLines && lines * size * lineHeight <= maxHeight)
       return size;
   }

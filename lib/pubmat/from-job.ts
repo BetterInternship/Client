@@ -3,7 +3,7 @@ import type { PubmatData } from "./params";
 
 type RefNames = Pick<
   IRefsContext,
-  "to_job_mode_name" | "to_job_type_name" | "to_job_pay_freq_name"
+  "toJobModeName" | "toJobTypeName" | "toJobPayFreqName"
 >;
 
 // The refs helpers answer "Not specified" for an id they don't know.
@@ -26,7 +26,7 @@ function payLabel(job: Job, refs: RefNames): string | undefined {
   if (job.allowance !== 0) return undefined;
   const salary = Number(job.salary);
   if (!job.salary || Number.isNaN(salary) || salary <= 0) return "Paid";
-  const freq = known(refs.to_job_pay_freq_name(job.salary_freq));
+  const freq = known(refs.toJobPayFreqName(job.salary_freq));
   // The refs name it "Day"; the pubmat reads better as "₱500/day".
   return freq
     ? `${peso.format(salary)}/${freq.toLowerCase()}`
@@ -52,10 +52,10 @@ export function pubmatDataFromJob(
   const preferences = job.internship_preferences;
   const setup = [
     ...(preferences?.job_setup_ids ?? []).map((id) =>
-      known(refs.to_job_mode_name(id)),
+      known(refs.toJobModeName(id)),
     ),
     ...(preferences?.job_commitment_ids ?? []).map((id) =>
-      known(refs.to_job_type_name(id)),
+      known(refs.toJobTypeName(id)),
     ),
   ]
     .filter(Boolean)
