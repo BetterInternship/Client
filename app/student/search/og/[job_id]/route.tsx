@@ -17,10 +17,13 @@ const betterInternshipLogo = `data:image/png;base64,${fs
 const backgroundImage = `data:image/png;base64,${fs
   .readFileSync(path.join(process.cwd(), "public/bg.png"))
   .toString("base64")}`;
-const spaceGroteskMediumUrl =
-  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf";
-const spaceGroteskBoldUrl =
-  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf";
+// Bundled rather than fetched from Google Fonts on every render.
+const spaceGroteskMedium = fs.readFileSync(
+  path.join(process.cwd(), "public/fonts/og/space-grotesk-500.ttf"),
+);
+const spaceGroteskBold = fs.readFileSync(
+  path.join(process.cwd(), "public/fonts/og/space-grotesk-700.ttf"),
+);
 
 /**
  * Picks a font size from `steps` (ascending `maxLength`, first match wins),
@@ -91,14 +94,10 @@ export async function GET(
     Response.redirect(new URL("/og.png", request.url).toString(), 307);
 
   try {
-    const [job, refs, spaceGroteskMedium, spaceGroteskBold] = await Promise.all(
-      [
-        fetchJobPreview(job_id),
-        getJobRefs(),
-        fetch(spaceGroteskMediumUrl).then((response) => response.arrayBuffer()),
-        fetch(spaceGroteskBoldUrl).then((response) => response.arrayBuffer()),
-      ],
-    );
+    const [job, refs] = await Promise.all([
+      fetchJobPreview(job_id),
+      getJobRefs(),
+    ]);
 
     // Not found, deleted, deactivated, or an unverified employer — same
     // "hidden job" contract fetchJobPreview shares with generateMetadata
@@ -274,8 +273,11 @@ export async function GET(
       </div>,
       {
         ...size,
+        // s-maxage lets Vercel's CDN keep the image; max-age alone only
+        // reaches browsers, so every unfurl re-rendered it here.
         headers: {
-          "Cache-Control": "public, max-age=86400",
+          "Cache-Control":
+            "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
         },
         fonts: [
           {
