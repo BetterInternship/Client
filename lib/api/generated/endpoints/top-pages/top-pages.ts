@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0
  */
 import type {
-  PublicTopUniversityPageResponse,
+  PublicTopCategoryResponse,
   PublicTopUniversityResponse,
   TopSitemapResponse,
 } from "../../models";
@@ -45,20 +45,16 @@ export const topPagesControllerResolveUniversity = async (
   );
 };
 
-export const getTopPagesControllerResolveUniversityPageUrl = (
-  universitySlug: string,
-  pageSlug: string,
-) => {
-  return `/api/top-pages/universities/${universitySlug}/${pageSlug}`;
+export const getTopPagesControllerResolveCategoryUrl = (pageSlug: string) => {
+  return `/api/top-pages/categories/${pageSlug}`;
 };
 
-export const topPagesControllerResolveUniversityPage = async (
-  universitySlug: string,
+export const topPagesControllerResolveCategory = async (
   pageSlug: string,
   options?: RequestInit,
-): Promise<PublicTopUniversityPageResponse> => {
-  return careerFetch<PublicTopUniversityPageResponse>(
-    getTopPagesControllerResolveUniversityPageUrl(universitySlug, pageSlug),
+): Promise<PublicTopCategoryResponse> => {
+  return careerFetch<PublicTopCategoryResponse>(
+    getTopPagesControllerResolveCategoryUrl(pageSlug),
     {
       ...options,
       method: "GET",

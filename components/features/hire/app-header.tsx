@@ -38,9 +38,9 @@ export function HireAppHeader() {
     enabled: !!user,
   });
 
-  // Proxying leaves the acting god's own identity shadowed by the employer
-  // being viewed (setProxyCookie never gets undone on its own) — hopping back
-  // to /god must restore it first, or every page after this stays "as" them.
+  // Proxying puts an employer cookie next to the god's own session. Leaving
+  // for /god drops the employer one first, or every page after this stays
+  // "as" that employer. The god session itself is never touched.
   const handleGodClick = async () => {
     if (proxy) await exitProxy();
     router.push("/god");

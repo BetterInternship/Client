@@ -5,8 +5,10 @@
  * The official API of the BetterInternship website.
  * OpenAPI spec version: 2.0
  */
+import type { GodSelf } from "./godSelf";
 
-export interface TopPageLink {
-  name: string;
-  slug: string;
+export interface GodLoginResponse {
+  success: boolean;
+  message?: string;
+  god: GodSelf;
 }
