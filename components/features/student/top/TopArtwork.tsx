@@ -134,9 +134,11 @@ export function TopHeroArtwork({ pageSlug }: { pageSlug: string }) {
 export function TopDiscordArtwork({
   phoneSrc = discordPhone,
   phoneSizes = "(min-width: 640px) 154px, 140px",
+  loading = "eager",
 }: {
   phoneSrc?: ImageProps["src"];
   phoneSizes?: string;
+  loading?: ImageProps["loading"];
 } = {}) {
   const motion = useArtworkMotion();
   return (
@@ -152,7 +154,7 @@ export function TopDiscordArtwork({
           alt=""
           className="h-auto w-full"
           sizes={phoneSizes}
-          loading="eager"
+          loading={loading}
         />
       </div>
       <div className={`${styles.layer} ${styles.apply}`} aria-hidden="true">
@@ -161,7 +163,7 @@ export function TopDiscordArtwork({
           alt=""
           className="h-auto w-full"
           sizes="(min-width: 640px) 145px, 130px"
-          loading="eager"
+          loading={loading}
         />
       </div>
     </div>

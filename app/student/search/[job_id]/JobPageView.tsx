@@ -1,5 +1,8 @@
 "use client";
 
+import { RedditReviewBanner } from "@/components/features/student/job/reddit-review-banner";
+import { FindCompanyReviews } from "@/components/features/student/job/find-company-reviews";
+
 import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, TriangleAlert, X } from "lucide-react";
@@ -149,6 +152,12 @@ export function JobPageView({
                       portfolio_link: profile.data?.portfolio_link ?? null,
                     }}
                     job={job.data}
+                    beforeOverview={
+                      <FindCompanyReviews companyName={job.data.employer?.name} />
+                    }
+                    topBanner={
+                      <RedditReviewBanner key={job.data.id} job={job.data} />
+                    }
                   />
                 </Card>
               </PageContainer>

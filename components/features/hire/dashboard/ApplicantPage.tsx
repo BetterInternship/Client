@@ -139,7 +139,7 @@ export function ApplicantPage({
 
   redirectIfNotLoggedIn();
 
-  const { to_university_name } = useDbRefs();
+  const { toUniversityName } = useDbRefs();
 
   const {
     url: resumeURL,
@@ -411,7 +411,7 @@ export function ApplicantPage({
                           Education
                         </span>
                         <span className="text-sm font-medium">
-                          {to_university_name(user?.university)}
+                          {toUniversityName(user?.university)}
                         </span>
                       </div>
                       <div className="flex flex-col justify-between">
@@ -515,7 +515,7 @@ export function ApplicantPage({
                     <div>
                       <p className="text-sm text-gray-500">Education</p>
                       <p className="text-sm font-medium text-gray-900">
-                        {to_university_name(user?.university)}
+                        {toUniversityName(user?.university)}
                       </p>
                     </div>
                     <div>
@@ -652,7 +652,15 @@ export function ApplicantPage({
           {/* resume */}
           {application?.resume_id ? (
             <div className="flex h-full min-w-0 w-full flex-col items-center justify-center overflow-hidden md:w-[45%]">
-              <PDFPreview url={resumeURL} />
+              <PDFPreview
+                url={resumeURL}
+                downloadFileName={`${
+                  getFullName(application.user).replace(
+                    /[\s\\/:*?"<>|]+/g,
+                    "_",
+                  ) || "Applicant"
+                }_Resume.pdf`}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center px-8 w-full">

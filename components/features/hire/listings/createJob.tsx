@@ -203,7 +203,10 @@ const CreateJobPage = ({
         return;
       }
       set_creating(false);
-      router.push("/dashboard"); // Redirect to dashboard
+      const createdId = (response as { job?: { id?: string } }).job?.id;
+      router.push(
+        createdId ? `/dashboard/manage?jobId=${createdId}` : "/dashboard",
+      );
     } catch (error) {
       set_creating(false);
       alert("Error creating job");

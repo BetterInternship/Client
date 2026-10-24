@@ -37,11 +37,13 @@ import { DigestOptoutModalContent } from "../features/hire/account/digest-optout
 import { IomPartnershipModalContent } from "../features/hire/iom-partnership-modal";
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
+import { PubmatModal } from "../features/hire/pubmat/pubmat-modal";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
 import { RebuildTopPagesModal } from "./components/RebuildTopPagesModal";
 import { Button } from "@betterinternship/components";
+import { RedditDiscussionModal } from "./components/RedditDiscussionModal";
 
 const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
   <div className="flex min-w-0 items-center gap-3">
@@ -60,6 +62,26 @@ export const useModalRegistry = () => {
 
   const modalRegistry = useMemo(
     () => ({
+      redditDiscussion: {
+        open: ({ job }: { job: Job }) =>
+          open(
+            "reddit-discussion",
+            DefaultModalLayout,
+            <RedditDiscussionModal
+              key={job.id}
+              job={job}
+              onComplete={() => close("reddit-discussion")}
+            />,
+            {
+              title: "What would you like to ask?",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+              panelClassName: "sm:w-[520px] sm:max-w-[520px]",
+            },
+          ),
+        close: () => close("reddit-discussion"),
+      },
       // modal for deleting a resume.
       deleteResume: {
         open: ({
@@ -233,6 +255,24 @@ export const useModalRegistry = () => {
             showHeaderDivider: false,
           }),
         close: () => close("share-job"),
+      },
+      // modal for a listing's pubmat: preview, download, and share to a
+      // platform. It's what the listing header's Share button opens.
+      pubmat: {
+        open: ({ job, link }: { job: Job; link: string }) =>
+          open(
+            "pubmat",
+            DefaultModalLayout,
+            <PubmatModal job={job} link={link} />,
+            {
+              title: "Listing pubmat",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+              panelClassName: "sm:w-[560px] sm:max-w-[560px]",
+            },
+          ),
+        close: () => close("pubmat"),
       },
       // modal for any action performed on a job application.
       applicationAction: {

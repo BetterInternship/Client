@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { StudentHomepage } from "@/components/landingStudent/homepage";
 import { fetchHomepageListings } from "@/components/landingStudent/homepage-listings.server";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { HomepageSessionRedirect } from "@/components/landingStudent/homepage-session-redirect";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { baseUrl } from "@/lib/site-url";
 
 // Cache the rendered homepage like the Top pages. Category-tag invalidation
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const refs = await getRefsData();
+  const refs = await getJobRefs();
   const listings = await fetchHomepageListings(refs);
   const schema = {
     "@context": "https://schema.org",
@@ -69,6 +70,7 @@ export default async function HomePage() {
           __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
         }}
       />
+      <HomepageSessionRedirect />
       <StudentHomepage refs={refs} listings={listings} />
     </>
   );

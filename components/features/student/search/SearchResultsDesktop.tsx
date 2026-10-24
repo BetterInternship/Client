@@ -10,6 +10,8 @@ import { FormCheckbox } from "@/components/EditForm";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
+import { RedditReviewBanner } from "@/components/features/student/job/reddit-review-banner";
+import { FindCompanyReviews } from "@/components/features/student/job/find-company-reviews";
 import type { SearchResultsDesktopProps } from "./search-results.types";
 
 /**
@@ -137,6 +139,12 @@ export function SearchResultsDesktop({
               portfolio_link: profileData?.portfolio_link ?? null,
             }}
             job={selectedJob}
+            beforeOverview={
+              <FindCompanyReviews companyName={selectedJob.employer?.name} />
+            }
+            topBanner={
+              <RedditReviewBanner key={selectedJob.id} job={selectedJob} />
+            }
             actions={[
               <ShareJobButton job={selectedJob} />,
               <SaveJobButton job={selectedJob} />,

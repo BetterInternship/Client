@@ -1,8 +1,9 @@
 import { getHomepageFields } from "./homepage-data";
 import type { HomepageListings } from "./homepage-listings.server";
-import type { RefsData } from "@/lib/db/db.types";
+import type { JobRefsData } from "@/lib/db/db.types";
 import { HomepageArtwork, HomepageSectionSprite } from "./homepage-artwork";
 import { HomepageCommunity } from "./sections/homepage-community";
+import { HomepageGuides } from "./sections/homepage-guides";
 import { HomepageFaq } from "./sections/homepage-faq";
 import { HomepageFooter } from "./homepage-footer";
 import { HomepageHeader } from "./homepage-header";
@@ -49,7 +50,7 @@ export function StudentHomepage({
   refs,
   listings,
 }: {
-  refs: RefsData;
+  refs: JobRefsData;
   listings: HomepageListings;
 }) {
   const fields = getHomepageFields(refs.job_categories);
@@ -89,6 +90,7 @@ export function StudentHomepage({
         <div className={homepageContainerClassName}>
           <HomepageTestimonials testimonials={testimonials} />
           <HomepageCommunity />
+          <HomepageGuides />
 
           <section
             className="relative isolate mt-25 transition-[opacity,transform] duration-[360ms] ease-landing-out data-[reveal=pending]:translate-y-2 data-[reveal=pending]:opacity-0 motion-reduce:transition-none max-md:mt-14"

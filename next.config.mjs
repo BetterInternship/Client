@@ -58,6 +58,14 @@ const cspHeader = `
 `.replace(/\n/g, "");
 
 const nextConfig = {
+  outputFileTracingIncludes: {
+    "/student/guides/**": ["./app/student/guides/_content/*.md"],
+  },
+  experimental: {
+    // The shared package's barrel also exports application providers and UI.
+    // Resolve named imports directly so a landing-page `cn` import stays small.
+    optimizePackageImports: ["@betterinternship/components"],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -84,6 +92,15 @@ const nextConfig = {
   // content security policy headers
   async headers() {
     return [
+      // these two are already indexed on google if you search site:betterinternship.com.
+      // need to send a noindex header to request google to remove it from indexing.
+      ...["dev.betterinternship.com", "hire.dev.betterinternship.com"].map(
+        (host) => ({
+          source: "/(.*)",
+          has: [{ type: "host", value: host }],
+          headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+        }),
+      ),
       {
         source: "/(.*)",
         headers: [
@@ -143,7 +160,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms|robots\\.txt)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|guide-resources|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms|robots\\.txt|llms\\.txt)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });

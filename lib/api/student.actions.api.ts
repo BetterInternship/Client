@@ -24,6 +24,17 @@ import { PublicUser } from "../db/db.types";
 export const useApplicationActions = () => {
   const queryClient = useQueryClient();
   const actions = {
+    redditReviewClick: useMutation({
+      mutationFn: ({
+        applicationId,
+        title,
+      }: {
+        applicationId: string;
+        title: string;
+      }) => ApplicationService.notifyRedditReviewClick(applicationId, title),
+      // A retry would count the same click more than once.
+      retry: false,
+    }),
     create: useMutation({
       mutationFn: (data: {
         job_id: string;

@@ -1,5 +1,8 @@
 "use client";
 
+import { RedditReviewBanner } from "@/components/features/student/job/reddit-review-banner";
+import { FindCompanyReviews } from "@/components/features/student/job/find-company-reviews";
+
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -149,6 +152,10 @@ export function TopJobPanel({
             <JobDetails
               className="p-4 xl:p-6"
               job={job}
+              beforeOverview={
+                <FindCompanyReviews companyName={job.employer?.name} />
+              }
+              topBanner={<RedditReviewBanner key={job.id} job={job} />}
               showCredited
               user={{
                 github_link: profile?.github_link ?? null,

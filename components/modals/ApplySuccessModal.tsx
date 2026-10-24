@@ -1,10 +1,11 @@
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { Clipboard, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { RefObject } from "react";
 import { motion } from "framer-motion";
+import { RedditReviewBanner } from "@/components/features/student/job/reddit-review-banner";
 
 export const ApplySuccessModal = ({
   job,
@@ -73,14 +74,24 @@ export const ApplySuccessModal = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.4 }}
         >
+          {job?.id && (
+            <div className="text-left">
+              <RedditReviewBanner key={job.id} job={job} />
+            </div>
+          )}
           <Button
+            type="button"
+            variant="ghost"
+            scheme="default"
+            size="sm"
+            className="gap-2 font-normal text-gray-500 hover:text-gray-900"
             onClick={() => {
               ref?.current?.close();
               router.push("/applications");
             }}
           >
-            <Clipboard className="w-4 h-4 mr-2" />
-            View My Applications
+            View my applications
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </motion.div>
       </div>

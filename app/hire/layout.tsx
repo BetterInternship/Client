@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { inter } from "../fonts";
 import { AuthContextProvider } from "./authctx";
-import { RefsContextProvider } from "@/lib/db/use-refs";
+import { RefsContextProvider, SchoolsRefsLoader } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
@@ -18,15 +18,19 @@ const baseUrl =
   "https://hire.betterinternship.com";
 const ogImage = `${baseUrl}/og.png`;
 
+const title = "BetterInternship | Recruiter Dashboard";
+const description =
+  "Hire the best interns in the Philippines with BetterInternship.";
+
 export const metadata: Metadata = {
-  title: "Recruiter Dashboard - BetterInternship",
-  description: "Manage applications and candidates",
+  title,
+  description,
   icons: {
     icon: "/BetterInternshipLogo.ico",
   },
   openGraph: {
-    title: "Recruiter Dashboard - BetterInternship",
-    description: "Manage applications and candidates",
+    title,
+    description,
     url: baseUrl,
     images: [
       {
@@ -42,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Recruiter Dashboard - BetterInternship",
-    description: "Manage applications and candidates",
+    title,
+    description,
     images: [ogImage],
   },
 };
@@ -58,10 +62,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const refsData = await getRefsData();
+  const jobRefs = await getJobRefs();
 
   return (
-    <RefsContextProvider data={refsData}>
+    <RefsContextProvider jobRefs={jobRefs}>
       <PostHogProvider>
         <HTMLContent>{children}</HTMLContent>
       </PostHogProvider>
@@ -83,30 +87,32 @@ const HTMLContent = ({
 
   return (
     <TanstackProvider>
-      <AppContextProvider>
-        <AuthContextProvider>
-          <TooltipProvider>
-            <html lang="en" className={`h-full ${inter.variable}`}>
-              <Head>
-                <meta
-                  name="viewport"
-                  content="width=device-width, initial-scale=1.0"
-                />
-              </Head>
-              <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-                <ModalProvider>
-                  <div className="h-screen overflow-hidden flex flex-col">
-                    <div className="grow max-h-svh max-w-svw overflow-auto flex flex-col scroll-smooth">
-                      <AllowLanding>{children}</AllowLanding>
+      <SchoolsRefsLoader>
+        <AppContextProvider>
+          <AuthContextProvider>
+            <TooltipProvider>
+              <html lang="en" className={`h-full ${inter.variable}`}>
+                <Head>
+                  <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0"
+                  />
+                </Head>
+                <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                  <ModalProvider>
+                    <div className="h-screen overflow-hidden flex flex-col">
+                      <div className="grow max-h-svh max-w-svw overflow-auto flex flex-col scroll-smooth">
+                        <AllowLanding>{children}</AllowLanding>
+                      </div>
                     </div>
-                  </div>
-                </ModalProvider>
-                <SonnerToaster />
-              </body>
-            </html>
-          </TooltipProvider>
-        </AuthContextProvider>
-      </AppContextProvider>
+                  </ModalProvider>
+                  <SonnerToaster />
+                </body>
+              </html>
+            </TooltipProvider>
+          </AuthContextProvider>
+        </AppContextProvider>
+      </SchoolsRefsLoader>
     </TanstackProvider>
   );
 };

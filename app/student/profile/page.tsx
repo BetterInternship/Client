@@ -30,11 +30,13 @@ import type {
 import useModalRegistry from "@/components/modals/modal-registry";
 import bg2 from "../../../public/bg2.png";
 import { fileUrls } from "@/lib/api/urls";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfileData();
   const profileActions = useProfileActions();
+  const { refLoading } = useDbRefs();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isDeletingResume, setIsDeletingResume] = useState(false);
@@ -246,7 +248,8 @@ export default function ProfilePage() {
       <Button
         type="button"
         onClick={() => void handleSaveEditing()}
-        disabled={saving}
+        // The university check needs the list, which loads in the browser.
+        disabled={saving || refLoading}
       >
         <Check className="h-4 w-4 mr-1" />
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Save</>}
@@ -371,7 +374,7 @@ export default function ProfilePage() {
           </div>
         </PageContainer>
 
-        <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] max-w-[80vw] sm:mt-20">
+        <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] w-[min(80vw,48rem)] max-w-[80vw] sm:mt-20">
           <PDFPreview url={resumeURL} />
         </ResumeModal>
       </div>

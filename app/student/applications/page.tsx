@@ -307,7 +307,7 @@ function MyJobsPageInner() {
         </TabsContent>
       </Tabs>
 
-      <ResumeModal className="max-w-[80vw]">
+      <ResumeModal className="w-[min(80vw,48rem)] max-w-[80vw]">
         <PDFPreview url={resumeURL} />
       </ResumeModal>
     </PageContainer>
@@ -416,7 +416,7 @@ const ApplicationCard = ({
   onPreviewResume: (resumeId: string) => void | Promise<void>;
 }) => {
   const router = useRouter();
-  const { to_app_status_name } = useDbRefs();
+  const { toAppStatusName } = useDbRefs();
   const job = application.job ?? application.jobs;
   const jobRecord = job as Record<string, unknown> | undefined;
   const employer = application.employer ?? application.employers;
@@ -434,7 +434,7 @@ const ApplicationCard = ({
   const isClosedWhilePending = application.status === 0 && isUnavailable;
   const statusLabel = isClosedWhilePending
     ? "Listing closed"
-    : (to_app_status_name(application.status) ?? "Pending");
+    : (toAppStatusName(application.status) ?? "Pending");
   let statusBadgeType: "default" | "destructive" | "supportive" | "warning" =
     "warning";
   if (isClosedWhilePending) statusBadgeType = "default";
