@@ -37,6 +37,7 @@ import { DigestOptoutModalContent } from "../features/hire/account/digest-optout
 import { IomPartnershipModalContent } from "../features/hire/iom-partnership-modal";
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
+import { PubmatModal } from "../features/hire/pubmat/pubmat-modal";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
@@ -254,6 +255,24 @@ export const useModalRegistry = () => {
             showHeaderDivider: false,
           }),
         close: () => close("share-job"),
+      },
+      // modal for a listing's pubmat: preview, download, and share to a
+      // platform. It's what the listing header's Share button opens.
+      pubmat: {
+        open: ({ job, link }: { job: Job; link: string }) =>
+          open(
+            "pubmat",
+            DefaultModalLayout,
+            <PubmatModal job={job} link={link} />,
+            {
+              title: "Listing pubmat",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+              panelClassName: "sm:w-[560px] sm:max-w-[560px]",
+            },
+          ),
+        close: () => close("pubmat"),
       },
       // modal for any action performed on a job application.
       applicationAction: {

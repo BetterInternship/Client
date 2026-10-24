@@ -31,6 +31,7 @@ import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessMo
 import { MassApplyResults } from "./components/MassApplyResults";
 import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
 import { ShareJobModal } from "./components/ShareJobModal";
+import { PubmatModal } from "../features/hire/pubmat/pubmat-modal";
 import { SuccessModal } from "./components/SuccessModal";
 import { SuperListingClosedModal } from "./components/SuperListingClosedModal";
 import { WarningModal } from "./components/WarningModal";
@@ -265,6 +266,23 @@ export function ModalPreviewGallery() {
           title: `Share listing — ${PREVIEW_JOB.title}`,
         }),
     },
+    {
+      category: "Hire & listings",
+      title: "Listing pubmat",
+      description: "Pubmat preview, download and share for a listing.",
+      open: () =>
+        openPreview(
+          "pubmat",
+          <PubmatModal
+            job={PREVIEW_JOB}
+            link="https://www.betterinternship.com/l/modal-preview"
+          />,
+          {
+            title: "Listing pubmat",
+            panelClassName: "sm:w-[560px] sm:max-w-[560px]",
+          },
+        ),
+    },
     ...actionEntries,
     {
       category: "Hire & listings",
@@ -423,13 +441,13 @@ export function ModalPreviewGallery() {
           ok: [PREVIEW_JOB],
           skipped: [
             {
-              job: { ...PREVIEW_JOB, id: "preview-skipped-job" } as Job,
+              job: { ...PREVIEW_JOB, id: "preview-skipped-job" },
               reason: "Already applied",
             },
           ],
           failed: [
             {
-              job: { ...PREVIEW_JOB, id: "preview-failed-job" } as Job,
+              job: { ...PREVIEW_JOB, id: "preview-failed-job" },
               error: "The application could not be submitted.",
             },
           ],

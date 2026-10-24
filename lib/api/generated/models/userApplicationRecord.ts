@@ -15,11 +15,6 @@ export interface UserApplicationRecord {
   /** @nullable */
   source: UserApplicationRecordSource;
   visibility: UserApplicationRecordVisibility;
-  job: JobRecord;
-  /** @nullable */
-  employer?: UserApplicationRecordEmployer;
-  /** @nullable */
-  users?: UserApplicationRecordUsers;
   applied_at: string;
   /** @nullable */
   cover_letter: string | null;
@@ -41,4 +36,9 @@ export interface UserApplicationRecord {
   updated_at: string | null;
   /** @nullable */
   user_id: string | null;
+  job: JobRecord;
+  /** @nullable */
+  employer?: UserApplicationRecordEmployer;
+  /** @nullable */
+  users?: UserApplicationRecordUsers;
 }

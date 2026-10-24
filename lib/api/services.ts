@@ -863,9 +863,11 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
-  notifyRedditReviewClick(applicationId: string) {
+  notifyRedditReviewClick(applicationId: string, title: string) {
     return applicationsControllerRedditReviewClick(applicationId, {
       keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
     });
   },
   // GET /applications reads no query parameters, so the paging and status
