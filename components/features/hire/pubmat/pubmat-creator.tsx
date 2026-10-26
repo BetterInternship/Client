@@ -182,6 +182,9 @@ export function PubmatCreator({
   maxPreviewSize = 320,
   companyLogo,
   sideBySide = false,
+  onEdit,
+  initiallyEditing = false,
+  initialDesign = DEFAULT_PUBMAT_DESIGN,
 }: {
   job: Job;
   /** The listing's short share link; the QR code opens it. */
@@ -192,6 +195,12 @@ export function PubmatCreator({
   companyLogo?: string | null;
   /** Put the text editor beside the preview instead of under it, when there's room. */
   sideBySide?: boolean;
+  /** Open the editor elsewhere instead of expanding it beside the preview. */
+  onEdit?: (design: PubmatDesign) => void;
+  /** Open directly into the editor (used by the modal). */
+  initiallyEditing?: boolean;
+  /** Design to show first, so moving into the modal keeps the chosen poster. */
+  initialDesign?: PubmatDesign;
 }) {
   const [api, setApi] = useState<CarouselApi>();
   // When the pointer last moved over the carousel; background renders wait for
@@ -201,7 +210,7 @@ export function PubmatCreator({
   const notePointer = useCallback(() => {
     lastPointer.current = performance.now();
   }, []);
-  const [design, setDesign] = useState<PubmatDesign>(DEFAULT_PUBMAT_DESIGN);
+  const [design, setDesign] = useState<PubmatDesign>(initialDesign);
   const [slides, setSlides] = useState<
     Partial<Record<PubmatDesign, SlideState>>
   >({});
@@ -216,12 +225,13 @@ export function PubmatCreator({
   // doesn't trigger a redraw per keystroke.
   const [draft, setDraft] = useState<PosterCopy>({});
   const copy = useDebouncedValue(draft, 350);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initiallyEditing);
   useEffect(() => {
     setDraft({});
-    setEditing(false);
+    setEditing(initiallyEditing);
+    setDesign(initialDesign);
     setSlides({});
-  }, [job.id, link]);
+  }, [job.id, link, initiallyEditing, initialDesign]);
 
   const count = PUBMAT_DESIGN_IDS.length;
   const current = slides[design];
@@ -345,7 +355,7 @@ export function PubmatCreator({
         <Carousel
           opts={{
             loop: true,
-            startIndex: PUBMAT_DESIGN_IDS.indexOf(DEFAULT_PUBMAT_DESIGN),
+            startIndex: PUBMAT_DESIGN_IDS.indexOf(initialDesign),
           }}
           setApi={setApi}
           onPointerMove={notePointer}
@@ -405,8 +415,11 @@ export function PubmatCreator({
                 type="button"
                 variant="ghost"
                 size="sm"
-                aria-expanded={editing}
-                onClick={() => setEditing((open) => !open)}
+                aria-expanded={onEdit ? undefined : editing}
+                aria-haspopup={onEdit ? "dialog" : undefined}
+                onClick={() =>
+                  onEdit ? onEdit(design) : setEditing((open) => !open)
+                }
                 className={cn(
                   "shrink-0 text-gray-600",
                   editing &&

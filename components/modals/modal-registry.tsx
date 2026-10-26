@@ -38,6 +38,7 @@ import { IomPartnershipModalContent } from "../features/hire/iom-partnership-mod
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
 import { PubmatModal } from "../features/hire/pubmat/pubmat-modal";
+import type { PubmatDesign } from "@/lib/pubmat/designs";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
@@ -256,14 +257,29 @@ export const useModalRegistry = () => {
           }),
         close: () => close("share-job"),
       },
-      // modal for a listing's pubmat: preview, download, and share to a
-      // platform. It's what the listing header's Share button opens.
+      // Modal for a listing's pubmat: preview, download, and share to a
+      // platform. Also opens directly into editing from the dashboard preview.
       pubmat: {
-        open: ({ job, link }: { job: Job; link: string }) =>
+        open: ({
+          job,
+          link,
+          startInEditor,
+          initialDesign,
+        }: {
+          job: Job;
+          link: string;
+          startInEditor?: boolean;
+          initialDesign?: PubmatDesign;
+        }) =>
           open(
             "pubmat",
             DefaultModalLayout,
-            <PubmatModal job={job} link={link} />,
+            <PubmatModal
+              job={job}
+              link={link}
+              startInEditor={startInEditor}
+              initialDesign={initialDesign}
+            />,
             {
               title: "Listing pubmat",
               closeOnBackdropClick: true,

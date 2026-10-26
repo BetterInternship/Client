@@ -6,23 +6,46 @@ import { Button } from "@betterinternship/components";
 import { LoaderCircle } from "lucide-react";
 import { usePubmatLogo } from "./use-pubmat-logo";
 import { PubmatLogoPrompt } from "./pubmat-logo-prompt";
+import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
 
 /**
- * The pubmat creator in a modal, which the listing header's Share button
- * (share-pubmat-button.tsx) opens. Content only — mounted through useModalRegistry().pubmat so it gets the
- * app's shared modal chrome.
+ * The pubmat creator in a modal, opened from the listing header's Share button
+ * or the dashboard preview's Edit poster action. Content only — mounted through
+ * useModalRegistry().pubmat so it gets the app's shared modal chrome.
  */
-export function PubmatModal({ job, link }: { job: Job; link: string }) {
+export function PubmatModal({
+  job,
+  link,
+  startInEditor = false,
+  initialDesign = DEFAULT_PUBMAT_DESIGN,
+}: {
+  job: Job;
+  link: string;
+  startInEditor?: boolean;
+  initialDesign?: PubmatDesign;
+}) {
   return (
     <SharePubmatFlow
-      key={`${job.id ?? "listing"}-${link}`}
+      key={`${job.id ?? "listing"}-${link}-${startInEditor}-${initialDesign}`}
       job={job}
       link={link}
+      startInEditor={startInEditor}
+      initialDesign={initialDesign}
     />
   );
 }
 
-function SharePubmatFlow({ job, link }: { job: Job; link: string }) {
+function SharePubmatFlow({
+  job,
+  link,
+  startInEditor,
+  initialDesign,
+}: {
+  job: Job;
+  link: string;
+  startInEditor: boolean;
+  initialDesign: PubmatDesign;
+}) {
   const logo = usePubmatLogo();
   if (logo.loading)
     return (
@@ -59,6 +82,8 @@ function SharePubmatFlow({ job, link }: { job: Job; link: string }) {
         maxPreviewSize={400}
         sideBySide
         companyLogo={logo.companyLogo}
+        initiallyEditing={startInEditor}
+        initialDesign={initialDesign}
       />
     </div>
   );

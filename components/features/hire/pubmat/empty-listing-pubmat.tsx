@@ -9,12 +9,14 @@ import { useShareLink } from "@/lib/api/student.data.api";
 import { usePubmatLogo } from "./use-pubmat-logo";
 import { PubmatCreator } from "./pubmat-creator";
 import { PubmatLogoPrompt } from "./pubmat-logo-prompt";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 /**
  * Empty-listing preview with an optional inline logo step. The short share
  * link is reused for the poster's QR; logo upload never opens another modal.
  */
 export function EmptyListingPubmat({ job }: { job: Job }) {
+  const modals = useModalRegistry();
   const { url, isPending, isError, refetch } = useShareLink(job.id);
   const logo = usePubmatLogo();
 
@@ -65,6 +67,14 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
                   maxPreviewSize={400}
                   sideBySide
                   companyLogo={logo.companyLogo}
+                  onEdit={(initialDesign) =>
+                    modals.pubmat.open({
+                      job,
+                      link: url,
+                      startInEditor: true,
+                      initialDesign,
+                    })
+                  }
                 />
               ) : isError ? (
                 <div className="flex flex-col items-center gap-3 py-6 text-center">
