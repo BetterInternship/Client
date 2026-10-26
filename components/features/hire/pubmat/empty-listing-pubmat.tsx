@@ -38,7 +38,7 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
               {/* Same type as the logo step's heading (pubmat-logo-prompt.tsx),
                   so the card and the step it opens read as one flow. */}
               <h3 className="min-w-0 flex-1 text-xl font-semibold leading-snug tracking-tight text-gray-900">
-                Share a poster of this listing on social media.
+                Let students know you’re hiring.
               </h3>
             </div>
 
