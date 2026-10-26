@@ -29,13 +29,13 @@ export function ShareListingNotice({ job }: { job: Job }) {
 
   return (
     // Room above for the preview to lean into.
-    <div ref={ref} className="relative mt-12">
+    <div ref={ref} className="relative mb-6 mt-6 pt-6">
       <button
         type="button"
         aria-label="Open your pubmat"
         disabled={!url}
         onClick={() => url && modals.pubmat.open({ job, link: url })}
-        className="absolute -top-9 left-4 z-10 block aspect-square w-36 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5 sm:w-24"
+        className="absolute top-0 left-4 z-10 block aspect-square w-36 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5 sm:w-24"
       >
         {image ? (
           <img
