@@ -35,7 +35,7 @@ export function ShareListingNotice({ job }: { job: Job }) {
         aria-label="Open your pubmat"
         disabled={!url}
         onClick={() => url && modals.pubmat.open({ job, link: url })}
-        className="absolute -top-9 left-4 z-10 block aspect-square w-24 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5"
+        className="absolute -top-9 left-4 z-10 block aspect-square w-36 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5 sm:w-24"
       >
         {image ? (
           <img
@@ -67,7 +67,7 @@ export function ShareListingNotice({ job }: { job: Job }) {
         }
         // The preview takes the left on wider screens, and the top on narrow
         // ones, where the notice stacks.
-        className="pt-24 sm:pt-4 sm:pl-36"
+        className="pt-32 sm:pt-4 sm:pl-36"
       />
     </div>
   );
