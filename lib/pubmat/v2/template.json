@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 2,
+  "id": "approved-photo-square",
+  "canvas": { "width": 1080, "height": 1080 },
+  "sourceReference": {
+    "width": 1254,
+    "height": 1254,
+    "scaleToExport": 0.8612440191,
+    "files": [
+      "references/01-warm-desk.png",
+      "references/02-glass-office.png",
+      "references/03-city-office.png"
+    ],
+    "status": "layout measured from supplied images; native font approximation, not pixel-identical",
+    "fontIdentity": "Reference font unverified. Bundled Inter optical size 32, regular 400 is the native implementation choice."
+  },
+  "coordinates": {
+    "units": "pixels",
+    "origin": "top-left",
+    "textAnchor": "ink-top-left; draw at y minus font bbox top",
+    "normalized": "divide x/width by 1080 and y/height by 1080"
+  },
+  "font": {
+    "file": "fonts/Inter-Variable.ttf",
+    "opticalSize": 32,
+    "regularWeight": 400,
+    "boldWeight": 700
+  },
+  "colors": { "text": "#00113F", "accent": "#087CFF", "chip": "#E2EFFF" },
+  "layout": {
+    "companyLockup": {
+      "x": 63,
+      "y": 77,
+      "width": 390,
+      "height": 102,
+      "fit": "contain",
+      "note": "Supply full employer lockup including tagline as a transparent original. Do not recreate this reference logo."
+    },
+    "jobTitle": {
+      "x": 65,
+      "y": 224,
+      "width": 650,
+      "height": 327,
+      "fontSize": 130,
+      "minFontSize": 90,
+      "weight": 400,
+      "maxLines": 3,
+      "lineAdvance": 115,
+      "sameSizeEveryLine": true
+    },
+    "description": {
+      "x": 69,
+      "y": 580,
+      "width": 680,
+      "height": 116,
+      "fontSize": 35,
+      "minFontSize": 30,
+      "weight": 400,
+      "maxLines": 3,
+      "lineAdvance": 42
+    },
+    "chips": {
+      "x": 69,
+      "y": 730,
+      "right": 1004,
+      "height": 62,
+      "radius": 28,
+      "gap": 16,
+      "fontSize": 24,
+      "minFontSize": 20,
+      "weight": 700,
+      "paddingX": 19,
+      "iconSize": 34,
+      "iconGap": 12,
+      "maxItems": 3,
+      "sampleWidths": [214, 181, 274],
+      "empty": "omit whole row; do not move QR or description"
+    },
+    "qr": {
+      "x": 69,
+      "bottom": 1035,
+      "size": 224,
+      "quietZoneModules": 4,
+      "preferredModulePixels": 8,
+      "minimumModulePixels": 3,
+      "errorCorrectLevel": 1,
+      "fill": "#000000",
+      "background": "#FFFFFF",
+      "integerModules": true,
+      "note": "Fixed square footprint contains an integer-module real QR; pattern differs from baked reference."
+    },
+    "cta": {
+      "x": 314,
+      "y": 967,
+      "width": 300,
+      "height": 68,
+      "right": 614,
+      "bottom": 1035,
+      "lines": ["Scan to apply via", "betterinternship"],
+      "fontSize": 34,
+      "weight": 700,
+      "lineAdvance": 36,
+      "alignment": "second-line ink bottom aligned to QR outer bottom",
+      "lineColors": ["#00113F", "#087CFF"]
+    }
+  },
+  "flow": {
+    "mode": "fixed zones",
+    "title": "wrap within title zone; shared regular size across all lines",
+    "description": "fixed origin; never enter chip zone",
+    "chips": "remaining present chips pack left with configured gap; do not leave orphan icons",
+    "overflow": "reject and request shorter display text; do not clip, ellipsize or move sections",
+    "qrAndCtaFixed": true
+  },
+  "background": {
+    "optionsFile": "backgrounds.json",
+    "fit": "cover",
+    "position": [0.5, 0.5],
+    "presets": "Derived text-free backgrounds already include source lighting; no extra wash",
+    "uploadTreatment": {
+      "color": "#FFFFFF",
+      "opacityLeft": 0.94,
+      "opacityRight": 0.18,
+      "transitionStartX": 700,
+      "transitionEndX": 1040
+    },
+    "sourceFilesUnchanged": true
+  },
+  "export": {
+    "format": "PNG",
+    "mode": "RGB",
+    "width": 1080,
+    "height": 1080,
+    "validateQrWidths": [1080, 360],
+    "layerOrder": [
+      "background",
+      "upload-only readability wash",
+      "company lockup",
+      "title",
+      "description",
+      "optional chip shapes/icons/text",
+      "real QR",
+      "two-line CTA"
+    ]
+  }
+}

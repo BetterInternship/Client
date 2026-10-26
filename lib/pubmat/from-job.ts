@@ -51,6 +51,10 @@ export function pubmatDataFromJob(
   fullDescription = false,
 ): PubmatData {
   const preferences = job.internship_preferences;
+  const workMode = (preferences?.job_setup_ids ?? [])
+    .map((id) => known(refs.toJobModeName(id)))
+    .filter(Boolean)
+    .join(" · ");
   const setup = [
     ...(preferences?.job_setup_ids ?? []).map((id) =>
       known(refs.toJobModeName(id)),
@@ -65,9 +69,12 @@ export function pubmatDataFromJob(
   return {
     title: job.title ?? "",
     company: (job.employer ?? job.employers)?.name ?? "",
-    description: fullDescription ? plainTextDescription(job.description) : descriptionExcerpt(job.description),
+    description: fullDescription
+      ? plainTextDescription(job.description)
+      : descriptionExcerpt(job.description),
     location: job.location ?? undefined,
     setup: setup || undefined,
+    workMode: workMode || undefined,
     pay: payLabel(job, refs),
     deadline: deadlineLabel(job.application_deadline),
     link,
@@ -79,7 +86,10 @@ export function descriptionExcerpt(value: string | null | undefined) {
   const text = plainTextDescription(value);
   if (!text) return undefined;
   if (text.length <= 145) return text;
-  return `${text.slice(0, 142).replace(/\s+\S*$/, "").trimEnd()}…`;
+  return `${text
+    .slice(0, 142)
+    .replace(/\s+\S*$/, "")
+    .trimEnd()}…`;
 }
 
 /** Full plain text for the new measured layouts; never silently shortened. */

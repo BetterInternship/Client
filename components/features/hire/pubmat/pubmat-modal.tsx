@@ -79,7 +79,7 @@ function SharePubmatFlow({
       <PubmatCreator
         job={job}
         link={link}
-        maxPreviewSize={400}
+        maxPreviewSize={560}
         sideBySide
         companyLogo={logo.companyLogo}
         initiallyEditing={startInEditor}

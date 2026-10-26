@@ -8,7 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { ImageOff, Loader2, PencilLine, RotateCw } from "lucide-react";
+import { ImageOff, Loader2, RotateCw } from "lucide-react";
 import { Button, cn } from "@betterinternship/components";
 import {
   Carousel,
@@ -30,11 +30,11 @@ import {
 import { DotMatrix } from "@/components/ui/dot-matrix";
 import { PubmatActions } from "./pubmat-actions";
 import { pubmatFileName, usePubmatImage } from "./use-pubmat-image";
-import { isPubmatTheme } from "@/lib/pubmat/themes";
-import type { PosterCopy } from "@/lib/pubmat/theme-layout";
+import type { PosterCopy } from "@/lib/pubmat/core";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { PubmatTextEditor } from "./pubmat-text-editor";
+import { PUBMAT_V2_BACKGROUNDS, PUBMAT_V2_DESIGN } from "@/lib/pubmat/v2";
 
 /**
  * A listing's pubmat: swipe or page through its designs, then download it or
@@ -63,6 +63,8 @@ function PubmatSlide({
   onChange,
   copy,
   companyLogo,
+  backgroundImage,
+  backgroundPosition,
 }: {
   job: Job;
   link: string;
@@ -74,6 +76,8 @@ function PubmatSlide({
   onChange: (design: PubmatDesign, state: SlideState) => void;
   copy: PosterCopy;
   companyLogo?: string | null;
+  backgroundImage?: string;
+  backgroundPosition?: { x: number; y: number; scale: number };
 }) {
   const tilt = useTilt();
   const { image, status, error, retry } = usePubmatImage(
@@ -82,6 +86,8 @@ function PubmatSlide({
     design,
     copy,
     companyLogo,
+    backgroundImage,
+    backgroundPosition,
     hold,
   );
 
@@ -181,6 +187,10 @@ export function PubmatCreator({
   link,
   maxPreviewSize = 320,
   companyLogo,
+  backgroundImage,
+  onBackgroundImageChange,
+  backgroundPosition,
+  onBackgroundPositionChange,
   sideBySide = false,
   onEdit,
   initiallyEditing = false,
@@ -193,6 +203,14 @@ export function PubmatCreator({
   maxPreviewSize?: number;
   /** undefined resolves the profile logo; null explicitly shares without one. */
   companyLogo?: string | null;
+  backgroundImage?: string;
+  onBackgroundImageChange?: (value: string) => void;
+  backgroundPosition?: { x: number; y: number; scale: number };
+  onBackgroundPositionChange?: (value: {
+    x: number;
+    y: number;
+    scale: number;
+  }) => void;
   /** Put the text editor beside the preview instead of under it, when there's room. */
   sideBySide?: boolean;
   /** Open the editor elsewhere instead of expanding it beside the preview. */
@@ -211,6 +229,12 @@ export function PubmatCreator({
     lastPointer.current = performance.now();
   }, []);
   const [design, setDesign] = useState<PubmatDesign>(initialDesign);
+  const [selectedBackground, setSelectedBackground] = useState(
+    backgroundImage ?? PUBMAT_V2_BACKGROUNDS[0].id,
+  );
+  const [position, setPosition] = useState(
+    backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 },
+  );
   const [slides, setSlides] = useState<
     Partial<Record<PubmatDesign, SlideState>>
   >({});
@@ -230,6 +254,8 @@ export function PubmatCreator({
     setDraft({});
     setEditing(initiallyEditing);
     setDesign(initialDesign);
+    setSelectedBackground(backgroundImage ?? PUBMAT_V2_BACKGROUNDS[0].id);
+    setPosition(backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 });
     setSlides({});
   }, [job.id, link, initiallyEditing, initialDesign]);
 
@@ -336,8 +362,14 @@ export function PubmatCreator({
     <div
       className={cn(
         "flex w-full flex-col items-center gap-4",
-        sideBySide && "lg:flex-row lg:items-start lg:justify-center lg:gap-6",
+        sideBySide &&
+          "lg:flex-row lg:flex-wrap lg:items-start lg:justify-center lg:gap-8",
       )}
+      style={
+        sideBySide
+          ? ({ "--pubmat-preview": `${maxPreviewSize}px` } as CSSProperties)
+          : undefined
+      }
     >
       <div
         className={cn(
@@ -374,6 +406,8 @@ export function PubmatCreator({
                   onChange={handleSlide}
                   copy={copy}
                   companyLogo={companyLogo}
+                  backgroundImage={selectedBackground}
+                  backgroundPosition={position}
                 />
               </CarouselItem>
             ))}
@@ -388,76 +422,93 @@ export function PubmatCreator({
 
         {count > 1 && (
           <div className="flex w-full flex-col items-center gap-2 sm:flex-row sm:justify-between">
-            <div
-              role="tablist"
-              aria-label="Pubmat design"
-              className="flex items-center gap-1.5"
-            >
-              {PUBMAT_DESIGN_IDS.map((id, at) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={id === design}
-                  aria-label={PUBMAT_DESIGNS[id].label}
-                  onClick={() => api?.scrollTo(at)}
-                  className={cn(
-                    "h-2 cursor-pointer rounded-full transition-all",
-                    id === design
-                      ? "w-5 bg-primary"
-                      : "w-2 bg-gray-300 hover:bg-gray-400",
-                  )}
-                />
-              ))}
-            </div>
-            {isPubmatTheme(design) && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-expanded={onEdit ? undefined : editing}
-                aria-haspopup={onEdit ? "dialog" : undefined}
-                onClick={() =>
-                  onEdit ? onEdit(design) : setEditing((open) => !open)
-                }
-                className={cn(
-                  "shrink-0 text-gray-600",
-                  editing &&
-                    "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
-                )}
+            {count > 1 && (
+              <div
+                role="tablist"
+                aria-label="Pubmat design"
+                className="flex items-center gap-1.5"
               >
-                <PencilLine aria-hidden="true" />
-                Edit poster
-              </Button>
+                {PUBMAT_DESIGN_IDS.map((id, at) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={id === design}
+                    aria-label={PUBMAT_DESIGNS[id].label}
+                    onClick={() => api?.scrollTo(at)}
+                    className={cn(
+                      "h-2 cursor-pointer rounded-full transition-all",
+                      id === design
+                        ? "w-5 bg-primary"
+                        : "w-2 bg-gray-300 hover:bg-gray-400",
+                    )}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}
+      </div>
 
+      {design === PUBMAT_V2_DESIGN && editing && (
+        <div
+          className={cn(
+            "w-full",
+            sideBySide &&
+              "pubmat-editing lg:max-h-[var(--pubmat-preview)] lg:max-w-[600px] lg:flex-1 lg:overflow-y-auto lg:pr-2",
+            "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2 motion-safe:duration-200",
+          )}
+        >
+          <PubmatTextEditor
+            showDescription
+            base={baseCopy}
+            draft={draft}
+            onChange={setDraft}
+            onReset={() => setDraft({})}
+            rendering={current?.status === "loading"}
+            backgroundImage={selectedBackground}
+            onBackgroundImageChange={(value) => {
+              setSelectedBackground(value);
+              onBackgroundImageChange?.(value);
+            }}
+            backgroundPosition={position}
+            onBackgroundPositionChange={(value) => {
+              setPosition(value);
+              onBackgroundPositionChange?.(value);
+            }}
+          />
+        </div>
+      )}
+
+      <div
+        key={editing ? "editing-actions" : "preview-actions"}
+        className={cn(
+          "w-full",
+          editing && sideBySide && "lg:basis-full lg:flex lg:justify-end",
+          "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-200",
+        )}
+      >
         <PubmatActions
           job={job}
           link={link}
           image={current?.image}
           status={current?.status ?? "loading"}
           onDownload={download}
+          alignRight={editing && sideBySide}
+          editing={editing}
+          onEdit={
+            design === PUBMAT_V2_DESIGN
+              ? () => {
+                  if (editing) {
+                    setDraft({});
+                    setEditing(false);
+                  } else if (onEdit) onEdit(design);
+                  else setEditing(true);
+                }
+              : undefined
+          }
         />
       </div>
-
-      {isPubmatTheme(design) && editing && (
-        <div
-          className={cn(
-            "w-full",
-            sideBySide && "pubmat-editing lg:max-w-[520px] lg:flex-1",
-          )}
-        >
-          <PubmatTextEditor
-            base={baseCopy}
-            draft={draft}
-            onChange={setDraft}
-            onReset={() => setDraft({})}
-            rendering={current?.status === "loading"}
-          />
-        </div>
-      )}
     </div>
   );
 }

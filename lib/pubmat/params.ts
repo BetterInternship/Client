@@ -12,10 +12,16 @@ export interface PubmatData {
   location?: string;
   /** Work mode and commitment, already joined, e.g. "Hybrid · Part-time". */
   setup?: string;
+  /** Work mode only, without commitment/type (used by v2 chips). */
+  workMode?: string;
   pay?: string;
+  /** Optional display supplied for tight information strips; never invent one. */
+  payCompact?: string;
   deadline?: string;
   /** The listing's short share link; encoded into the QR code. */
   link: string;
+  backgroundImage?: string;
+  backgroundPosition?: { x: number; y: number; scale: number };
 }
 
 const TEXT_LIMITS = {

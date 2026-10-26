@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClipboardCopy, Download, Link2, Share2 } from "lucide-react";
+import {
+  ClipboardCopy,
+  Download,
+  Link2,
+  PencilLine,
+  Share2,
+} from "lucide-react";
+import { Button } from "@betterinternship/components";
 import type { Job } from "@/lib/db/db.types";
 import { sharePostFromJob } from "@/lib/share-targets";
 import { useAppContext } from "@/lib/ctx-app";
@@ -21,12 +28,18 @@ export function PubmatActions({
   image,
   status,
   onDownload,
+  onEdit,
+  alignRight = false,
+  editing = false,
 }: {
   job: Job;
   link: string;
   image: ReturnType<typeof usePubmatImage>["image"];
   status: ReturnType<typeof usePubmatImage>["status"];
   onDownload: () => void;
+  onEdit?: () => void;
+  alignRight?: boolean;
+  editing?: boolean;
 }) {
   const { isMobile } = useAppContext();
   const [canShareImage, setCanShareImage] = useState(false);
@@ -149,8 +162,29 @@ export function PubmatActions({
   ];
 
   return (
-    <div className="flex w-full flex-col items-center gap-2">
-      <ShareMenu items={items} busy={busy} disabled={!ready} />
+    <div
+      className={`flex ${alignRight ? "lg:w-auto" : "w-full"} flex-col items-center gap-2`}
+    >
+      <div className="flex items-center justify-center gap-2">
+        {onEdit && (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              onClick={onEdit}
+              aria-label={editing ? "Discard edit" : "Edit"}
+              className="h-10 gap-2 px-4 text-gray-600"
+            >
+              <PencilLine aria-hidden="true" />
+              <span className="whitespace-nowrap">
+                {editing ? "Discard edit" : "Edit"}
+              </span>
+            </Button>
+          </>
+        )}
+        <ShareMenu items={items} busy={busy} disabled={!ready} />
+      </div>
       {message && (
         <p role="status" className="text-center text-xs text-gray-600">
           {message}

@@ -9,9 +9,9 @@ import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
 import { clampPubmatData } from "@/lib/pubmat/params";
 import { renderPubmat } from "@/lib/pubmat/render";
 import * as imageCache from "@/lib/pubmat/image-cache";
-import { isPubmatTheme } from "@/lib/pubmat/themes";
 import { usePfpUrl } from "@/hooks/use-pfp";
-import type { PosterCopy } from "@/lib/pubmat/theme-layout";
+import type { PosterCopy } from "@/lib/pubmat/core";
+import { PUBMAT_V2_DESIGN } from "@/lib/pubmat/v2";
 
 /**
  * A listing's pubmat, drawn in the browser (lib/pubmat/render.ts) into a PNG
@@ -41,12 +41,14 @@ export function usePubmatImage(
   design: PubmatDesign = DEFAULT_PUBMAT_DESIGN,
   copy?: PosterCopy,
   logoOverride?: string | null,
+  backgroundImage?: string,
+  backgroundPosition?: { x: number; y: number; scale: number },
   /** Keep the last drawing even when `link` goes away (a slide near the one on
    * show, temporarily not wanted because the text editor is open). */
   hold = false,
 ) {
   const refs = useDbRefs();
-  const themed = isPubmatTheme(design);
+  const themed = design === PUBMAT_V2_DESIGN;
   // A pubmat only ever shows the viewer's own listing, so its logo is the
   // current employer's — asked for as "me", the same way the hire header does
   // (app-header.tsx). The job's employer id does not resolve here.
@@ -67,12 +69,16 @@ export function usePubmatImage(
     () =>
       link && !companyLogo.loading
         ? (() => {
+            const listingData = pubmatDataFromJob(job, refs, link, themed);
             const raw = {
-              ...pubmatDataFromJob(job, refs, link, themed),
+              ...listingData,
               ...copy,
+              workMode: copy?.setup ?? listingData.workMode,
               companyLogo:
                 (logoOverride === undefined ? companyLogo.url : logoOverride) ||
                 undefined,
+              backgroundImage,
+              backgroundPosition,
             };
             return themed ? raw : clampPubmatData(raw);
           })()
@@ -86,6 +92,8 @@ export function usePubmatImage(
       companyLogo.url,
       companyLogo.loading,
       logoOverride,
+      backgroundImage,
+      backgroundPosition,
     ],
   );
 
