@@ -1,35 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
-import { Download, Share2 } from "lucide-react";
-import { Button, cn } from "@betterinternship/components";
-import {
-  FacebookLogo,
-  LinkedInLogo,
-  TelegramLogo,
-  WhatsAppLogo,
-  XLogo,
-} from "@/components/ui/brand-icons";
+import { useEffect, useState } from "react";
+import { Copy, Download, Share2 } from "lucide-react";
+import { Button } from "@betterinternship/components";
 import type { Job } from "@/lib/db/db.types";
-import {
-  SHARE_TARGETS,
-  sharePostFromJob,
-  type ShareTargetId,
-} from "@/lib/share-targets";
+import { sharePostFromJob } from "@/lib/share-targets";
 import { pubmatFileName, type usePubmatImage } from "./use-pubmat-image";
-
-const TARGET_ICONS: Record<
-  ShareTargetId,
-  ComponentType<{ className?: string }>
-> = {
-  facebook: FacebookLogo,
-  linkedin: LinkedInLogo,
-  x: XLogo,
-  whatsapp: WhatsAppLogo,
-  telegram: TelegramLogo,
-};
-const iconButton =
-  "flex size-9 shrink-0 items-center justify-center rounded-[0.33em] border border-gray-200 text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50";
 
 /** File sharing is distinct from link sharing: never silently drop the poster. */
 export function PubmatActions({
@@ -65,7 +41,7 @@ export function PubmatActions({
   }, [image, job]);
 
   const handleShare = async () => {
-    if (!ready || sharing) return;
+    if (!ready || sharing || !canShareImage) return;
     const file = new File([image.blob], pubmatFileName(job), {
       type: "image/png",
     });
@@ -89,49 +65,50 @@ export function PubmatActions({
     }
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setMessage("Listing link copied.");
+    } catch {
+      setMessage("Couldn’t copy the link. Please try again.");
+    }
+  };
+
   return (
     <div className="flex w-full flex-col items-center gap-2">
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button
+          variant="outline"
+          expandIcon
           disabled={!ready}
           onClick={onDownload}
           aria-label="Download poster"
           title="Download poster"
         >
           <Download aria-hidden="true" />
+          <span className="button-label">Download</span>
         </Button>
-        <span className="mx-1 h-6 w-px bg-gray-200" aria-hidden="true" />
-        {SHARE_TARGETS.map((target) => {
-          const Icon = TARGET_ICONS[target.id];
-          return (
-            <a
-              key={target.id}
-              href={
-                status !== "loading"
-                  ? target.href(sharePostFromJob(job, link))
-                  : undefined
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Share link on ${target.label}`}
-              title={`Share link on ${target.label}`}
-              aria-disabled={status === "loading"}
-              className={cn(
-                iconButton,
-                status === "loading" && "pointer-events-none opacity-50",
-              )}
-            >
-              <Icon className="size-5" />
-            </a>
-          );
-        })}
+        <Button
+          variant="outline"
+          expandIcon
+          onClick={() => void handleCopy()}
+          aria-label="Copy listing link"
+          title="Copy listing link"
+        >
+          <Copy aria-hidden="true" />
+          <span className="button-label">Copy link</span>
+        </Button>
         {canShareImage && (
           <Button
+            variant="outline"
+            expandIcon
+            aria-label="Share image"
+            title="Share image"
             disabled={!ready || sharing}
             onClick={() => void handleShare()}
           >
             <Share2 aria-hidden="true" />
-            {sharing ? "Sharing…" : "Share image"}
+            <span className="button-label">Share</span>
           </Button>
         )}
       </div>

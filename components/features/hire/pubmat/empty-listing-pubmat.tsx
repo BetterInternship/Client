@@ -23,10 +23,6 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
       <div className="flex flex-col items-center gap-2 text-center">
         <Ghost className="size-8 text-gray-400" />
         <h3 className="text-lg font-semibold">No applicants yet.</h3>
-        <p className="text-sm text-gray-600">
-          Post this on social media to get your listing in front of students.
-          The QR code opens it on BetterInternship.
-        </p>
       </div>
 
       {/* Widen only when the desktop text editor is open. */}
