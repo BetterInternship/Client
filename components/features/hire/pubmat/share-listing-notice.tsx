@@ -29,7 +29,7 @@ export function ShareListingNotice({ job }: { job: Job }) {
 
   return (
     // Room above for the preview to lean into.
-    <div ref={ref} className="relative mb-6 mt-6 pt-6">
+    <div ref={ref} className="relative mb-4 mt-0.5 pt-7">
       <button
         type="button"
         aria-label="Open your pubmat"
