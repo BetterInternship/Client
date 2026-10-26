@@ -1,48 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { Ghost, ImageOff, Megaphone, RotateCw } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Shimmer } from "@/components/ui/shimmer";
-import { useAuthContext } from "@/app/hire/authctx";
 import type { Job } from "@/lib/db/db.types";
 import { useShareLink } from "@/lib/api/student.data.api";
-import { usePfpUrl } from "@/hooks/use-pfp";
+import { usePubmatLogo } from "./use-pubmat-logo";
 import { PubmatCreator } from "./pubmat-creator";
 import { PubmatLogoPrompt } from "./pubmat-logo-prompt";
 
 /**
- * What an employer sees on a listing nobody has applied to: the pubmat itself,
- * with buttons to download it or share it to a platform — rather than a prompt
- * to go and make one. The pubmat's QR is the listing's short share link, so the
- * page mints it on arrival — the same call Share makes, which reuses an
- * existing link instead of minting another.
- *
- * Unlike the share sheet, this can't stop on the way in to ask for a logo, so
- * the poster carries the company name instead until you say otherwise: a notice
- * offers to add one, and taking it up swaps the poster for the sheet's own logo
- * step (pubmat-logo-prompt.tsx) right here, rather than sending you elsewhere.
+ * Empty-listing preview with an optional inline logo step. The short share
+ * link is reused for the poster's QR; logo upload never opens another modal.
  */
 export function EmptyListingPubmat({ job }: { job: Job }) {
   const { url, isPending, isError, refetch } = useShareLink(job.id);
-  const { user } = useAuthContext();
-
-  // A dashboard pubmat is always the viewer's own listing, so the company logo
-  // is this employer's — asked for as "me", the way the hire header does
-  // (app-header.tsx). The job's employer id does not resolve here.
-  const logo = usePfpUrl({
-    id: "me",
-    source: "employer",
-    enabled: !!user,
-  });
-  const noLogo = !logo.loading && !logo.url;
-
-  // "Asking" replaces the poster with the logo step. Once answered, `choice`
-  // remembers the answer so the notice doesn't come back: null means they'd
-  // rather keep the company name.
-  const [asking, setAsking] = useState(false);
-  const [choice, setChoice] = useState<{ logo: string | null }>();
+  const logo = usePubmatLogo();
 
   return (
     <div className="mx-auto flex w-full flex-col items-center gap-4 py-4">
@@ -55,18 +29,10 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
         </p>
       </div>
 
-      {/* The generator wears a StatusNotice's border and tint (see
-          share-listing-notice.tsx), so the poster reads as part of the same
-          family as the dashboard's other notices. The card hugs the poster
-          rather than the page, and only widens when the editor opens. */}
+      {/* Widen only when the desktop text editor is open. */}
       <div className="w-full max-w-[520px] rounded-[0.33em] border border-primary/25 bg-primary/[0.035] px-4 py-4 sm:px-5 lg:has-[.pubmat-editing]:max-w-[984px]">
-        {asking ? (
-          <PubmatLogoPrompt
-            onContinue={(next) => {
-              setChoice({ logo: next });
-              setAsking(false);
-            }}
-          />
+        {logo.asking ? (
+          <PubmatLogoPrompt onContinue={logo.continueWith} />
         ) : (
           <>
             <div className="mb-4 flex items-center gap-3">
@@ -80,16 +46,12 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
               </h3>
             </div>
 
-            {noLogo && !choice && (
+            {logo.needsLogo && (
               <StatusNotice
                 variant="warning"
                 title="Add a logo so students know who’s hiring at a glance."
                 action={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAsking(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={logo.ask}>
                     Add logo
                   </Button>
                 }
@@ -106,7 +68,7 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
                   link={url}
                   maxPreviewSize={400}
                   sideBySide
-                  companyLogo={choice ? choice.logo : undefined}
+                  companyLogo={logo.companyLogo}
                 />
               ) : isError ? (
                 <div className="flex flex-col items-center gap-3 py-6 text-center">

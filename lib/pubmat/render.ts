@@ -7,9 +7,8 @@ import { PubmatTemplate } from "./template";
 import { isPubmatTheme } from "./themes";
 
 /**
- * Draws a pubmat in the browser: satori lays the template out as an SVG, resvg
- * (wasm) rasterises that to a PNG. Both are imported on first use, so none of
- * it loads until someone opens a pubmat.
+ * Themes use the canvas compositor with resvg for verification masks. Legacy
+ * layouts use Satori and resvg. Rendering dependencies load on first use.
  */
 
 let resvgReady: Promise<void> | undefined;

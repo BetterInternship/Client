@@ -2,11 +2,9 @@
 
 import type { Job } from "@/lib/db/db.types";
 import { PubmatCreator } from "./pubmat-creator";
-import { useState } from "react";
 import { Button } from "@betterinternship/components";
 import { LoaderCircle } from "lucide-react";
-import { usePfpUrl } from "@/hooks/use-pfp";
-import { useAuthContext } from "@/app/hire/authctx";
+import { usePubmatLogo } from "./use-pubmat-logo";
 import { PubmatLogoPrompt } from "./pubmat-logo-prompt";
 
 /**
@@ -25,17 +23,8 @@ export function PubmatModal({ job, link }: { job: Job; link: string }) {
 }
 
 function SharePubmatFlow({ job, link }: { job: Job; link: string }) {
-  const { user } = useAuthContext();
-  // The sheet is only ever opened for the viewer's own listing, so the logo is
-  // this employer's — "me", like the hire header resolves it.
-  const profileLogo = usePfpUrl({
-    id: "me",
-    source: "employer",
-    enabled: !!user,
-  });
-  const [choice, setChoice] = useState<{ logo: string | null } | null>(null);
-  const ready = choice !== null || !!profileLogo.url;
-  if (!ready && profileLogo.loading)
+  const logo = usePubmatLogo();
+  if (logo.loading)
     return (
       <div className="flex min-h-56 flex-col items-center justify-center gap-4 py-6 text-center">
         <p
@@ -51,14 +40,14 @@ function SharePubmatFlow({ job, link }: { job: Job; link: string }) {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => setChoice({ logo: null })}
+          onClick={() => logo.continueWith(null)}
         >
           Continue without logo
         </Button>
       </div>
     );
-  if (!ready)
-    return <PubmatLogoPrompt onContinue={(logo) => setChoice({ logo })} />;
+  if (logo.needsLogo)
+    return <PubmatLogoPrompt onContinue={logo.continueWith} />;
   return (
     <div className="flex flex-col gap-3 pt-2">
       <p className="text-sm text-gray-600">
@@ -69,7 +58,7 @@ function SharePubmatFlow({ job, link }: { job: Job; link: string }) {
         link={link}
         maxPreviewSize={400}
         sideBySide
-        companyLogo={choice ? choice.logo : profileLogo.url}
+        companyLogo={logo.companyLogo}
       />
     </div>
   );
