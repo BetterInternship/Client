@@ -28,21 +28,10 @@ const TARGET_ICONS: Record<
   whatsapp: WhatsAppLogo,
   telegram: TelegramLogo,
 };
-
 const iconButton =
   "flex size-9 shrink-0 items-center justify-center rounded-[0.33em] border border-gray-200 text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50";
 
-/**
- * What to do with a pubmat once it's drawn: download it, or share the listing
- * to a platform (lib/share-targets.ts) — each a plain link to that platform's
- * own post screen with the text already filled in.
- *
- * Those links can't carry a file, so the image goes along another way: copied
- * to the clipboard when a platform is picked, to paste into the post, and
- * attached to the device's own share sheet where it allows files. The copy has
- * to happen inside the click, so the platforms wait for the draw to finish; if
- * the draw fails they still work, with the link alone.
- */
+/** File sharing is distinct from link sharing: never silently drop the poster. */
 export function PubmatActions({
   job,
   link,
@@ -56,83 +45,101 @@ export function PubmatActions({
   status: ReturnType<typeof usePubmatImage>["status"];
   onDownload: () => void;
 }) {
-  const [canShare, setCanShare] = useState(false);
-  useEffect(() => setCanShare("share" in navigator), []);
+  const [canShareImage, setCanShareImage] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [message, setMessage] = useState("");
+  const ready = status === "ready" && !!image;
 
-  const post = sharePostFromJob(job, link);
-  const platformsReady = status !== "loading";
+  useEffect(() => {
+    setMessage("");
+    setCanShareImage(false);
+    if (!image || !navigator.share || !navigator.canShare) return;
+    try {
+      const file = new File([image.blob], pubmatFileName(job), {
+        type: "image/png",
+      });
+      setCanShareImage(navigator.canShare({ files: [file] }));
+    } catch {
+      // Download remains available when the browser cannot share files.
+    }
+  }, [image, job]);
 
-  const handleTarget = () => {
-    if (!image) return;
-    // The platform's own composer opens on its own; the poster goes to the
-    // clipboard so it can be pasted straight into the post.
-    void navigator.clipboard
-      .write([new ClipboardItem({ "image/png": image.blob })])
-      .catch(() => undefined);
-  };
-
-  const handleNativeShare = () => {
-    const file = image
-      ? new File([image.blob], pubmatFileName(job), { type: "image/png" })
-      : undefined;
-    // With a file, the link rides in the text: targets that take images often
-    // drop a separate `url`.
-    if (file && navigator.canShare?.({ files: [file] })) {
-      void navigator.share({
+  const handleShare = async () => {
+    if (!ready || sharing) return;
+    const file = new File([image.blob], pubmatFileName(job), {
+      type: "image/png",
+    });
+    const post = sharePostFromJob(job, link);
+    setMessage("");
+    setSharing(true);
+    try {
+      await navigator.share({
         title: job.title ?? undefined,
         text: `${post.text} ${post.url}`,
         files: [file],
       });
-      return;
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setMessage(
+          "Couldn’t share the image. Download the poster and upload it instead.",
+        );
+      }
+    } finally {
+      setSharing(false);
     }
-    void navigator.share({ title: job.title ?? undefined, url: post.url });
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex w-full flex-col items-center gap-2">
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button disabled={status !== "ready"} onClick={onDownload}>
-          <Download />
+        <Button
+          disabled={!ready}
+          onClick={onDownload}
+          aria-label="Download poster"
+          title="Download poster"
+        >
+          <Download aria-hidden="true" />
         </Button>
-
-        <span className="mx-1 h-6 w-px bg-gray-200" aria-hidden />
-
+        <span className="mx-1 h-6 w-px bg-gray-200" aria-hidden="true" />
         {SHARE_TARGETS.map((target) => {
           const Icon = TARGET_ICONS[target.id];
           return (
             <a
               key={target.id}
-              // No href until the draw is done, which leaves the button inert.
-              href={platformsReady ? target.href(post) : undefined}
+              href={
+                status !== "loading"
+                  ? target.href(sharePostFromJob(job, link))
+                  : undefined
+              }
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Share on ${target.label}`}
-              title={target.label}
-              aria-disabled={!platformsReady}
-              onClick={handleTarget}
+              aria-label={`Share link on ${target.label}`}
+              title={`Share link on ${target.label}`}
+              aria-disabled={status === "loading"}
               className={cn(
                 iconButton,
-                !platformsReady && "pointer-events-none opacity-50",
+                status === "loading" && "pointer-events-none opacity-50",
               )}
             >
               <Icon className="size-5" />
             </a>
           );
         })}
-
-        {canShare && (
-          <button
-            type="button"
-            aria-label="More ways to share"
-            title="More"
-            disabled={!platformsReady}
-            onClick={handleNativeShare}
-            className={cn(iconButton, "cursor-pointer disabled:opacity-50")}
+        {canShareImage && (
+          <Button
+            disabled={!ready || sharing}
+            onClick={() => void handleShare()}
           >
-            <Share2 className="size-4" />
-          </button>
+            <Share2 aria-hidden="true" />
+            {sharing ? "Sharing…" : "Share image"}
+          </Button>
         )}
       </div>
+      {message && (
+        <p role="status" className="text-center text-xs text-gray-600">
+          {message}
+        </p>
+      )}
     </div>
   );
 }

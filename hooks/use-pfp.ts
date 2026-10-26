@@ -7,8 +7,8 @@
 
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useFile } from "@/hooks/use-file";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EmployerService, UserService } from "@/lib/api/services";
 import { fileUrls } from "@/lib/api/urls";
 
@@ -41,42 +41,48 @@ export const usePfpUrl = ({
   defaultURL?: string;
   enabled?: boolean;
 }) => {
-  const fetcher = useCallback(
-    async () =>
-      source === "employer"
+  const queryClient = useQueryClient();
+  const { data, isPending } = useQuery({
+    queryKey: ["profile-picture", source, id],
+    enabled: enabled && !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    queryFn: async () => {
+      const result = await (source === "employer"
         ? EmployerService.getEmployerPfpURL(id)
-        : UserService.getUserPfpURL(id),
-    [id, source],
-  );
-
-  const { url, loading, sync } = useFile({
-    route: useCallback(
-      (hash: string) =>
-        source === "employer"
-          ? fileUrls.employerLogo(hash, id)
-          : fileUrls.userPfp(hash, id),
-      [id, source],
-    ),
-    fetcher,
-    defaultURL,
+        : UserService.getUserPfpURL(id));
+      const { success, empty, hash, url } = result as {
+        success?: boolean;
+        empty?: boolean;
+        hash?: string;
+        url?: string;
+      };
+      if (!success) throw new Error("Could not fetch profile picture.");
+      if (empty) return "";
+      if (url) return url;
+      if (!hash) throw new Error("Profile picture response has no hash.");
+      return source === "employer"
+        ? fileUrls.employerLogo(hash, id)
+        : fileUrls.userPfp(hash, id);
+    },
   });
 
   useEffect(() => {
     if (!enabled) return;
-    void sync();
-  }, [enabled, sync]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const handlePfpUpdated = () => void sync();
+    const handlePfpUpdated = () => {
+      // Invalidate aliases such as "me" and the explicit owner id together.
+      // Repeated listeners share the same in-flight request.
+      void queryClient.invalidateQueries(
+        { queryKey: ["profile-picture"], refetchType: "active" },
+        { cancelRefetch: false },
+      );
+    };
 
     window.addEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
     return () => {
       window.removeEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
     };
-  }, [enabled, sync]);
+  }, [enabled, queryClient]);
 
-  // useFile parks `loading` at true until a sync lands, which never comes when
-  // disabled — report "settled" instead of a spinner that would hang forever.
-  return { url, loading: enabled ? loading : false };
+  return { url: data || defaultURL, loading: enabled && !!id && isPending };
 };

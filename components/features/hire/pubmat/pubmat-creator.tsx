@@ -377,7 +377,7 @@ export function PubmatCreator({
         </Carousel>
 
         {count > 1 && (
-          <div className="flex w-full items-center justify-between gap-2">
+          <div className="flex w-full flex-col items-center gap-2 sm:flex-row sm:justify-between">
             <div
               role="tablist"
               aria-label="Pubmat design"
