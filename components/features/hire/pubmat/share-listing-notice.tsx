@@ -55,7 +55,7 @@ export function ShareListingNotice({ job }: { job: Job }) {
 
       <StatusNotice
         title="Get more applicants"
-        description="Share a ready-made poster of this listing on social media."
+        description="Share this listing on social media"
         action={
           <SharePubmatButton
             job={job}
