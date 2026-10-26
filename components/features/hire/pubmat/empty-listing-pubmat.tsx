@@ -19,7 +19,7 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
   const logo = usePubmatLogo();
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center gap-4 py-4">
+    <div className="mx-auto flex min-h-[calc(100svh-16rem)] w-full flex-col items-center justify-center gap-10 py-8 sm:gap-12">
       <div className="flex flex-col items-center gap-2 text-center">
         <Ghost className="size-8 text-gray-400" />
         <h3 className="text-lg font-semibold">No applicants yet.</h3>
