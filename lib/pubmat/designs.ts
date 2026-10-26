@@ -15,7 +15,10 @@
  *
  * Shared by the renderer and the carousel, so it holds no server-only code.
  */
+import { PUBMAT_THEMES } from "./themes";
+
 export const PUBMAT_DESIGNS = {
+  ...PUBMAT_THEMES,
   classic: { label: "Classic" },
   aura: { label: "Aura" },
 } as const;
@@ -24,4 +27,4 @@ export type PubmatDesign = keyof typeof PUBMAT_DESIGNS;
 
 export const PUBMAT_DESIGN_IDS = Object.keys(PUBMAT_DESIGNS) as PubmatDesign[];
 
-export const DEFAULT_PUBMAT_DESIGN: PubmatDesign = "classic";
+export const DEFAULT_PUBMAT_DESIGN: PubmatDesign = "02-blue-paper-plane";

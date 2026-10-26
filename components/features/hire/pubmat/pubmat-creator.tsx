@@ -1,7 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ImageOff, RotateCw } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { ImageOff, Loader2, PencilLine, RotateCw } from "lucide-react";
 import { Button, cn } from "@betterinternship/components";
 import {
   Carousel,
@@ -12,6 +19,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { useTilt } from "@/hooks/use-tilt";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { Job } from "@/lib/db/db.types";
 import {
   DEFAULT_PUBMAT_DESIGN,
@@ -19,8 +27,14 @@ import {
   PUBMAT_DESIGNS,
   type PubmatDesign,
 } from "@/lib/pubmat/designs";
+import { DotMatrix } from "@/components/ui/dot-matrix";
 import { PubmatActions } from "./pubmat-actions";
 import { pubmatFileName, usePubmatImage } from "./use-pubmat-image";
+import { isPubmatTheme } from "@/lib/pubmat/themes";
+import type { PosterCopy } from "@/lib/pubmat/theme-layout";
+import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { PubmatTextEditor } from "./pubmat-text-editor";
 
 /**
  * A listing's pubmat: swipe or page through its designs, then download it or
@@ -29,33 +43,61 @@ import { pubmatFileName, usePubmatImage } from "./use-pubmat-image";
  * shown, and nothing is sent to a server (see use-pubmat-image.ts).
  *
  * Drawing is the expensive part, so a slide only draws once it's wanted: the
- * design on show first, then the ones either side of it once that's done, so
- * a swipe usually lands on a finished preview. A design that's been drawn is
- * kept as the carousel moves on.
+ * design on show first, then the three either side of it, nearest first, so a
+ * swipe usually lands on a finished preview. Anything further away hands its
+ * picture back, which keeps a fourteen-slide carousel from holding fourteen
+ * 1080px images at once.
  */
 
 type SlideState = Pick<ReturnType<typeof usePubmatImage>, "image" | "status">;
+
+/** How many designs either side of the one on show stay drawn. */
+const WARM_RADIUS = 3;
 
 function PubmatSlide({
   job,
   link,
   design,
   wanted,
+  hold,
   onChange,
+  copy,
+  companyLogo,
 }: {
   job: Job;
   link: string;
   design: PubmatDesign;
   /** Whether to draw this design yet. */
   wanted: boolean;
+  /** Whether to keep the last drawing even while it isn't wanted. */
+  hold: boolean;
   onChange: (design: PubmatDesign, state: SlideState) => void;
+  copy: PosterCopy;
+  companyLogo?: string | null;
 }) {
   const tilt = useTilt();
-  const { image, status, retry } = usePubmatImage(
+  const { image, status, error, retry } = usePubmatImage(
     job,
     wanted ? link : undefined,
     design,
+    copy,
+    companyLogo,
+    hold,
   );
+
+  // A tile with no poster on it is never an empty square: it holds the dot
+  // matrix (components/ui/dot-matrix.tsx) until the picture lands — including
+  // while you drag towards a slide that hasn't been drawn yet. A redraw behind
+  // a poster that's already up keeps the poster and just says it's catching up.
+  const drawing = !image && status !== "error";
+  const updating = status === "loading" && !!image;
+  const [pill, setPill] = useState(false);
+  useEffect(() => {
+    setPill(false);
+    if (!updating) return;
+    const timer = setTimeout(() => setPill(true), 120);
+    return () => clearTimeout(timer);
+  }, [updating]);
 
   // The creator needs the visible slide's image for Download and Share.
   useEffect(() => {
@@ -74,26 +116,48 @@ function PubmatSlide({
       >
         <div
           ref={tilt.ref}
-          className="relative size-full overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-md transition-[transform,box-shadow] duration-150 ease-out will-change-transform hover:shadow-xl motion-reduce:transition-none"
+          className="relative size-full overflow-hidden rounded-[0.33em] border border-gray-200 bg-white shadow-md transition-transform duration-150 ease-out will-change-transform hover:shadow-xl motion-reduce:transition-none"
         >
-          {status === "loading" && (
+          {drawing && (
             <div
-              className={cn(
-                "absolute inset-0 z-10 animate-pulse",
-                image ? "bg-gray-100/60" : "bg-gray-100",
-              )}
-            />
+              role="status"
+              className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
+            >
+              <DotMatrix />
+              <span className="sr-only">Generating the poster</span>
+            </div>
+          )}
+          {pill && (
+            <div className="pointer-events-none absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2 py-1 text-[0.65rem] font-medium tracking-wide text-gray-600 shadow-sm">
+              <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+              Updating
+            </div>
           )}
           {status === "error" ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-              <ImageOff className="size-7 text-gray-400" />
-              <p className="text-sm text-gray-600">
-                Couldn&apos;t make the pubmat.
-              </p>
-              <Button variant="outline" onClick={retry}>
-                <RotateCw />
-                Try again
-              </Button>
+              {/* A fit error from a live edit: keep the last good draw behind
+                  the message so the poster doesn't vanish mid-typing. */}
+              {image && (
+                <img
+                  src={image.url}
+                  alt=""
+                  aria-hidden="true"
+                  draggable={false}
+                  className="absolute inset-0 size-full object-contain opacity-30"
+                />
+              )}
+              <div className="relative flex flex-col items-center gap-2 rounded-lg bg-white/95 px-4 py-3 shadow-sm">
+                <ImageOff className="size-6 text-gray-400" />
+                <p className="text-sm text-gray-700">
+                  {error ?? "Couldn’t make the pubmat."}
+                </p>
+                {!image && (
+                  <Button variant="outline" size="sm" onClick={retry}>
+                    <RotateCw />
+                    Try again
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             image && (
@@ -116,22 +180,79 @@ export function PubmatCreator({
   job,
   link,
   maxPreviewSize = 320,
+  companyLogo,
+  sideBySide = false,
 }: {
   job: Job;
   /** The listing's short share link; the QR code opens it. */
   link: string;
   /** Biggest the preview gets, in px, so it doesn't swamp the page. */
   maxPreviewSize?: number;
+  /** undefined resolves the profile logo; null explicitly shares without one. */
+  companyLogo?: string | null;
+  /** Put the text editor beside the preview instead of under it, when there's room. */
+  sideBySide?: boolean;
 }) {
   const [api, setApi] = useState<CarouselApi>();
+  // When the pointer last moved over the carousel; background renders wait for
+  // it to go quiet. A ref, not state: this changes on every move and must not
+  // re-render fourteen slides.
+  const lastPointer = useRef(0);
+  const notePointer = useCallback(() => {
+    lastPointer.current = performance.now();
+  }, []);
   const [design, setDesign] = useState<PubmatDesign>(DEFAULT_PUBMAT_DESIGN);
   const [slides, setSlides] = useState<
     Partial<Record<PubmatDesign, SlideState>>
   >({});
   const [warm, setWarm] = useState<ReadonlySet<PubmatDesign>>(new Set());
+  const refs = useDbRefs();
+  const baseCopy = useMemo(
+    () => pubmatDataFromJob(job, refs, link, true),
+    [job, refs, link],
+  );
+
+  // Typing edits the draft; the poster follows a beat later, so a fast typist
+  // doesn't trigger a redraw per keystroke.
+  const [draft, setDraft] = useState<PosterCopy>({});
+  const copy = useDebouncedValue(draft, 350);
+  const [editing, setEditing] = useState(false);
+  useEffect(() => {
+    setDraft({});
+    setEditing(false);
+    setSlides({});
+  }, [job.id, link]);
 
   const count = PUBMAT_DESIGN_IDS.length;
   const current = slides[design];
+
+  // Designs close enough to the one on show to be worth keeping drawn.
+  const reach = useMemo(() => {
+    const at = PUBMAT_DESIGN_IDS.indexOf(design);
+    const ids = new Set<PubmatDesign>();
+    for (let step = 1; step <= WARM_RADIUS; step++) {
+      ids.add(PUBMAT_DESIGN_IDS[(at + step + count) % count]);
+      ids.add(PUBMAT_DESIGN_IDS[(at - step + count) % count]);
+    }
+    return ids;
+  }, [design, count]);
+
+  // The nearest pair that isn't drawn yet, so the slide you're most likely to
+  // swipe to is ready before the ones further out.
+  const nextRing = useMemo(() => {
+    const at = PUBMAT_DESIGN_IDS.indexOf(design);
+    const drawn = (id: PubmatDesign) => {
+      const status = slides[id]?.status;
+      return status === "ready" || status === "error";
+    };
+    for (let step = 1; step <= WARM_RADIUS; step++) {
+      const ids = [step, -step].map(
+        (by) => PUBMAT_DESIGN_IDS[(at + by + count) % count],
+      );
+      if (ids.some((id) => !drawn(id))) return ids;
+    }
+    return [];
+  }, [design, slides, count]);
 
   const handleSlide = useCallback(
     (id: PubmatDesign, state: SlideState) =>
@@ -139,34 +260,62 @@ export function PubmatCreator({
     [],
   );
 
-  // The carousel owns which design is showing; follow it.
+  // The carousel owns which design is showing; follow it once it comes to
+  // rest. Not on `select`: embla picks the next snap as soon as a drag passes
+  // halfway, so `select` fires with the finger still down — and a poster draw
+  // takes the main thread for the best part of a second, which freezes the
+  // drag. `settle` only fires when the gesture is over.
   useEffect(() => {
     if (!api) return;
     const sync = () => setDesign(PUBMAT_DESIGN_IDS[api.selectedScrollSnap()]);
     sync();
-    api.on("select", sync);
+    api.on("settle", sync);
     api.on("reInit", sync);
     return () => {
-      api.off("select", sync);
+      api.off("settle", sync);
       api.off("reInit", sync);
     };
   }, [api]);
 
-  // Once the design on show is drawn, start on the ones next to it.
+  // Once the design on show is drawn, start on the ones next to it — but only
+  // after a quiet moment, so a quick swipe doesn't pay for background renders,
+  // and never while the text editor is open (every debounce tick would redraw
+  // them all).
+  //
+  // Drawing shares the main thread with the tilt and the carousel drag, so a
+  // background render that starts mid-gesture is what makes both stutter. Keep
+  // waiting while the pointer is still moving.
   const settled = !!current && current.status !== "loading";
   useEffect(() => {
-    if (!settled) return;
-    const at = PUBMAT_DESIGN_IDS.indexOf(design);
-    const next = [-1, 0, 1].map(
-      (by) => PUBMAT_DESIGN_IDS[(at + by + count) % count],
-    );
-    setWarm((seen) =>
-      next.every((id) => seen.has(id)) ? seen : new Set([...seen, ...next]),
-    );
-  }, [settled, design, count]);
+    if (!settled || editing || !nextRing.length) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const start = () => {
+      const quiet = performance.now() - lastPointer.current;
+      if (quiet < 700) {
+        timer = setTimeout(start, 700 - quiet);
+        return;
+      }
+      setWarm((seen) =>
+        nextRing.every((id) => seen.has(id))
+          ? seen
+          : new Set([...seen, ...nextRing]),
+      );
+    };
+    timer = setTimeout(start, 400);
+    return () => clearTimeout(timer);
+  }, [settled, design, editing, nextRing]);
+
+  // Forget anything that has slid out of reach — those slides hand their
+  // pictures back (use-pubmat-image.ts) — and everything when the editor opens.
+  useEffect(() => {
+    setWarm((seen) => {
+      const keep = new Set([...seen].filter((id) => !editing && reach.has(id)));
+      return keep.size === seen.size ? seen : keep;
+    });
+  }, [reach, editing]);
 
   const download = () => {
-    if (!current?.image) return;
+    if (!current?.image || current.status !== "ready") return;
     const a = document.createElement("a");
     a.href = current.image.url;
     a.download = pubmatFileName(job);
@@ -174,11 +323,33 @@ export function PubmatCreator({
   };
 
   return (
-    <div className="flex w-full flex-col items-center gap-4">
-      <div className="flex w-full flex-col items-center gap-3">
+    <div
+      className={cn(
+        "flex w-full flex-col items-center gap-4",
+        sideBySide && "lg:flex-row lg:items-start lg:justify-center lg:gap-6",
+      )}
+    >
+      <div
+        className={cn(
+          "flex w-full flex-col items-center gap-3",
+          sideBySide && "lg:w-[var(--pubmat-preview)] lg:shrink-0",
+        )}
+        style={
+          sideBySide
+            ? ({
+                "--pubmat-preview": `${maxPreviewSize}px`,
+              } as CSSProperties)
+            : undefined
+        }
+      >
         <Carousel
-          opts={{ loop: true }}
+          opts={{
+            loop: true,
+            startIndex: PUBMAT_DESIGN_IDS.indexOf(DEFAULT_PUBMAT_DESIGN),
+          }}
           setApi={setApi}
+          onPointerMove={notePointer}
+          onPointerDown={notePointer}
           style={{ width: `min(100%, ${maxPreviewSize}px)` }}
         >
           <CarouselContent>
@@ -188,8 +359,11 @@ export function PubmatCreator({
                   job={job}
                   link={link}
                   design={id}
-                  wanted={id === design || warm.has(id)}
+                  wanted={id === design || (!editing && warm.has(id))}
+                  hold={reach.has(id)}
                   onChange={handleSlide}
+                  copy={copy}
+                  companyLogo={companyLogo}
                 />
               </CarouselItem>
             ))}
@@ -203,7 +377,7 @@ export function PubmatCreator({
         </Carousel>
 
         {count > 1 && (
-          <div className="flex flex-col items-center gap-1.5">
+          <div className="flex w-full items-center justify-between gap-2">
             <div
               role="tablist"
               aria-label="Pubmat design"
@@ -226,20 +400,51 @@ export function PubmatCreator({
                 />
               ))}
             </div>
-            <span className="text-xs font-medium text-gray-600">
-              {PUBMAT_DESIGNS[design].label}
-            </span>
+            {isPubmatTheme(design) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-expanded={editing}
+                onClick={() => setEditing((open) => !open)}
+                className={cn(
+                  "shrink-0 text-gray-600",
+                  editing &&
+                    "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
+                )}
+              >
+                <PencilLine aria-hidden="true" />
+                Edit poster
+              </Button>
+            )}
           </div>
         )}
+
+        <PubmatActions
+          job={job}
+          link={link}
+          image={current?.image}
+          status={current?.status ?? "loading"}
+          onDownload={download}
+        />
       </div>
 
-      <PubmatActions
-        job={job}
-        link={link}
-        image={current?.image}
-        status={current?.status ?? "loading"}
-        onDownload={download}
-      />
+      {isPubmatTheme(design) && editing && (
+        <div
+          className={cn(
+            "w-full",
+            sideBySide && "pubmat-editing lg:max-w-[520px] lg:flex-1",
+          )}
+        >
+          <PubmatTextEditor
+            base={baseCopy}
+            draft={draft}
+            onChange={setDraft}
+            onReset={() => setDraft({})}
+            rendering={current?.status === "loading"}
+          />
+        </div>
+      )}
     </div>
   );
 }

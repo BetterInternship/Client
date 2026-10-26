@@ -2,8 +2,9 @@
 
 import { useRef } from "react";
 import { useInView } from "framer-motion";
-import { ImageOff, Share2 } from "lucide-react";
+import { ImageOff } from "lucide-react";
 import { StatusNotice } from "@betterinternship/components/status-notice";
+import { Shimmer } from "@/components/ui/shimmer";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { useShareLink } from "@/lib/api/student.data.api";
 import type { Job } from "@/lib/db/db.types";
@@ -48,14 +49,13 @@ export function ShareListingNotice({ job }: { job: Job }) {
             <ImageOff className="size-5 text-gray-400" />
           </span>
         ) : (
-          <span className="block size-full animate-pulse bg-gray-100" />
+          <Shimmer className="relative size-full" />
         )}
       </button>
 
       <StatusNotice
-        icon={Share2}
         title="Get more applicants"
-        description="Your pubmat is ready — post it where students already are."
+        description="Share a ready-made poster of this listing on social media."
         action={
           <SharePubmatButton
             job={job}

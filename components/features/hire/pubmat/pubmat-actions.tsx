@@ -56,7 +56,6 @@ export function PubmatActions({
   status: ReturnType<typeof usePubmatImage>["status"];
   onDownload: () => void;
 }) {
-  const [imageCopy, setImageCopy] = useState<"copied" | "failed">();
   const [canShare, setCanShare] = useState(false);
   useEffect(() => setCanShare("share" in navigator), []);
 
@@ -65,10 +64,11 @@ export function PubmatActions({
 
   const handleTarget = () => {
     if (!image) return;
-    navigator.clipboard
+    // The platform's own composer opens on its own; the poster goes to the
+    // clipboard so it can be pasted straight into the post.
+    void navigator.clipboard
       .write([new ClipboardItem({ "image/png": image.blob })])
-      .then(() => setImageCopy("copied"))
-      .catch(() => setImageCopy("failed"));
+      .catch(() => undefined);
   };
 
   const handleNativeShare = () => {

@@ -40,4 +40,5 @@ export function PubmatTemplate({
           return <PostLayout data={data} qr={qr} height={1080} />;
       }
   }
+  throw new Error("Background themes must use the measured theme renderer.");
 }

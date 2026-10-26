@@ -48,6 +48,7 @@ export function pubmatDataFromJob(
   job: Job,
   refs: RefNames,
   link: string,
+  fullDescription = false,
 ): PubmatData {
   const preferences = job.internship_preferences;
   const setup = [
@@ -64,10 +65,41 @@ export function pubmatDataFromJob(
   return {
     title: job.title ?? "",
     company: (job.employer ?? job.employers)?.name ?? "",
+    description: fullDescription ? plainTextDescription(job.description) : descriptionExcerpt(job.description),
     location: job.location ?? undefined,
     setup: setup || undefined,
     pay: payLabel(job, refs),
     deadline: deadlineLabel(job.application_deadline),
     link,
   };
+}
+
+/** Plain-text excerpt only; never send markup or invented copy to the poster. */
+export function descriptionExcerpt(value: string | null | undefined) {
+  const text = plainTextDescription(value);
+  if (!text) return undefined;
+  if (text.length <= 145) return text;
+  return `${text.slice(0, 142).replace(/\s+\S*$/, "").trimEnd()}…`;
+}
+
+/** Full plain text for the new measured layouts; never silently shortened. */
+export function plainTextDescription(value: string | null | undefined) {
+  if (!value) return undefined;
+  const text = value
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;|&gt;/gi, " ")
+    .replace(/[#*_`~>|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return undefined;
+  return text;
 }

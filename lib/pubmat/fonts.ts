@@ -20,7 +20,7 @@ const FAMILIES = {
 type Family = keyof typeof FAMILIES;
 
 /** Each design's typefaces. A later one covers glyphs an earlier one lacks. */
-const DESIGN_FAMILIES: Record<PubmatDesign, Family[]> = {
+const DESIGN_FAMILIES: Record<"classic" | "aura", Family[]> = {
   classic: ["Inter"],
   aura: ["Unbounded", "Inter"],
 };
@@ -61,6 +61,6 @@ function loadFamily(name: Family): Promise<PubmatFont[]> {
 export async function loadPubmatFonts(
   design: PubmatDesign,
 ): Promise<PubmatFont[]> {
-  const families = await Promise.all(DESIGN_FAMILIES[design].map(loadFamily));
+  const families = await Promise.all(DESIGN_FAMILIES[design === "aura" ? "aura" : "classic"].map(loadFamily));
   return families.flat();
 }

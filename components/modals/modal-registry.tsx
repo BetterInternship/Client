@@ -269,7 +269,8 @@ export const useModalRegistry = () => {
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
               showHeaderDivider: false,
-              panelClassName: "sm:w-[560px] sm:max-w-[560px]",
+              panelClassName:
+                "sm:w-[560px] sm:max-w-[560px] lg:has-[.pubmat-editing]:w-[1000px] lg:has-[.pubmat-editing]:max-w-[calc(100vw_-_2rem)]",
             },
           ),
         close: () => close("pubmat"),
