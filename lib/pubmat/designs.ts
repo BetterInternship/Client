@@ -1,6 +1,10 @@
 import type { PosterTheme } from "./theme-types";
 import { studioBackgrounds, studioRenderSettings } from "./studio/config";
 import { centeredBackgrounds, centeredRenderSettings } from "./centered/config";
+import {
+  splitDeskBackgrounds,
+  splitDeskRenderSettings,
+} from "./split-desk/config";
 
 /** Add new themes here. UI and renderer dispatch are derived from this registry. */
 export const PUBMAT_DESIGNS = {
@@ -20,6 +24,15 @@ export const PUBMAT_DESIGNS = {
     settings: centeredRenderSettings,
     loadTemplate: async () =>
       (await import("./centered/template")).CenteredPoster,
+  },
+  "split-desk": {
+    label: "Split desk",
+    templatePath: "lib/pubmat/split-desk/template.tsx",
+    backgrounds: splitDeskBackgrounds,
+    repositionBackground: false,
+    settings: splitDeskRenderSettings,
+    loadTemplate: async () =>
+      (await import("./split-desk/template")).SplitDeskPoster,
   },
 } satisfies Record<string, PosterTheme>;
 

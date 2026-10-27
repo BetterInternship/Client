@@ -1,6 +1,6 @@
 # Poster themes
 
-Both themes use client-side JSX → Satori → SVG previews. PNG export rasterizes
+All three themes use client-side JSX → Satori → SVG previews. PNG export rasterizes
 the exact preview SVG through resvg only when an image action is requested.
 
 - `jsx-renderer.ts`: shared fonts, self-contained images, SVG rendering and PNG export.
@@ -11,6 +11,7 @@ the exact preview SVG through resvg only when an image action is requested.
 - `qr-image.ts`: shared transparent, padding-free QR generation.
 - `centered/template.tsx`: vertically/horizontally centered group composition.
 - `studio/template.tsx`: Studio photo's bottom-anchored group composition.
+- `split-desk/template.tsx`: split two-column composition with a details sidebar.
 - Each theme contains only `template.tsx` and `config.ts`: its layout, tokens,
   backgrounds, logo settings, QR size and overflow limits.
 - Root `render.ts`: prepares assets, checks configured layout limits and exports
@@ -39,5 +40,5 @@ same SVG snapshot; image actions memoize its full-resolution PNG conversion.
 Opening the native share menu may prepare a PNG to preserve user activation for
 the subsequent share tap. No PNG/WASM work is needed for ordinary text editing.
 
-The former Studio Canvas renderer has been removed after migration. Both active
+The former Studio Canvas renderer has been removed after migration. All active
 themes export through `jsx-renderer.ts`; no legacy layout renderer is retained.

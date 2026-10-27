@@ -7,7 +7,7 @@ export interface PubmatData {
   /** Resolved image URL, not the employer's GCS object key. */
   companyLogo?: string;
   location?: string;
-  /** Work mode and commitment, already joined, e.g. "Hybrid · Part-time". */
+  /** Legacy work-mode field; commitment/type values are intentionally omitted. */
   setup?: string;
   /** Work mode only, without commitment/type (used by v2 chips). */
   workMode?: string;

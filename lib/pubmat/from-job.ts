@@ -1,10 +1,7 @@
 import type { IRefsContext, Job } from "@/lib/db/db.types";
 import type { PubmatData } from "./params";
 
-type RefNames = Pick<
-  IRefsContext,
-  "toJobModeName" | "toJobTypeName" | "toJobPayFreqName"
->;
+type RefNames = Pick<IRefsContext, "toJobModeName" | "toJobPayFreqName">;
 
 // The refs helpers answer "Not specified" for an id they don't know.
 const known = (name: string | null | undefined) =>
@@ -55,16 +52,6 @@ export function pubmatDataFromJob(
     .map((id) => known(refs.toJobModeName(id)))
     .filter(Boolean)
     .join(" · ");
-  const setup = [
-    ...(preferences?.job_setup_ids ?? []).map((id) =>
-      known(refs.toJobModeName(id)),
-    ),
-    ...(preferences?.job_commitment_ids ?? []).map((id) =>
-      known(refs.toJobTypeName(id)),
-    ),
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
   return {
     title: job.title ?? "",
@@ -73,7 +60,9 @@ export function pubmatDataFromJob(
       ? plainTextDescription(job.description)
       : descriptionExcerpt(job.description),
     location: job.location ?? undefined,
-    setup: setup || undefined,
+    // Keep the legacy field aligned with workMode. Commitment/type values
+    // belong to listing data, not the poster's work-mode detail.
+    setup: workMode || undefined,
     workMode: workMode || undefined,
     pay: payLabel(job, refs),
     deadline: deadlineLabel(job.application_deadline),
