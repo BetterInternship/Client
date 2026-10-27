@@ -193,7 +193,7 @@ export function PubmatActions({
     },
     {
       id: "link",
-      label: "Copy link",
+      label: "Copy link to listing",
       icon: <Link2 />,
       disabled: readOnly,
       onSelect: () => void handleCopyLink(),
