@@ -334,14 +334,45 @@ export function SplitDeskPoster({
                 gap: p.qrToFooterGap,
               }}
             >
-              <img
+              <div
                 data-poster="qr"
-                src={assets.qr.src}
-                width={assets.qr.size}
-                height={assets.qr.size}
-                alt=""
-                style={{ flexShrink: 0 }}
-              />
+                style={{
+                  display: "flex",
+                  position: "relative",
+                  width: assets.qr.size,
+                  height: assets.qr.size,
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={assets.qr.src}
+                  width={assets.qr.size}
+                  height={assets.qr.size}
+                  alt=""
+                />
+                {assets.logo && (
+                  <div
+                    style={{
+                      display: "flex",
+                      position: "absolute",
+                      left: assets.qr.size * 0.4,
+                      top: assets.qr.size * 0.4,
+                      width: assets.qr.size * 0.2,
+                      height: assets.qr.size * 0.2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={assets.logo.src}
+                      width={assets.qr.size * 0.2}
+                      height={assets.qr.size * 0.2}
+                      alt=""
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+                )}
+              </div>
               <div
                 data-poster="footer"
                 style={{

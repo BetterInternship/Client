@@ -176,14 +176,18 @@ export function PubmatActions({
     // The device share sheet is a phone thing: a desktop browser that has one
     // only hands over a link, so the poster itself is the useful action there.
     ...(isMobile ? [shareAsPost] : []),
-    {
-      id: "poster",
-      label: "Copy poster",
-      icon: <ClipboardCopy />,
-      primary: !isMobile,
-      disabled: readOnly || !ready,
-      onSelect: () => void handleCopyPoster(),
-    },
+    ...(!isMobile
+      ? [
+          {
+            id: "poster",
+            label: "Copy poster",
+            icon: <ClipboardCopy />,
+            primary: true,
+            disabled: readOnly || !ready,
+            onSelect: () => void handleCopyPoster(),
+          } satisfies ShareMenuItem,
+        ]
+      : []),
     {
       id: "download",
       label: "Download poster",
