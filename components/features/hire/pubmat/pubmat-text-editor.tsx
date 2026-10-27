@@ -3,7 +3,10 @@
 import { useId } from "react";
 import { LoaderCircle, PencilLine, RotateCcw } from "lucide-react";
 import { Button, Input, Label } from "@betterinternship/components";
-import { Autocomplete, type IAutocompleteOption } from "@/components/ui/autocomplete";
+import {
+  Autocomplete,
+  type IAutocompleteOption,
+} from "@/components/ui/autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import type { PosterCopy } from "@/lib/pubmat/core";
 

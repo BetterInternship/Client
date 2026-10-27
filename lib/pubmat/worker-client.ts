@@ -86,6 +86,7 @@ function requestWorker(
 export async function renderOffThread(
   input: PreparedPoster,
   signal?: AbortSignal,
+  priority = 0,
 ): Promise<PosterArtifact> {
   signal?.throwIfAborted();
   if (typeof Worker === "undefined")
@@ -94,13 +95,21 @@ export async function renderOffThread(
       signal,
     );
   return (await requestWorker(
-    { type: "layout", id: ++nextId, input },
+    { type: "layout", id: ++nextId, input, priority },
     signal,
   )) as PosterArtifact;
 }
 
-export async function exportPosterPng(svg: string): Promise<Blob> {
+export async function exportPosterPng(
+  svg: string,
+  priority = 0,
+): Promise<Blob> {
   if (typeof Worker === "undefined")
     return (await import("./jsx-renderer")).rasterizePoster(svg);
-  return (await requestWorker({ type: "png", id: ++nextId, svg })) as Blob;
+  return (await requestWorker({
+    type: "png",
+    id: ++nextId,
+    svg,
+    priority,
+  })) as Blob;
 }

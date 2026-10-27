@@ -15,6 +15,7 @@ export async function renderPubmatArtifact(
   design: PubmatDesign = DEFAULT_PUBMAT_DESIGN,
   debug = false,
   signal?: AbortSignal,
+  priority = 0,
 ) {
   signal?.throwIfAborted();
   const theme = PUBMAT_DESIGNS[design];
@@ -28,7 +29,7 @@ export async function renderPubmatArtifact(
     qr: posterQr(data.link, theme.settings.qrSize),
   };
   signal?.throwIfAborted();
-  return renderOffThread({ data, assets, design, debug }, signal);
+  return renderOffThread({ data, assets, design, debug }, signal, priority);
 }
 
 export async function renderPubmat(

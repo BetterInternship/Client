@@ -2,7 +2,12 @@
 const cache = new Map<string, string>();
 const drawing = new Map<
   string,
-  { promise: Promise<string>; controller: AbortController; users: number }
+  {
+    promise: Promise<string>;
+    controller: AbortController;
+    priority: number;
+    users: number;
+  }
 >();
 const LIMIT = 12;
 
@@ -24,11 +29,22 @@ export function write(key: string, svg: string) {
 export function acquire(
   key: string,
   make: (signal: AbortSignal) => Promise<string>,
+  priority = 0,
 ) {
   let entry = drawing.get(key);
+  if (entry && priority > entry.priority) {
+    entry.controller.abort();
+    drawing.delete(key);
+    entry = undefined;
+  }
   if (!entry) {
     const controller = new AbortController();
-    const created = { controller, users: 0, promise: Promise.resolve("") };
+    const created = {
+      controller,
+      priority,
+      users: 0,
+      promise: Promise.resolve(""),
+    };
     created.promise = Promise.resolve()
       .then(() => make(controller.signal))
       .finally(() => {
