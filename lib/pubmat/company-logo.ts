@@ -83,7 +83,13 @@ export async function readPubmatLogo(file: File): Promise<PubmatLogo> {
 function blobToDataUrl(blob: Blob) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
+    reader.onload = () => {
+      if (typeof reader.result === "string") resolve(reader.result);
+      else
+        reject(
+          new Error("We couldn’t prepare this logo. Please try another image."),
+        );
+    };
     reader.onerror = () =>
       reject(
         new Error("We couldn’t prepare this logo. Please try another image."),

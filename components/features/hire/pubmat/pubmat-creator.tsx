@@ -34,7 +34,6 @@ import type { PosterCopy } from "@/lib/pubmat/core";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { PubmatTextEditor } from "./pubmat-text-editor";
-import { PUBMAT_V2_BACKGROUNDS, PUBMAT_V2_DESIGN } from "@/lib/pubmat/v2";
 
 /**
  * A listing's pubmat: swipe or page through its designs, then download it or
@@ -230,7 +229,7 @@ export function PubmatCreator({
   }, []);
   const [design, setDesign] = useState<PubmatDesign>(initialDesign);
   const [selectedBackground, setSelectedBackground] = useState(
-    backgroundImage ?? PUBMAT_V2_BACKGROUNDS[0].id,
+    backgroundImage ?? PUBMAT_DESIGNS[initialDesign].backgrounds[0].id,
   );
   const [position, setPosition] = useState(
     backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 },
@@ -254,7 +253,9 @@ export function PubmatCreator({
     setDraft({});
     setEditing(initiallyEditing);
     setDesign(initialDesign);
-    setSelectedBackground(backgroundImage ?? PUBMAT_V2_BACKGROUNDS[0].id);
+    setSelectedBackground(
+      backgroundImage ?? PUBMAT_DESIGNS[initialDesign].backgrounds[0].id,
+    );
     setPosition(backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 });
     setSlides({});
   }, [job.id, link, initiallyEditing, initialDesign]);
@@ -349,6 +350,14 @@ export function PubmatCreator({
       return keep.size === seen.size ? seen : keep;
     });
   }, [reach, editing]);
+
+  useEffect(() => {
+    const presets = PUBMAT_DESIGNS[design].backgrounds;
+    const valid =
+      selectedBackground.startsWith("data:") ||
+      presets.some((item) => item.id === selectedBackground);
+    if (!valid) setSelectedBackground(presets[0].id);
+  }, [design, selectedBackground]);
 
   const download = () => {
     if (!current?.image || current.status !== "ready") return;
@@ -450,7 +459,7 @@ export function PubmatCreator({
         )}
       </div>
 
-      {design === PUBMAT_V2_DESIGN && editing && (
+      {editing && (
         <div
           className={cn(
             "w-full",
@@ -467,15 +476,20 @@ export function PubmatCreator({
             onReset={() => setDraft({})}
             rendering={current?.status === "loading"}
             backgroundImage={selectedBackground}
+            backgroundOptions={PUBMAT_DESIGNS[design].backgrounds}
             onBackgroundImageChange={(value) => {
               setSelectedBackground(value);
               onBackgroundImageChange?.(value);
             }}
             backgroundPosition={position}
-            onBackgroundPositionChange={(value) => {
-              setPosition(value);
-              onBackgroundPositionChange?.(value);
-            }}
+            onBackgroundPositionChange={
+              PUBMAT_DESIGNS[design].repositionBackground
+                ? (value) => {
+                    setPosition(value);
+                    onBackgroundPositionChange?.(value);
+                  }
+                : undefined
+            }
           />
         </div>
       )}
@@ -496,17 +510,13 @@ export function PubmatCreator({
           onDownload={download}
           alignRight={editing && sideBySide}
           editing={editing}
-          onEdit={
-            design === PUBMAT_V2_DESIGN
-              ? () => {
-                  if (editing) {
-                    setDraft({});
-                    setEditing(false);
-                  } else if (onEdit) onEdit(design);
-                  else setEditing(true);
-                }
-              : undefined
-          }
+          onEdit={() => {
+            if (editing) {
+              setDraft({});
+              setEditing(false);
+            } else if (onEdit) onEdit(design);
+            else setEditing(true);
+          }}
         />
       </div>
     </div>

@@ -5,7 +5,6 @@ import { LoaderCircle, PencilLine, RotateCcw } from "lucide-react";
 import { Button, Input, Label } from "@betterinternship/components";
 import { Textarea } from "@/components/ui/textarea";
 import type { PosterCopy } from "@/lib/pubmat/core";
-import { PUBMAT_V2_BACKGROUNDS } from "@/lib/pubmat/v2";
 
 const FIELDS = [
   "title",
@@ -30,6 +29,7 @@ export function PubmatTextEditor({
   showDescription = true,
   backgroundImage,
   onBackgroundImageChange,
+  backgroundOptions = [],
   backgroundPosition,
   onBackgroundPositionChange,
 }: {
@@ -41,6 +41,11 @@ export function PubmatTextEditor({
   showDescription?: boolean;
   backgroundImage?: string;
   onBackgroundImageChange?: (value: string) => void;
+  backgroundOptions?: ReadonlyArray<{
+    id: string;
+    label: string;
+    src?: string;
+  }>;
   backgroundPosition?: { x: number; y: number; scale: number };
   onBackgroundPositionChange?: (value: {
     x: number;
@@ -145,22 +150,24 @@ export function PubmatTextEditor({
             Background image
           </legend>
           <div className="grid grid-cols-4 gap-1.5">
-            {PUBMAT_V2_BACKGROUNDS.filter((item) => item.src).map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={backgroundImage === item.id}
-                onClick={() => onBackgroundImageChange(item.id)}
-                className={`overflow-hidden rounded-lg border-2 text-left text-[10px] ${backgroundImage === item.id ? "border-primary" : "border-transparent"}`}
-              >
-                <img
-                  src={item.src}
-                  alt=""
-                  className="aspect-square w-full object-cover"
-                />
-                <span className="block px-1.5 py-1">{item.label}</span>
-              </button>
-            ))}
+            {backgroundOptions
+              .filter((item) => item.src)
+              .map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-pressed={backgroundImage === item.id}
+                  onClick={() => onBackgroundImageChange(item.id)}
+                  className={`overflow-hidden rounded-lg border-2 text-left text-[10px] ${backgroundImage === item.id ? "border-primary" : "border-transparent"}`}
+                >
+                  <img
+                    src={item.src}
+                    alt=""
+                    className="aspect-square w-full object-cover"
+                  />
+                  <span className="block px-1.5 py-1">{item.label}</span>
+                </button>
+              ))}
             <label
               className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-2 text-center text-[10px] ${backgroundImage === "upload" || backgroundImage?.startsWith("data:") ? "border-primary text-primary" : "border-gray-300 text-gray-600"}`}
             >

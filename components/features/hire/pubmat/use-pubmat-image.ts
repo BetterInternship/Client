@@ -4,14 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useDbRefs } from "@/lib/db/use-refs";
 import type { Job } from "@/lib/db/db.types";
 import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
-import type { PubmatFormat } from "@/lib/pubmat/formats";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
-import { clampPubmatData } from "@/lib/pubmat/params";
 import { renderPubmat } from "@/lib/pubmat/render";
 import * as imageCache from "@/lib/pubmat/image-cache";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import type { PosterCopy } from "@/lib/pubmat/core";
-import { PUBMAT_V2_DESIGN } from "@/lib/pubmat/v2";
 
 /**
  * A listing's pubmat, drawn in the browser (lib/pubmat/render.ts) into a PNG
@@ -22,8 +19,6 @@ import { PUBMAT_V2_DESIGN } from "@/lib/pubmat/v2";
  *
  * Nothing is drawn until there's a `link` — the QR code opens it.
  */
-
-const FORMAT: PubmatFormat = "square";
 
 const slug = (text: string) =>
   text
@@ -48,14 +43,13 @@ export function usePubmatImage(
   hold = false,
 ) {
   const refs = useDbRefs();
-  const themed = design === PUBMAT_V2_DESIGN;
   // A pubmat only ever shows the viewer's own listing, so its logo is the
   // current employer's — asked for as "me", the same way the hire header does
   // (app-header.tsx). The job's employer id does not resolve here.
   const companyLogo = usePfpUrl({
     id: "me",
     source: "employer",
-    enabled: logoOverride === undefined && themed && !!link,
+    enabled: logoOverride === undefined && !!link,
   });
   const [image, setImage] = useState<{
     url: string;
@@ -69,7 +63,7 @@ export function usePubmatImage(
     () =>
       link && !companyLogo.loading
         ? (() => {
-            const listingData = pubmatDataFromJob(job, refs, link, themed);
+            const listingData = pubmatDataFromJob(job, refs, link, true);
             const raw = {
               ...listingData,
               ...copy,
@@ -80,14 +74,13 @@ export function usePubmatImage(
               backgroundImage,
               backgroundPosition,
             };
-            return themed ? raw : clampPubmatData(raw);
+            return raw;
           })()
         : undefined,
     [
       job,
       refs,
       link,
-      themed,
       copy,
       companyLogo.url,
       companyLogo.loading,
@@ -117,7 +110,7 @@ export function usePubmatImage(
     }
     let cancelled = false;
     imageCache
-      .once(key, () => renderPubmat(data, FORMAT, design))
+      .once(key, () => renderPubmat(data, design))
       .then((blob) => {
         if (cancelled) return;
         setImage({ url: URL.createObjectURL(blob), blob, key });

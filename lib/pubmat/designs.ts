@@ -1,12 +1,28 @@
-/** The carousel currently offers the active v2 square theme only. */
-import { PUBMAT_V2_DESIGN } from "./v2";
+import type { PosterTheme } from "./theme-types";
+import { studioBackgrounds, studioRenderSettings } from "./studio/config";
+import { centeredBackgrounds, centeredRenderSettings } from "./centered/config";
 
+/** Add new themes here. UI and renderer dispatch are derived from this registry. */
 export const PUBMAT_DESIGNS = {
-  [PUBMAT_V2_DESIGN]: { label: "Studio photo" },
-} as const;
+  "approved-photo-square": {
+    label: "Studio photo",
+    templatePath: "lib/pubmat/studio/template.tsx",
+    backgrounds: studioBackgrounds,
+    repositionBackground: true,
+    settings: studioRenderSettings,
+    loadTemplate: async () => (await import("./studio/template")).StudioPoster,
+  },
+  "centered-group-flow": {
+    label: "Centered editorial",
+    templatePath: "lib/pubmat/centered/template.tsx",
+    backgrounds: centeredBackgrounds,
+    repositionBackground: false,
+    settings: centeredRenderSettings,
+    loadTemplate: async () =>
+      (await import("./centered/template")).CenteredPoster,
+  },
+} satisfies Record<string, PosterTheme>;
 
 export type PubmatDesign = keyof typeof PUBMAT_DESIGNS;
-
-export const PUBMAT_DESIGN_IDS = [PUBMAT_V2_DESIGN] as PubmatDesign[];
-
-export const DEFAULT_PUBMAT_DESIGN: PubmatDesign = PUBMAT_V2_DESIGN;
+export const PUBMAT_DESIGN_IDS = Object.keys(PUBMAT_DESIGNS) as PubmatDesign[];
+export const DEFAULT_PUBMAT_DESIGN: PubmatDesign = "approved-photo-square";
