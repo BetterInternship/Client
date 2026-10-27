@@ -31,6 +31,7 @@ export function PubmatActions({
   onEdit,
   alignRight = false,
   editing = false,
+  readOnly = false,
 }: {
   job: Job;
   link: string;
@@ -40,18 +41,19 @@ export function PubmatActions({
   onEdit?: () => void;
   alignRight?: boolean;
   editing?: boolean;
+  readOnly?: boolean;
 }) {
   const { isMobile } = useAppContext();
   const [canShareImage, setCanShareImage] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ key: string; file: File }>();
-  const ready = status === "ready" && !!image;
+  const ready = !readOnly && status === "ready" && !!image;
 
   useEffect(() => {
     setMessage("");
     setCanShareImage(false);
-    if (!image || !navigator.share || !navigator.canShare) return;
+    if (readOnly || !image || !navigator.share || !navigator.canShare) return;
     try {
       const file = new File([], pubmatFileName(job), {
         type: "image/png",
@@ -60,24 +62,24 @@ export function PubmatActions({
     } catch {
       // The share sheet still opens with the caption alone.
     }
-  }, [image, job]);
+  }, [image, job, readOnly]);
 
   const prepareFile = useCallback(async () => {
-    if (!image) return;
+    if (readOnly || !image) return;
     const blob = await image.getPng();
     const file = new File([blob], pubmatFileName(job), { type: "image/png" });
     setPrepared({ key: image.key, file });
     return file;
-  }, [image, job]);
+  }, [image, job, readOnly]);
   const prepareOnOpen = useCallback(() => {
-    if (canShareImage)
+    if (!readOnly && canShareImage)
       void prepareFile().catch(() => {
         setMessage("Couldn’t prepare the poster. Please try again.");
       });
-  }, [canShareImage, prepareFile]);
+  }, [canShareImage, prepareFile, readOnly]);
 
   const handleDownload = async () => {
-    if (!ready || busy) return;
+    if (!ready || busy || readOnly) return;
     setBusy(true);
     setMessage("");
     try {
@@ -90,7 +92,7 @@ export function PubmatActions({
   };
 
   const handleCopyPoster = async () => {
-    if (!ready || !image || busy) return;
+    if (!ready || !image || busy || readOnly) return;
     setMessage("");
     setBusy(true);
     try {
@@ -116,7 +118,7 @@ export function PubmatActions({
   // Phones have the device share sheet, which takes the poster file itself.
   // A browser that can't attach files still gets the caption and link.
   const handleShareAsPost = async () => {
-    if (!ready || !image || busy) return;
+    if (!ready || !image || busy || readOnly) return;
     if (!navigator.share) {
       await handleCopyPoster();
       return;
@@ -152,6 +154,7 @@ export function PubmatActions({
   };
 
   const handleCopyLink = async () => {
+    if (readOnly) return;
     try {
       await navigator.clipboard.writeText(link);
       setMessage("Listing link copied.");
@@ -165,7 +168,7 @@ export function PubmatActions({
     label: "Share as post",
     icon: <Share2 />,
     primary: true,
-    disabled: !ready,
+    disabled: readOnly || !ready,
     onSelect: () => void handleShareAsPost(),
   };
 
@@ -178,20 +181,21 @@ export function PubmatActions({
       label: "Copy poster",
       icon: <ClipboardCopy />,
       primary: !isMobile,
-      disabled: !ready,
+      disabled: readOnly || !ready,
       onSelect: () => void handleCopyPoster(),
     },
     {
       id: "download",
       label: "Download poster",
       icon: <Download />,
-      disabled: !ready,
+      disabled: readOnly || !ready,
       onSelect: () => void handleDownload(),
     },
     {
       id: "link",
       label: "Copy link",
       icon: <Link2 />,
+      disabled: readOnly,
       onSelect: () => void handleCopyLink(),
     },
   ];
@@ -207,8 +211,15 @@ export function PubmatActions({
               type="button"
               variant="ghost"
               size="lg"
+              disabled={readOnly}
               onClick={onEdit}
-              aria-label={editing ? "Discard edit" : "Edit"}
+              aria-label={
+                readOnly
+                  ? "Edit unavailable while listing is paused"
+                  : editing
+                    ? "Discard edit"
+                    : "Edit"
+              }
               className="h-10 gap-2 px-4 text-gray-600"
             >
               <PencilLine aria-hidden="true" />
@@ -221,10 +232,15 @@ export function PubmatActions({
         <ShareMenu
           items={items}
           busy={busy}
-          disabled={!ready}
+          disabled={readOnly || !ready}
           onOpen={prepareOnOpen}
         />
       </div>
+      {readOnly && (
+        <p className="text-center text-xs text-gray-500">
+          Preview only. Resume the listing to edit or share this poster.
+        </p>
+      )}
       {message && (
         <p role="status" className="text-center text-xs text-gray-600">
           {message}

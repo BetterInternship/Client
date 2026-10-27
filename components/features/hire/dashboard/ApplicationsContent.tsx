@@ -210,10 +210,10 @@ export const ApplicationsContent = forwardRef<
     (application) => application.status !== undefined,
   );
 
-  // Nudge to share once there are applicants to look at — but not for a
-  // listing that isn't taking any.
-  const showShareNotice =
-    visibleApplications.length > 0 && job.is_active && !job.paused;
+  // Keep the pubmat viewer above the applications even when the listing is
+  // paused. ShareListingNotice turns into a read-only preview for inactive
+  // listings, so employers can still see the poster without sharing it.
+  const showShareNotice = visibleApplications.length > 0;
 
   const {
     selectedApplications,

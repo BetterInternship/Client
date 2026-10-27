@@ -263,11 +263,13 @@ export const useModalRegistry = () => {
         open: ({
           job,
           link,
+          companyLogo,
           startInEditor,
           initialDesign,
         }: {
           job: Job;
           link: string;
+          companyLogo?: string | null;
           startInEditor?: boolean;
           initialDesign?: PubmatDesign;
         }) =>
@@ -277,6 +279,7 @@ export const useModalRegistry = () => {
             <PubmatModal
               job={job}
               link={link}
+              companyLogo={companyLogo}
               startInEditor={startInEditor}
               initialDesign={initialDesign}
             />,

@@ -35,6 +35,7 @@ export const SharePubmatButton = ({
   const modals = useModalRegistry();
   const queryClient = useQueryClient();
   const [minting, setMinting] = useState(false);
+  const paused = job.is_active === false || Boolean(job.paused);
 
   const handleClick = async () => {
     if (minting || !job.id) return;
@@ -56,7 +57,7 @@ export const SharePubmatButton = ({
       variant={variant}
       size={size}
       scheme={scheme}
-      disabled={disabled || minting}
+      disabled={disabled || minting || paused}
       onClick={() => void handleClick()}
       className={cn(
         "gap-1",

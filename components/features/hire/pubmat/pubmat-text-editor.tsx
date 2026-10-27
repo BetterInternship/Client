@@ -163,6 +163,8 @@ export function PubmatTextEditor({
                   <img
                     src={item.src}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-square w-full object-cover"
                   />
                   <span className="block px-1.5 py-1">{item.label}</span>

@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { useInView } from "framer-motion";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Pause } from "lucide-react";
+import { cn } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Shimmer } from "@/components/ui/shimmer";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -21,6 +22,7 @@ import { usePubmatImage } from "./use-pubmat-image";
  * it needs is fetched until the notice is close to the screen.
  */
 export function ShareListingNotice({ job }: { job: Job }) {
+  const paused = job.is_active === false || Boolean(job.paused);
   const modals = useModalRegistry();
   const ref = useRef<HTMLDivElement>(null);
   const near = useInView(ref, { once: true, margin: "0px 0px 240px 0px" });
@@ -32,18 +34,35 @@ export function ShareListingNotice({ job }: { job: Job }) {
     <div ref={ref} className="relative mb-4 mt-0.5 pt-7">
       <button
         type="button"
-        aria-label="Open your pubmat"
+        aria-label={
+          paused ? "Preview paused listing pubmat" : "Open your pubmat"
+        }
         disabled={!url}
         onClick={() => url && modals.pubmat.open({ job, link: url })}
-        className="absolute top-0 left-4 z-10 block aspect-square w-36 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5 sm:w-24"
+        className={cn(
+          "absolute top-0 left-4 z-10 block aspect-square w-36 -rotate-3 cursor-pointer overflow-hidden rounded-[0.33em] border border-gray-200 bg-gray-50 shadow-lg transition-transform duration-200 hover:-rotate-1 hover:scale-105 disabled:cursor-default motion-reduce:transition-none sm:left-5 sm:w-24",
+          paused && "grayscale",
+        )}
       >
         {image ? (
-          <img
-            src={image.url}
-            alt=""
-            draggable={false}
-            className="size-full object-cover"
-          />
+          <>
+            <img
+              src={image.url}
+              alt=""
+              draggable={false}
+              className="size-full object-cover"
+            />
+            {paused && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gray-500/20"
+              >
+                <span className="inline-flex size-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm">
+                  <Pause className="size-4" />
+                </span>
+              </span>
+            )}
+          </>
         ) : status === "error" ? (
           <span className="flex size-full items-center justify-center">
             <ImageOff className="size-5 text-gray-400" />
@@ -54,14 +73,19 @@ export function ShareListingNotice({ job }: { job: Job }) {
       </button>
 
       <StatusNotice
-        title="Get more applicants"
-        description="Share this listing on social media"
+        title={paused ? "Listing paused" : "Get more applicants"}
+        description={
+          paused
+            ? "Preview the poster, but sharing is disabled until the listing is re-activated."
+            : "Share this listing on social media"
+        }
         action={
           <SharePubmatButton
             job={job}
             variant="outline"
             size="md"
             scheme="primary"
+            disabled={paused}
             className="w-full sm:w-auto"
           />
         }

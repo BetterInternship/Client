@@ -16,11 +16,14 @@ import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
 export function PubmatModal({
   job,
   link,
+  companyLogo,
   startInEditor = false,
   initialDesign = DEFAULT_PUBMAT_DESIGN,
 }: {
   job: Job;
   link: string;
+  /** Reuse a logo already resolved by the dashboard preview. */
+  companyLogo?: string | null;
   startInEditor?: boolean;
   initialDesign?: PubmatDesign;
 }) {
@@ -29,6 +32,7 @@ export function PubmatModal({
       key={`${job.id ?? "listing"}-${link}-${startInEditor}-${initialDesign}`}
       job={job}
       link={link}
+      companyLogo={companyLogo}
       startInEditor={startInEditor}
       initialDesign={initialDesign}
     />
@@ -38,15 +42,18 @@ export function PubmatModal({
 function SharePubmatFlow({
   job,
   link,
+  companyLogo,
   startInEditor,
   initialDesign,
 }: {
   job: Job;
   link: string;
+  companyLogo?: string | null;
   startInEditor: boolean;
   initialDesign: PubmatDesign;
 }) {
-  const logo = usePubmatLogo();
+  const logo = usePubmatLogo(companyLogo);
+  const paused = job.is_active === false || Boolean(job.paused);
   if (logo.loading)
     return (
       <div className="flex min-h-56 flex-col items-center justify-center gap-4 py-6 text-center">
@@ -74,7 +81,9 @@ function SharePubmatFlow({
   return (
     <div className="flex flex-col gap-3 pt-2">
       <p className="text-sm text-gray-600">
-        Post it anywhere. The QR code opens your listing on BetterInternship.
+        {paused
+          ? "This listing is paused. You can preview the poster, but editing and sharing are disabled until it is re-activated."
+          : "Post it anywhere. The QR code opens your listing on BetterInternship."}
       </p>
       <PubmatCreator
         job={job}

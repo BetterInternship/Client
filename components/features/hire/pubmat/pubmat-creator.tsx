@@ -8,7 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { ImageOff, Loader2, RotateCw } from "lucide-react";
+import { ImageOff, Loader2, Pause, RotateCw } from "lucide-react";
 import { Button, cn } from "@betterinternship/components";
 import {
   Carousel,
@@ -66,6 +66,7 @@ function PubmatSlide({
   companyLogo,
   backgroundImage,
   backgroundPosition,
+  paused,
 }: {
   job: Job;
   link: string;
@@ -79,6 +80,7 @@ function PubmatSlide({
   companyLogo?: string | null;
   backgroundImage?: string;
   backgroundPosition?: { x: number; y: number; scale: number };
+  paused: boolean;
 }) {
   const tilt = useTilt();
   const { image, status, error, retry } = usePubmatImage(
@@ -168,13 +170,29 @@ function PubmatSlide({
             </div>
           ) : (
             image && (
-              <img
-                src={image.url}
-                alt={`${PUBMAT_DESIGNS[design].label} pubmat for ${job.title ?? "your listing"}`}
-                // Dragging the picture would fight the carousel's own drag.
-                draggable={false}
-                className="size-full select-none object-contain"
-              />
+              <>
+                <img
+                  src={image.url}
+                  alt={`${PUBMAT_DESIGNS[design].label} pubmat for ${job.title ?? "your listing"}`}
+                  // Dragging the picture would fight the carousel's own drag.
+                  draggable={false}
+                  className={cn(
+                    "size-full select-none object-contain",
+                    paused && "grayscale opacity-60",
+                  )}
+                />
+                {paused && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-gray-500/15 p-4"
+                  >
+                    <div className="flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-sm font-semibold text-gray-700 shadow-md">
+                      <Pause className="size-4" />
+                      Listing paused
+                    </div>
+                  </div>
+                )}
+              </>
             )
           )}
         </div>
@@ -221,6 +239,7 @@ export function PubmatCreator({
   /** Design to show first, so moving into the modal keeps the chosen poster. */
   initialDesign?: PubmatDesign;
 }) {
+  const paused = job.is_active === false || Boolean(job.paused);
   const [api, setApi] = useState<CarouselApi>();
   // When the pointer last moved over the carousel; background renders wait for
   // it to go quiet. A ref, not state: this changes on every move and must not
@@ -254,17 +273,28 @@ export function PubmatCreator({
   // doesn't trigger a redraw per keystroke.
   const [draft, setDraft] = useState<PosterCopy>({});
   const copy = useDebouncedValue(draft, 350);
-  const [editing, setEditing] = useState(initiallyEditing);
+  const [editing, setEditing] = useState(initiallyEditing && !paused);
+  const identity = `${job.id ?? "listing"}|${link}|${initiallyEditing}|${initialDesign}|${paused}`;
+  const previousIdentity = useRef(identity);
   useEffect(() => {
+    if (previousIdentity.current === identity) return;
+    previousIdentity.current = identity;
     setDraft({});
-    setEditing(initiallyEditing);
+    setEditing(initiallyEditing && !paused);
     setDesign(initialDesign);
     setSelectedBackground(
       backgroundImage ?? PUBMAT_DESIGNS[initialDesign].backgrounds[0].id,
     );
     setPosition(backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 });
     setSlides({});
-  }, [job.id, link, initiallyEditing, initialDesign]);
+  }, [
+    identity,
+    initiallyEditing,
+    initialDesign,
+    backgroundImage,
+    backgroundPosition,
+    paused,
+  ]);
 
   const count = PUBMAT_DESIGN_IDS.length;
   const current = slides[design];
@@ -420,6 +450,7 @@ export function PubmatCreator({
                   companyLogo={companyLogo}
                   backgroundImage={selectedBackground}
                   backgroundPosition={position}
+                  paused={paused}
                 />
               </CarouselItem>
             ))}
@@ -462,7 +493,7 @@ export function PubmatCreator({
         )}
       </div>
 
-      {editing && (
+      {editing && !paused && (
         <div
           className={cn(
             "w-full",
@@ -513,7 +544,9 @@ export function PubmatCreator({
           onDownload={download}
           alignRight={editing && sideBySide}
           editing={editing}
+          readOnly={paused}
           onEdit={() => {
+            if (paused) return;
             if (editing) {
               setDraft({});
               setEditing(false);

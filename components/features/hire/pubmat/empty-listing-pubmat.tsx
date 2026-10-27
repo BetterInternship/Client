@@ -1,7 +1,7 @@
 "use client";
 
 import { Ghost, ImageOff, Megaphone, RotateCw } from "lucide-react";
-import { Button } from "@betterinternship/components";
+import { Button, cn } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Shimmer } from "@/components/ui/shimmer";
 import type { Job } from "@/lib/db/db.types";
@@ -16,6 +16,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
  * link is reused for the poster's QR; logo upload never opens another modal.
  */
 export function EmptyListingPubmat({ job }: { job: Job }) {
+  const paused = job.is_active === false || Boolean(job.paused);
   const modals = useModalRegistry();
   const { url, isPending, isError, refetch } = useShareLink(job.id);
   const logo = usePubmatLogo();
@@ -28,7 +29,12 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
       </div>
 
       {/* Widen only when the desktop text editor is open. */}
-      <div className="w-full max-w-[520px] rounded-[0.33em] border border-primary/25 bg-primary/[0.035] px-4 py-4 sm:px-5 lg:has-[.pubmat-editing]:max-w-[984px]">
+      <div
+        className={cn(
+          "w-full max-w-[520px] rounded-[0.33em] border border-primary/25 bg-primary/[0.035] px-4 py-4 sm:px-5 lg:has-[.pubmat-editing]:max-w-[984px]",
+          paused && "border-gray-200 bg-gray-50",
+        )}
+      >
         {logo.asking ? (
           <PubmatLogoPrompt onContinue={logo.continueWith} />
         ) : (
@@ -40,11 +46,11 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
               {/* Same type as the logo step's heading (pubmat-logo-prompt.tsx),
                   so the card and the step it opens read as one flow. */}
               <h3 className="min-w-0 flex-1 text-xl font-semibold leading-snug tracking-tight text-gray-900">
-                Let students know you’re hiring.
+                {paused ? "Listing paused" : "Let students know you’re hiring."}
               </h3>
             </div>
 
-            {logo.needsLogo && (
+            {!paused && logo.needsLogo && (
               <StatusNotice
                 variant="warning"
                 title="Add a logo so students know who’s hiring at a glance."
@@ -71,6 +77,7 @@ export function EmptyListingPubmat({ job }: { job: Job }) {
                     modals.pubmat.open({
                       job,
                       link: url,
+                      companyLogo: logo.companyLogo,
                       startInEditor: true,
                       initialDesign,
                     })
