@@ -209,7 +209,10 @@ export function CenteredPoster({
                 style={{
                   display: "flex",
                   color: line.color,
-                  fontSize: index === 0 ? 36 : 40,
+                  fontSize: Math.max(
+                    description.minFontSize,
+                    description.fontSize - adjustment / 3,
+                  ),
                   fontWeight: line.weight,
                   lineHeight: 1,
                 }}

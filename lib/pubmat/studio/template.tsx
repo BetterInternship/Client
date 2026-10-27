@@ -174,16 +174,14 @@ export function StudioPoster({
             style={{
               display: "flex",
               flexDirection: "column",
-              fontSize: 34,
-              fontWeight: 700,
+              fontSize: Math.max(30, 35 - adjustment / 4),
+              fontWeight: 400,
               lineHeight: 1,
               gap: 4,
             }}
           >
             <div style={{ display: "flex" }}>Scan to apply via</div>
-            <div style={{ display: "flex", color: "#087CFF" }}>
-              BetterInternship
-            </div>
+            <div style={{ display: "flex" }}>BetterInternship</div>
           </div>
         </div>
       </div>

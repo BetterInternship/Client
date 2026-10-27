@@ -125,7 +125,7 @@ export const splitDeskConfig = {
       lineHeight: 1.05,
       maxLines: 1,
     },
-    brand: { initial: 35, min: 32, weight: 700, lineHeight: 1.05, maxLines: 1 },
+    brand: { initial: 35, min: 32, weight: 400, lineHeight: 1.05, maxLines: 1 },
     fit: "shared adjustment loop, then reject; never clamp, clip or ellipsize",
     lineHeightPolicy:
       "Keep each block's configured unitless line-height while shrinking glyphs; natural block heights and the fixed CSS gaps then shrink together. Static marker limits still enforce maximum lines at every adjustment.",

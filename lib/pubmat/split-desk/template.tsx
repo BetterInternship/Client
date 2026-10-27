@@ -26,8 +26,6 @@ export function SplitDeskPoster({
   const labelSize = size(copy.detailLabel.initial, copy.detailLabel.min, 12);
   const valueSize = size(copy.detailValue.initial, copy.detailValue.min, 6);
   const companySize = size(copy.company.initial, copy.company.min, 6);
-  const footerSize = size(copy.footer.initial, copy.footer.min, 20);
-  const brandSize = size(copy.brand.initial, copy.brand.min, 14);
   const title = data.title?.trim();
   if (!title) throw new PubmatFitError("title", "A role title is required.");
   if (!data.company?.trim())
@@ -357,7 +355,7 @@ export function SplitDeskPoster({
                   data-poster="footer-line"
                   style={{
                     display: "flex",
-                    fontSize: footerSize,
+                    fontSize: descriptionSize,
                     fontWeight: copy.footer.weight,
                     lineHeight: copy.footer.lineHeight,
                     whiteSpace: "nowrap",
@@ -369,11 +367,10 @@ export function SplitDeskPoster({
                   data-poster="brand-line"
                   style={{
                     display: "flex",
-                    fontSize: brandSize,
+                    fontSize: descriptionSize,
                     fontWeight: copy.brand.weight,
                     lineHeight: copy.brand.lineHeight,
                     whiteSpace: "nowrap",
-                    color: theme.colors.accent,
                   }}
                 >
                   BetterInternship
