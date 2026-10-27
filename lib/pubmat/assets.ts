@@ -1,6 +1,7 @@
 import type { PosterBackground } from "./theme-types";
 import { posterImage } from "./jsx-renderer";
 import { PubmatFitError } from "./core";
+import { assetCache } from "./asset-cache";
 
 export function posterBackground(
   value: string | undefined,
@@ -14,11 +15,23 @@ export function posterBackground(
 }
 
 /** Logo preparation is shared; each layout chooses its size/trim policy. */
-export async function posterLogo(
+const cachedLogo = assetCache<{ src: string; width: number; height: number }>(
+  6,
+);
+export function posterLogo(
   src: string | undefined,
   options: { width: number; height: number; trim?: boolean; upscale?: boolean },
 ) {
-  if (!src) return undefined;
+  if (!src) return Promise.resolve(undefined);
+  return cachedLogo(JSON.stringify([src, options]), () =>
+    prepareLogo(src, options),
+  );
+}
+
+async function prepareLogo(
+  src: string,
+  options: { width: number; height: number; trim?: boolean; upscale?: boolean },
+) {
   let embedded = await posterImage(src);
   const image = new Image();
   image.src = embedded;

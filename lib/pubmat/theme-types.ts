@@ -1,7 +1,7 @@
 import type { PubmatData } from "./params";
 import type { ComponentType } from "react";
 
-export type PosterArtifact = { svg: string; blob: Blob };
+export type PosterArtifact = { svg: string };
 export type PosterBackground = { id: string; label: string; src: string };
 export type PosterAssets = {
   background: string;
