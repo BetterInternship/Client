@@ -7,10 +7,10 @@
  */
 import type { PublicTopUniversityResponseStatus } from "./publicTopUniversityResponseStatus";
 import type { TopUniversitySummary } from "./topUniversitySummary";
-import type { TopUniversityPageCard } from "./topUniversityPageCard";
+import type { TopPageSummary } from "./topPageSummary";
 
 export interface PublicTopUniversityResponse {
   status: PublicTopUniversityResponseStatus;
   university?: TopUniversitySummary;
-  pages?: TopUniversityPageCard[];
+  pages?: TopPageSummary[];
 }

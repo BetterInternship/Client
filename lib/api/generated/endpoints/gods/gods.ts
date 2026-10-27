@@ -7,6 +7,7 @@
  */
 import type {
   ApproveMoaDto,
+  BaseResponse,
   CreateEmployerResponse,
   CreateListingDto,
   CreateListingResponse,
@@ -224,14 +225,11 @@ export const getGodsControllerExitProxyUrl = () => {
 
 export const godsControllerExitProxy = async (
   options?: RequestInit,
-): Promise<EmployerUserSelfResponse> => {
-  return careerFetch<EmployerUserSelfResponse>(
-    getGodsControllerExitProxyUrl(),
-    {
-      ...options,
-      method: "POST",
-    },
-  );
+): Promise<BaseResponse> => {
+  return careerFetch<BaseResponse>(getGodsControllerExitProxyUrl(), {
+    ...options,
+    method: "POST",
+  });
 };
 
 export const getGodsControllerVerifyEmployerUrl = (id: string) => {

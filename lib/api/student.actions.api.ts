@@ -25,8 +25,13 @@ export const useApplicationActions = () => {
   const queryClient = useQueryClient();
   const actions = {
     redditReviewClick: useMutation({
-      mutationFn: (applicationId: string) =>
-        ApplicationService.notifyRedditReviewClick(applicationId),
+      mutationFn: ({
+        applicationId,
+        title,
+      }: {
+        applicationId: string;
+        title: string;
+      }) => ApplicationService.notifyRedditReviewClick(applicationId, title),
       // A retry would count the same click more than once.
       retry: false,
     }),
