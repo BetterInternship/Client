@@ -33,7 +33,7 @@ export const centeredConfig = {
       footer: {
         lines: [
           { text: "Scan to apply via", weight: 400, color: "#000F3D" },
-          { text: "BetterInternship", weight: 700, color: "#0864FF" },
+          { text: "BetterInternship", weight: 400, color: "#000F3D" },
         ],
       },
     },

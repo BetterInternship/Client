@@ -3,8 +3,21 @@
 import { useId } from "react";
 import { LoaderCircle, PencilLine, RotateCcw } from "lucide-react";
 import { Button, Input, Label } from "@betterinternship/components";
+import {
+  Autocomplete,
+  type IAutocompleteOption,
+} from "@/components/ui/autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import type { PosterCopy } from "@/lib/pubmat/core";
+
+const WORK_MODE_OPTIONS: IAutocompleteOption<string>[] = [
+  { id: "On-site", name: "On-site" },
+  { id: "Hybrid", name: "Hybrid" },
+  { id: "Remote", name: "Remote" },
+];
+
+const workModeOnly = (value: string) =>
+  value.split(/[·•|]|\s+-\s+/)[0]?.trim() ?? "";
 
 const FIELDS = [
   "title",
@@ -60,6 +73,7 @@ export function PubmatTextEditor({
       (showDescription || field !== "description") &&
       value(field) !== (base[field] ?? ""),
   );
+  const workSetup = workModeOnly(value("setup"));
 
   function input(
     field: Exclude<keyof PosterCopy, "description">,
@@ -237,7 +251,19 @@ export function PubmatTextEditor({
         </legend>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {input("location", "Location", "e.g. Makati City")}
-          {input("setup", "Work setup", "e.g. Hybrid")}
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-setup`} className="text-xs text-gray-700">
+              Work setup
+            </Label>
+            <Autocomplete
+              options={WORK_MODE_OPTIONS}
+              value={workSetup || null}
+              setter={(next) => onChange({ ...draft, setup: next ?? "" })}
+              placeholder="Select"
+              mobileDropdownMode="inline"
+              className="w-full"
+            />
+          </div>
         </div>
         {input("pay", "Compensation", "e.g. ₱8,000 / month")}
       </fieldset>

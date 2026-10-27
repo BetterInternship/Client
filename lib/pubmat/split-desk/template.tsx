@@ -26,8 +26,6 @@ export function SplitDeskPoster({
   const labelSize = size(copy.detailLabel.initial, copy.detailLabel.min, 12);
   const valueSize = size(copy.detailValue.initial, copy.detailValue.min, 6);
   const companySize = size(copy.company.initial, copy.company.min, 6);
-  const footerSize = size(copy.footer.initial, copy.footer.min, 20);
-  const brandSize = size(copy.brand.initial, copy.brand.min, 14);
   const title = data.title?.trim();
   if (!title) throw new PubmatFitError("title", "A role title is required.");
   if (!data.company?.trim())
@@ -336,14 +334,45 @@ export function SplitDeskPoster({
                 gap: p.qrToFooterGap,
               }}
             >
-              <img
+              <div
                 data-poster="qr"
-                src={assets.qr.src}
-                width={assets.qr.size}
-                height={assets.qr.size}
-                alt=""
-                style={{ flexShrink: 0 }}
-              />
+                style={{
+                  display: "flex",
+                  position: "relative",
+                  width: assets.qr.size,
+                  height: assets.qr.size,
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={assets.qr.src}
+                  width={assets.qr.size}
+                  height={assets.qr.size}
+                  alt=""
+                />
+                {assets.logo && (
+                  <div
+                    style={{
+                      display: "flex",
+                      position: "absolute",
+                      left: assets.qr.size * 0.4,
+                      top: assets.qr.size * 0.4,
+                      width: assets.qr.size * 0.2,
+                      height: assets.qr.size * 0.2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={assets.logo.src}
+                      width={assets.qr.size * 0.2}
+                      height={assets.qr.size * 0.2}
+                      alt=""
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+                )}
+              </div>
               <div
                 data-poster="footer"
                 style={{
@@ -357,7 +386,7 @@ export function SplitDeskPoster({
                   data-poster="footer-line"
                   style={{
                     display: "flex",
-                    fontSize: footerSize,
+                    fontSize: descriptionSize,
                     fontWeight: copy.footer.weight,
                     lineHeight: copy.footer.lineHeight,
                     whiteSpace: "nowrap",
@@ -369,11 +398,10 @@ export function SplitDeskPoster({
                   data-poster="brand-line"
                   style={{
                     display: "flex",
-                    fontSize: brandSize,
+                    fontSize: descriptionSize,
                     fontWeight: copy.brand.weight,
                     lineHeight: copy.brand.lineHeight,
                     whiteSpace: "nowrap",
-                    color: theme.colors.accent,
                   }}
                 >
                   BetterInternship

@@ -3,8 +3,8 @@ import { rasterizePoster } from "./jsx-renderer";
 import { PubmatFitError } from "./core";
 
 export type PosterWorkerRequest =
-  | { type: "layout"; id: number; input: PreparedPoster }
-  | { type: "png"; id: number; svg: string }
+  | { type: "layout"; id: number; input: PreparedPoster; priority?: number }
+  | { type: "png"; id: number; svg: string; priority?: number }
   | { type: "cancel"; id: number };
 
 const jobs = new Map<
@@ -16,13 +16,37 @@ const jobs = new Map<
 >();
 let running = false;
 
+function priorityOf(request: Exclude<PosterWorkerRequest, { type: "cancel" }>) {
+  return request.priority ?? 0;
+}
+
+function nextJob() {
+  let selected:
+    | [
+        number,
+        {
+          request: Exclude<PosterWorkerRequest, { type: "cancel" }>;
+          controller: AbortController;
+        },
+      ]
+    | undefined;
+  for (const entry of jobs) {
+    if (
+      !selected ||
+      priorityOf(entry[1].request) > priorityOf(selected[1].request)
+    ) {
+      selected = entry;
+    }
+  }
+  return selected!;
+}
+
 async function drain() {
   if (running) return;
   running = true;
   try {
     while (jobs.size) {
-      const entry = jobs.entries().next().value!;
-      const [id, { request, controller }] = entry;
+      const [id, { request, controller }] = nextJob();
       try {
         controller.signal.throwIfAborted();
         const result =

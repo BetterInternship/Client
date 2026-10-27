@@ -164,26 +164,55 @@ export function StudioPoster({
             gap: 21,
           }}
         >
-          <img
-            src={assets.qr.src}
-            width={assets.qr.size}
-            height={assets.qr.size}
-            alt=""
-          />
+          <div
+            style={{
+              display: "flex",
+              position: "relative",
+              width: assets.qr.size,
+              height: assets.qr.size,
+            }}
+          >
+            <img
+              src={assets.qr.src}
+              width={assets.qr.size}
+              height={assets.qr.size}
+              alt=""
+            />
+            {assets.logo && (
+              <div
+                style={{
+                  display: "flex",
+                  position: "absolute",
+                  left: assets.qr.size * 0.4,
+                  top: assets.qr.size * 0.4,
+                  width: assets.qr.size * 0.2,
+                  height: assets.qr.size * 0.2,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src={assets.logo.src}
+                  width={assets.qr.size * 0.2}
+                  height={assets.qr.size * 0.2}
+                  alt=""
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              fontSize: 34,
-              fontWeight: 700,
+              fontSize: Math.max(30, 35 - adjustment / 4),
+              fontWeight: 400,
               lineHeight: 1,
               gap: 4,
             }}
           >
             <div style={{ display: "flex" }}>Scan to apply via</div>
-            <div style={{ display: "flex", color: "#087CFF" }}>
-              BetterInternship
-            </div>
+            <div style={{ display: "flex" }}>BetterInternship</div>
           </div>
         </div>
       </div>

@@ -7,7 +7,8 @@ import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
 import { DEFAULT_PUBMAT_DESCRIPTION } from "@/lib/pubmat/params";
 import { renderPubmatArtifact } from "@/lib/pubmat/render";
-import { posterPreview } from "@/lib/pubmat/preview";
+import { posterPngPreview } from "@/lib/pubmat/preview";
+import { exportPosterPng } from "@/lib/pubmat/worker-client";
 import * as imageCache from "@/lib/pubmat/image-cache";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import type { PosterCopy } from "@/lib/pubmat/core";
@@ -40,6 +41,7 @@ export function usePubmatImage(
   /** Keep the last drawing even when `link` goes away (a slide near the one on
    * show, temporarily not wanted because the text editor is open). */
   hold = false,
+  priority = 0,
 ) {
   const refs = useDbRefs();
   // A pubmat only ever shows the viewer's own listing, so its logo is the
@@ -50,7 +52,7 @@ export function usePubmatImage(
     source: "employer",
     enabled: logoOverride === undefined && !!link,
   });
-  const [image, setImage] = useState<ReturnType<typeof posterPreview>>();
+  const [image, setImage] = useState<ReturnType<typeof posterPngPreview>>();
   const [failure, setFailure] = useState<{ key: string; message: string }>();
   const [attempt, setAttempt] = useState(0);
 
@@ -97,28 +99,50 @@ export function usePubmatImage(
   // that's what makes swiping back, or reopening the modal, instant. Edited
   // copy is drawn but not kept: typing its way through a variant per keystroke
   // would push every pristine poster out of the cache.
-  const key = `${design}-${attempt}-${JSON.stringify(data)}`;
+  const key = useMemo(
+    () => `${design}-${attempt}-${JSON.stringify(data)}`,
+    [design, attempt, data],
+  );
   const pristine = !copy || Object.keys(copy).length === 0;
   useEffect(() => {
     if (!data) return;
+    let cancelled = false;
     const drawn = imageCache.read(key);
     if (drawn) {
-      setImage(posterPreview(drawn, key));
+      void exportPosterPng(drawn, priority)
+        .then((png) => {
+          if (!cancelled) setImage(posterPngPreview(png, key, drawn));
+        })
+        .catch((error) => {
+          if (!cancelled)
+            setFailure({
+              key,
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "Could not make the pubmat. Please try again.",
+            });
+        });
       setFailure(undefined);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
-    let cancelled = false;
     const work = imageCache.acquire(
       key,
       async (signal) =>
-        (await renderPubmatArtifact(data, design, false, signal)).svg,
+        (await renderPubmatArtifact(data, design, false, signal, priority)).svg,
+      priority,
     );
     work.promise
       .then((svg) => {
         if (cancelled) return;
-        setImage(posterPreview(svg, key));
-        setFailure(undefined);
-        if (pristine) imageCache.write(key, svg);
+        return exportPosterPng(svg, priority).then((png) => {
+          if (cancelled) return;
+          setImage(posterPngPreview(png, key, svg));
+          setFailure(undefined);
+          if (pristine) imageCache.write(key, svg);
+        });
       })
       .catch((error) => {
         if (
@@ -140,7 +164,7 @@ export function usePubmatImage(
       cancelled = true;
       work.release();
     };
-  }, [key, data, design, pristine]);
+  }, [key, data, design, pristine, priority]);
 
   // Object URLs outlive the component unless released.
   useEffect(() => {

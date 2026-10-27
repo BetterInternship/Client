@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -55,7 +56,7 @@ type SlideState = Pick<ReturnType<typeof usePubmatImage>, "image" | "status">;
 /** How many designs either side of the one on show stay drawn. */
 const WARM_RADIUS = 3;
 
-function PubmatSlide({
+const PubmatSlide = memo(function PubmatSlide({
   job,
   link,
   design,
@@ -92,13 +93,19 @@ function PubmatSlide({
     backgroundImage,
     backgroundPosition,
     hold,
+    wanted && !hold ? 10 : 0,
   );
+  const [imageBroken, setImageBroken] = useState(false);
+  useEffect(() => {
+    if (status === "loading") setImageBroken(false);
+  }, [status]);
 
   // A tile with no poster on it is never an empty square: it holds the dot
   // matrix (components/ui/dot-matrix.tsx) until the picture lands — including
   // while you drag towards a slide that hasn't been drawn yet. A redraw behind
   // a poster that's already up keeps the poster and just says it's catching up.
-  const drawing = !image && status !== "error";
+  const displayError = status === "error" || imageBroken;
+  const drawing = !image && !displayError;
   const updating = status === "loading" && !!image;
   const [pill, setPill] = useState(false);
   useEffect(() => {
@@ -110,8 +117,11 @@ function PubmatSlide({
 
   // The creator needs the visible slide's image for Download and Share.
   useEffect(() => {
-    onChange(design, { image, status });
-  }, [design, image, status, onChange]);
+    onChange(design, {
+      image: imageBroken ? undefined : image,
+      status: imageBroken ? "error" : status,
+    });
+  }, [design, image, imageBroken, status, onChange]);
 
   return (
     // Padded so the shadow and the tilt aren't clipped by the carousel's edge.
@@ -142,26 +152,36 @@ function PubmatSlide({
               Updating
             </div>
           )}
-          {status === "error" ? (
+          {displayError ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
               {/* A fit error from a live edit: keep the last good draw behind
                   the message so the poster doesn't vanish mid-typing. */}
-              {image && (
+              {image && !imageBroken && (
                 <img
                   src={image.url}
                   alt=""
                   aria-hidden="true"
                   draggable={false}
                   className="absolute inset-0 size-full object-contain opacity-30"
+                  onError={() => setImageBroken(true)}
                 />
               )}
               <div className="relative flex flex-col items-center gap-2 rounded-lg bg-white/95 px-4 py-3 shadow-sm">
                 <ImageOff className="size-6 text-gray-400" />
                 <p className="text-sm text-gray-700">
-                  {error ?? "Couldn’t make the pubmat."}
+                  {imageBroken
+                    ? "Couldn’t display the pubmat."
+                    : (error ?? "Couldn’t make the pubmat.")}
                 </p>
-                {!image && (
-                  <Button variant="outline" size="sm" onClick={retry}>
+                {(!image || imageBroken) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setImageBroken(false);
+                      retry();
+                    }}
+                  >
                     <RotateCw />
                     Try again
                   </Button>
@@ -173,9 +193,11 @@ function PubmatSlide({
               <>
                 <img
                   src={image.url}
-                  alt={`${PUBMAT_DESIGNS[design].label} pubmat for ${job.title ?? "your listing"}`}
+                  alt=""
+                  aria-label={`${PUBMAT_DESIGNS[design].label} pubmat for ${job.title ?? "your listing"}`}
                   // Dragging the picture would fight the carousel's own drag.
                   draggable={false}
+                  onError={() => setImageBroken(true)}
                   className={cn(
                     "size-full select-none object-contain",
                     paused && "grayscale opacity-60",
@@ -199,7 +221,7 @@ function PubmatSlide({
       </div>
     </div>
   );
-}
+});
 
 export function PubmatCreator({
   job,
@@ -333,19 +355,17 @@ export function PubmatCreator({
     [],
   );
 
-  // The carousel owns which design is showing; follow it once it comes to
-  // rest. Not on `select`: embla picks the next snap as soon as a drag passes
-  // halfway, so `select` fires with the finger still down — and a poster draw
-  // takes the main thread for the best part of a second, which freezes the
-  // drag. `settle` only fires when the gesture is over.
+  // Follow the selected design immediately. Poster layout runs in the worker,
+  // so starting it on `select` lets the next slide render during Embla's
+  // movement instead of waiting for `settle` and showing a stale slide first.
   useEffect(() => {
     if (!api) return;
     const sync = () => setDesign(PUBMAT_DESIGN_IDS[api.selectedScrollSnap()]);
     sync();
-    api.on("settle", sync);
+    api.on("select", sync);
     api.on("reInit", sync);
     return () => {
-      api.off("settle", sync);
+      api.off("select", sync);
       api.off("reInit", sync);
     };
   }, [api]);

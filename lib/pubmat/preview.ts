@@ -17,6 +17,16 @@ export function posterPreview(svg: string, key: string) {
   };
 }
 
+/** The interactive carousel uses a decoded PNG so SVG parsing never blocks it. */
+export function posterPngPreview(png: Blob, key: string, svg: string) {
+  return {
+    svg,
+    key,
+    url: URL.createObjectURL(png),
+    getPng: () => Promise.resolve(png),
+  };
+}
+
 export async function downloadPoster(
   getPng: () => Promise<Blob>,
   filename: string,

@@ -194,7 +194,38 @@ export function CenteredPoster({
             gap: 16,
           }}
         >
-          <img src={qr.src} width={qr.size} height={qr.size} alt="" />
+          <div
+            style={{
+              display: "flex",
+              position: "relative",
+              width: qr.size,
+              height: qr.size,
+            }}
+          >
+            <img src={qr.src} width={qr.size} height={qr.size} alt="" />
+            {logo && (
+              <div
+                style={{
+                  display: "flex",
+                  position: "absolute",
+                  left: qr.size * 0.4,
+                  top: qr.size * 0.4,
+                  width: qr.size * 0.2,
+                  height: qr.size * 0.2,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <img
+                  src={logo.src}
+                  width={qr.size * 0.2}
+                  height={qr.size * 0.2}
+                  alt=""
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{
               display: "flex",
@@ -209,7 +240,10 @@ export function CenteredPoster({
                 style={{
                   display: "flex",
                   color: line.color,
-                  fontSize: index === 0 ? 36 : 40,
+                  fontSize: Math.max(
+                    description.minFontSize,
+                    description.fontSize - adjustment / 3,
+                  ),
                   fontWeight: line.weight,
                   lineHeight: 1,
                 }}
