@@ -73,7 +73,7 @@ export function CenteredPoster({
             style={{
               display: "flex",
               justifyContent: "center",
-              width: header.width,
+              width: logo?.width ?? header.width,
             }}
           >
             {logo ? (

@@ -1,7 +1,7 @@
 import type { PosterRenderSettings } from "../theme-types";
 
 export const studioRenderSettings: PosterRenderSettings = {
-  logo: { width: 390, height: 102, upscale: true },
+  logo: { width: 480, height: 160, trim: true, upscale: true },
   qrSize: 260,
   limits: {
     composition: { minTop: 45 },

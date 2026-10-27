@@ -59,7 +59,7 @@ export const centeredBackgrounds = [
 ] as const;
 
 export const centeredRenderSettings: PosterRenderSettings = {
-  logo: { ...centeredConfig.layout.primary.headerRegion, trim: true },
+  logo: { width: 480, height: 160, trim: true, upscale: true },
   qrSize: 260,
   limits: {
     header: { minTop: 45 },
