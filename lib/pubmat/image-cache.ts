@@ -1,52 +1,55 @@
-/**
- * Posters that have already been drawn, keyed by exactly what went into them.
- *
- * The point is to never draw the same poster twice: the thumbnail on the
- * listing page, the modal opened from it, swiping back to a slide that has been
- * handed back, and reopening the modal all ask for the same thing, and only the
- * first of them pays for it.
- *
- * Blobs, not object URLs. A slide still owns the URL it shows and revokes it on
- * unmount (use-pubmat-image.ts), so nothing here has to be refcounted or
- * revoked — and an entry is only the PNG bytes, a megabyte or so, not a decoded
- * 1080px bitmap.
- */
-
+/** Finished SVG previews are shared; object URLs belong to the mounted view. */
+const cache = new Map<string, string>();
+const drawing = new Map<
+  string,
+  { promise: Promise<string>; controller: AbortController; users: number }
+>();
 const LIMIT = 12;
 
-const cache = new Map<string, Blob>();
-const drawing = new Map<string, Promise<Blob>>();
-
-/** The poster drawn from exactly this input, and nothing else. */
-export function read(key: string): Blob | undefined {
+export function read(key: string) {
   const hit = cache.get(key);
-  if (!hit) return undefined;
-  // Most recently used last, so the loop in `write` drops the coldest.
+  if (hit === undefined) return undefined;
   cache.delete(key);
   cache.set(key, hit);
   return hit;
 }
 
-export function write(key: string, blob: Blob) {
-  if (cache.has(key)) return;
-  cache.set(key, blob);
-  while (cache.size > LIMIT) {
-    const coldest = cache.keys().next().value;
-    if (coldest === undefined) break;
-    cache.delete(coldest);
-  }
+export function write(key: string, svg: string) {
+  cache.delete(key);
+  cache.set(key, svg);
+  while (cache.size > LIMIT) cache.delete(cache.keys().next().value!);
 }
 
-/**
- * One draw per key, however many slides ask for it at once — the same listing
- * can be on screen twice (the notice's thumbnail and the modal it opens), and
- * two renders of one poster would cost twice as much and finish at different
- * moments.
- */
-export function once(key: string, make: () => Promise<Blob>): Promise<Blob> {
-  const running = drawing.get(key);
-  if (running) return running;
-  const started = make().finally(() => drawing.delete(key));
-  drawing.set(key, started);
-  return started;
+/** Cancel shared work only after its last interested view releases it. */
+export function acquire(
+  key: string,
+  make: (signal: AbortSignal) => Promise<string>,
+) {
+  let entry = drawing.get(key);
+  if (!entry) {
+    const controller = new AbortController();
+    const created = { controller, users: 0, promise: Promise.resolve("") };
+    created.promise = Promise.resolve()
+      .then(() => make(controller.signal))
+      .finally(() => {
+        if (drawing.get(key) === created) drawing.delete(key);
+      });
+    entry = created;
+    drawing.set(key, created);
+  }
+  const current = entry;
+  current.users++;
+  let released = false;
+  return {
+    promise: current.promise,
+    release: () => {
+      if (released) return;
+      released = true;
+      current.users--;
+      if (!current.users && drawing.get(key) === current) {
+        drawing.delete(key);
+        current.controller.abort();
+      }
+    },
+  };
 }

@@ -41,10 +41,12 @@ export function ShareMenu({
   items,
   busy = false,
   disabled = false,
+  onOpen,
 }: {
   items: ShareMenuItem[];
   busy?: boolean;
   disabled?: boolean;
+  onOpen?: () => void;
 }) {
   const menuId = useId();
   const [open, setOpen] = useState(false);
@@ -60,6 +62,9 @@ export function ShareMenu({
   /** Whether opening should pull focus into the panel — a click, not a hover. */
   const focusPanel = useRef(false);
   const openRef = useRef(false);
+  useEffect(() => {
+    if (open) onOpen?.();
+  }, [open, onOpen]);
 
   useEffect(() => {
     openRef.current = open;

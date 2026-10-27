@@ -20,3 +20,7 @@ export interface PubmatData {
   backgroundImage?: string;
   backgroundPosition?: { x: number; y: number; scale: number };
 }
+
+/** Short, broadly applicable poster copy used for every listing poster. */
+export const DEFAULT_PUBMAT_DESCRIPTION =
+  "Build real-world skills through meaningful internship experience.";

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { renderPubmatArtifact } from "@/lib/pubmat/render";
+import { posterPreview, downloadPoster } from "@/lib/pubmat/preview";
 import {
   PUBMAT_DESIGNS,
   PUBMAT_DESIGN_IDS,
@@ -19,7 +20,8 @@ export function PubmatPlayground() {
   const [location, setLocation] = useState("Makati City");
   const [setup, setSetup] = useState("Hybrid");
   const [pay, setPay] = useState("₱15,000 / month");
-  const [preview, setPreview] = useState<{ png: string; svg: string }>();
+  const [preview, setPreview] = useState<ReturnType<typeof posterPreview>>();
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(true);
   const [revision, setRevision] = useState(0);
@@ -28,6 +30,7 @@ export function PubmatPlayground() {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     setBusy(true);
     const timer = setTimeout(() => {
       void renderPubmatArtifact(
@@ -43,15 +46,11 @@ export function PubmatPlayground() {
         },
         theme,
         showBorders,
+        controller.signal,
       )
-        .then(({ blob, svg }) => {
+        .then(({ svg }) => {
           if (cancelled) return;
-          setPreview({
-            png: URL.createObjectURL(blob),
-            svg: URL.createObjectURL(
-              new Blob([svg], { type: "image/svg+xml" }),
-            ),
-          });
+          setPreview(posterPreview(svg, `${theme}-${Date.now()}`));
           setError("");
         })
         .catch((reason: unknown) => {
@@ -66,6 +65,7 @@ export function PubmatPlayground() {
     }, 250);
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [
@@ -83,8 +83,7 @@ export function PubmatPlayground() {
   useEffect(
     () => () => {
       if (preview) {
-        URL.revokeObjectURL(preview.png);
-        URL.revokeObjectURL(preview.svg);
+        URL.revokeObjectURL(preview.url);
       }
     },
     [preview],
@@ -210,15 +209,23 @@ export function PubmatPlayground() {
             </span>
             {preview && (
               <div className="flex gap-3">
-                <a
-                  href={preview.png}
-                  download="poster-playground.png"
+                <button
+                  type="button"
+                  disabled={exporting || busy}
+                  onClick={() => {
+                    setExporting(true);
+                    void downloadPoster(preview.getPng, "poster-playground.png")
+                      .catch(() =>
+                        setError("Could not export the PNG. Please try again."),
+                      )
+                      .finally(() => setExporting(false));
+                  }}
                   className="underline"
                 >
-                  PNG
-                </a>
+                  {exporting ? "Exporting…" : "PNG"}
+                </button>
                 <a
-                  href={preview.svg}
+                  href={preview.url}
                   download="poster-playground.svg"
                   className="underline"
                 >
@@ -237,7 +244,7 @@ export function PubmatPlayground() {
           )}
           {preview ? (
             <img
-              src={preview.png}
+              src={preview.url}
               alt="Actual generated poster"
               className="h-auto w-full max-w-[760px] border shadow-sm"
             />

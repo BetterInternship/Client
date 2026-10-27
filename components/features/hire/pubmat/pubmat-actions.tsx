@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ClipboardCopy,
   Download,
@@ -36,7 +36,7 @@ export function PubmatActions({
   link: string;
   image: ReturnType<typeof usePubmatImage>["image"];
   status: ReturnType<typeof usePubmatImage>["status"];
-  onDownload: () => void;
+  onDownload: () => Promise<void>;
   onEdit?: () => void;
   alignRight?: boolean;
   editing?: boolean;
@@ -45,6 +45,7 @@ export function PubmatActions({
   const [canShareImage, setCanShareImage] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [prepared, setPrepared] = useState<{ key: string; file: File }>();
   const ready = status === "ready" && !!image;
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export function PubmatActions({
     setCanShareImage(false);
     if (!image || !navigator.share || !navigator.canShare) return;
     try {
-      const file = new File([image.blob], pubmatFileName(job), {
+      const file = new File([], pubmatFileName(job), {
         type: "image/png",
       });
       setCanShareImage(navigator.canShare({ files: [file] }));
@@ -61,9 +62,32 @@ export function PubmatActions({
     }
   }, [image, job]);
 
-  /** The poster as a file, named the way it would be downloaded. */
-  const posterFile = () =>
-    new File([image!.blob], pubmatFileName(job), { type: "image/png" });
+  const prepareFile = useCallback(async () => {
+    if (!image) return;
+    const blob = await image.getPng();
+    const file = new File([blob], pubmatFileName(job), { type: "image/png" });
+    setPrepared({ key: image.key, file });
+    return file;
+  }, [image, job]);
+  const prepareOnOpen = useCallback(() => {
+    if (canShareImage)
+      void prepareFile().catch(() => {
+        setMessage("Couldn’t prepare the poster. Please try again.");
+      });
+  }, [canShareImage, prepareFile]);
+
+  const handleDownload = async () => {
+    if (!ready || busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await onDownload();
+    } catch {
+      setMessage("Couldn’t download the poster. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleCopyPoster = async () => {
     if (!ready || !image || busy) return;
@@ -71,15 +95,19 @@ export function PubmatActions({
     setBusy(true);
     try {
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": image.blob }),
+        new ClipboardItem({ "image/png": image.getPng() }),
       ]);
       setMessage("Poster copied. Paste it into your post.");
     } catch {
       // Firefox before 127, or a browser that won't write images.
-      onDownload();
-      setMessage(
-        "Your browser couldn’t copy the image, so the poster was downloaded instead.",
-      );
+      try {
+        await onDownload();
+        setMessage(
+          "Your browser couldn’t copy the image, so the poster was downloaded instead.",
+        );
+      } catch {
+        setMessage("Couldn’t copy or download the poster. Please try again.");
+      }
     } finally {
       setBusy(false);
     }
@@ -98,12 +126,19 @@ export function PubmatActions({
     setMessage("");
     setBusy(true);
     try {
+      // Native sharing needs a fresh user gesture. Normally prepared when the
+      // menu opens; if not ready yet, the next tap uses the prepared snapshot.
+      if (canShareImage && prepared?.key !== image.key) {
+        await prepareFile();
+        setMessage("Poster ready. Tap Share as post again.");
+        return;
+      }
       await navigator.share(
         canShareImage
           ? {
               title: job.title ?? undefined,
               text: caption,
-              files: [posterFile()],
+              files: [prepared!.file],
             }
           : { title: job.title ?? undefined, text: caption },
       );
@@ -151,7 +186,7 @@ export function PubmatActions({
       label: "Download poster",
       icon: <Download />,
       disabled: !ready,
-      onSelect: onDownload,
+      onSelect: () => void handleDownload(),
     },
     {
       id: "link",
@@ -183,7 +218,12 @@ export function PubmatActions({
             </Button>
           </>
         )}
-        <ShareMenu items={items} busy={busy} disabled={!ready} />
+        <ShareMenu
+          items={items}
+          busy={busy}
+          disabled={!ready}
+          onOpen={prepareOnOpen}
+        />
       </div>
       {message && (
         <p role="status" className="text-center text-xs text-gray-600">

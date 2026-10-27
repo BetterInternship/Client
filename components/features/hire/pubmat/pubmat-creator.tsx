@@ -30,8 +30,10 @@ import {
 import { DotMatrix } from "@/components/ui/dot-matrix";
 import { PubmatActions } from "./pubmat-actions";
 import { pubmatFileName, usePubmatImage } from "./use-pubmat-image";
+import { downloadPoster } from "@/lib/pubmat/preview";
 import type { PosterCopy } from "@/lib/pubmat/core";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
+import { DEFAULT_PUBMAT_DESCRIPTION } from "@/lib/pubmat/params";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { PubmatTextEditor } from "./pubmat-text-editor";
 
@@ -239,10 +241,14 @@ export function PubmatCreator({
   >({});
   const [warm, setWarm] = useState<ReadonlySet<PubmatDesign>>(new Set());
   const refs = useDbRefs();
-  const baseCopy = useMemo(
-    () => pubmatDataFromJob(job, refs, link, true),
-    [job, refs, link],
-  );
+  const baseCopy = useMemo(() => {
+    const listing = pubmatDataFromJob(job, refs, link);
+    return {
+      ...listing,
+      setup: listing.workMode,
+      description: DEFAULT_PUBMAT_DESCRIPTION,
+    };
+  }, [job, refs, link]);
 
   // Typing edits the draft; the poster follows a beat later, so a fast typist
   // doesn't trigger a redraw per keystroke.
@@ -359,12 +365,9 @@ export function PubmatCreator({
     if (!valid) setSelectedBackground(presets[0].id);
   }, [design, selectedBackground]);
 
-  const download = () => {
+  const download = async () => {
     if (!current?.image || current.status !== "ready") return;
-    const a = document.createElement("a");
-    a.href = current.image.url;
-    a.download = pubmatFileName(job);
-    a.click();
+    await downloadPoster(current.image.getPng, pubmatFileName(job));
   };
 
   return (

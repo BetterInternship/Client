@@ -5,17 +5,16 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import type { Job } from "@/lib/db/db.types";
 import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
-import { renderPubmat } from "@/lib/pubmat/render";
+import { DEFAULT_PUBMAT_DESCRIPTION } from "@/lib/pubmat/params";
+import { renderPubmatArtifact } from "@/lib/pubmat/render";
+import { posterPreview } from "@/lib/pubmat/preview";
 import * as imageCache from "@/lib/pubmat/image-cache";
 import { usePfpUrl } from "@/hooks/use-pfp";
 import type { PosterCopy } from "@/lib/pubmat/core";
 
 /**
- * A listing's pubmat, drawn in the browser (lib/pubmat/render.ts) into a PNG
- * blob, in the given `design` (lib/pubmat/designs.ts). Always the square
- * layout, which suits every feed it's likely to be posted to. `url` is an
- * object URL on that blob, for an <img> or a download, so what's shown and
- * what's saved or shared are the same bytes.
+ * SVG preview for a listing's poster. PNG export is lazy and rasterizes that
+ * exact SVG snapshot, never a separate render of newer editor state.
  *
  * Nothing is drawn until there's a `link` — the QR code opens it.
  */
@@ -51,11 +50,7 @@ export function usePubmatImage(
     source: "employer",
     enabled: logoOverride === undefined && !!link,
   });
-  const [image, setImage] = useState<{
-    url: string;
-    blob: Blob;
-    key: string;
-  }>();
+  const [image, setImage] = useState<ReturnType<typeof posterPreview>>();
   const [failure, setFailure] = useState<{ key: string; message: string }>();
   const [attempt, setAttempt] = useState(0);
 
@@ -63,10 +58,14 @@ export function usePubmatImage(
     () =>
       link && !companyLogo.loading
         ? (() => {
-            const listingData = pubmatDataFromJob(job, refs, link, true);
+            // Posters use the short plain-text excerpt. Sending the full
+            // multi-section listing into Satori causes repeated fit attempts
+            // and makes the preview feel stuck on long job descriptions.
+            const listingData = pubmatDataFromJob(job, refs, link, false);
             const raw = {
               ...listingData,
               ...copy,
+              description: copy?.description ?? DEFAULT_PUBMAT_DESCRIPTION,
               workMode: copy?.setup ?? listingData.workMode,
               companyLogo:
                 (logoOverride === undefined ? companyLogo.url : logoOverride) ||
@@ -104,20 +103,29 @@ export function usePubmatImage(
     if (!data) return;
     const drawn = imageCache.read(key);
     if (drawn) {
-      setImage({ url: URL.createObjectURL(drawn), blob: drawn, key });
+      setImage(posterPreview(drawn, key));
       setFailure(undefined);
       return;
     }
     let cancelled = false;
-    imageCache
-      .once(key, () => renderPubmat(data, design))
-      .then((blob) => {
+    const work = imageCache.acquire(
+      key,
+      async (signal) =>
+        (await renderPubmatArtifact(data, design, false, signal)).svg,
+    );
+    work.promise
+      .then((svg) => {
         if (cancelled) return;
-        setImage({ url: URL.createObjectURL(blob), blob, key });
+        setImage(posterPreview(svg, key));
         setFailure(undefined);
-        if (pristine) imageCache.write(key, blob);
+        if (pristine) imageCache.write(key, svg);
       })
       .catch((error) => {
+        if (
+          cancelled ||
+          (error instanceof DOMException && error.name === "AbortError")
+        )
+          return;
         console.error("[pubmat] render failed", error);
         if (!cancelled)
           setFailure({
@@ -130,6 +138,7 @@ export function usePubmatImage(
       });
     return () => {
       cancelled = true;
+      work.release();
     };
   }, [key, data, design, pristine]);
 
