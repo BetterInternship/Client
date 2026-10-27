@@ -25,8 +25,8 @@ export interface ShareMenuItem {
   onSelect: () => void;
 }
 
-/** Wide enough for a label and its hint, narrow enough for a phone. */
-const PANEL_WIDTH = 288;
+/** Used only for the hidden first frame before the trigger is measured. */
+const FALLBACK_WIDTH = 160;
 const GAP = 8;
 /** Long enough to cross the gap between the button and the panel. */
 const CLOSE_DELAY = 160;
@@ -34,8 +34,8 @@ const CLOSE_DELAY = 160;
 /**
  * A big Share button whose options appear on hover (and on click, for touch
  * and keyboard). The panel is portalled and anchored to the button, so it
- * isn't clipped by the dashboard card or the modal's scroll area, and it flips
- * above the button when there isn't room below.
+ * isn't clipped by the dashboard card or the modal's scroll area. It always
+ * opens above the button so the menu order stays predictable.
  */
 export function ShareMenu({
   items,
@@ -89,22 +89,13 @@ export function ShareMenu({
     const trigger = triggerRef.current;
     if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
-    const width = Math.min(PANEL_WIDTH, window.innerWidth - 24);
-    const height = panelRef.current?.offsetHeight ?? 240;
-    const roomBelow = window.innerHeight - rect.bottom;
-    const roomAbove = rect.top;
-    // Below unless that would clip and there's more room above.
-    const below = roomBelow >= height + GAP || roomBelow >= roomAbove;
+    const width = rect.width;
     const centred = rect.left + rect.width / 2 - width / 2;
     const left = Math.min(
       Math.max(12, centred),
       window.innerWidth - width - 12,
     );
-    setPos(
-      below
-        ? { left, width, top: rect.bottom + GAP }
-        : { left, width, bottom: window.innerHeight - rect.top + GAP },
-    );
+    setPos({ left, width, bottom: window.innerHeight - rect.top + GAP });
   }, []);
 
   // The panel renders hidden first, so it can be measured before it shows.
@@ -243,7 +234,7 @@ export function ShareMenu({
               left: pos?.left ?? 0,
               top: pos?.top,
               bottom: pos?.bottom,
-              width: pos?.width ?? PANEL_WIDTH,
+              width: pos?.width ?? FALLBACK_WIDTH,
               maxHeight: "min(22rem, calc(100dvh - 2rem))",
               visibility: pos ? "visible" : "hidden",
             }}
