@@ -25,7 +25,7 @@ import {
   SUPPORT_PHONE,
   SUPPORT_PHONE_LINK,
   SUPPORT_VIBER,
-} from "@/constants";
+} from "@/lib/consts/site-links";
 
 export default function HelpPage() {
   return (

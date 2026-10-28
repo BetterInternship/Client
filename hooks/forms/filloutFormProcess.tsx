@@ -29,6 +29,9 @@ import { toastPresets } from "@/components/ui/sonner-toast";
 import { FormService } from "@/lib/api/services";
 import { useMQJobs } from "@betterinternship/components";
 import { toast } from "sonner";
+import { useAuthContext } from "@/lib/ctx-student-auth";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const formFilloutKey = "form-fillout";
 const STORAGE_KEY = "bi.mq-jobs.form-fillout";
@@ -44,6 +47,7 @@ interface TrackedFilloutJob {
   jobId: string;
   label: string;
   timestamp: string;
+  notified?: boolean;
 }
 
 interface FilloutJobsApi {
@@ -54,11 +58,22 @@ interface FilloutJobsApi {
 
 const FilloutJobsContext = createContext<FilloutJobsApi | null>(null);
 
-const readStoredJobs = (): TrackedFilloutJob[] => {
-  if (typeof window === "undefined") return [];
+const readStoredJobs = (owner: string | null): TrackedFilloutJob[] => {
+  if (typeof window === "undefined" || !owner) return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as TrackedFilloutJob[]) : [];
+    const raw = window.localStorage.getItem(`${STORAGE_KEY}:${owner}`);
+    const value: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(value)) return [];
+    return (value as unknown[]).filter((value): value is TrackedFilloutJob => {
+      if (!value || typeof value !== "object") return false;
+      const job = value as Record<string, unknown>;
+      return (
+        typeof job.jobId === "string" &&
+        typeof job.label === "string" &&
+        typeof job.timestamp === "string" &&
+        Date.now() - Date.parse(job.timestamp) < 7 * 24 * 60 * 60 * 1000
+      );
+    });
   } catch {
     return [];
   }
@@ -74,35 +89,78 @@ export const FilloutJobsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [jobs, setJobs] = useState<TrackedFilloutJob[]>(readStoredJobs);
+  const owner = useAuthContext().user?.id ?? null;
+  const client = useQueryClient();
+  const router = useRouter();
+  const [scope, setScope] = useState(() => ({
+    owner,
+    jobs: readStoredJobs(owner),
+  }));
+  if (scope.owner !== owner) setScope({ owner, jobs: readStoredJobs(owner) });
+  const jobs = scope.owner === owner ? scope.jobs : [];
+  const ownerRef = useRef(owner);
+  ownerRef.current = owner;
+  const setJobs = useCallback(
+    (update: (previous: TrackedFilloutJob[]) => TrackedFilloutJob[]) => {
+      setScope((previous) =>
+        previous.owner === owner
+          ? { owner, jobs: update(previous.jobs) }
+          : previous,
+      );
+    },
+    [owner],
+  );
   const notified = useRef<Set<string>>(new Set());
+  useEffect(
+    () => () => {
+      for (const id of notified.current) {
+        if (id.startsWith(`${owner}:`)) {
+          toast.dismiss(id);
+          notified.current.delete(id);
+        }
+      }
+    },
+    [owner],
+  );
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+      if (owner && scope.owner === owner) {
+        window.localStorage.setItem(
+          `${STORAGE_KEY}:${owner}`,
+          JSON.stringify(jobs),
+        );
+      }
     } catch {
       // Best-effort; a full storage quota shouldn't break the fillout flow.
     }
-  }, [jobs]);
+  }, [jobs, owner, scope.owner]);
 
   const track = useCallback(
     (jobId: string, label: string, timestamp?: string) => {
+      if (!owner || ownerRef.current !== owner) return;
       setJobs((prev) =>
         prev.some((job) => job.jobId === jobId)
           ? prev
           : [
               ...prev,
-              { jobId, label, timestamp: timestamp ?? new Date().toISOString() },
+              {
+                jobId,
+                label,
+                timestamp: timestamp ?? new Date().toISOString(),
+              },
             ],
       );
     },
-    [],
+    [owner, setJobs],
   );
 
-  const untrack = useCallback((jobId: string) => {
-    notified.current.delete(jobId);
-    setJobs((prev) => prev.filter((job) => job.jobId !== jobId));
-  }, []);
+  const untrack = useCallback(
+    (jobId: string) => {
+      setJobs((prev) => prev.filter((job) => job.jobId !== jobId));
+    },
+    [setJobs],
+  );
 
   const jobIds = useMemo(() => jobs.map((job) => job.jobId), [jobs]);
   const polled = useMQJobs<FilloutFormProcessResult>(jobIds);
@@ -110,29 +168,62 @@ export const FilloutJobsProvider = ({
   useEffect(() => {
     for (const entry of polled) {
       if (!entry.isDone && !entry.isFailed) continue;
-      if (notified.current.has(entry.jobId)) continue;
-      notified.current.add(entry.jobId);
+      if (!owner || ownerRef.current !== owner) continue;
+      if (!jobs.some((job) => job.jobId === entry.jobId)) continue;
+      if (
+        notified.current.has(`${owner}:${entry.jobId}`) ||
+        jobs.find((job) => job.jobId === entry.jobId)?.notified
+      )
+        continue;
+      notified.current.add(`${owner}:${entry.jobId}`);
+      setJobs((previous) =>
+        previous.map((job) =>
+          job.jobId === entry.jobId ? { ...job, notified: true } : job,
+        ),
+      );
 
       const label =
         jobs.find((job) => job.jobId === entry.jobId)?.label ?? "form";
       if (entry.isDone) {
         toast.success(`Generated ${label}`, {
-          id: entry.jobId,
+          id: `${owner}:${entry.jobId}`,
           duration: 2000,
           ...toastPresets.success,
+          action: {
+            label: "View forms",
+            onClick: () => {
+              router.push("/forms");
+            },
+          },
         });
+        // Reconcile even when the Forms page is not mounted.
+        void client
+          .fetchQuery({
+            queryKey: ["my-forms", owner],
+            queryFn: () => FormService.getMyGeneratedForms(),
+            staleTime: 0,
+          })
+          .then((forms) => {
+            if (ownerRef.current !== owner) return;
+            if (
+              forms.some(
+                (form) => form.form_process_id === entry.result?.formProcessId,
+              )
+            )
+              untrack(entry.jobId);
+          })
+          .catch(() => {
+            /* Keep tracking metadata for retry/normal Forms reconciliation. */
+          });
       } else {
         toast.error(`Could not generate ${label}: ${entry.error}`, {
-          id: entry.jobId,
+          id: `${owner}:${entry.jobId}`,
           duration: 2000,
           ...toastPresets.destructive,
         });
       }
     }
-    // `jobs` only supplies the label lookup; re-running per poll tick (not
-    // per `jobs` change) is what lets this catch a status transition.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [polled]);
+  }, [polled, owner, jobs, setJobs, client, untrack, router]);
 
   const api = useMemo<FilloutJobsApi>(
     () => ({ jobs, track, untrack }),
@@ -217,8 +308,7 @@ export const useFormFilloutProcessReader = () => {
   useEffect(() => {
     for (const entry of entries) {
       if (!entry.isDone) continue;
-      const formProcessId = (entry.result as FilloutFormProcessResult | undefined)
-        ?.formProcessId;
+      const formProcessId = entry.result?.formProcessId;
       if (!formProcessId) continue;
       if (myForms.forms.some((form) => form.form_process_id === formProcessId))
         untrack(entry.jobId);
@@ -226,7 +316,8 @@ export const useFormFilloutProcessReader = () => {
   }, [entries, myForms.forms, untrack]);
 
   return {
-    get: (jobId: string) => entries.find((entry) => entry.jobId === jobId) ?? null,
+    get: (jobId: string) =>
+      entries.find((entry) => entry.jobId === jobId) ?? null,
     getAll: () => entries,
     getAllPending: () => entries.filter((entry) => entry.isPending),
     getAllHandled: () => entries.filter((entry) => entry.isDone),
@@ -261,16 +352,13 @@ export const useFormFilloutProcessHandled = () => {
           (handledForm) =>
             !myForms.forms.some(
               (form) =>
-                form.form_process_id ===
-                (handledForm.result as FilloutFormProcessResult | undefined)
-                  ?.formProcessId,
+                form.form_process_id === handledForm.result?.formProcessId,
             ),
         )
         .map((handledForm) => ({
           label: handledForm.metadata?.metadata?.label ?? "",
           timestamp: handledForm.metadata?.metadata?.timestamp ?? "",
-          downloadUrl: (handledForm.result as FilloutFormProcessResult)
-            .documentUrl,
+          downloadUrl: handledForm.result?.documentUrl ?? "",
           pending: false,
           // "done" here would mean *generation* done, but FormLog reads
           // `status` as the form process's own status ("pending" | "done" —

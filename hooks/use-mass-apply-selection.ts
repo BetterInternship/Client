@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus, useProfileData } from "@/lib/api/student.data.api";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -24,7 +24,9 @@ export function useMassApplySelection(
   topPageId?: string,
   topPageUniversityId?: string,
 ) {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, user } = useAuthContext();
+  const accountRef = useRef(user?.id);
+  accountRef.current = user?.id;
   const jobStatus = useJobStatus();
   const profile = useProfileData();
   const applicationActions = useApplicationActions();
@@ -90,6 +92,8 @@ export function useMassApplySelection(
 
   const runMassApply = useCallback(
     async (resumeId: string) => {
+      const owner = user?.id;
+      if (!owner || accountRef.current !== owner) return;
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
@@ -145,6 +149,8 @@ export function useMassApplySelection(
         const failed: { job: Job; error: string }[] = [];
 
         for (const job of eligible) {
+          // Never continue a browser batch under a different account's cookies.
+          if (accountRef.current !== owner) return;
           try {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
@@ -171,6 +177,7 @@ export function useMassApplySelection(
           }
         }
 
+        if (accountRef.current !== owner) return;
         const data = { ok, skipped, failed };
         modalRegistry.massApplyResult.open({
           massApplyResultsData: data,
@@ -189,6 +196,7 @@ export function useMassApplySelection(
       clearSelection,
       topPageId,
       topPageUniversityId,
+      user?.id,
     ],
   );
 

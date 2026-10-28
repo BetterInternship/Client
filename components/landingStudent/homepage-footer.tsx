@@ -4,7 +4,7 @@ import {
   BI_DISCORD_INVITE,
   SUPPORT_EMAIL_LINK,
   SUPPORT_FACEBOOK,
-} from "@/constants";
+} from "@/lib/consts/site-links";
 
 const hireHref =
   process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||

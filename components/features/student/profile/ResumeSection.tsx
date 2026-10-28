@@ -21,12 +21,15 @@ import {
   formatResumeUploadedAt,
 } from "./profile-display-utils";
 import type { ProfileResumeManager } from "./profile-types";
+import { ResumeSkeleton } from "./profile-skeleton";
 
 export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
   const {
     resumes,
     defaultResume,
     loading,
+    error,
+    retry,
     maxAllowed,
     isRenaming,
     isSettingDefault,
@@ -57,13 +60,24 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        {loading && (
-          <div className="rounded-[0.33em] border p-4 text-sm text-muted-foreground">
-            Loading resumes...
+        {loading && <ResumeSkeleton />}
+        {error && (
+          <div className="rounded-[0.33em] border p-4 text-sm" role="alert">
+            <p>{error}</p>
+            {retry && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={retry}
+                className="mt-3"
+              >
+                Try again
+              </Button>
+            )}
           </div>
         )}
 
-        {!loading && sortedResumes.length === 0 && (
+        {!loading && !error && sortedResumes.length === 0 && (
           <div className="rounded-[0.33em] border border-dashed p-4 text-sm text-muted-foreground">
             No resumes uploaded yet.
           </div>
@@ -230,7 +244,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
           type="button"
           className="w-full sm:w-auto"
           onClick={actions.add}
-          disabled={atResumeLimit}
+          disabled={atResumeLimit || loading || !!error}
         >
           <Upload className="h-4 w-4" />
           Add resume

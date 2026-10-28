@@ -1,18 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import {
   JobService,
-  UserService,
   ApplicationService,
   JobSearchParams,
 } from "@/lib/api/services";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
-  PublicUser,
   JobWaitlist,
   ListingInternshipPreferences,
   Job,
 } from "@/lib/db/db.types";
-import { useStudentQueriesEnabled } from "@/lib/use-session-gate";
 
 /**
  * internship_preferences has historically been stored as a JSON-encoded
@@ -90,23 +88,28 @@ export function useJobListingsPage(params: JobSearchParams = {}) {
  * @hook
  */
 export function useJobStatus() {
-  const enabled = useStudentQueriesEnabled();
+  const { status, user } = useAuthContext();
+  const enabled = status === "authenticated";
+  const accountId = user?.id;
   const applications = useApplicationsData();
 
   const _savedJobs = useQuery({
-    queryKey: ["my-saved-jobs"],
-    queryFn: JobService.getSavedJobs,
+    queryKey: ["my-saved-jobs", accountId],
+    queryFn: async () => {
+      const response = await JobService.getSavedJobs({ throwOnError: true });
+      if (!Array.isArray(response.jobs))
+        throw new Error("Invalid saved jobs response.");
+      return response.jobs;
+    },
     enabled,
   });
 
-  const savedJobs = useMemo(
-    () => _savedJobs.data?.jobs ?? [],
-    [_savedJobs.data],
-  );
+  const savedJobs = useMemo(() => _savedJobs.data ?? [], [_savedJobs.data]);
 
   return {
     isPending: enabled && _savedJobs.isPending,
     error: _savedJobs.error,
+    refetch: _savedJobs.refetch,
     savedJobs,
     isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
     isJobApplied: (jobId: string) =>
@@ -190,61 +193,15 @@ export function useShareLink(jobId: string | undefined) {
 }
 
 /**
- * Requests profile information and allows profile updates.
- *
- * A non-OK response (401 on a lapsed session, 429 from the rate limiter, any
- * 5xx) resolves through APIClient instead of throwing, so React Query files it
- * as a *successful* query whose payload carries no `user`. The app-wide
- * staleTime of 24h then treats that entry as fresh: the queryFn never runs
- * again, the bad payload gets persisted to localStorage, and every consumer
- * reads `data: null` for a full day — which is how the profile page ended up
- * rendering a blank screen with neither a loader nor an error.
- *
- * Staleness-based refetching cannot rescue that, precisely because the entry
- * is considered fresh. So spot a settled-but-profileless payload and force one
- * refetch. `isPending` is held while it runs, so callers keep their loader
- * rather than flashing an empty profile; if the refetch still yields no
- * profile, surface an error so callers show their error state instead of
- * rendering nothing. One attempt per hook instance keeps a genuine 401 from
- * turning into a refetch loop (concurrent instances dedupe onto one request).
- *
- * @hook
+ * Reads the student's profile, error, and loading state from the auth context.
+ * Does not fetch separately; the auth context owns the shared profile request.
  */
 export function useProfileData() {
-  // Off on a Top page for a browser with no session hint: the visitor is
-  // logged out, so the question would only come back 401. Cached data (a
-  // restored session) is still returned; nothing is requested.
-  const enabled = useStudentQueriesEnabled();
-  const query = useQuery({
-    queryKey: ["my-profile"],
-    queryFn: () => UserService.getMyProfile(),
-    enabled,
-  });
-  const { data, error, refetch } = query;
-  const isPending = enabled && query.isPending;
-
-  const cachedFailure = enabled && !isPending && !error && !data?.user;
-  const attempted = useRef(false);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    if (!cachedFailure || attempted.current) return;
-    attempted.current = true;
-    setRefreshing(true);
-    void refetch().finally(() => setRefreshing(false));
-  }, [cachedFailure, refetch]);
-
-  // Refresh is either in flight or not yet kicked off by the effect above.
-  const recovering = cachedFailure && (refreshing || !attempted.current);
-
+  const session = useAuthContext();
   return {
-    data: (data?.user as PublicUser) ?? null,
-    error:
-      error ??
-      (cachedFailure && !recovering
-        ? new Error(data?.message ?? "Could not load your profile.")
-        : null),
-    isPending: isPending || recovering,
+    data: session.user,
+    error: session.error,
+    isPending: session.status === "checking",
   };
 }
 
@@ -260,10 +217,19 @@ export function useProfileData() {
  * @hook
  */
 export function useWaitlistsData() {
-  const enabled = useStudentQueriesEnabled();
+  const { status, user } = useAuthContext();
+  const enabled = status === "authenticated";
+  const accountId = user?.id;
   const query = useQuery({
-    queryKey: ["my-waitlists"],
-    queryFn: () => JobService.getWaitlistedJobs(),
+    queryKey: ["my-waitlists", accountId],
+    queryFn: async () => {
+      const response = await JobService.getWaitlistedJobs({
+        throwOnError: true,
+      });
+      if (!Array.isArray(response.waitlisted))
+        throw new Error("Invalid job alerts response.");
+      return response.waitlisted;
+    },
     staleTime: 30 * 1000,
     enabled,
   });
@@ -271,7 +237,7 @@ export function useWaitlistsData() {
   const isPending = enabled && query.isPending;
 
   const deduped = useMemo(() => {
-    const rows = data?.waitlisted ?? [];
+    const rows = data ?? [];
     const byJob = new Map<string, JobWaitlist>();
 
     for (const row of rows) {
@@ -305,6 +271,7 @@ export function useWaitlistsData() {
     isPending,
     error,
     data: deduped,
+    refetch: query.refetch,
     alerts: deduped.filter((row) => row.removed_at === null),
     notified: deduped.filter((row) => row.removal_reason === "notified"),
     isWaitlisted: (jobId?: string | null) =>
@@ -319,10 +286,20 @@ export function useWaitlistsData() {
  * @hook
  */
 export function useApplicationsData() {
-  const enabled = useStudentQueriesEnabled();
+  const { status, user } = useAuthContext();
+  const enabled = status === "authenticated";
+  const accountId = user?.id;
   const applications = useQuery({
-    queryKey: ["my-applications"],
-    queryFn: () => ApplicationService.getApplications(),
+    queryKey: ["my-applications", accountId],
+    queryFn: async () => {
+      const response = await ApplicationService.getApplications(
+        {},
+        { throwOnError: true },
+      );
+      if (!Array.isArray(response.applications))
+        throw new Error("Invalid applications response.");
+      return response.applications;
+    },
     staleTime: 30 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -332,6 +309,7 @@ export function useApplicationsData() {
   return {
     isPending: enabled && applications.isPending,
     error: applications.error,
-    data: applications.data?.applications ?? [],
+    data: applications.data ?? [],
+    refetch: applications.refetch,
   };
 }

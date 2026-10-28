@@ -14,7 +14,7 @@ import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { useMassApplySelection } from "@/hooks/use-mass-apply-selection";
-import { Loader } from "@/components/ui/loader";
+import { SearchSkeleton } from "@/components/features/student/search/search-skeleton";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
 import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
@@ -131,6 +131,8 @@ export default function SearchClient() {
   // filter/page state) — fall back to fetching it directly rather than
   // silently falling through to "select the first row" (D9b).
   const jobIdParam = searchParams.get("jobId");
+  const selectedDeepLink = useRef<string | null>(null);
+  const openedDeepLink = useRef<string | null>(null);
   const jobIdOnPage = jobIdParam
     ? jobsPage.find((job) => job.id === jobIdParam)
     : undefined;
@@ -140,12 +142,33 @@ export default function SearchClient() {
 
   useEffect(() => {
     if (jobIdParam) {
+      if (selectedDeepLink.current === jobIdParam) return;
       const target = jobIdOnPage ?? deepLinkJob.data ?? undefined;
-      if (target && target.id !== selectedJob?.id) setSelectedJob(target);
-    } else if (jobsPage.length > 0 && !selectedJob?.id) {
-      setSelectedJob(jobsPage[0]);
+      if (target) {
+        // Restore once per URL job, rather than overriding later card clicks.
+        selectedDeepLink.current = jobIdParam;
+        setSelectedJob(target);
+      }
+    } else {
+      selectedDeepLink.current = null;
+      if (jobsPage.length > 0 && !selectedJob?.id) setSelectedJob(jobsPage[0]);
     }
   }, [jobIdParam, jobIdOnPage, deepLinkJob.data, jobsPage, selectedJob]);
+
+  // A returned job link should open its details on mobile, not just select a hidden panel.
+  useEffect(() => {
+    if (!jobIdParam) openedDeepLink.current = null;
+    if (
+      !isMobile ||
+      !jobIdParam ||
+      selectedJob?.id !== jobIdParam ||
+      openedDeepLink.current === jobIdParam ||
+      !jobModalRef.current
+    )
+      return;
+    openedDeepLink.current = jobIdParam;
+    jobModalRef.current.open();
+  }, [isMobile, jobIdParam, selectedJob?.id, jobModalRef]);
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
@@ -194,7 +217,7 @@ export default function SearchClient() {
 
       <div className="flex-1 flex overflow-hidden border-primary">
         {jobs.isPending ? (
-          <Loader>Loading...</Loader>
+          <SearchSkeleton />
         ) : isMobile ? (
           <SearchResultsMobile
             jobs={jobs}
@@ -223,6 +246,21 @@ export default function SearchClient() {
             isSelected={isSelected}
             onJobCardClick={handleJobCardClick}
             selectedJob={selectedJob}
+            detailsLoading={
+              !!jobIdParam &&
+              selectedJob?.id !== jobIdParam &&
+              !jobIdOnPage &&
+              deepLinkJob.isPending
+            }
+            detailsError={
+              !selectedJob &&
+              jobIdParam &&
+              !deepLinkJob.isPending &&
+              !jobIdOnPage &&
+              !deepLinkJob.data
+                ? "We couldn’t load the selected listing."
+                : undefined
+            }
             profileData={profile.data}
             onSingleApply={handleSingleApply}
           />

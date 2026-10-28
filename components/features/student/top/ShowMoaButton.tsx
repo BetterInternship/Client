@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, cn } from "@betterinternship/components";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useJobListingsPage, useProfileData } from "@/lib/api/student.data.api";
 import { savePostLoginRedirect } from "@/lib/post-login-redirect";

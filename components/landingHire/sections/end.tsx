@@ -9,7 +9,7 @@ import {
   SUPPORT_EMAIL_LINK,
   SUPPORT_EMAIL,
   SUPPORT_FACEBOOK,
-} from "@/constants";
+} from "@/lib/consts/site-links";
 
 export function EndSection() {
   return (
