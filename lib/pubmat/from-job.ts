@@ -1,5 +1,5 @@
 import type { IRefsContext, Job } from "@/lib/db/db.types";
-import type { PubmatData } from "./params";
+import { posterLocation, type PubmatData } from "./params";
 
 type RefNames = Pick<IRefsContext, "toJobModeName" | "toJobPayFreqName">;
 
@@ -59,7 +59,7 @@ export function pubmatDataFromJob(
     description: fullDescription
       ? plainTextDescription(job.description)
       : descriptionExcerpt(job.description),
-    location: job.location ?? undefined,
+    location: posterLocation(job.location),
     // Keep the legacy field aligned with workMode. Commitment/type values
     // belong to listing data, not the poster's work-mode detail.
     setup: workMode || undefined,

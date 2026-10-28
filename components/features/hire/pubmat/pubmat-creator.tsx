@@ -33,10 +33,12 @@ import { PubmatActions } from "./pubmat-actions";
 import { pubmatFileName, usePubmatImage } from "./use-pubmat-image";
 import { downloadPoster } from "@/lib/pubmat/preview";
 import type { PosterCopy } from "@/lib/pubmat/core";
+import type { PubmatFontStyle } from "@/lib/pubmat/params";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
 import { DEFAULT_PUBMAT_DESCRIPTION } from "@/lib/pubmat/params";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { PubmatTextEditor } from "./pubmat-text-editor";
+import { PUBMAT_MAX_COPY } from "@/lib/pubmat/max-copy";
 
 /**
  * A listing's pubmat: swipe or page through its designs, then download it or
@@ -68,6 +70,8 @@ const PubmatSlide = memo(function PubmatSlide({
   backgroundImage,
   backgroundPosition,
   paused,
+  fontStyle,
+  debug = false,
 }: {
   job: Job;
   link: string;
@@ -82,18 +86,21 @@ const PubmatSlide = memo(function PubmatSlide({
   backgroundImage?: string;
   backgroundPosition?: { x: number; y: number; scale: number };
   paused: boolean;
+  fontStyle: PubmatFontStyle;
+  debug?: boolean;
 }) {
   const tilt = useTilt();
   const { image, status, error, retry } = usePubmatImage(
     job,
     wanted ? link : undefined,
     design,
-    copy,
+    { ...copy, fontStyle },
     companyLogo,
     backgroundImage,
     backgroundPosition,
     hold,
     wanted && !hold ? 10 : 0,
+    debug,
   );
   const [imageBroken, setImageBroken] = useState(false);
   useEffect(() => {
@@ -236,6 +243,8 @@ export function PubmatCreator({
   onEdit,
   initiallyEditing = false,
   initialDesign = DEFAULT_PUBMAT_DESIGN,
+  debug = false,
+  playgroundTools = false,
 }: {
   job: Job;
   /** The listing's short share link; the QR code opens it. */
@@ -260,8 +269,12 @@ export function PubmatCreator({
   initiallyEditing?: boolean;
   /** Design to show first, so moving into the modal keeps the chosen poster. */
   initialDesign?: PubmatDesign;
+  /** Layout outlines, enabled only by the development playground. */
+  debug?: boolean;
+  playgroundTools?: boolean;
 }) {
   const paused = job.is_active === false || Boolean(job.paused);
+  const [playgroundBorders, setPlaygroundBorders] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
   // When the pointer last moved over the carousel; background renders wait for
   // it to go quiet. A ref, not state: this changes on every move and must not
@@ -294,6 +307,7 @@ export function PubmatCreator({
   // Typing edits the draft; the poster follows a beat later, so a fast typist
   // doesn't trigger a redraw per keystroke.
   const [draft, setDraft] = useState<PosterCopy>({});
+  const [fontStyle, setFontStyle] = useState<PubmatFontStyle>("modern");
   const copy = useDebouncedValue(draft, 350);
   const [editing, setEditing] = useState(initiallyEditing && !paused);
   const identity = `${job.id ?? "listing"}|${link}|${initiallyEditing}|${initialDesign}|${paused}`;
@@ -302,6 +316,7 @@ export function PubmatCreator({
     if (previousIdentity.current === identity) return;
     previousIdentity.current = identity;
     setDraft({});
+    setFontStyle("modern");
     setEditing(initiallyEditing && !paused);
     setDesign(initialDesign);
     setSelectedBackground(
@@ -433,6 +448,31 @@ export function PubmatCreator({
           : undefined
       }
     >
+      {playgroundTools && (
+        <div className="flex w-full flex-wrap items-center gap-4 rounded-lg border border-gray-200 p-3">
+          <span className="text-xs font-semibold text-gray-600">
+            Playground tools
+          </span>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={playgroundBorders}
+              onChange={(event) => setPlaygroundBorders(event.target.checked)}
+            />
+            Show component borders
+          </label>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setDraft({ ...PUBMAT_MAX_COPY });
+              setEditing(true);
+            }}
+          >
+            Fill to character limits
+          </Button>
+        </div>
+      )}
       <div
         className={cn(
           "flex w-full flex-col items-center gap-3",
@@ -471,6 +511,8 @@ export function PubmatCreator({
                   backgroundImage={selectedBackground}
                   backgroundPosition={position}
                   paused={paused}
+                  debug={debug || (playgroundTools && playgroundBorders)}
+                  fontStyle={fontStyle}
                 />
               </CarouselItem>
             ))}
@@ -536,6 +578,8 @@ export function PubmatCreator({
               onBackgroundImageChange?.(value);
             }}
             backgroundPosition={position}
+            fontStyle={fontStyle}
+            onFontStyleChange={setFontStyle}
             onBackgroundPositionChange={
               PUBMAT_DESIGNS[design].repositionBackground
                 ? (value) => {

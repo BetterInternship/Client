@@ -3,7 +3,7 @@ import {
   PUBMAT_DESIGNS,
   type PubmatDesign,
 } from "./designs";
-import type { PubmatData } from "./params";
+import { posterLocation, type PubmatData } from "./params";
 import { posterBackground, posterLogo } from "./assets";
 import { posterQr } from "./qr-image";
 import { renderOffThread, exportPosterPng } from "./worker-client";
@@ -18,6 +18,7 @@ export async function renderPubmatArtifact(
   priority = 0,
 ) {
   signal?.throwIfAborted();
+  data = { ...data, location: posterLocation(data.location) };
   const theme = PUBMAT_DESIGNS[design];
   const [background, logo] = await Promise.all([
     posterBackground(data.backgroundImage, theme.backgrounds),

@@ -13,7 +13,7 @@ export const splitDeskConfig = {
     divider: "rgba(78,126,230,0.55)",
   },
   layout: {
-    paddingTop: 184,
+    paddingTop: 56,
     paddingBottom: 56,
     paddingX: 72,
     leftWidth: 516,
@@ -34,8 +34,8 @@ export const splitDeskConfig = {
     iconTileRadius: 18,
   },
   composition: {
-    vertical: "center the natural-height two-column row inside canvas padding",
-    horizontal: "left aligned; equal column top edges",
+    vertical: "center each natural-height column independently on the canvas",
+    horizontal: "left aligned text; independent column heights",
     identity: ["logo-or-company", "title"],
     narrative: ["identity", "optional-description"],
     sidebar: ["optional-details", "qr-and-footer"],
@@ -89,19 +89,19 @@ export const splitDeskConfig = {
     },
     title: {
       initial: 112,
-      // 80px rejects common listing words such as "Development" in the 516px column.
-      min: 72,
+      // Keep enough range for the platform's 100-character title limit.
+      min: 42,
       weight: 700,
       lineHeight: 1,
-      maxLines: 3,
+      maxLines: 5,
       adjustmentDivisor: 1,
     },
     description: {
       initial: 32,
-      min: 26,
+      min: 20,
       weight: 400,
       lineHeight: 1.2,
-      maxLines: 5,
+      maxLines: 7,
       adjustmentDivisor: 5,
     },
     detailLabel: {
@@ -169,12 +169,16 @@ export const splitDeskConfig = {
 } as const;
 
 /** Consumed directly by the existing renderFittedPoster/layoutFits pipeline. */
+export const splitDeskTypography = {
+  detailLabelSize: 18,
+} as const;
+
 export const splitDeskRenderSettings: PosterRenderSettings = {
   logo: splitDeskConfig.logo,
   qrSize: splitDeskConfig.qr.requestedSize,
   limits: {
     composition: {
-      minTop: 184,
+      minTop: 56,
       maxBottom: 1024,
       maxWidth: 936,
       maxHeight: 840,
@@ -182,9 +186,9 @@ export const splitDeskRenderSettings: PosterRenderSettings = {
     "left-column": { maxWidth: 516, maxBottom: 1024 },
     "right-column": { maxWidth: 392, maxBottom: 1024 },
     company: { maxHeight: Math.ceil(34 * 1.05) * 2, maxWidth: 516 },
-    title: { maxHeight: 112 * 3 + 0.1, maxWidth: 516 },
+    title: { maxHeight: 112 * 5 + 0.1, maxWidth: 516 },
     "title-word": { maxWidth: 516 },
-    description: { maxHeight: Math.ceil(32 * 1.2) * 5, maxWidth: 516 },
+    description: { maxHeight: Math.ceil(32 * 1.2) * 7, maxWidth: 516 },
     "detail-label": { maxHeight: Math.ceil(25 * 1.1), maxWidth: 257 },
     "detail-value": { maxHeight: 30 * 1.1 * 2 + 0.1, maxWidth: 257 },
     qr: { maxHeight: 363, maxWidth: 363 },

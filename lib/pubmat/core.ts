@@ -22,6 +22,12 @@ export class PubmatFitError extends Error {
 export type PosterCopy = Partial<
   Pick<
     PubmatData,
-    "company" | "title" | "description" | "location" | "setup" | "pay"
+    | "company"
+    | "title"
+    | "description"
+    | "location"
+    | "setup"
+    | "pay"
+    | "fontStyle"
   >
 >;

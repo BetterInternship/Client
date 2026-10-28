@@ -1,4 +1,5 @@
 import type { PosterTemplateProps } from "../theme-types";
+import { posterTypography as typography } from "../typography";
 import { centeredConfig as theme } from "./config";
 
 /** One flex composition, with profile tokens rather than independent y positions. */
@@ -8,6 +9,18 @@ export function CenteredPoster({
   adjustment = 0,
 }: PosterTemplateProps) {
   const p = theme.layout;
+  const fontFamily =
+    data.fontStyle === "professional"
+      ? "Space Grotesk"
+      : data.fontStyle === "editorial"
+        ? "Source Serif 4"
+        : "Inter";
+  const fontAdjustment =
+    data.fontStyle === "editorial"
+      ? 1.8
+      : data.fontStyle === "professional"
+        ? 1.2
+        : 1;
   const header = p.primary.headerRegion;
   const title = p.text.jobTitle;
   const description = p.text.description;
@@ -25,7 +38,7 @@ export function CenteredPoster({
         width: 1080,
         height: 1080,
         position: "relative",
-        fontFamily: "Inter",
+        fontFamily,
         color: theme.colors.text,
       }}
     >
@@ -87,8 +100,8 @@ export function CenteredPoster({
               <div
                 style={{
                   display: "flex",
-                  fontSize: header.fallbackFontSize,
-                  fontWeight: 700,
+                  fontSize: typography.company.size,
+                  fontWeight: typography.company.weight,
                   lineHeight: 1,
                   textAlign: "center",
                 }}
@@ -104,12 +117,14 @@ export function CenteredPoster({
               width: title.width,
               fontSize: Math.max(
                 title.minFontSize,
-                title.fontSize - adjustment,
+                title.fontSize - adjustment * fontAdjustment,
               ),
               fontWeight: title.weight,
               lineHeight: title.lineAdvance / title.fontSize,
               textAlign: "center",
               justifyContent: "center",
+              overflowWrap: "break-word",
+              wordBreak: "break-all",
             }}
           >
             {data.title}
@@ -121,13 +136,13 @@ export function CenteredPoster({
             style={{
               display: "flex",
               width: description.width,
-              fontSize: Math.max(
-                description.minFontSize,
-                description.fontSize - adjustment / 3,
-              ),
-              lineHeight: description.lineAdvance / description.fontSize,
+              fontSize: typography.description.size,
+              fontWeight: typography.description.weight,
+              lineHeight: typography.description.lineHeight,
               textAlign: "center",
               justifyContent: "center",
+              overflowWrap: "break-word",
+              wordBreak: "break-all",
             }}
           >
             {data.description}
@@ -142,7 +157,7 @@ export function CenteredPoster({
               justifyContent: "center",
             }}
           >
-            {facts.map(([label, value], index) => (
+            {facts.map(([label, value]) => (
               <div
                 key={label}
                 style={{
@@ -150,9 +165,6 @@ export function CenteredPoster({
                   flexDirection: "column",
                   width: details.columnWidth + 24,
                   alignItems: "center",
-                  borderLeft: index
-                    ? `1px solid ${theme.colors.text}`
-                    : undefined,
                   padding: "4px 12px 11px",
                 }}
               >
@@ -171,10 +183,8 @@ export function CenteredPoster({
                   style={{
                     display: "flex",
                     marginTop: details.labelToValueGap,
-                    fontSize: Math.max(
-                      details.valueMinSize,
-                      details.valueInitialSize - adjustment / 3,
-                    ),
+                    fontSize: details.valueSize,
+                    fontWeight: typography.detail.weight,
                     lineHeight: 1,
                     textAlign: "center",
                   }}
@@ -240,10 +250,7 @@ export function CenteredPoster({
                 style={{
                   display: "flex",
                   color: line.color,
-                  fontSize: Math.max(
-                    description.minFontSize,
-                    description.fontSize - adjustment / 3,
-                  ),
+                  fontSize: typography.footer.size,
                   fontWeight: line.weight,
                   lineHeight: 1,
                 }}

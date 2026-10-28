@@ -5,7 +5,10 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import type { Job } from "@/lib/db/db.types";
 import { DEFAULT_PUBMAT_DESIGN, type PubmatDesign } from "@/lib/pubmat/designs";
 import { pubmatDataFromJob } from "@/lib/pubmat/from-job";
-import { DEFAULT_PUBMAT_DESCRIPTION } from "@/lib/pubmat/params";
+import {
+  DEFAULT_PUBMAT_DESCRIPTION,
+  posterLocation,
+} from "@/lib/pubmat/params";
 import { renderPubmatArtifact } from "@/lib/pubmat/render";
 import { posterPngPreview } from "@/lib/pubmat/preview";
 import { exportPosterPng } from "@/lib/pubmat/worker-client";
@@ -42,6 +45,7 @@ export function usePubmatImage(
    * show, temporarily not wanted because the text editor is open). */
   hold = false,
   priority = 0,
+  debug = false,
 ) {
   const refs = useDbRefs();
   // A pubmat only ever shows the viewer's own listing, so its logo is the
@@ -67,6 +71,7 @@ export function usePubmatImage(
             const raw = {
               ...listingData,
               ...copy,
+              location: posterLocation(copy?.location ?? listingData.location),
               description: copy?.description ?? DEFAULT_PUBMAT_DESCRIPTION,
               workMode: copy?.setup ?? listingData.workMode,
               companyLogo:
@@ -100,8 +105,8 @@ export function usePubmatImage(
   // copy is drawn but not kept: typing its way through a variant per keystroke
   // would push every pristine poster out of the cache.
   const key = useMemo(
-    () => `${design}-${attempt}-${JSON.stringify(data)}`,
-    [design, attempt, data],
+    () => `${design}-${attempt}-${debug}-${JSON.stringify(data)}`,
+    [design, attempt, debug, data],
   );
   const pristine = !copy || Object.keys(copy).length === 0;
   useEffect(() => {
@@ -131,7 +136,7 @@ export function usePubmatImage(
     const work = imageCache.acquire(
       key,
       async (signal) =>
-        (await renderPubmatArtifact(data, design, false, signal, priority)).svg,
+        (await renderPubmatArtifact(data, design, debug, signal, priority)).svg,
       priority,
     );
     work.promise
@@ -164,7 +169,7 @@ export function usePubmatImage(
       cancelled = true;
       work.release();
     };
-  }, [key, data, design, pristine, priority]);
+  }, [key, data, design, pristine, priority, debug]);
 
   // Object URLs outlive the component unless released.
   useEffect(() => {

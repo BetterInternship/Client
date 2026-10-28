@@ -69,5 +69,6 @@ export async function renderPreparedPoster(
     (nodes) => layoutFits(nodes, theme.settings),
     debug,
     signal,
+    data.fontStyle,
   );
 }
