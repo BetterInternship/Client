@@ -6,6 +6,7 @@ import {
 import { posterLocation, type PubmatData } from "./params";
 import { posterBackground, posterLogo } from "./assets";
 import { posterQr } from "./qr-image";
+import { posterImage } from "./jsx-renderer";
 import { renderOffThread, exportPosterPng } from "./worker-client";
 export { exportPosterPng } from "./worker-client";
 
@@ -20,14 +21,15 @@ export async function renderPubmatArtifact(
   signal?.throwIfAborted();
   data = { ...data, location: posterLocation(data.location) };
   const theme = PUBMAT_DESIGNS[design];
-  const [background, logo] = await Promise.all([
+  const [background, logo, qrLogo] = await Promise.all([
     posterBackground(data.backgroundImage, theme.backgrounds),
     posterLogo(data.companyLogo, theme.settings.logo),
+    posterImage("/BetterInternshipLogo.png"),
   ]);
   const assets = {
     background,
     logo,
-    qr: posterQr(data.link, theme.settings.qrSize),
+    qr: { ...posterQr(data.link, theme.settings.qrSize), logoSrc: qrLogo },
   };
   signal?.throwIfAborted();
   return renderOffThread({ data, assets, design, debug }, signal, priority);

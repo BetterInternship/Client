@@ -1,6 +1,7 @@
 import type { PosterTemplateProps } from "../theme-types";
 import { posterTypography as typography } from "../typography";
 import { centeredConfig as theme } from "./config";
+import { PosterQr } from "../poster-qr";
 
 /** One flex composition, with profile tokens rather than independent y positions. */
 export function CenteredPoster({
@@ -202,38 +203,7 @@ export function CenteredPoster({
             gap: 16,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              position: "relative",
-              width: qr.size,
-              height: qr.size,
-            }}
-          >
-            <img src={qr.src} width={qr.size} height={qr.size} alt="" />
-            {logo && (
-              <div
-                style={{
-                  display: "flex",
-                  position: "absolute",
-                  left: qr.size * 0.4,
-                  top: qr.size * 0.4,
-                  width: qr.size * 0.2,
-                  height: qr.size * 0.2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <img
-                  src={logo.src}
-                  width={qr.size * 0.2}
-                  height={qr.size * 0.2}
-                  alt=""
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            )}
-          </div>
+          <PosterQr qr={qr} />
           <div
             style={{
               display: "flex",

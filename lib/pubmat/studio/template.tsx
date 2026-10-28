@@ -2,6 +2,7 @@ import type { PosterTemplateProps } from "../theme-types";
 import { posterTypography as typography } from "../typography";
 import { Coins, House, MapPin } from "lucide-react";
 import { studioTypography } from "./config";
+import { PosterQr } from "../poster-qr";
 
 /** Bottom-anchored flex composition; each group's content determines its size. */
 export function StudioPoster({
@@ -178,43 +179,7 @@ export function StudioPoster({
             gap: 21,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              position: "relative",
-              width: assets.qr.size,
-              height: assets.qr.size,
-            }}
-          >
-            <img
-              src={assets.qr.src}
-              width={assets.qr.size}
-              height={assets.qr.size}
-              alt=""
-            />
-            {assets.logo && (
-              <div
-                style={{
-                  display: "flex",
-                  position: "absolute",
-                  left: assets.qr.size * 0.4,
-                  top: assets.qr.size * 0.4,
-                  width: assets.qr.size * 0.2,
-                  height: assets.qr.size * 0.2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <img
-                  src={assets.logo.src}
-                  width={assets.qr.size * 0.2}
-                  height={assets.qr.size * 0.2}
-                  alt=""
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            )}
-          </div>
+          <PosterQr qr={assets.qr} />
           <div
             style={{
               display: "flex",

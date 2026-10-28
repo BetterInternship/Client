@@ -3,6 +3,7 @@ import { posterTypography as typography } from "../typography";
 import { PubmatFitError } from "../core";
 import { Coins, Laptop, MapPin } from "lucide-react";
 import { splitDeskConfig as theme, splitDeskTypography } from "./config";
+import { PosterQr } from "../poster-qr";
 
 /** One composition for every background. Only background/wash layers are absolute. */
 export function SplitDeskPoster({
@@ -355,45 +356,7 @@ export function SplitDeskPoster({
                 gap: p.qrToFooterGap,
               }}
             >
-              <div
-                data-poster="qr"
-                style={{
-                  display: "flex",
-                  position: "relative",
-                  width: assets.qr.size,
-                  height: assets.qr.size,
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src={assets.qr.src}
-                  width={assets.qr.size}
-                  height={assets.qr.size}
-                  alt=""
-                />
-                {assets.logo && (
-                  <div
-                    style={{
-                      display: "flex",
-                      position: "absolute",
-                      left: assets.qr.size * 0.4,
-                      top: assets.qr.size * 0.4,
-                      width: assets.qr.size * 0.2,
-                      height: assets.qr.size * 0.2,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <img
-                      src={assets.logo.src}
-                      width={assets.qr.size * 0.2}
-                      height={assets.qr.size * 0.2}
-                      alt=""
-                      style={{ objectFit: "contain" }}
-                    />
-                  </div>
-                )}
-              </div>
+              <PosterQr qr={assets.qr} />
               <div
                 data-poster="footer"
                 style={{

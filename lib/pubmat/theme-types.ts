@@ -6,7 +6,7 @@ export type PosterBackground = { id: string; label: string; src: string };
 export type PosterAssets = {
   background: string;
   logo?: { src: string; width: number; height: number };
-  qr: { src: string; size: number };
+  qr: { src: string; size: number; logoSrc?: string };
 };
 export type PosterTemplateProps = {
   data: PubmatData;
