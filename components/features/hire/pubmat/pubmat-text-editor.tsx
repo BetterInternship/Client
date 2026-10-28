@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import fontPreview from "./font-preview.module.css";
 import { LoaderCircle, PencilLine, RotateCcw } from "lucide-react";
 import { Button, Input, Label } from "@betterinternship/components";
 import {
@@ -9,6 +10,16 @@ import {
 } from "@/components/ui/autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import type { PosterCopy } from "@/lib/pubmat/core";
+import {
+  PUBMAT_LOCATION_MAX_LENGTH,
+  type PubmatFontStyle,
+} from "@/lib/pubmat/params";
+import {
+  LISTING_TITLE_MAX_LENGTH,
+  PUBMAT_DESCRIPTION_MAX_LENGTH,
+  PUBMAT_COMPANY_MAX_LENGTH,
+  PUBMAT_PAY_MAX_LENGTH,
+} from "@/lib/consts/listing-limits";
 
 const WORK_MODE_OPTIONS: IAutocompleteOption<string>[] = [
   { id: "On-site", name: "On-site" },
@@ -45,6 +56,8 @@ export function PubmatTextEditor({
   backgroundOptions = [],
   backgroundPosition,
   onBackgroundPositionChange,
+  fontStyle,
+  onFontStyleChange,
 }: {
   base: PosterCopy;
   draft: PosterCopy;
@@ -65,6 +78,8 @@ export function PubmatTextEditor({
     y: number;
     scale: number;
   }) => void;
+  fontStyle: PubmatFontStyle;
+  onFontStyleChange: (value: PubmatFontStyle) => void;
 }) {
   const id = useId();
   const value = (field: keyof PosterCopy) => draft[field] ?? base[field] ?? "";
@@ -80,15 +95,33 @@ export function PubmatTextEditor({
     label: string,
     placeholder?: string,
   ) {
+    const maxLength =
+      field === "title"
+        ? LISTING_TITLE_MAX_LENGTH
+        : field === "location"
+          ? PUBMAT_LOCATION_MAX_LENGTH
+          : field === "company"
+            ? PUBMAT_COMPANY_MAX_LENGTH
+            : field === "pay"
+              ? PUBMAT_PAY_MAX_LENGTH
+              : undefined;
     return (
       <div className="space-y-1.5">
-        <Label htmlFor={`${id}-${field}`} className="text-xs text-gray-700">
-          {label}
-        </Label>
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor={`${id}-${field}`} className="text-xs text-gray-700">
+            {label}
+          </Label>
+          {maxLength !== undefined && (
+            <span className="text-[11px] tabular-nums text-gray-500">
+              {value(field).length}/{maxLength}
+            </span>
+          )}
+        </div>
         <Input
           id={`${id}-${field}`}
           value={value(field)}
           placeholder={placeholder}
+          maxLength={maxLength}
           onChange={(event) =>
             onChange({ ...draft, [field]: event.target.value })
           }
@@ -138,7 +171,7 @@ export function PubmatTextEditor({
                 Short description
               </Label>
               <span className="text-[11px] tabular-nums text-gray-500">
-                {value("description").length} characters
+                {value("description").length}/{PUBMAT_DESCRIPTION_MAX_LENGTH}
               </span>
             </div>
             <Textarea
@@ -146,6 +179,7 @@ export function PubmatTextEditor({
               rows={3}
               className="min-h-24 resize-y text-sm leading-relaxed"
               value={value("description")}
+              maxLength={PUBMAT_DESCRIPTION_MAX_LENGTH}
               placeholder="A short sentence about what they’ll do."
               onChange={(event) =>
                 onChange({ ...draft, description: event.target.value })
@@ -159,7 +193,7 @@ export function PubmatTextEditor({
       </fieldset>
 
       {onBackgroundImageChange && (
-        <fieldset className="order-2 space-y-2 border-t border-gray-100 pt-4">
+        <fieldset className="order-1 space-y-2 border-t border-gray-100 pt-4">
           <legend className="text-xs font-semibold text-gray-900">
             Background image
           </legend>
@@ -243,6 +277,39 @@ export function PubmatTextEditor({
             )}
         </fieldset>
       )}
+
+      <fieldset className="order-2 space-y-2 border-t border-gray-100 pt-4">
+        <legend className="text-xs font-semibold text-gray-900">
+          Font style
+        </legend>
+        <div className="grid grid-cols-3 gap-1.5">
+          {(
+            [
+              ["modern", "Modern"],
+              ["professional", "Professional"],
+              ["editorial", "Editorial"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={fontStyle === value}
+              onClick={() => onFontStyleChange(value)}
+              className={`rounded-lg border-2 px-2 py-2 text-left text-[10px] ${fontStyle === value ? "border-primary bg-primary/[0.04]" : "border-transparent bg-gray-50"}`}
+            >
+              <span
+                aria-hidden="true"
+                className={`${fontPreview[value]} block text-3xl font-normal leading-tight text-gray-900`}
+              >
+                Aa
+              </span>
+              <span className="mt-1 block font-semibold text-gray-900">
+                {label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       <fieldset className="order-4 space-y-3 border-t border-gray-100 pt-4">
         <legend className="mb-1 text-xs font-semibold text-gray-900">

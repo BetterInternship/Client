@@ -1,12 +1,17 @@
 import type { PosterRenderSettings } from "../theme-types";
 
+export const studioTypography = {
+  titleSize: 116,
+  detailSize: 20,
+} as const;
+
 export const studioRenderSettings: PosterRenderSettings = {
   logo: { width: 480, height: 160, trim: true, upscale: true },
   qrSize: 260,
   limits: {
     composition: { minTop: 45 },
     title: { maxHeight: 360 },
-    description: { maxHeight: 140 },
+    description: { maxHeight: 220 },
     details: { maxWidth: 935 },
   },
 };

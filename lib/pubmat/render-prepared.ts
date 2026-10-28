@@ -57,7 +57,11 @@ export async function renderPreparedPoster(
     ...assets,
     background: pixel,
     logo: assets.logo ? { ...assets.logo, src: pixel } : undefined,
-    qr: { ...assets.qr, src: pixel },
+    qr: {
+      ...assets.qr,
+      src: pixel,
+      logoSrc: assets.qr.logoSrc ? pixel : undefined,
+    },
   };
   return renderFittedPoster(
     (adjustment, measure) =>
@@ -69,5 +73,6 @@ export async function renderPreparedPoster(
     (nodes) => layoutFits(nodes, theme.settings),
     debug,
     signal,
+    data.fontStyle,
   );
 }

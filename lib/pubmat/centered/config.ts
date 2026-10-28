@@ -1,3 +1,5 @@
+import { posterTypography } from "../typography";
+
 /** One centered layout for every background. Only active layout tokens live here. */
 export const centeredConfig = {
   colors: { text: "#000F3D", brand: "#0864FF" },
@@ -6,27 +8,27 @@ export const centeredConfig = {
     text: {
       jobTitle: {
         width: 740,
-        height: 156,
+        // Leave room for long, employer-supplied titles at the smaller font
+        // sizes used by the Editorial and Professional styles.
+        height: 280,
         fontSize: 90,
-        minFontSize: 64,
+        minFontSize: 38,
         weight: 650,
         lineAdvance: 87,
       },
       description: {
         width: 620,
-        height: 100,
-        fontSize: 33,
-        minFontSize: 25,
+        height: 220,
+        minFontSize: 20,
         lineAdvance: 34,
       },
     },
     details: {
       columnWidth: 220,
-      labelInitialSize: 14,
+      labelInitialSize: 16,
       labelTracking: 4,
       labelToValueGap: 18,
-      valueInitialSize: 32,
-      valueMinSize: 23,
+      valueSize: posterTypography.detail.size,
     },
     spacing: { detailsToActionMinimum: 24, footerLineInkGap: 3 },
     action: {
@@ -67,7 +69,7 @@ export const centeredRenderSettings: PosterRenderSettings = {
     description: {
       maxHeight: centeredConfig.layout.text.description.height + 1,
     },
-    fact: { maxHeight: centeredConfig.layout.details.valueInitialSize * 1.5 },
+    fact: { maxHeight: centeredConfig.layout.details.valueSize * 2 },
     action: { maxBottom: 1035 },
   },
   separation: {

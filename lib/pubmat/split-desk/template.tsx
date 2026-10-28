@@ -1,7 +1,9 @@
 import type { PosterTemplateProps } from "../theme-types";
+import { posterTypography as typography } from "../typography";
 import { PubmatFitError } from "../core";
 import { Coins, Laptop, MapPin } from "lucide-react";
-import { splitDeskConfig as theme } from "./config";
+import { splitDeskConfig as theme, splitDeskTypography } from "./config";
+import { PosterQr } from "../poster-qr";
 
 /** One composition for every background. Only background/wash layers are absolute. */
 export function SplitDeskPoster({
@@ -11,21 +13,33 @@ export function SplitDeskPoster({
 }: PosterTemplateProps) {
   const p = theme.layout;
   const copy = theme.text;
+  const editorial = data.fontStyle === "editorial";
+  const fontMultiplier =
+    data.fontStyle === "editorial"
+      ? 1.8
+      : data.fontStyle === "professional"
+        ? 1.2
+        : 1;
   const a = Math.max(
     0,
-    Math.min(40, Number.isFinite(adjustment) ? adjustment : 0),
+    Math.min(
+      70,
+      (Number.isFinite(adjustment) ? adjustment : 0) * fontMultiplier,
+    ),
   );
   const size = (initial: number, minimum: number, divisor = 1) =>
     Math.max(minimum, initial - a / divisor);
-  const titleSize = size(copy.title.initial, copy.title.min);
-  const descriptionSize = size(
-    copy.description.initial,
-    copy.description.min,
-    5,
+  // Give the editorial style a more restrained size range and enough room for
+  // smaller starting/minimum size so the left-aligned layout still supports
+  // the editor's 100-character title limit without crossing into the sidebar.
+  const titleSize = size(
+    editorial ? 96 : copy.title.initial,
+    editorial ? 48 : copy.title.min,
   );
-  const labelSize = size(copy.detailLabel.initial, copy.detailLabel.min, 12);
-  const valueSize = size(copy.detailValue.initial, copy.detailValue.min, 6);
-  const companySize = size(copy.company.initial, copy.company.min, 6);
+  const descriptionSize = typography.description.size;
+  const labelSize = splitDeskTypography.detailLabelSize;
+  const valueSize = typography.detail.size;
+  const companySize = typography.company.size;
   const title = data.title?.trim();
   if (!title) throw new PubmatFitError("title", "A role title is required.");
   if (!data.company?.trim())
@@ -89,8 +103,15 @@ export function SplitDeskPoster({
         position: "relative",
         width: 1080,
         height: 1080,
-        fontFamily: theme.fontFamily,
+        fontFamily:
+          data.fontStyle === "professional"
+            ? "Space Grotesk"
+            : data.fontStyle === "editorial"
+              ? "Source Serif 4"
+              : theme.fontFamily,
         color: theme.colors.text,
+        wordBreak: "normal",
+        overflowWrap: "normal",
       }}
     >
       <img
@@ -139,7 +160,7 @@ export function SplitDeskPoster({
             display: "flex",
             flexDirection: "row",
             width: 936,
-            alignItems: "flex-start",
+            alignItems: "center",
             gap: p.columnGap,
             flexShrink: 0,
           }}
@@ -210,6 +231,7 @@ export function SplitDeskPoster({
                     style={{
                       display: "flex",
                       flexShrink: 0,
+                      whiteSpace: "nowrap",
                       color:
                         index === 1 ? theme.colors.accent : theme.colors.text,
                     }}
@@ -226,8 +248,8 @@ export function SplitDeskPoster({
                   display: "flex",
                   width: p.leftWidth,
                   fontSize: descriptionSize,
-                  fontWeight: copy.description.weight,
-                  lineHeight: copy.description.lineHeight,
+                  fontWeight: typography.description.weight,
+                  lineHeight: typography.description.lineHeight,
                   color: theme.colors.secondary,
                 }}
               >
@@ -314,7 +336,7 @@ export function SplitDeskPoster({
                           display: "flex",
                           width: 257,
                           fontSize: valueSize,
-                          fontWeight: copy.detailValue.weight,
+                          fontWeight: typography.detail.weight,
                           lineHeight: copy.detailValue.lineHeight,
                         }}
                       >
@@ -334,45 +356,7 @@ export function SplitDeskPoster({
                 gap: p.qrToFooterGap,
               }}
             >
-              <div
-                data-poster="qr"
-                style={{
-                  display: "flex",
-                  position: "relative",
-                  width: assets.qr.size,
-                  height: assets.qr.size,
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src={assets.qr.src}
-                  width={assets.qr.size}
-                  height={assets.qr.size}
-                  alt=""
-                />
-                {assets.logo && (
-                  <div
-                    style={{
-                      display: "flex",
-                      position: "absolute",
-                      left: assets.qr.size * 0.4,
-                      top: assets.qr.size * 0.4,
-                      width: assets.qr.size * 0.2,
-                      height: assets.qr.size * 0.2,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <img
-                      src={assets.logo.src}
-                      width={assets.qr.size * 0.2}
-                      height={assets.qr.size * 0.2}
-                      alt=""
-                      style={{ objectFit: "contain" }}
-                    />
-                  </div>
-                )}
-              </div>
+              <PosterQr qr={assets.qr} />
               <div
                 data-poster="footer"
                 style={{
@@ -386,7 +370,7 @@ export function SplitDeskPoster({
                   data-poster="footer-line"
                   style={{
                     display: "flex",
-                    fontSize: descriptionSize,
+                    fontSize: typography.footer.size,
                     fontWeight: copy.footer.weight,
                     lineHeight: copy.footer.lineHeight,
                     whiteSpace: "nowrap",
@@ -398,7 +382,7 @@ export function SplitDeskPoster({
                   data-poster="brand-line"
                   style={{
                     display: "flex",
-                    fontSize: descriptionSize,
+                    fontSize: typography.footer.size,
                     fontWeight: copy.brand.weight,
                     lineHeight: copy.brand.lineHeight,
                     whiteSpace: "nowrap",

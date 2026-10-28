@@ -1,5 +1,8 @@
 import type { PosterTemplateProps } from "../theme-types";
+import { posterTypography as typography } from "../typography";
 import { Coins, House, MapPin } from "lucide-react";
+import { studioTypography } from "./config";
+import { PosterQr } from "../poster-qr";
 
 /** Bottom-anchored flex composition; each group's content determines its size. */
 export function StudioPoster({
@@ -8,6 +11,12 @@ export function StudioPoster({
   adjustment = 0,
 }: PosterTemplateProps) {
   const position = data.backgroundPosition ?? { x: 0.5, y: 0.5, scale: 1 };
+  const fontFamily =
+    data.fontStyle === "professional"
+      ? "Space Grotesk"
+      : data.fontStyle === "editorial"
+        ? "Source Serif 4"
+        : "Inter";
   const facts = [
     { id: "location", label: data.location, Icon: MapPin },
     { id: "setup", label: data.workMode ?? data.setup, Icon: House },
@@ -21,7 +30,9 @@ export function StudioPoster({
         width: 1080,
         height: 1080,
         color: "#00113F",
-        fontFamily: "Inter",
+        fontFamily,
+        wordBreak: "normal",
+        overflowWrap: "normal",
       }}
     >
       <img
@@ -85,9 +96,9 @@ export function StudioPoster({
               data-poster="company"
               style={{
                 display: "flex",
-                fontSize: 32,
+                fontSize: typography.company.size,
                 lineHeight: 1,
-                fontWeight: 600,
+                fontWeight: typography.company.weight,
                 width: 650,
                 justifyContent: "flex-start",
                 textAlign: "left",
@@ -101,7 +112,10 @@ export function StudioPoster({
             style={{
               display: "flex",
               width: 650,
-              fontSize: Math.max(90, 130 - adjustment),
+              fontSize: Math.max(
+                data.fontStyle === "editorial" ? 42 : 48,
+                studioTypography.titleSize - adjustment,
+              ),
               fontWeight: 400,
               lineHeight: 115 / 130,
             }}
@@ -115,8 +129,9 @@ export function StudioPoster({
             style={{
               display: "flex",
               width: 680,
-              fontSize: Math.max(30, 35 - adjustment / 4),
-              lineHeight: 42 / 35,
+              fontSize: typography.description.size,
+              fontWeight: typography.description.weight,
+              lineHeight: typography.description.lineHeight,
             }}
           >
             {data.description}
@@ -143,8 +158,8 @@ export function StudioPoster({
                   padding: "0 19px",
                   gap: 12,
                   backgroundColor: "#FFFFFF",
-                  fontWeight: 700,
-                  fontSize: Math.max(20, 24 - adjustment / 10),
+                  fontWeight: typography.detail.weight,
+                  fontSize: studioTypography.detailSize,
                   lineHeight: 1,
                 }}
               >
@@ -164,48 +179,12 @@ export function StudioPoster({
             gap: 21,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              position: "relative",
-              width: assets.qr.size,
-              height: assets.qr.size,
-            }}
-          >
-            <img
-              src={assets.qr.src}
-              width={assets.qr.size}
-              height={assets.qr.size}
-              alt=""
-            />
-            {assets.logo && (
-              <div
-                style={{
-                  display: "flex",
-                  position: "absolute",
-                  left: assets.qr.size * 0.4,
-                  top: assets.qr.size * 0.4,
-                  width: assets.qr.size * 0.2,
-                  height: assets.qr.size * 0.2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <img
-                  src={assets.logo.src}
-                  width={assets.qr.size * 0.2}
-                  height={assets.qr.size * 0.2}
-                  alt=""
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            )}
-          </div>
+          <PosterQr qr={assets.qr} />
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              fontSize: Math.max(30, 35 - adjustment / 4),
+              fontSize: typography.footer.size,
               fontWeight: 400,
               lineHeight: 1,
               gap: 4,
