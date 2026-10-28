@@ -37,6 +37,8 @@ import { DigestOptoutModalContent } from "../features/hire/account/digest-optout
 import { IomPartnershipModalContent } from "../features/hire/iom-partnership-modal";
 import type { EligibleListing } from "@/lib/api/services";
 import { ShareJobModal } from "./components/ShareJobModal";
+import { PubmatModal } from "../features/hire/pubmat/pubmat-modal";
+import type { PubmatDesign } from "@/lib/pubmat/designs";
 import { MoaUploadModal } from "./MoaUploadModal";
 import { InviteUniversityModal } from "./components/InviteUniversityModal";
 import { TopUniversityLinksModal } from "./components/TopUniversityLinksModal";
@@ -254,6 +256,43 @@ export const useModalRegistry = () => {
             showHeaderDivider: false,
           }),
         close: () => close("share-job"),
+      },
+      // Modal for a listing's pubmat: preview, download, and share to a
+      // platform. Also opens directly into editing from the dashboard preview.
+      pubmat: {
+        open: ({
+          job,
+          link,
+          companyLogo,
+          startInEditor,
+          initialDesign,
+        }: {
+          job: Job;
+          link: string;
+          companyLogo?: string | null;
+          startInEditor?: boolean;
+          initialDesign?: PubmatDesign;
+        }) =>
+          open(
+            "pubmat",
+            DefaultModalLayout,
+            <PubmatModal
+              job={job}
+              link={link}
+              companyLogo={companyLogo}
+              startInEditor={startInEditor}
+              initialDesign={initialDesign}
+            />,
+            {
+              title: "Listing pubmat",
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+              panelClassName:
+                "sm:w-[640px] sm:max-w-[640px] lg:has-[.pubmat-editing]:w-[1200px] lg:has-[.pubmat-editing]:max-w-[calc(100vw_-_2rem)]",
+            },
+          ),
+        close: () => close("pubmat"),
       },
       // modal for any action performed on a job application.
       applicationAction: {

@@ -10,6 +10,7 @@
  */
 
 import { apiUrl } from "./api-origin";
+import { isGodApiPath, redirectToGodLogin } from "./god-session";
 import { redirectIfMaintenanceMode } from "./maintenance";
 
 export interface CareerRequestOptions extends RequestInit {
@@ -64,6 +65,7 @@ export const careerFetch = async <T>(
     });
 
     if (!response.ok && response.status !== 304) {
+      if (response.status === 401 && isGodApiPath(path)) redirectToGodLogin();
       const body: unknown = await response.json().catch(() => null);
       if (throwOnError) throw new CareerApiError(response.status, body);
       const errorData = (body && typeof body === "object" ? body : {}) as {

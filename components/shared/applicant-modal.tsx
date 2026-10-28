@@ -33,8 +33,8 @@ export const ApplicantModalContent = ({
   job?: Partial<Job>;
 }) => {
   const {
-    to_job_type_name,
-    to_university_name,
+    toJobTypeName,
+    toUniversityName,
     job_modes,
     job_types,
     job_categories,
@@ -67,7 +67,7 @@ export const ApplicantModalContent = ({
                 Applying for {job?.title ?? "Sample Position"}{" "}
                 {job?.internship_preferences?.job_commitment_ids?.[0] !==
                 undefined
-                  ? `• ${to_job_type_name(job?.internship_preferences?.job_commitment_ids?.[0])}`
+                  ? `• ${toJobTypeName(job?.internship_preferences?.job_commitment_ids?.[0])}`
                   : ""}
               </p>
 
@@ -105,7 +105,7 @@ export const ApplicantModalContent = ({
               <div>
                 <p className="text-xs text-gray-500">Institution</p>
                 <p className="font-medium text-gray-900">
-                  {to_university_name(applicant?.university)}
+                  {toUniversityName(applicant?.university)}
                 </p>
               </div>
               <div>

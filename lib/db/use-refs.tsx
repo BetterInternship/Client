@@ -1,15 +1,21 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2026-04-19 00:24:27
+ * @ Modified time: 2026-10-18 00:00:00
  * @ Description:
  *
  * Accesses refs directly from the database.
+ *
+ * Job refs are server-rendered by the layouts into RefsContextProvider.
+ * Schools refs (universities, colleges, departments) are fetched in the
+ * browser by SchoolsRefsLoader from /api/refs/schools, so no built page
+ * depends on them. useDbRefs merges both.
  */
 
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AppStatus,
   College,
@@ -21,46 +27,13 @@ import {
   JobPayFreq,
   JobType,
   University,
-  RefDomain,
-  RefsData,
+  JobRefsData,
+  SchoolsRefsData,
   IRefsContext,
 } from "./db.types";
 import { createRefHelpers } from "./ref-lookup";
-// The context template
-const RefsContext = createContext<IRefsContext>({} as IRefsContext);
 
-/**
- * Refs context provider.
- *
- * @component
- */
-export const RefsContextProvider = ({
-  data,
-  children,
-}: {
-  data?: RefsData;
-  children: React.ReactNode;
-}) => {
-  const refsContext = createRefsContext(data ?? emptyRefsData);
-  return (
-    <RefsContext.Provider value={refsContext}>{children}</RefsContext.Provider>
-  );
-};
-
-/**
- * Allows using the refs table.
- *
- * @hook
- */
-export const useDbRefs = (): IRefsContext => {
-  return useContext(RefsContext);
-};
-
-const createRefsContext = (data: RefsData): IRefsContext => {
-  const collegeHelpers = createRefHelpers<string, College>(data.colleges);
-  const universityHelpers = createRefHelpers<string, University>(
-    data.universities,
-  );
+const createJobRefsContext = (data: JobRefsData) => {
   const jobTypeHelpers = createRefHelpers<number, JobType>(data.job_types);
   const jobModeHelpers = createRefHelpers<number, JobMode>(data.job_modes);
   const jobAllowanceHelpers = createRefHelpers<number, JobAllowance>(
@@ -76,63 +49,59 @@ const createRefsContext = (data: RefsData): IRefsContext => {
   const jobCategoryHelpers = createRefHelpers<string, JobCategory>(
     data.job_categories,
   );
+
+  return {
+    ...data,
+    getJobType: jobTypeHelpers.get,
+    toJobTypeName: jobTypeHelpers.toName,
+    getJobTypeByName: jobTypeHelpers.getByName,
+    getJobMode: jobModeHelpers.get,
+    toJobModeName: jobModeHelpers.toName,
+    getJobModeByName: jobModeHelpers.getByName,
+    getJobAllowance: jobAllowanceHelpers.get,
+    toJobAllowanceName: jobAllowanceHelpers.toName,
+    getJobAllowanceByName: jobAllowanceHelpers.getByName,
+    getJobPayFreq: jobPayFreqHelpers.get,
+    toJobPayFreqName: jobPayFreqHelpers.toName,
+    getJobPayFreqByName: jobPayFreqHelpers.getByName,
+    getAppStatus: appStatusHelpers.get,
+    toAppStatusName: appStatusHelpers.toName,
+    getAppStatusByName: appStatusHelpers.getByName,
+    getIndustry: industryHelpers.get,
+    toIndustryName: industryHelpers.toName,
+    getIndustryByName: industryHelpers.getByName,
+    getJobCategory: jobCategoryHelpers.get,
+    toJobCategoryName: jobCategoryHelpers.toName,
+    getJobCategoryByName: jobCategoryHelpers.getByName,
+    isNotNull: (ref: any) => !!(ref || ref === 0),
+  };
+};
+
+const createSchoolsRefsContext = (data: SchoolsRefsData, loading: boolean) => {
+  const collegeHelpers = createRefHelpers<string, College>(data.colleges);
+  const universityHelpers = createRefHelpers<string, University>(
+    data.universities,
+  );
   const departmentHelpers = createRefHelpers<string, Department>(
     data.departments,
   );
 
   return {
-    ref_loading: false,
     ...data,
-    get_college: collegeHelpers.get,
-    to_college_name: collegeHelpers.toName,
-    get_college_by_name: collegeHelpers.getByName,
-    get_university: universityHelpers.get,
-    to_university_name: universityHelpers.toName,
-    get_university_by_name: universityHelpers.getByName,
-    get_job_type: jobTypeHelpers.get,
-    to_job_type_name: jobTypeHelpers.toName,
-    get_job_type_by_name: jobTypeHelpers.getByName,
-    get_job_mode: jobModeHelpers.get,
-    to_job_mode_name: jobModeHelpers.toName,
-    get_job_mode_by_name: jobModeHelpers.getByName,
-    get_job_allowance: jobAllowanceHelpers.get,
-    to_job_allowance_name: jobAllowanceHelpers.toName,
-    get_job_allowance_by_name: jobAllowanceHelpers.getByName,
-    get_job_pay_freq: jobPayFreqHelpers.get,
-    to_job_pay_freq_name: jobPayFreqHelpers.toName,
-    get_job_pay_freq_by_name: jobPayFreqHelpers.getByName,
-    get_app_status: appStatusHelpers.get,
-    to_app_status_name: appStatusHelpers.toName,
-    get_app_status_by_name: appStatusHelpers.getByName,
-    get_industry: industryHelpers.get,
-    to_industry_name: industryHelpers.toName,
-    get_industry_by_name: industryHelpers.getByName,
-    get_job_category: jobCategoryHelpers.get,
-    to_job_category_name: jobCategoryHelpers.toName,
-    get_job_category_by_name: jobCategoryHelpers.getByName,
-    get_department: departmentHelpers.get,
-    to_department_name: departmentHelpers.toName,
-    get_department_by_name: departmentHelpers.getByName,
-    get_departments_by_college: (collegeId: string) =>
-      data.departments
-        .filter((d) => d.college_id === collegeId)
-        .map((d) => d.id),
-    get_colleges_by_university: (universityId: string) =>
-      data.colleges
-        .filter((c) => c.university_id === universityId)
-        .map((c) => c.id),
-    getUniversityFromDomain: (domain: string) =>
-      data.domains
-        .filter((d: RefDomain) => d.name === domain)
-        .map((d: RefDomain) => d.university_id),
-    isNotNull: (ref: any) => !!(ref || ref === 0),
+    refLoading: loading,
+    getCollege: collegeHelpers.get,
+    toCollegeName: collegeHelpers.toName,
+    getCollegeByName: collegeHelpers.getByName,
+    getUniversity: universityHelpers.get,
+    toUniversityName: universityHelpers.toName,
+    getUniversityByName: universityHelpers.getByName,
+    getDepartment: departmentHelpers.get,
+    toDepartmentName: departmentHelpers.toName,
+    getDepartmentByName: departmentHelpers.getByName,
   };
 };
 
-const emptyRefsData: RefsData = {
-  colleges: [],
-  departments: [],
-  universities: [],
+const emptyJobRefsData: JobRefsData = {
   job_types: [],
   job_modes: [],
   job_allowances: [],
@@ -140,5 +109,91 @@ const emptyRefsData: RefsData = {
   job_pay_freq: [],
   app_statuses: [],
   industries: [],
-  domains: [],
+};
+
+const emptySchoolsRefsData: SchoolsRefsData = {
+  colleges: [],
+  departments: [],
+  universities: [],
+};
+
+const JobRefsContext = createContext(createJobRefsContext(emptyJobRefsData));
+
+// Outside a SchoolsRefsLoader (homepage, /guides, maintenance) schools refs
+// stay empty and loading; nothing there reads them.
+const SchoolsRefsContext = createContext(
+  createSchoolsRefsContext(emptySchoolsRefsData, true),
+);
+
+/**
+ * Job refs context provider, fed by the layouts.
+ *
+ * @component
+ */
+export const RefsContextProvider = ({
+  jobRefs,
+  children,
+}: {
+  jobRefs?: JobRefsData;
+  children: React.ReactNode;
+}) => {
+  const value = useMemo(
+    () => createJobRefsContext(jobRefs ?? emptyJobRefsData),
+    [jobRefs],
+  );
+  return (
+    <JobRefsContext.Provider value={value}>{children}</JobRefsContext.Provider>
+  );
+};
+
+const fetchSchoolsRefs = async (): Promise<SchoolsRefsData> => {
+  const res = await fetch("/api/refs/schools");
+  if (!res.ok) throw new Error(`Schools refs request failed: ${res.status}`);
+  return (await res.json()) as SchoolsRefsData;
+};
+
+/**
+ * Loads schools refs in the browser. Must sit inside TanstackProvider.
+ *
+ * The query is persisted with the rest of the cache and refetched on every
+ * app mount, so returning visitors get the saved copy at once and edits show
+ * up within one page load. refLoading is true only while there's no data at
+ * all; a background refetch over a saved copy doesn't count.
+ *
+ * @component
+ */
+export const SchoolsRefsLoader = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { data } = useQuery({
+    queryKey: ["refs-schools"],
+    queryFn: fetchSchoolsRefs,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+  const value = useMemo(
+    () => createSchoolsRefsContext(data ?? emptySchoolsRefsData, !data),
+    [data],
+  );
+  return (
+    <SchoolsRefsContext.Provider value={value}>
+      {children}
+    </SchoolsRefsContext.Provider>
+  );
+};
+
+/**
+ * Allows using the refs table.
+ *
+ * @hook
+ */
+export const useDbRefs = (): IRefsContext => {
+  const jobRefs = useContext(JobRefsContext);
+  const schoolsRefs = useContext(SchoolsRefsContext);
+  return useMemo(
+    () => ({ ...jobRefs, ...schoolsRefs }),
+    [jobRefs, schoolsRefs],
+  );
 };

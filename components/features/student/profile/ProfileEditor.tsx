@@ -82,7 +82,8 @@ export const ProfileEditor = forwardRef<
       validateFormData,
       cleanFormData,
     } = useProfileEditForm();
-    const { universities, job_modes, job_types, job_categories } = useDbRefs();
+    const { universities, job_modes, job_types, job_categories, refLoading } =
+      useDbRefs();
     const initialSection: EditSectionKey =
       initialTab === "Internship Details" ? "internship" : "personal";
     const [openSections, setOpenSections] = useState<EditSectionKey[]>(
@@ -215,7 +216,10 @@ export const ProfileEditor = forwardRef<
       );
       addValidator(
         "university",
+        // Universities load in the browser; don't flag a valid pick as
+        // invalid before the list arrives.
         (id: string) =>
+          !refLoading &&
           !universityOptions.some((u) => u.id === id) &&
           "Select a valid university.",
       );
@@ -255,7 +259,13 @@ export const ProfileEditor = forwardRef<
 
         return false;
       });
-    }, [universityOptions, jobModeOptions, jobTypeOptions, jobCategoryOptions]);
+    }, [
+      refLoading,
+      universityOptions,
+      jobModeOptions,
+      jobTypeOptions,
+      jobCategoryOptions,
+    ]);
 
     const didInitNormalize = useRef(false);
     useEffect(() => {
@@ -496,7 +506,14 @@ export const ProfileEditor = forwardRef<
                       )}
                       value={formData.university}
                       setter={fieldSetter("university")}
-                      placeholder="Select University"
+                      placeholder={
+                        refLoading
+                          ? "Loading universities..."
+                          : "Select University"
+                      }
+                      emptyText={
+                        refLoading ? "Loading universities..." : undefined
+                      }
                       preserveOptionOrder
                     />
                     <ErrorLabel

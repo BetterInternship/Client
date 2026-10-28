@@ -1,0 +1,32 @@
+@font-face {
+  font-family: "Pubmat Preview Modern";
+  src: url("/fonts/pubmat/inter-400.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pubmat Preview Professional";
+  src: url("/fonts/og/space-grotesk-500.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pubmat Preview Editorial";
+  src: url("/fonts/pubmat/source-serif-4-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+.modern {
+  font-family: "Pubmat Preview Modern", sans-serif;
+}
+
+.professional {
+  font-family: "Pubmat Preview Professional", sans-serif;
+}
+
+.editorial {
+  font-family: "Pubmat Preview Editorial", sans-serif;
+}

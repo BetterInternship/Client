@@ -1,0 +1,234 @@
+import type { PosterTemplateProps } from "../theme-types";
+import { posterTypography as typography } from "../typography";
+import { centeredConfig as theme } from "./config";
+import { PosterQr } from "../poster-qr";
+
+/** One flex composition, with profile tokens rather than independent y positions. */
+export function CenteredPoster({
+  data,
+  assets: { background, logo, qr },
+  adjustment = 0,
+}: PosterTemplateProps) {
+  const p = theme.layout;
+  const fontFamily =
+    data.fontStyle === "professional"
+      ? "Space Grotesk"
+      : data.fontStyle === "editorial"
+        ? "Source Serif 4"
+        : "Inter";
+  const fontAdjustment =
+    data.fontStyle === "editorial"
+      ? 1.8
+      : data.fontStyle === "professional"
+        ? 1.2
+        : 1;
+  const header = p.primary.headerRegion;
+  const title = p.text.jobTitle;
+  const description = p.text.description;
+  const details = p.details;
+  const action = p.action;
+  const facts = [
+    ["LOCATION", data.location],
+    ["WORK MODE", data.workMode ?? data.setup],
+    ["ALLOWANCE", data.payCompact ?? data.pay],
+  ].filter((fact): fact is [string, string] => Boolean(fact[1]?.trim()));
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: 1080,
+        height: 1080,
+        position: "relative",
+        fontFamily,
+        color: theme.colors.text,
+        wordBreak: "normal",
+        overflowWrap: "normal",
+      }}
+    >
+      <img
+        src={background}
+        width={1080}
+        height={1080}
+        alt=""
+        style={{ position: "absolute", objectFit: "cover" }}
+      />
+      {data.backgroundImage?.startsWith("data:") && (
+        <div
+          style={{
+            position: "absolute",
+            width: 1080,
+            height: 1080,
+            backgroundImage:
+              "radial-gradient(ellipse at 50% 54%, rgba(255,255,255,.94), rgba(255,255,255,.35))",
+          }}
+        />
+      )}
+      <div
+        style={{
+          display: "flex",
+          position: "relative",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 1080,
+          height: 1080,
+          gap: 32,
+        }}
+      >
+        <div
+          data-poster="identity-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <div
+            data-poster="header"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: logo?.width ?? header.width,
+            }}
+          >
+            {logo ? (
+              <img
+                src={logo.src}
+                width={logo.width}
+                height={logo.height}
+                alt=""
+              />
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: typography.company.size,
+                  fontWeight: typography.company.weight,
+                  lineHeight: 1,
+                  textAlign: "center",
+                }}
+              >
+                {data.company}
+              </div>
+            )}
+          </div>
+          <div
+            data-poster="title"
+            style={{
+              display: "flex",
+              width: title.width,
+              fontSize: Math.max(
+                title.minFontSize,
+                title.fontSize - adjustment * fontAdjustment,
+              ),
+              fontWeight: title.weight,
+              lineHeight: title.lineAdvance / title.fontSize,
+              textAlign: "center",
+              justifyContent: "center",
+            }}
+          >
+            {data.title}
+          </div>
+        </div>
+        {data.description && (
+          <div
+            data-poster="description"
+            style={{
+              display: "flex",
+              width: description.width,
+              fontSize: typography.description.size,
+              fontWeight: typography.description.weight,
+              lineHeight: typography.description.lineHeight,
+              textAlign: "center",
+              justifyContent: "center",
+            }}
+          >
+            {data.description}
+          </div>
+        )}
+        {facts.length > 0 && (
+          <div
+            data-poster="details"
+            style={{
+              display: "flex",
+              alignItems: "stretch",
+              justifyContent: "center",
+            }}
+          >
+            {facts.map(([label, value]) => (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  width: details.columnWidth + 24,
+                  alignItems: "center",
+                  padding: "4px 12px 11px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    fontSize: details.labelInitialSize,
+                    letterSpacing: details.labelTracking,
+                    lineHeight: 1,
+                  }}
+                >
+                  {label}
+                </div>
+                <div
+                  data-poster="fact"
+                  style={{
+                    display: "flex",
+                    marginTop: details.labelToValueGap,
+                    fontSize: details.valueSize,
+                    fontWeight: typography.detail.weight,
+                    lineHeight: 1,
+                    textAlign: "center",
+                  }}
+                >
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div
+          data-poster="action"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          <PosterQr qr={qr} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: p.spacing.footerLineInkGap,
+            }}
+          >
+            {action.footer.lines.map((line, index) => (
+              <div
+                key={line.text}
+                style={{
+                  display: "flex",
+                  color: line.color,
+                  fontSize: typography.footer.size,
+                  fontWeight: line.weight,
+                  lineHeight: 1,
+                }}
+              >
+                {index === 0 ? "Scan to apply via" : "BetterInternship"}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

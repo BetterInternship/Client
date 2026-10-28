@@ -74,6 +74,11 @@ const config: Config = {
           "20%": { transform: "translateX(3px)" },
           "25%": { transform: "translateX(0)" },
         },
+        // A light band crossing a placeholder left to right (components/ui/shimmer.tsx).
+        shimmer: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(200%)" },
+        },
       },
       animation: {
         "marquee-horizontal": "marquee-x var(--duration) infinite linear",
@@ -84,6 +89,7 @@ const config: Config = {
         "slide-up": "slide-up 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
         jitter: "jitter 1.5s ease-in-out infinite",
+        shimmer: "shimmer 1.6s linear infinite",
       },
       fontFamily: {
         sans: [

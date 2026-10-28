@@ -9,4 +9,5 @@
 export type AuthControllerHandleSecureLinkParams = {
   auto_link?: string;
   next?: string;
+  src?: unknown;
 };

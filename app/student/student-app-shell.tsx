@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { SchoolsRefsLoader } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { HeaderContextProvider } from "@/lib/ctx-header";
@@ -16,27 +17,29 @@ import { useAuthContext } from "@/lib/ctx-student-auth";
 export default function StudentAppShell({ children }: { children: ReactNode }) {
   const { user } = useAuthContext();
   return (
-    <AppContextProvider>
-      <TooltipProvider>
-        <HeaderContextProvider>
-          <AppMQJobsProvider>
-            <FilloutJobsProvider>
-              <ModalProvider accountScope={user?.id ?? null}>
-                <div className="fixed inset-x-0 top-0 flex h-[100svh] flex-col overflow-hidden bg-background md:relative md:h-[100dvh]">
-                  <div
-                    data-student-scroll
-                    className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col"
-                  >
-                    <StudentPageLayout>{children}</StudentPageLayout>
+    <SchoolsRefsLoader>
+      <AppContextProvider>
+        <TooltipProvider>
+          <HeaderContextProvider>
+            <AppMQJobsProvider>
+              <FilloutJobsProvider>
+                <ModalProvider accountScope={user?.id ?? null}>
+                  <div className="fixed inset-x-0 top-0 flex h-[100svh] flex-col overflow-hidden bg-background md:relative md:h-[100dvh]">
+                    <div
+                      data-student-scroll
+                      className="relative flex min-h-0 flex-1 max-w-[100svw] overflow-y-auto flex-col"
+                    >
+                      <StudentPageLayout>{children}</StudentPageLayout>
+                    </div>
+                    <StudentBottomNavigation />
                   </div>
-                  <StudentBottomNavigation />
-                </div>
-              </ModalProvider>
-            </FilloutJobsProvider>
-          </AppMQJobsProvider>
-          <SonnerToaster />
-        </HeaderContextProvider>
-      </TooltipProvider>
-    </AppContextProvider>
+                </ModalProvider>
+              </FilloutJobsProvider>
+            </AppMQJobsProvider>
+            <SonnerToaster />
+          </HeaderContextProvider>
+        </TooltipProvider>
+      </AppContextProvider>
+    </SchoolsRefsLoader>
   );
 }

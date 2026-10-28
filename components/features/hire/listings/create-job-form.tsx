@@ -23,9 +23,9 @@ import {
   type IAutocompleteOption,
 } from "@/components/ui/autocomplete";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
-import { Textarea } from "@/components/ui/textarea";
 import { useMoaUniversities } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
+import { LISTING_TITLE_MAX_LENGTH } from "@/lib/consts/listing-limits";
 
 interface CreateJobProps {
   formData: Partial<Job>;
@@ -115,11 +115,11 @@ export const CreateJobForm = ({
                 value={formData.title ?? ""}
                 setter={(v) => setField("title", v)}
                 placeholder="e.g. Marketing Intern"
-                maxLength={100}
+                maxLength={LISTING_TITLE_MAX_LENGTH}
                 labelAddon={
                   <span className="flex h-5 items-center text-xs leading-none text-muted-foreground tabular-nums">
-                    <AnimatedCount value={titleLength} />
-                    /100
+                    <AnimatedCount value={titleLength} />/
+                    {LISTING_TITLE_MAX_LENGTH}
                   </span>
                 }
               />

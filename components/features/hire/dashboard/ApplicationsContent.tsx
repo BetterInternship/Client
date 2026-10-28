@@ -45,6 +45,31 @@ import { FormCheckbox } from "@/components/EditForm";
 import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ActionButton } from "@/components/ui/action-button";
 import { ShareJobButton } from "../../student/job/share-job-button";
+import { EmptyListingPubmat } from "../pubmat/empty-listing-pubmat";
+import { ShareListingNotice } from "../pubmat/share-listing-notice";
+
+/**
+ * Shown where applicants would be. A listing that nobody has applied to at
+ * all shows its pubmat, ready to download; a category that merely has none
+ * keeps the plain prompt to share.
+ */
+const NoApplicantsNotice = ({
+  job,
+  listingIsEmpty,
+}: {
+  job: Job;
+  listingIsEmpty: boolean;
+}) =>
+  listingIsEmpty ? (
+    <EmptyListingPubmat job={job} />
+  ) : (
+    <StatusNotice
+      icon={Ghost}
+      title="No applicants under this category yet."
+      description="Share your job listing to attract applicants."
+      action={<ShareJobButton job={job} />}
+    />
+  );
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -184,6 +209,11 @@ export const ApplicationsContent = forwardRef<
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
+
+  // Keep the pubmat viewer above the applications even when the listing is
+  // paused. ShareListingNotice turns into a read-only preview for inactive
+  // listings, so employers can still see the poster without sharing it.
+  const showShareNotice = visibleApplications.length > 0;
 
   const {
     selectedApplications,
@@ -326,6 +356,7 @@ export const ApplicationsContent = forwardRef<
 
   return isMobile ? (
     <div className="flex flex-col gap-2 min-h-screen mb-28">
+      {showShareNotice && <ShareListingNotice job={job} />}
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
@@ -369,11 +400,9 @@ export const ApplicationsContent = forwardRef<
           ))
         ) : (
           <div className="p-2">
-            <StatusNotice
-              icon={Ghost}
-              title="No applicants under this category yet."
-              description="Share your job listing to attract applicants."
-              action={<ShareJobButton job={job} />}
+            <NoApplicantsNotice
+              job={job}
+              listingIsEmpty={!isLoading && applications.length === 0}
             />
           </div>
         )}
@@ -381,6 +410,7 @@ export const ApplicationsContent = forwardRef<
     </div>
   ) : (
     <div className="flex flex-col gap-2 mb-28">
+      {showShareNotice && <ShareListingNotice job={job} />}
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
@@ -503,11 +533,9 @@ export const ApplicationsContent = forwardRef<
             </TableBody>
           </Table>
           {visibleApplications.length === 0 && (
-            <StatusNotice
-              icon={Ghost}
-              title="No applicants under this category yet."
-              description="Share your job listing to attract applicants."
-              action={<ShareJobButton job={job} />}
+            <NoApplicantsNotice
+              job={job}
+              listingIsEmpty={applications.length === 0}
             />
           )}
         </>

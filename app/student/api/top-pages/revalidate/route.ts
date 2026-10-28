@@ -1,4 +1,3 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import {
@@ -7,6 +6,7 @@ import {
   fetchTopSitemap,
   fetchTopUniversitySummary,
 } from "@/lib/api/top-page.server";
+import { secretMatches } from "@/lib/server/revalidate-secret";
 
 /**
  * POST /api/top-pages/revalidate — Career-Server's way of telling the cached
@@ -38,12 +38,6 @@ const SLUG = "[a-z0-9]+(?:-[a-z0-9]+)*";
 const TAG_PATTERN = new RegExp(
   `^(?:${TOP_SITEMAP_TAG}|top:cat:${SLUG}|top:uni:${SLUG})$`,
 );
-
-/** Constant-time comparison that does not leak the secret's length. */
-function secretMatches(given: string, expected: string): boolean {
-  const digest = (value: string) => createHash("sha256").update(value).digest();
-  return timingSafeEqual(digest(given), digest(expected));
-}
 
 /** Refills the cache entry a tag guards; false when the server couldn't answer. */
 async function prime(tag: string): Promise<boolean> {

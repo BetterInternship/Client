@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { StudentFoundation } from "@/components/providers/student-foundation";
 import { RefsContextProvider } from "@/lib/db/use-refs";
-import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getJobRefs } from "@/lib/db/use-refs-backend";
 import { baseUrl } from "@/lib/site-url";
 
 import { inter } from "../fonts";
@@ -56,18 +56,18 @@ const StudentRootLayout = async ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const refsData = await getRefsData();
+  const jobRefs = await getJobRefs();
 
   return (
     <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-        <RefsContextProvider data={refsData}>
-          <PostHogProvider>
+        <PostHogProvider>
+          <RefsContextProvider jobRefs={jobRefs}>
             <StudentFoundation>
               <StudentRouteShell>{children}</StudentRouteShell>
             </StudentFoundation>
-          </PostHogProvider>
-        </RefsContextProvider>
+          </RefsContextProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

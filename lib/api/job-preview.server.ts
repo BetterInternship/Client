@@ -45,10 +45,23 @@ export async function fetchJobPreview(
   }
 }
 
+// Any UUID version: job ids are gen_random_uuid() (v4), but imported rows may
+// carry others.
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // fetch full job data for a given job ID. Unlike the preview above this one
-// throws on a non-OK response (callers rely on that), which careerFetch never
-// does, so it takes its URL from the generated builder and fetches directly.
+// throws on a non-OK response, which careerFetch never does, so it takes its
+// URL from the generated builder and fetches directly. The job page is
+// cached, and a thrown error is never cached: a transient API failure keeps
+// serving the last good page instead of caching a 404 for a real job.
+//
+// A malformed id can never be a job (Career-Server answers it with a 500), so
+// it returns null without fetching — the page's notFound() is cached, where a
+// thrown error would re-render on every bot hit.
 export async function fetchJobFull(jobId: string): Promise<Job | null> {
+  if (!UUID_PATTERN.test(jobId)) return null;
+
   const res = await fetch(apiUrl(getJobsControllerFindOneActiveUrl(jobId)), {
     next: { revalidate: 300 },
   });

@@ -5,14 +5,12 @@ import { StatusNotice } from "@betterinternship/components/status-notice";
 import { ArrowUpRight, MessageSquare } from "lucide-react";
 import { useApplicationsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-student-auth";
-import { useApplicationActions } from "@/lib/api/student.actions.api";
 import type { Job } from "@/lib/db/db.types";
 import { useModalRegistry } from "@/components/modals/modal-registry";
 
 export function RedditReviewBanner({ job }: { job: Job }) {
   const auth = useAuthContext();
   const applications = useApplicationsData();
-  const actions = useApplicationActions();
   const modals = useModalRegistry();
   const application = applications.data.find(
     (entry) => entry.job_id === job.id,
@@ -47,7 +45,6 @@ export function RedditReviewBanner({ job }: { job: Job }) {
           className="shrink-0 rounded-[0.33em] border-sky-700 bg-sky-700 text-white hover:border-sky-800 hover:bg-sky-800"
           onClick={() => {
             if (!application.id) return;
-            actions.redditReviewClick.mutate(application.id);
             modals.redditDiscussion.open({ job });
           }}
         >

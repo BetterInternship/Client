@@ -6,13 +6,12 @@
  * OpenAPI spec version: 2.0
  */
 
-export type PublicTopUniversityPageResponseStatus =
-  (typeof PublicTopUniversityPageResponseStatus)[keyof typeof PublicTopUniversityPageResponseStatus];
+export type PublicTopCategoryResponseStatus =
+  (typeof PublicTopCategoryResponseStatus)[keyof typeof PublicTopCategoryResponseStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PublicTopUniversityPageResponseStatus = {
+export const PublicTopCategoryResponseStatus = {
   ok: "ok",
   moved: "moved",
-  university_only: "university_only",
   not_found: "not_found",
 } as const;
