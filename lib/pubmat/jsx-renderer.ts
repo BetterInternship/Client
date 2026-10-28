@@ -52,10 +52,29 @@ async function loadFonts(style: PubmatFontStyle = "modern") {
           style: "normal" as const,
         };
       }),
-    ).catch((error) => {
-      fonts.delete(style);
-      throw error;
-    });
+    )
+      .then(async (loadedFonts) => {
+        // The bundled Inter 600 subset lacks ₱. Keep its normal letterforms,
+        // falling back to the complete bold face only for missing glyphs.
+        if (style === "modern") {
+          const response = await fetch(
+            new URL(fontFiles.modern[700], self.location.origin),
+          );
+          if (!response.ok)
+            throw new Error("Could not load poster symbol font.");
+          loadedFonts.push({
+            name: "Inter Symbols",
+            data: await response.arrayBuffer(),
+            weight: 600,
+            style: "normal",
+          });
+        }
+        return loadedFonts;
+      })
+      .catch((error) => {
+        fonts.delete(style);
+        throw error;
+      });
     fonts.set(style, loaded);
   }
   return loaded;

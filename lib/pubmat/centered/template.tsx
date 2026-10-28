@@ -40,6 +40,8 @@ export function CenteredPoster({
         position: "relative",
         fontFamily,
         color: theme.colors.text,
+        wordBreak: "normal",
+        overflowWrap: "normal",
       }}
     >
       <img
@@ -123,8 +125,6 @@ export function CenteredPoster({
               lineHeight: title.lineAdvance / title.fontSize,
               textAlign: "center",
               justifyContent: "center",
-              overflowWrap: "break-word",
-              wordBreak: "break-all",
             }}
           >
             {data.title}
@@ -141,8 +141,6 @@ export function CenteredPoster({
               lineHeight: typography.description.lineHeight,
               textAlign: "center",
               justifyContent: "center",
-              overflowWrap: "break-word",
-              wordBreak: "break-all",
             }}
           >
             {data.description}

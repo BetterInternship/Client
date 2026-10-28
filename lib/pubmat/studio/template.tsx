@@ -30,6 +30,8 @@ export function StudioPoster({
         height: 1080,
         color: "#00113F",
         fontFamily,
+        wordBreak: "normal",
+        overflowWrap: "normal",
       }}
     >
       <img

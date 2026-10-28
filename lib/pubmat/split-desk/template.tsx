@@ -109,6 +109,8 @@ export function SplitDeskPoster({
               ? "Source Serif 4"
               : theme.fontFamily,
         color: theme.colors.text,
+        wordBreak: "normal",
+        overflowWrap: "normal",
       }}
     >
       <img
@@ -248,8 +250,6 @@ export function SplitDeskPoster({
                   fontWeight: typography.description.weight,
                   lineHeight: typography.description.lineHeight,
                   color: theme.colors.secondary,
-                  overflowWrap: "break-word",
-                  wordBreak: "break-all",
                 }}
               >
                 {data.description.trim()}
