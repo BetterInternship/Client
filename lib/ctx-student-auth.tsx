@@ -155,7 +155,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   }, [client, options]);
 
   // 2. Register or log out, then update this tab and notify the others.
-  const register = async (input: Partial<PublicUser>) => {
+  const register = useCallback(async (input: Partial<PublicUser>) => {
     // Load the broader API services only when registering, not on every page visit.
     const { AuthService } = await import("@/lib/api/services");
     const response = await AuthService.register(input);
@@ -164,13 +164,18 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       broadcastStudentAuthChange();
     }
     return response;
-  };
+  }, [refreshAuthentication]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     // Keep the user signed in if the server cannot complete logout.
     await endStudentSession();
     broadcastStudentAuthChange();
-  };
+  }, []);
+
+  const isAuthenticated = useCallback(
+    () => status === "authenticated",
+    [status],
+  );
 
   // 3. Another tab changed accounts: hide the old user while checking the new session.
   const refreshFromAnotherTab = useCallback(async () => {
@@ -186,18 +191,21 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   }, [client, refreshAuthentication]);
   useStudentAuthSync(refreshFromAnotherTab);
 
+  const value = useMemo<IAuthContext>(
+    () => ({
+      register,
+      logout,
+      refreshAuthentication,
+      isAuthenticated,
+      status,
+      user,
+      error: session.error,
+    }),
+    [register, logout, refreshAuthentication, isAuthenticated, status, user, session.error],
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        register,
-        logout,
-        refreshAuthentication,
-        isAuthenticated: () => status === "authenticated",
-        status,
-        user,
-        error: session.error,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
