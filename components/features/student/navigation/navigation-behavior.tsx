@@ -58,6 +58,8 @@ export function NavigationBehaviorProvider({
       0,
       Math.min(element.scrollTop, element.scrollHeight - element.clientHeight),
     );
+    const atBottom =
+      y >= element.scrollHeight - element.clientHeight - 1;
     // Surface changes use a coarse offset, never a render on every scroll pixel.
     const bucket = Math.floor(y / 40) * 40;
     setOffset((old) => (old === bucket ? old : bucket));
@@ -73,6 +75,10 @@ export function NavigationBehaviorProvider({
         document.activeElement.closest("[data-student-navigation]"));
     if (y < 32 || interacting) {
       setHidden(false);
+      return;
+    }
+    if (atBottom) {
+      setHidden(true);
       return;
     }
     if (Math.abs(y - anchor.current) >= 16) setHidden(nextDirection > 0);
