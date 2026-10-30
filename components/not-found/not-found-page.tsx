@@ -16,7 +16,7 @@ export function NotFoundPage({
 }) {
   return (
     <main className="fixed inset-0 z-[9999] overflow-y-auto bg-white text-landing-navy">
-      <div className="relative flex h-[100dvh] min-h-[420px] w-full flex-col items-center">
+      <div className="relative flex min-h-[100dvh] w-full flex-col items-center md:h-[100dvh] md:min-h-[420px]">
         <div
           className={
             fixedHeader ? "h-16 w-full shrink-0 md:h-20" : "w-full shrink-0"
@@ -24,23 +24,23 @@ export function NotFoundPage({
         >
           {header}
         </div>
-        <section className="relative grid min-h-0 w-full max-w-[38rem] flex-1 grid-rows-[auto_minmax(0,1fr)_minmax(0,2fr)_auto] justify-items-center gap-3 px-5 py-5 text-center">
-          <h1 className="text-3xl font-normal leading-tight tracking-tight text-landing-navy sm:text-4xl">
+        <section className="relative flex w-full max-w-[38rem] flex-1 flex-col items-center justify-center gap-5 px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center md:grid md:min-h-0 md:grid-rows-[auto_minmax(0,1fr)_minmax(0,2fr)_auto] md:justify-items-center md:gap-3 md:px-5 md:py-5">
+          <h1 className="shrink-0 text-2xl font-normal leading-tight tracking-tight text-landing-navy sm:text-4xl">
             Page not found
           </h1>
           <img
             src="/404-number-sprite.png"
             alt="404"
-            className="h-full min-h-0 w-full object-contain"
+            className="h-auto max-h-[16svh] w-[70%] max-w-[18rem] shrink-0 object-contain md:h-full md:min-h-0 md:w-full md:max-h-none md:max-w-none"
           />
           <img
             src={spriteSrc}
             alt={spriteAlt}
-            className="h-full min-h-0 w-full object-contain"
+            className="h-auto max-h-[36svh] w-full max-w-[20rem] shrink-0 object-contain md:h-full md:min-h-0 md:max-h-none md:max-w-none"
           />
           <Link
             href="/"
-            className="relative rounded-full bg-landing-blue px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-landing-blue/25 transition hover:-translate-y-0.5 hover:bg-landing-blue-hover"
+            className="relative mt-2 inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-landing-blue px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-landing-blue/25 transition hover:-translate-y-0.5 hover:bg-landing-blue-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-landing-blue md:mt-0"
           >
             Back to home
           </Link>
