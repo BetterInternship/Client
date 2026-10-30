@@ -84,7 +84,7 @@ export function StudentAccountMenu({
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
-        reveal(nextOpen);
+        reveal();
       }}
     >
       <Dropdown.Trigger
