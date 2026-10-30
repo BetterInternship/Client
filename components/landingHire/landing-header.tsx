@@ -1,3 +1,5 @@
+"use client";
+
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils/string-utils";
 import { HeaderTitle } from "../shared/header";

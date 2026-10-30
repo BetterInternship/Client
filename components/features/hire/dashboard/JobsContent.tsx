@@ -13,7 +13,7 @@ import { cn } from "@betterinternship/components";
 import { useAppContext } from "@/lib/ctx-app";
 import { useState, useEffect } from "react";
 import { useBlurTransition } from "@/components/animata/blur";
-import { SUPPORT_CALENDAR } from "@/constants";
+import { SUPPORT_CALENDAR } from "@/lib/consts/site-links";
 
 //maybe add employers id to cross check
 interface JobsContentProps {

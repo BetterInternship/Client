@@ -1,5 +1,5 @@
-import { Loader } from "@/components/ui/loader";
+import { SearchSkeleton } from "@/components/features/student/search/search-skeleton";
 
 export default function Loading() {
-  return <Loader>Loading...</Loader>;
+  return <SearchSkeleton />;
 }

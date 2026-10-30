@@ -4,7 +4,11 @@ import { cn } from "@betterinternship/components";
 import { LinkButton } from "@/components/ui/temp/button";
 import { Brand } from "./brand";
 import { landingContainerClassName } from "./layout";
-import type { LandingLink } from "./landing-header";
+
+type LandingLink = {
+  label: string;
+  href: ComponentProps<typeof Link>["href"];
+};
 
 export type LandingFooterProps = {
   groups: { title: string; links: LandingLink[] }[];

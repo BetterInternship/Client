@@ -3,10 +3,11 @@ import { toast } from "sonner";
 import { Bell, BellRing, CheckCircle } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
-import { googleLoginUrl } from "@/lib/api/urls";
+import { startStudentLogin } from "@/lib/student-login";
+import { useRestoreJobAlert } from "./use-restore-job-alert";
 
 /**
  * CTA that toggles the student's waitlist ("job alert") membership on a
@@ -39,11 +40,26 @@ export const ListingAlertButton = ({
   const pending =
     waitlistActions.join.isPending || waitlistActions.leave.isPending;
 
+  useRestoreJobAlert({
+    jobId: job.id,
+    ready:
+      !disabled &&
+      auth.isAuthenticated() &&
+      !pending &&
+      !jobs.isPending &&
+      !jobs.error &&
+      !waitlists.isPending &&
+      !waitlists.error,
+    onAlert,
+    applied,
+    join: waitlistActions.join.mutateAsync,
+  });
+
   const handleToggle = async (event: MouseEvent) => {
     event.stopPropagation();
 
     if (!auth.isAuthenticated()) {
-      window.location.href = googleLoginUrl();
+      startStudentLogin({ action: "alert", jobId: job.id });
       return;
     }
     if (!job.id) return;

@@ -1,4 +1,6 @@
 import { FormTemplate } from "../db/forms-db.types";
+import type { CareerRequestOptions } from "./career-fetch";
+import { endStudentSession, fetchStudentSession } from "./student-session";
 import {
   CreateJobChallengeListingPayload,
   UpdateJobChallengeListingPayload,
@@ -60,7 +62,6 @@ import {
   authControllerRegister,
   authControllerRegisterStatus,
   authControllerRequestActivation,
-  authControllerSignOut,
 } from "./generated/endpoints/auth/auth";
 import {
   employerUsersControllerChangeRole,
@@ -94,7 +95,6 @@ import {
   usersControllerPfpById,
   usersControllerResendForm,
   usersControllerResumeUrlById,
-  usersControllerSelf,
   usersControllerSetDefaultResume,
   usersControllerToggleSaveJob,
   usersControllerUpdateResume,
@@ -110,7 +110,6 @@ import type {
   UpdateJobDto,
   UpdateUserDto,
 } from "./generated/models";
-import { clearSessionHint, setSessionHint } from "@/lib/session-hint";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 
@@ -360,8 +359,7 @@ export const AuthService = {
   },
 
   async logout() {
-    await authControllerSignOut();
-    clearSessionHint();
+    await endStudentSession();
   },
 };
 interface UserResponse extends FetchResponse {
@@ -489,7 +487,9 @@ export const FormService = {
           };
         }[];
       };
-    return forms ?? [];
+    // An error envelope has no forms array; don't display it as empty history.
+    if (!Array.isArray(forms)) throw new Error("Could not load form history.");
+    return forms;
   },
 
   async getForm(formName: string) {
@@ -553,15 +553,7 @@ interface DefaultResumeResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
-    const result = (await usersControllerSelf(
-      options,
-    )) as unknown as UserResponse;
-    // Keep the browser's session hint in step with what the API just said
-    // (session-hint.ts). A failure of any kind clears it: a stale hint is
-    // cheap, but one that never clears would keep asking.
-    if (result?.success && result.user) setSessionHint();
-    else clearSessionHint();
-    return result;
+    return fetchStudentSession(options.signal ?? undefined);
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
@@ -778,8 +770,8 @@ export const JobService = {
     return jobsControllerFindOne(jobId) as unknown as Promise<JobResponse>;
   },
 
-  async getSavedJobs() {
-    return jobsControllerGetSaved() as unknown as Promise<SavedJobsResponse>;
+  async getSavedJobs(options: CareerRequestOptions = {}) {
+    return jobsControllerGetSaved(options) as unknown as Promise<SavedJobsResponse>;
   },
 
   async getOwnedJobs() {
@@ -838,8 +830,8 @@ export const JobService = {
     ) as unknown as Promise<FetchResponse>;
   },
 
-  async getWaitlistedJobs() {
-    return jobsControllerGetWaitlisted() as unknown as Promise<WaitlistedJobsResponse>;
+  async getWaitlistedJobs(options: CareerRequestOptions = {}) {
+    return jobsControllerGetWaitlisted(options) as unknown as Promise<WaitlistedJobsResponse>;
   },
 
   async mintShareLink(jobId: string) {
@@ -878,11 +870,12 @@ export const ApplicationService = {
       limit?: number;
       status?: string;
     } = {},
+    options: CareerRequestOptions = {},
   ) {
     // The generated model types dates as the strings they are on the wire;
     // UserApplication (db.types) types them as Date. The facade keeps its old
     // return type until callers move to the generated models.
-    return applicationsControllerGetOwn() as unknown as Promise<UserApplicationsResponse>;
+    return applicationsControllerGetOwn(options) as unknown as Promise<UserApplicationsResponse>;
   },
 
   async createApplication(data: {

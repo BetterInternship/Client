@@ -3,10 +3,11 @@ import { Bell, CheckCircle2, HeartCrack } from "lucide-react";
 import { Button } from "@betterinternship/components";
 import { StatusNotice } from "@betterinternship/components/status-notice";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { useJobStatus, useWaitlistsData } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
-import { googleLoginUrl } from "@/lib/api/urls";
+import { startStudentLogin } from "@/lib/student-login";
+import { useRestoreJobAlert } from "./use-restore-job-alert";
 
 /**
  * The hero banner shown on a hibernating listing's details pane (desktop) /
@@ -38,16 +39,31 @@ export const HibernatingListingBanner = ({
   const waitlists = useWaitlistsData();
   const waitlistActions = useWaitlistActions();
 
-  if (!job.hibernating) return null;
-
   const applied = !!jobs.isJobApplied(job.id!);
   const onAlert = waitlists.isWaitlisted(job.id);
   const pending =
     waitlistActions.join.isPending || waitlistActions.leave.isPending;
 
+  useRestoreJobAlert({
+    jobId: job.id,
+    ready:
+      !!job.hibernating &&
+      auth.isAuthenticated() &&
+      !pending &&
+      !jobs.isPending &&
+      !jobs.error &&
+      !waitlists.isPending &&
+      !waitlists.error,
+    onAlert,
+    applied,
+    join: waitlistActions.join.mutateAsync,
+  });
+
+  if (!job.hibernating) return null;
+
   const handleToggle = async () => {
     if (!auth.isAuthenticated()) {
-      window.location.href = googleLoginUrl();
+      startStudentLogin({ action: "alert", jobId: job.id });
       return;
     }
     if (!job.id) return;

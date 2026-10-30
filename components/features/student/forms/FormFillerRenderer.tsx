@@ -105,7 +105,7 @@ export function FormFillerRenderer({
     [signatureFields],
   );
   const signatureFieldKey = signatureFieldKeys.join("\n");
-  const profileFullName = getFullName(profile.data);
+  const profileFullName = getFullName(profile.data ?? undefined);
 
   useEffect(() => {
     (async () => {
@@ -151,7 +151,8 @@ export function FormFillerRenderer({
     }
 
     // Wait for profile data to load
-    if (!profile.data?.id) {
+    const user = profile.data;
+    if (!user?.id) {
       return;
     }
 
@@ -169,7 +170,7 @@ export function FormFillerRenderer({
         }
       } else if (field.prefiller && typeof field.prefiller === "function") {
         try {
-          const prefillerValue = field.prefiller({ user: profile.data });
+          const prefillerValue = field.prefiller({ user });
           if (prefillerValue !== null && prefillerValue !== undefined) {
             const stringValue = String(prefillerValue).trim();
             if (stringValue.length > 0) {

@@ -38,8 +38,9 @@ export function ApplyModal({
   const resumeUpload = useResumeUploadForm();
 
   const { data: resumesData, isPending: resumesLoading } = useQuery({
-    queryKey: ["my-resumes"],
+    queryKey: ["my-resumes", profile?.id],
     queryFn: () => UserService.getMyResumes(),
+    enabled: !!profile?.id,
   });
 
   const resumes = useMemo(() => resumesData?.resumes ?? [], [resumesData]);

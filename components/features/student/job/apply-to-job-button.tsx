@@ -3,15 +3,14 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@betterinternship/components";
 import { cn } from "@betterinternship/components";
 import { ArrowRight, CheckCircle } from "lucide-react";
-import { useAuthContext } from "@/lib/ctx-auth";
-import { useMemo } from "react";
+import { useAuthContext } from "@/lib/ctx-student-auth";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { isProfileEligibleForListing } from "@/lib/profile";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { ListingAlertButton } from "./listing-alert-button";
-import { savePostLoginRedirect } from "@/lib/post-login-redirect";
-import { googleLoginUrl } from "@/lib/api/urls";
+import { consumeJobLoginIntent, startStudentLogin } from "@/lib/student-login";
 
 export const ApplyToJobButton = ({
   profile,
@@ -34,14 +33,6 @@ export const ApplyToJobButton = ({
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const isSuperListing = Boolean(job.challenge);
 
-  // A hibernating listing can't be applied to — the CTA becomes a job alert
-  // toggle instead, everywhere ApplyToJobButton is rendered.
-  if (job.hibernating) {
-    return (
-      <ListingAlertButton job={job} className={className} disabled={disabled} />
-    );
-  }
-
   /**
    * Handles apply checks
    *
@@ -49,10 +40,7 @@ export const ApplyToJobButton = ({
    */
   const handleApply = () => {
     if (!profile || !auth.isAuthenticated()) {
-      savePostLoginRedirect(
-        `${window.location.pathname}${window.location.search}`,
-      );
-      window.location.href = googleLoginUrl();
+      startStudentLogin({ action: "apply", jobId: job.id });
       return;
     }
 
@@ -73,6 +61,25 @@ export const ApplyToJobButton = ({
       onApply,
     });
   };
+
+  useEffect(() => {
+    if (
+      disabled ||
+      job.hibernating ||
+      !profile ||
+      !auth.isAuthenticated() ||
+      jobs.isPending ||
+      applied
+    )
+      return;
+    if (consumeJobLoginIntent("apply", job.id)) handleApply();
+  }, [disabled, job, profile, auth, jobs.isPending, applied]);
+
+  if (job.hibernating) {
+    return (
+      <ListingAlertButton job={job} className={className} disabled={disabled} />
+    );
+  }
 
   return (
     <Button

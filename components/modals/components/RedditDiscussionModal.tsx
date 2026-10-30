@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@betterinternship/components";
 import { CircleDollarSign, FileText, List, UsersRound } from "lucide-react";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import type { Job } from "@/lib/db/db.types";
 import { buildRedditDiscussionUrl } from "@/lib/reddit-discussion";
 import { useApplicationsData } from "@/lib/api/student.data.api";

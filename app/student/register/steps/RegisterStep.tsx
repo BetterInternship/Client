@@ -15,7 +15,7 @@ import {
   sortUniversityOptions,
   universityAcronyms,
 } from "../../../../lib/student-forms-access";
-import { SUPPORT_FACEBOOK } from "@/constants";
+import { SUPPORT_FACEBOOK } from "@/lib/consts/site-links";
 
 /**
  * The first step to registering where the user puts their personal information in.

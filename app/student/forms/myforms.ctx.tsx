@@ -10,6 +10,7 @@
 "use client";
 
 import { FormService } from "@/lib/api/services";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
@@ -48,13 +49,15 @@ export const MyFormsContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { user } = useAuthContext();
   const {
     data: forms,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["my-forms"],
+    queryKey: ["my-forms", user?.id],
     queryFn: () => FormService.getMyGeneratedForms(),
+    enabled: !!user?.id,
     // Was Infinity — combined with the persisted query cache (tanstack-provider.tsx),
     // that meant a form's signing status could never be refetched (not even on reload)
     // once another signatory acted outside this browser. A short staleTime lets the

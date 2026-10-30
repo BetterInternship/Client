@@ -6,14 +6,14 @@ import {
 } from "@/components/landingStudent/homepage-listings.server";
 import { getJobRefs } from "@/lib/db/use-refs-backend";
 import SearchClient from "./SearchClient";
+import { SearchSkeleton } from "@/components/features/student/search/search-skeleton";
 
 /**
  * The marketplace search page.
  *
- * create fallback content for crawlers to read
- * and for users to see while client loads.
- * fallback is rendered with the same data as the homepage,
- * but without the closed listings
+ * Uses the same Search skeleton before hydration and during initial fetching.
+ * Keeps real listing links as a no-JavaScript fallback, without showing a
+ * different text-list layout to users while the interactive search loads.
  */
 export const revalidate = 300;
 
@@ -34,28 +34,39 @@ async function fetchFeaturedListings(): Promise<HomepageListing[]> {
 
 function SearchFallback({ listings }: { listings: HomepageListing[] }) {
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-sm text-muted-foreground">
-          Browse internships across the Philippines. Filter by field, work mode,
-          workload and allowance, and apply in one click.
-        </p>
-        {listings.length > 0 && (
-          <ul className="mt-4 divide-y">
-            {listings.map((listing) => (
-              <li key={listing.id} className="py-3">
-                <Link href={listing.href} className="font-medium">
-                  {listing.title}
-                </Link>
-                <p className="text-sm text-muted-foreground">
-                  {listing.companyName} · {listing.location}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+    <>
+      <div
+        data-search-loading-shell
+        className="flex min-h-0 flex-1 overflow-hidden"
+      >
+        <SearchSkeleton />
       </div>
-    </div>
+      <noscript>
+        <style>{"[data-search-loading-shell] { display: none; }"}</style>
+        <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-sm text-muted-foreground">
+              Browse internships across the Philippines. Filter by field, work
+              mode, workload and allowance, and apply in one click.
+            </p>
+            {listings.length > 0 && (
+              <ul className="mt-4 divide-y">
+                {listings.map((listing) => (
+                  <li key={listing.id} className="py-3">
+                    <Link href={listing.href} className="font-medium">
+                      {listing.title}
+                    </Link>
+                    <p className="text-sm text-muted-foreground">
+                      {listing.companyName} · {listing.location}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </noscript>
+    </>
   );
 }
 

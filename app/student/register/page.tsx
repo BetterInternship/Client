@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-student-auth";
 import { AuthService } from "@/lib/api/services";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { RegisterCarousel } from "@/components/features/student/register/Registe
 import { isNoUniversity } from "../../../lib/student-forms-access";
 import { motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
-import { SUPPORT_FACEBOOK } from "@/constants";
+import { SUPPORT_FACEBOOK } from "@/lib/consts/site-links";
 import { consumePostLoginRedirect } from "@/lib/post-login-redirect";
 import { googleLoginUrl } from "@/lib/api/urls";
 

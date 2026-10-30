@@ -24,8 +24,8 @@ export function FindCompanyReviews({
           strokeWidth={1.8}
           aria-hidden="true"
         />
-        <span className="flex w-full min-w-0 items-center justify-between gap-3 sm:flex-1">
-          <span className="min-w-0 flex-1">
+        <span className="flex w-full min-w-0 flex-col items-start gap-2 sm:flex-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <span className="w-full min-w-0 sm:flex-1">
             <span className="block text-base font-semibold text-gray-900">
               Student reviews
             </span>

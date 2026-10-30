@@ -6,7 +6,7 @@ import { Job } from "@/lib/db/db.types";
 import { TopPageView } from "@/components/features/student/top/TopPageView";
 import { useGodTopPage, useTopPagePreviewJobs } from "@/lib/api/god.api";
 import { Loader } from "@/components/ui/loader";
-import { GuestAuthContextProvider } from "@/lib/ctx-auth";
+import { GuestAuthContextProvider } from "@/lib/ctx-student-auth";
 import type { PublicTopUniversity } from "@/lib/api/top-page.server";
 
 interface PreviewSnapshot {

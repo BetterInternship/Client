@@ -79,8 +79,24 @@ const ModalCtx = createContext<ModalContext>({} as ModalContext);
 
 export const useGlobalModal = () => useContext(ModalCtx);
 
-export function ModalProvider({ children }: { children: React.ReactNode }) {
+/**
+ * Shares modal controls with child components.
+ * When accountScope changes, clears old dialogs so their content does not
+ * carry over after logout or an account switch.
+ */
+export function ModalProvider({
+  children,
+  accountScope,
+}: {
+  children: React.ReactNode;
+  accountScope?: string | null;
+}) {
   const [registry, setRegistry] = useState<Record<string, ModalInstance>>({});
+  const [owner, setOwner] = useState(accountScope);
+  if (owner !== accountScope) {
+    setOwner(accountScope);
+    setRegistry({});
+  }
 
   const openModal = useCallback<ModalInstanceOpener>(
     (name, Layout, content, opts = {}) => {

@@ -2,14 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { PublicUser } from "@/lib/db/db.types";
 import { UserService, ResumeDTO } from "@/lib/api/services";
 import { Button, PageContainer } from "@betterinternship/components";
 import { useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import { Loader } from "@/components/ui/loader";
+import { ProfileSkeleton } from "@/components/features/student/profile/profile-skeleton";
 import { PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useProfileActions } from "@/lib/api/student.actions.api";
@@ -33,7 +32,6 @@ import { fileUrls } from "@/lib/api/urls";
 import { useDbRefs } from "@/lib/db/use-refs";
 
 export default function ProfilePage() {
-  const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfileData();
   const profileActions = useProfileActions();
   const { refLoading } = useDbRefs();
@@ -53,8 +51,14 @@ export default function ProfilePage() {
       fileUrls.myResume(hash, resumeId),
   });
   const resumes = useQuery({
-    queryKey: ["my-resumes"],
-    queryFn: () => UserService.getMyResumes(),
+    queryKey: ["my-resumes", profile.data?.id],
+    queryFn: async () => {
+      const response = await UserService.getMyResumes();
+      if (response.success === false || !Array.isArray(response.resumes))
+        throw new Error("Could not load resumes.");
+      return response;
+    },
+    enabled: !!profile.data?.id,
   });
 
   const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
@@ -187,8 +191,6 @@ export default function ProfilePage() {
     });
   };
 
-  redirectIfNotLoggedIn();
-
   const {
     fileInputRef: pfpFileInputRef,
     upload: pfpUpload,
@@ -261,6 +263,13 @@ export default function ProfilePage() {
     resumes: resumes.data?.resumes ?? [],
     defaultResume: resumes.data?.default_resume ?? null,
     loading: resumes.isPending,
+    error:
+      resumes.isError && !resumes.data
+        ? "We couldn’t load your resumes."
+        : undefined,
+    retry: () => {
+      void resumes.refetch();
+    },
     maxAllowed: maxResumesAllowed,
     isRenaming: isRenamingResume,
     isSettingDefault: isSettingDefaultResume,
@@ -285,11 +294,7 @@ export default function ProfilePage() {
   useBlockPageRefreshEffect(isEditing);
 
   if (profile.isPending) {
-    return (
-      <div className="min-h-screen grid place-items-center">
-        <Loader>Loading profile...</Loader>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (profile.error) {

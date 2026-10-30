@@ -10,6 +10,8 @@ export type ProfileResumeManager = {
   resumes: ResumeDTO[];
   defaultResume: string | null;
   loading: boolean;
+  error?: string;
+  retry?: () => void;
   maxAllowed: number;
   isRenaming: boolean;
   isSettingDefault: boolean;

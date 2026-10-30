@@ -3,7 +3,7 @@ import "../globals.css";
 import { inter } from "../fonts";
 import bg2 from "../../public/bg2.png";
 import { AppContextProvider } from "@/lib/ctx-app";
-import { AuthContextProvider } from "@/lib/ctx-auth";
+import { AuthContextProvider } from "@/lib/ctx-student-auth";
 import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";

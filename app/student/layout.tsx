@@ -1,11 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import "../globals.css";
-import { inter } from "../fonts";
+
+import { StudentFoundation } from "@/components/providers/student-foundation";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { getJobRefs } from "@/lib/db/use-refs-backend";
+import { baseUrl } from "@/lib/site-url";
+
+import { inter } from "../fonts";
 import { PostHogProvider } from "../posthog-provider";
 import StudentRouteShell from "./student-route-shell";
-import { baseUrl } from "@/lib/site-url";
+
+import "../globals.css";
 
 const ogImage = `${baseUrl}/og.png`;
 
@@ -46,12 +50,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-/**
- * A template for all pages on the site.
- *
- * @component
- */
-const RootLayout = async ({
+/** Student root layout: site defaults, reference data, and shared providers. */
+const StudentRootLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -61,14 +61,16 @@ const RootLayout = async ({
   return (
     <html lang="en" className={`h-full ${inter.variable}`}>
       <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-        <RefsContextProvider jobRefs={jobRefs}>
-          <PostHogProvider>
-            <StudentRouteShell>{children}</StudentRouteShell>
-          </PostHogProvider>
-        </RefsContextProvider>
+        <PostHogProvider>
+          <RefsContextProvider jobRefs={jobRefs}>
+            <StudentFoundation>
+              <StudentRouteShell>{children}</StudentRouteShell>
+            </StudentFoundation>
+          </RefsContextProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
 };
 
-export default RootLayout;
+export default StudentRootLayout;

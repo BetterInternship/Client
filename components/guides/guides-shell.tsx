@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { LandingHeader } from "@/components/landing/landing-header";
+import { StudentNavigation } from "@/components/features/student/navigation/student-navigation";
 import { HomepageFooter } from "@/components/landingStudent/homepage-footer";
-import { googleLoginUrl } from "@/lib/api/urls";
 import { topAccentStyle } from "@/lib/utils/top-page-presentation";
 
 /** Public visual wrapper only. The parent student layout owns refs and analytics;
@@ -13,14 +12,14 @@ export function GuidesShell({ children }: { children: ReactNode }) {
       style={topAccentStyle()}
     >
       <a
-        className="absolute left-2 top-2 z-20 -translate-y-[180%] bg-white px-5 py-3 focus:translate-y-0"
+        className="absolute left-2 top-2 z-50 -translate-y-[180%] bg-white px-5 py-3 focus:translate-y-0"
         href="#guides-main"
       >
         Skip to content
       </a>
-      <LandingHeader
+      <StudentNavigation
+        preset="public"
         links={[
-          { label: "Find internships", href: "/search" },
           { label: "Guides", href: "/guides", current: true },
           {
             label: "For Companies",
@@ -29,10 +28,6 @@ export function GuidesShell({ children }: { children: ReactNode }) {
               "https://hire.betterinternship.com",
           },
         ]}
-        action={{
-          label: "Log in",
-          href: googleLoginUrl(),
-        }}
       />
       {children}
       <HomepageFooter />
