@@ -41,11 +41,7 @@ export function StudentAppHeader({
     className: desktopHeaderHidden ? "md:hidden" : undefined,
     config: {
       desktop: sticky ? ("sticky" as const) : ("static" as const),
-      mobile: !sticky
-        ? ("static" as const)
-        : policy.search
-          ? ("sticky" as const)
-          : ("hide-on-scroll" as const),
+      mobile: sticky ? ("sticky" as const) : ("static" as const),
       surface: transparent ? ("transparent" as const) : ("solid" as const),
     },
   };
