@@ -1,45 +1,19 @@
-"use client";
-
-import { useEffect } from "react";
+import { NotFoundPage } from "@/components/not-found/not-found-page";
 
 export default function NotFound() {
-  useEffect(() => {
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-    const previousBodyOverflow = document.body.style.overflow;
+  return <NotFoundPage header={<FallbackHeader />} />;
+}
 
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.documentElement.style.overflow = previousHtmlOverflow;
-      document.body.style.overflow = previousBodyOverflow;
-    };
-  }, []);
-
+function FallbackHeader() {
   return (
-    <main
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        display: "grid",
-        placeItems: "center",
-        width: "100vw",
-        height: "100vh",
-        overflow: "hidden",
-        background: "white",
-      }}
-    >
-      <img
-        src="/not-found.png"
-        alt="Page not found"
-        style={{
-          display: "block",
-          width: "100vw",
-          height: "100vh",
-          objectFit: "contain",
-        }}
-      />
-    </main>
+    <header className="flex min-h-[76px] w-full items-center px-4 md:px-6">
+      <a
+        href="/"
+        className="inline-flex items-center gap-3 text-lg font-[750] tracking-[-.0375rem] text-landing-navy"
+      >
+        <img src="/homepage-logo.png" width="24" height="24" alt="" />
+        BetterInternship
+      </a>
+    </header>
   );
 }
