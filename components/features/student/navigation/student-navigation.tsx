@@ -57,6 +57,7 @@ export function StudentAccountMenu({
   const avatar = useNavigationAvatar(bottom ? undefined : auth.user?.id);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
   const name = [auth.user?.first_name, auth.user?.last_name]
     .filter(Boolean)
     .join(" ");
@@ -72,12 +73,20 @@ export function StudentAccountMenu({
           ? cause.message
           : "Could not sign out. Please retry.",
       );
+      setOpen(true);
     } finally {
       setPending(false);
     }
   };
   return (
-    <Dropdown.Root modal={false} onOpenChange={reveal}>
+    <Dropdown.Root
+      modal={false}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        reveal(nextOpen);
+      }}
+    >
       <Dropdown.Trigger
         data-student-menu
         aria-label="Account"
@@ -143,7 +152,7 @@ export function StudentAccountMenu({
             )}
           >
             <LogOut className="h-4 w-4" />
-            {pending ? "Signing out…" : error ? "Retry sign out" : "Sign out"}
+            {pending ? "Signing out…" : "Sign out"}
           </Dropdown.Item>
           {error && (
             <p role="alert" className="max-w-60 px-3 py-2 text-xs text-red-600">

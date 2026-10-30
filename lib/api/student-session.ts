@@ -47,6 +47,8 @@ export async function endStudentSession(): Promise<void> {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
+  // A missing session already represents the desired signed-out state.
+  if (response.status === 401) return;
   const data = (await response.json().catch(() => null)) as {
     success?: boolean;
     message?: string;
@@ -59,7 +61,10 @@ export async function endStudentSession(): Promise<void> {
 export const studentSessionOptions = {
   queryKey: ["my-profile"] as const,
   queryFn: ({ signal }: { signal: AbortSignal }) => fetchStudentSession(signal),
-  staleTime: 5 * 60 * 1000,
+  // Auth state must be revalidated after navigation; a cached user can survive
+  // logout and incorrectly unlock protected pages.
+  staleTime: 0,
+  refetchOnMount: "always" as const,
   retry: false as const,
   refetchOnWindowFocus: true,
 };

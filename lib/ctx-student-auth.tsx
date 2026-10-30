@@ -169,13 +169,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     // Keep the user signed in if the server cannot complete logout.
     await endStudentSession();
-    setIsChangingAccount(true);
-    try {
-      await resetSessionCache(client);
-      broadcastStudentAuthChange();
-    } finally {
-      setIsChangingAccount(false);
-    }
+    broadcastStudentAuthChange();
   };
 
   // 3. Another tab changed accounts: hide the old user while checking the new session.
