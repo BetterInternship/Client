@@ -37,7 +37,7 @@ export async function fetchJobPreview(
 ): Promise<JobPreviewData | null> {
   try {
     const data = (await jobsControllerFindOneActive(jobId, {
-      next: { revalidate: 300 },
+      next: { revalidate: 3600 },
     })) as unknown as { job?: JobPreviewData | null };
     return data?.job ?? null;
   } catch {
@@ -63,7 +63,7 @@ export async function fetchJobFull(jobId: string): Promise<Job | null> {
   if (!UUID_PATTERN.test(jobId)) return null;
 
   const res = await fetch(apiUrl(getJobsControllerFindOneActiveUrl(jobId)), {
-    next: { revalidate: 300 },
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {

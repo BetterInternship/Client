@@ -15,7 +15,7 @@ import { buildJobListingSchema } from "@/lib/seo/job-posting";
  * depend on the visitor — the job fetch is anonymous and the per-user parts
  * (profile, saved, applied) load in the browser.
  */
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return [];
