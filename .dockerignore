@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.github
+.vscode
+.serena
+.claude
+.env*
+*.tsbuildinfo
+*.log
+package-lock.json
+Dockerfile
+.dockerignore
