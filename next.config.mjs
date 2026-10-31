@@ -58,6 +58,8 @@ const cspHeader = `
 `.replace(/\n/g, "");
 
 const nextConfig = {
+  // Self-hosted in Coolify: the Dockerfile runs the traced standalone server.
+  output: "standalone",
   outputFileTracingIncludes: {
     "/student/guides/**": ["./app/student/guides/_content/*.md"],
   },
